@@ -3,6 +3,11 @@ const router = express.Router();
 const { auth } = require('../middleware/auth');
 const InMemorySession = require('../models/InMemorySession');
 const InMemoryUser = require('../models/InMemoryUser');
+const {
+  notifySessionUpdated,
+  notifyRoleSelected,
+  notifyFeedbackRequired,
+} = require('../websocket');
 
 // Получение списка всех сессий
 // GET /api/sessions
@@ -37,6 +42,12 @@ router.post('/', auth, async (req, res) => {
     });
 
     await session.save();
+
+    // Получаем экземпляр Socket.IO из объекта запроса
+    const io = req.app.get('io');
+
+    // Отправляем уведомление о создании новой сессии
+    notifySessionUpdated(io, session.id, session);
 
     res.status(201).json(session);
   } catch (error) {
@@ -125,6 +136,12 @@ router.post('/:id/roles', auth, async (req, res) => {
     // Назначаем роль пользователю в сессии
     await session.assignRole(userId, role);
 
+    // Получаем экземпляр Socket.IO из объекта запроса
+    const io = req.app.get('io');
+
+    // Отправляем уведомление о выборе роли
+    notifyRoleSelected(io, sessionId, userId, role);
+
     // Если пользователь выбирает роль интервьюера или отвечающего,
     // устанавливаем статус обратной связи как "pending"
     if (role === 'interviewer' || role === 'interviewee') {
@@ -153,6 +170,9 @@ router.post('/:id/roles', auth, async (req, res) => {
     // Сохраняем пользователя
     await user.save();
 
+    // Отправляем уведомление об обновлении сессии всем подписчикам
+    notifySessionUpdated(io, sessionId, session);
+
     res.json({
       message: 'Роль успешно назначена',
       session,
@@ -162,6 +182,93 @@ router.post('/:id/roles', auth, async (req, res) => {
     console.error('Стек ошибки:', error.stack);
     res.status(500).json({
       message: 'Ошибка сервера при назначении роли',
+      details: error.message,
+    });
+  }
+});
+
+// Изменение статуса сессии
+// PUT /api/sessions/:id/status
+router.put('/:id/status', auth, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const { status } = req.body;
+    const userId = req.user.id;
+
+    // Проверяем, что статус указан корректно
+    if (!['pending', 'active', 'completed'].includes(status)) {
+      return res.status(400).json({
+        message:
+          'Некорректный статус. Допустимые значения: pending, active, completed',
+      });
+    }
+
+    // Получаем сессию по ID
+    const session = await InMemorySession.findById(sessionId);
+    if (!session) {
+      return res.status(404).json({ message: 'Сессия не найдена' });
+    }
+
+    // Проверяем права доступа (только интервьюер может изменять статус)
+    if (session.interviewerId !== userId) {
+      return res.status(403).json({
+        message: 'Только интервьюер может изменять статус сессии',
+      });
+    }
+
+    // Обновляем статус сессии
+    session.status = status;
+    await session.save();
+
+    // Получаем экземпляр Socket.IO из объекта запроса
+    const io = req.app.get('io');
+
+    // Отправляем уведомление об изменении статуса сессии
+    notifySessionUpdated(io, sessionId, session);
+
+    // Если статус изменен на "completed", отправляем напоминание о необходимости заполнить форму обратной связи
+    if (status === 'completed') {
+      // Отправляем напоминание интервьюеру
+      if (session.interviewerId) {
+        notifyFeedbackRequired(io, session.interviewerId, sessionId);
+      }
+
+      // Отправляем напоминание отвечающему
+      if (session.intervieweeId) {
+        notifyFeedbackRequired(io, session.intervieweeId, sessionId);
+      }
+    }
+
+    res.json({
+      message: 'Статус сессии успешно обновлен',
+      session,
+    });
+  } catch (error) {
+    console.error('Ошибка при обновлении статуса сессии:', error);
+    res.status(500).json({
+      message: 'Ошибка сервера при обновлении статуса сессии',
+      details: error.message,
+    });
+  }
+});
+
+// Получение информации о конкретной сессии
+// GET /api/sessions/:id
+router.get('/:id', auth, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+
+    // Получаем сессию по ID
+    const session = await InMemorySession.findById(sessionId);
+    if (!session) {
+      return res.status(404).json({ message: 'Сессия не найдена' });
+    }
+
+    res.json(session);
+  } catch (error) {
+    console.error('Ошибка при получении информации о сессии:', error);
+    res.status(500).json({
+      message: 'Ошибка сервера при получении информации о сессии',
       details: error.message,
     });
   }

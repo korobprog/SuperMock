@@ -4,6 +4,7 @@ import SessionCreate from './SessionCreate';
 import SessionJoin from './SessionJoin';
 import FeedbackForm from './FeedbackForm';
 import FeedbackResults from './FeedbackResults';
+import { SocketProvider } from '../contexts/SocketContext';
 
 function SessionManager({ token }) {
   const [activeView, setActiveView] = useState('list'); // list, create, join, feedback, results
@@ -87,13 +88,15 @@ function SessionManager({ token }) {
 
       <div className="p-4">
         {activeView === 'list' && (
-          <SessionList
-            token={token}
-            onJoinSession={handleJoinSession}
-            onOpenFeedbackForm={handleOpenFeedbackForm}
-            onOpenFeedbackResults={handleOpenFeedbackResults}
-            key={refreshTrigger} // Для принудительного обновления при изменении refreshTrigger
-          />
+          <SocketProvider token={token}>
+            <SessionList
+              token={token}
+              onJoinSession={handleJoinSession}
+              onOpenFeedbackForm={handleOpenFeedbackForm}
+              onOpenFeedbackResults={handleOpenFeedbackResults}
+              key={refreshTrigger} // Для принудительного обновления при изменении refreshTrigger
+            />
+          </SocketProvider>
         )}
 
         {activeView === 'create' && (

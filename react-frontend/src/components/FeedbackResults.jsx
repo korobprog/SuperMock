@@ -1,37 +1,103 @@
 import { useState, useEffect } from 'react';
+import { useSocket } from '../hooks/useSocket';
 
 function FeedbackResults({ token, sessionId, onBack }) {
   const [feedbackData, setFeedbackData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Счетчик обновлений в реальном времени
+  const [realTimeUpdates, setRealTimeUpdates] = useState(0);
 
-  useEffect(() => {
-    const fetchFeedbackResults = async () => {
-      if (!token || !sessionId) {
-        setLoading(false);
-        return;
-      }
+  // Используем хук useSocket для подписки на обновления обратной связи
+  const {
+    connected,
+    isSubscribed,
+    error: socketError,
+  } = useSocket({
+    sessionId,
+    events: {
+      // Обработчик события обновления обратной связи
+      'feedback-updated': (data) => {
+        console.log('Получено обновление обратной связи:', data);
+        if (data.sessionId === sessionId) {
+          // Обновляем данные без перезагрузки с сервера
+          setFeedbackData((prevData) => {
+            if (!prevData) return null;
 
-      try {
-        const response = await fetch(`/api/sessions/${sessionId}/feedback`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+            // Создаем новый объект с обновленными данными
+            const updatedFeedbacks = prevData.feedbacks.map((feedback) =>
+              feedback.id === data.feedbackId
+                ? { ...feedback, ...data.updates }
+                : feedback
+            );
 
-        if (!response.ok) {
-          throw new Error('Не удалось получить результаты обратной связи');
+            // Если это новый отзыв, добавляем его
+            if (
+              !updatedFeedbacks.some((f) => f.id === data.feedbackId) &&
+              data.newFeedback
+            ) {
+              updatedFeedbacks.push(data.newFeedback);
+            }
+
+            // Проверяем, заполнены ли обе стороны
+            const bothSidesSubmitted =
+              updatedFeedbacks.some(
+                (f) => f.userId === prevData.session.interviewerId
+              ) &&
+              updatedFeedbacks.some(
+                (f) => f.userId === prevData.session.intervieweeId
+              );
+
+            return {
+              ...prevData,
+              feedbacks: updatedFeedbacks,
+              bothSidesSubmitted,
+            };
+          });
+
+          // Увеличиваем счетчик обновлений
+          setRealTimeUpdates((prev) => prev + 1);
         }
+      },
+      // Обработчик события завершения сессии
+      'session-completed': (data) => {
+        if (data.sessionId === sessionId) {
+          // Перезагружаем данные с сервера, так как сессия завершена
+          fetchFeedbackResults();
+        }
+      },
+    },
+  });
 
-        const data = await response.json();
-        setFeedbackData(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
+  // Функция для загрузки данных обратной связи
+  const fetchFeedbackResults = async () => {
+    if (!token || !sessionId) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/feedback`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Не удалось получить результаты обратной связи');
       }
-    };
 
+      const data = await response.json();
+      setFeedbackData(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Загружаем данные при монтировании компонента
+  useEffect(() => {
     fetchFeedbackResults();
   }, [token, sessionId]);
 
@@ -74,11 +140,18 @@ function FeedbackResults({ token, sessionId, onBack }) {
     );
   }
 
-  if (error) {
+  // Отображаем ошибку HTTP запроса или WebSocket соединения
+  if (error || socketError) {
     return (
       <div className="bg-red-100 border border-red-400 text-red-800 p-4 rounded-lg mb-4">
         <p className="font-bold">Ошибка</p>
-        <p>{error}</p>
+        <p>{error || socketError}</p>
+        {socketError && (
+          <p className="mt-2 text-sm">
+            <span className="font-medium">Статус WebSocket:</span>{' '}
+            {connected ? 'Подключен' : 'Отключен'}
+          </p>
+        )}
         <button
           onClick={onBack}
           className="mt-4 px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition-colors"
@@ -143,9 +216,42 @@ function FeedbackResults({ token, sessionId, onBack }) {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-blue-800">
-        Результаты обратной связи
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-blue-800">
+          Результаты обратной связи
+        </h2>
+
+        {/* Индикатор статуса WebSocket и обновлений */}
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center">
+            <span className="text-sm text-gray-600 mr-2">Статус:</span>
+            {connected ? (
+              <span className="flex items-center text-green-600 text-sm">
+                <span className="h-2 w-2 bg-green-500 rounded-full mr-1"></span>
+                Онлайн
+              </span>
+            ) : (
+              <span className="flex items-center text-red-600 text-sm">
+                <span className="h-2 w-2 bg-red-500 rounded-full mr-1"></span>
+                Офлайн
+              </span>
+            )}
+          </div>
+
+          {isSubscribed && (
+            <div className="text-sm text-gray-600">
+              <span className="font-medium">Сессия:</span>{' '}
+              {sessionId.substring(0, 8)}...
+            </div>
+          )}
+
+          {realTimeUpdates > 0 && (
+            <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+              Обновлений: {realTimeUpdates}
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {feedbacks.map((feedback) => (

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSocket } from '../hooks/useSocket';
 
 function SessionList({
   token,
@@ -11,9 +12,10 @@ function SessionList({
   const [error, setError] = useState('');
   const [userFeedbackStatus, setUserFeedbackStatus] = useState({});
   const [sessionFeedbackStatus, setSessionFeedbackStatus] = useState({});
+  const [notifications, setNotifications] = useState([]);
 
   // Выносим функцию fetchSessions из useEffect, чтобы использовать ее для обновления списка
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     if (!token) {
       setLoading(false);
       return;
@@ -111,16 +113,10 @@ function SessionList({
     } finally {
       setLoading(false);
     }
-  };
-
-  // Используем useEffect для первоначальной загрузки данных
-  useEffect(() => {
-    fetchSessions();
-    fetchUserProfile();
   }, [token]);
 
   // Функция для получения профиля пользователя с информацией о статусе обратной связи
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (!token) return;
 
     try {
@@ -146,58 +142,177 @@ function SessionList({
     } catch (error) {
       console.error('Ошибка при получении профиля пользователя:', error);
     }
-  };
+  }, [token]);
 
-  // Функция для проверки статуса обратной связи для сессии
-  const checkSessionFeedbackStatus = async (sessionId) => {
-    if (!token || !sessionId) return;
+  // Обработчик события session-updated
+  const handleSessionUpdated = useCallback((data) => {
+    console.log('Получено событие session-updated:', data);
 
-    try {
-      const response = await fetch(`/api/sessions/${sessionId}/feedback`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    // Обновляем сессию в списке, если она уже есть
+    setSessions((prevSessions) => {
+      const updatedSessions = prevSessions.map((session) => {
+        if (session.id === data.sessionId) {
+          return { ...session, ...data.session };
+        }
+        return session;
       });
 
-      if (!response.ok) {
-        // Если ошибка 404 или 403, устанавливаем статус "нет обратной связи"
-        if (response.status === 404 || response.status === 403) {
-          return setSessionFeedbackStatus((prev) => ({
-            ...prev,
-            [sessionId]: { hasFeedback: false, bothSidesSubmitted: false },
-          }));
-        }
+      // Если сессии нет в списке, добавляем ее
+      const sessionExists = updatedSessions.some(
+        (session) => session.id === data.sessionId
+      );
 
-        // Для других ошибок пытаемся получить сообщение об ошибке
-        try {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.message || 'Не удалось получить статус обратной связи'
-          );
-        } catch {
-          throw new Error('Не удалось получить статус обратной связи');
-        }
+      if (!sessionExists && data.session) {
+        return [...updatedSessions, data.session];
       }
 
-      const data = await response.json();
+      return updatedSessions;
+    });
 
-      // Сохраняем статус обратной связи для сессии
-      setSessionFeedbackStatus((prev) => ({
+    // Не вызываем checkSessionFeedbackStatus здесь, так как это будет сделано в useEffect
+  }, []);
+
+  // Обработчик события feedback-required
+  const handleFeedbackRequired = useCallback(
+    (data) => {
+      console.log('Получено событие feedback-required:', data);
+
+      // Добавляем уведомление
+      setNotifications((prev) => [
         ...prev,
-        [sessionId]: {
-          hasFeedback: data.feedbacks && data.feedbacks.length > 0,
-          bothSidesSubmitted: data.bothSidesSubmitted || false,
+        {
+          id: Date.now(),
+          type: 'feedback-required',
+          sessionId: data.sessionId,
+          message: 'Необходимо заполнить форму обратной связи',
         },
-      }));
-    } catch (error) {
-      console.error('Ошибка при получении статуса обратной связи:', error);
-      // Устанавливаем дефолтный статус при ошибке
-      setSessionFeedbackStatus((prev) => ({
-        ...prev,
-        [sessionId]: { hasFeedback: false, bothSidesSubmitted: false },
-      }));
+      ]);
+
+      // Обновляем статус обратной связи для сессии
+      fetchUserProfile();
+    },
+    [fetchUserProfile]
+  );
+
+  // Используем useEffect для первоначальной загрузки данных
+  useEffect(() => {
+    fetchSessions();
+    fetchUserProfile();
+  }, [token]); // Используем только token как зависимость, так как обе функции зависят от него
+
+  // Мемоизируем объект events, чтобы он не создавался заново при каждом рендере
+  const socketEvents = useMemo(
+    () => ({
+      'session-updated': handleSessionUpdated,
+      'feedback-required': handleFeedbackRequired,
+    }),
+    [handleSessionUpdated, handleFeedbackRequired]
+  );
+
+  // Используем хук useSocket для подключения к WebSocket
+  const { connected, reconnect, reconnectAttempts, maxReconnectAttempts } =
+    useSocket({
+      events: socketEvents,
+    });
+
+  // Эффект для автоматического переподключения при разрыве соединения
+  useEffect(() => {
+    let reconnectInterval;
+
+    if (!connected && reconnectAttempts < maxReconnectAttempts) {
+      console.log('WebSocket соединение разорвано, попытка переподключения...');
+
+      // Пытаемся переподключиться каждые 5 секунд, но только если не достигли максимального количества попыток
+      reconnectInterval = setInterval(() => {
+        console.log(
+          `Попытка переподключения ${
+            reconnectAttempts + 1
+          }/${maxReconnectAttempts}...`
+        );
+        reconnect();
+      }, 5000);
     }
-  };
+
+    return () => {
+      if (reconnectInterval) {
+        clearInterval(reconnectInterval);
+      }
+    };
+  }, [connected, reconnect, reconnectAttempts, maxReconnectAttempts]);
+
+  // Функция для проверки статуса обратной связи для сессии
+  // Используем useCallback для мемоизации функции checkSessionFeedbackStatus
+  const checkSessionFeedbackStatus = useCallback(
+    async (sessionId) => {
+      if (!token || !sessionId) return;
+
+      // Находим сессию по ID
+      const session = sessions.find((s) => s.id === sessionId);
+      if (!session) return;
+
+      // Проверяем, участвует ли пользователь в сессии
+      const isUserParticipant =
+        userFeedbackStatus.userId === session.interviewerId ||
+        userFeedbackStatus.userId === session.intervieweeId ||
+        (session.observerIds &&
+          session.observerIds.includes(userFeedbackStatus.userId));
+
+      // Если пользователь не участвует в сессии, устанавливаем статус "нет обратной связи" без запроса
+      if (!isUserParticipant) {
+        return setSessionFeedbackStatus((prev) => ({
+          ...prev,
+          [sessionId]: { hasFeedback: false, bothSidesSubmitted: false },
+        }));
+      }
+
+      try {
+        const response = await fetch(`/api/sessions/${sessionId}/feedback`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          // Если ошибка 404 или 403, устанавливаем статус "нет обратной связи"
+          if (response.status === 404 || response.status === 403) {
+            return setSessionFeedbackStatus((prev) => ({
+              ...prev,
+              [sessionId]: { hasFeedback: false, bothSidesSubmitted: false },
+            }));
+          }
+
+          // Для других ошибок пытаемся получить сообщение об ошибке
+          try {
+            const errorData = await response.json();
+            throw new Error(
+              errorData.message || 'Не удалось получить статус обратной связи'
+            );
+          } catch {
+            throw new Error('Не удалось получить статус обратной связи');
+          }
+        }
+
+        const data = await response.json();
+
+        // Сохраняем статус обратной связи для сессии
+        setSessionFeedbackStatus((prev) => ({
+          ...prev,
+          [sessionId]: {
+            hasFeedback: data.feedbacks && data.feedbacks.length > 0,
+            bothSidesSubmitted: data.bothSidesSubmitted || false,
+          },
+        }));
+      } catch (error) {
+        console.error('Ошибка при получении статуса обратной связи:', error);
+        // Устанавливаем дефолтный статус при ошибке
+        setSessionFeedbackStatus((prev) => ({
+          ...prev,
+          [sessionId]: { hasFeedback: false, bothSidesSubmitted: false },
+        }));
+      }
+    },
+    [token, sessions, userFeedbackStatus.userId]
+  );
 
   // Проверяем статус обратной связи для всех сессий
   useEffect(() => {
@@ -206,7 +321,7 @@ function SessionList({
         checkSessionFeedbackStatus(session.id);
       });
     }
-  }, [sessions, token]);
+  }, [sessions, token, checkSessionFeedbackStatus]);
 
   const getStatusText = (status) => {
     switch (status) {
@@ -279,28 +394,119 @@ function SessionList({
 
   return (
     <div className="w-full">
+      {/* Статус WebSocket соединения */}
+      <div
+        className={`mb-2 text-xs flex items-center ${
+          connected ? 'text-green-600' : 'text-red-600'
+        }`}
+      >
+        <div
+          className={`w-2 h-2 rounded-full mr-1 ${
+            connected ? 'bg-green-600' : 'bg-red-600'
+          }`}
+        ></div>
+        <span>
+          {connected
+            ? 'Подключено'
+            : reconnectAttempts < maxReconnectAttempts
+            ? `Отключено (попытка переподключения ${reconnectAttempts}/${maxReconnectAttempts})`
+            : 'Отключено (не удалось переподключиться)'}
+        </span>
+        {!connected && reconnectAttempts >= maxReconnectAttempts && (
+          <button
+            onClick={() => {
+              reconnect();
+            }}
+            className="ml-2 text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+          >
+            Переподключиться
+          </button>
+        )}
+      </div>
+
+      {/* Уведомления */}
+      {notifications.length > 0 && (
+        <div className="mb-4">
+          {notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-2 flex justify-between items-center"
+            >
+              <div className="flex items-start">
+                <svg
+                  className="h-5 w-5 text-yellow-400 mr-2 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-yellow-800">
+                    {notification.message}
+                  </p>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    Сессия: {notification.sessionId.substring(0, 8)}...
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setNotifications(
+                    notifications.filter((n) => n.id !== notification.id)
+                  );
+
+                  // Находим сессию и открываем форму обратной связи
+                  const session = sessions.find(
+                    (s) => s.id === notification.sessionId
+                  );
+                  if (session && notification.type === 'feedback-required') {
+                    onOpenFeedbackForm(session);
+                  }
+                }}
+                className="text-sm px-2 py-1 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200"
+              >
+                Заполнить
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-semibold">Список сессий</h3>
-        <button
-          onClick={fetchSessions}
-          className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 mr-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-gray-500">
+            {connected
+              ? 'Обновляется автоматически'
+              : 'Автообновление недоступно'}
+          </span>
+          <button
+            onClick={fetchSessions}
+            className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          Обновить
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Обновить
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

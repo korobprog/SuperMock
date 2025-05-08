@@ -1,13 +1,22 @@
 const express = require('express');
 const path = require('path');
+const http = require('http');
 const authRoutes = require('./routes/auth');
 const sessionRoutes = require('./routes/sessions');
 const feedbackRoutes = require('./routes/feedback');
 const cors = require('cors');
+const { initializeWebSocket } = require('./websocket');
 
 // Инициализация приложения Express
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000; // Изменяем порт на 3000, чтобы не конфликтовать с текущими серверами
+
+// Инициализация Socket.IO
+const io = initializeWebSocket(server);
+
+// Делаем io доступным для маршрутов
+app.set('io', io);
 
 // Middleware для парсинга JSON и URL-encoded данных
 app.use(express.json());
@@ -21,6 +30,8 @@ app.use(
       'http://127.0.0.1:5173',
       'http://localhost:5174',
       'http://127.0.0.1:5174',
+      'http://localhost:5175',
+      'http://127.0.0.1:5175',
     ], // Разрешаем запросы с Vite dev сервера
     credentials: true, // Разрешаем передачу куки и заголовков авторизации
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -73,6 +84,7 @@ app.use((err, req, res, next) => {
 });
 
 // Запуск сервера
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
+  console.log(`WebSocket сервер инициализирован`);
 });

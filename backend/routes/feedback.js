@@ -4,6 +4,7 @@ const { auth } = require('../middleware/auth');
 const InMemoryFeedback = require('../models/InMemoryFeedback');
 const InMemoryUser = require('../models/InMemoryUser');
 const InMemorySession = require('../models/InMemorySession');
+const { notifyFeedbackUpdated } = require('../websocket');
 
 // Отправка обратной связи для сессии
 // POST /api/sessions/:id/feedback
@@ -62,6 +63,26 @@ router.post('/sessions/:id/feedback', auth, async (req, res) => {
         user.feedbackStatus = 'completed';
         await user.save();
       }
+    }
+
+    // Получаем экземпляр Socket.IO из объекта запроса
+    const io = req.app.get('io');
+
+    // Отправляем уведомление о новой обратной связи
+    notifyFeedbackUpdated(io, sessionId, feedback.id, null, feedback);
+
+    // Проверяем, заполнили ли обе стороны обратную связь
+    const allFeedbacks = await InMemoryFeedback.findBySessionId(sessionId);
+    const interviewerFeedback = allFeedbacks.find(
+      (f) => f.userId === session.interviewerId
+    );
+    const intervieweeFeedback = allFeedbacks.find(
+      (f) => f.userId === session.intervieweeId
+    );
+
+    // Если обе стороны заполнили обратную связь, отправляем дополнительное уведомление
+    if (interviewerFeedback && intervieweeFeedback) {
+      notifyFeedbackUpdated(io, sessionId, null, { bothSidesSubmitted: true });
     }
 
     res.status(201).json({
