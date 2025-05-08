@@ -8,6 +8,10 @@ const {
   notifyRoleSelected,
   notifyFeedbackRequired,
 } = require('../websocket');
+const {
+  createMeeting,
+  isValidMeetUrl,
+} = require('../services/googleMeetService');
 
 // Получение списка всех сессий
 // GET /api/sessions
@@ -269,6 +273,72 @@ router.get('/:id', auth, async (req, res) => {
     console.error('Ошибка при получении информации о сессии:', error);
     res.status(500).json({
       message: 'Ошибка сервера при получении информации о сессии',
+      details: error.message,
+    });
+  }
+});
+
+// Генерация и сохранение ссылки на Google Meet для сессии
+// POST /api/sessions/:id/video
+router.post('/:id/video', auth, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const userId = req.user.id;
+    const { customVideoLink } = req.body;
+
+    // Получаем сессию по ID
+    const session = await InMemorySession.findById(sessionId);
+    if (!session) {
+      return res.status(404).json({ message: 'Сессия не найдена' });
+    }
+
+    // Проверяем права доступа (только интервьюер может генерировать ссылку)
+    if (session.interviewerId !== userId) {
+      return res.status(403).json({
+        message: 'Только интервьюер может генерировать ссылку на видеозвонок',
+      });
+    }
+
+    // Если предоставлена пользовательская ссылка, проверяем её и используем
+    if (customVideoLink) {
+      // Проверяем, что ссылка имеет правильный формат
+      if (!isValidMeetUrl(customVideoLink)) {
+        return res.status(400).json({
+          message: 'Некорректная ссылка на Google Meet',
+        });
+      }
+
+      session.videoLink = customVideoLink;
+    } else {
+      // Генерируем новую ссылку на Google Meet
+      const meetingOptions = {
+        summary: `Собеседование - Сессия ${sessionId}`,
+        startTime: session.startTime,
+        durationMinutes: 60, // Длительность по умолчанию - 60 минут
+      };
+
+      const videoLink = await createMeeting(meetingOptions);
+      session.videoLink = videoLink;
+    }
+
+    // Сохраняем обновленную сессию
+    await session.save();
+
+    // Получаем экземпляр Socket.IO из объекта запроса
+    const io = req.app.get('io');
+
+    // Отправляем уведомление об обновлении сессии
+    notifySessionUpdated(io, sessionId, session);
+
+    res.json({
+      message: 'Ссылка на видеозвонок успешно сгенерирована и сохранена',
+      videoLink: session.videoLink,
+      session,
+    });
+  } catch (error) {
+    console.error('Ошибка при генерации ссылки на видеозвонок:', error);
+    res.status(500).json({
+      message: 'Ошибка сервера при генерации ссылки на видеозвонок',
       details: error.message,
     });
   }

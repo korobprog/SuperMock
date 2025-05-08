@@ -62,7 +62,11 @@ function RoleSelector({ session, onRoleSelect, disabled = false }) {
                   <span className="ml-2 text-sm text-red-500">(занято)</span>
                 )}
                 <p className="text-xs text-gray-500 mt-1">
-                  Проводит собеседование и задает вопросы
+                  Проводит собеседование и задает вопросы.
+                  <span className="text-indigo-600 font-medium">
+                    {' '}
+                    Может генерировать ссылки на видеозвонки Google Meet.
+                  </span>
                 </p>
               </div>
             </label>

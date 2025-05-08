@@ -86,6 +86,33 @@ function SessionCreate({ token, onSessionCreated }) {
               placeholder="https://meet.google.com/..."
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
+            <div className="mt-1 text-xs text-gray-500 space-y-1">
+              <p>
+                <span className="font-medium">
+                  Это поле можно оставить пустым.
+                </span>{' '}
+                Ссылка на видеозвонок может быть сгенерирована позже.
+              </p>
+              <p>Правила использования:</p>
+              <ul className="list-disc pl-5">
+                <li>
+                  Если поле оставлено пустым, вы сможете сгенерировать ссылку на
+                  Google Meet после присоединения к сессии в роли интервьюера
+                </li>
+                <li>
+                  Если у вас уже есть ссылка на Google Meet, вы можете указать
+                  её здесь
+                </li>
+                <li>
+                  Ссылка должна быть в формате
+                  https://meet.google.com/xxx-xxxx-xxx
+                </li>
+                <li>
+                  Кнопка для генерации ссылки появится только в списке сессий и
+                  только для пользователя в роли интервьюера
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div>
