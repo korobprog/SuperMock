@@ -21,15 +21,16 @@ export const SocketProvider = ({ children, token }) => {
     }
 
     // Создаем новое соединение с сервером
-    const socketInstance = io('http://localhost:3000', {
+    const socketInstance = io('http://localhost:9877', {
       auth: { token },
-      transports: ['websocket', 'polling'],
+      transports: ['polling'], // Используем только polling транспорт
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: maxReconnectAttempts,
       reconnectionDelay: reconnectDelay,
       reconnectionDelayMax: reconnectDelay * 2,
-      timeout: 10000,
+      timeout: 20000, // Увеличиваем таймаут до 20 секунд
+      forceNew: true, // Принудительно создаем новое соединение
     });
 
     // Обработчики событий Socket.IO

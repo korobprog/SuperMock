@@ -1,13 +1,28 @@
-const jwt = require('jsonwebtoken');
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { InMemoryUser } from '../models/InMemoryUser';
+
+// Расширяем интерфейс User для добавления наших полей
+declare global {
+  namespace Express {
+    // Расширяем существующий интерфейс User из @types/passport
+    interface User {
+      id: string;
+      googleId?: string;
+      [key: string]: any;
+    }
+  }
+}
 
 // Секретный ключ для JWT
-const JWT_SECRET = process.env.JWT_SECRET || 'mock_interview_secret_key';
-
-// Импортируем модель пользователя
-const InMemoryUser = require('../models/InMemoryUser');
+export const JWT_SECRET = process.env.JWT_SECRET || 'mock_interview_secret_key';
 
 // Middleware для проверки JWT-токена
-const auth = async (req, res, next) => {
+export const auth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   console.log('Middleware auth: Проверка токена');
   console.log('Заголовки запроса:', req.headers);
 
@@ -18,9 +33,8 @@ const auth = async (req, res, next) => {
   // Проверяем наличие токена
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     console.log('Токен не предоставлен или неверный формат');
-    return res
-      .status(401)
-      .json({ message: 'Доступ запрещен. Токен не предоставлен' });
+    res.status(401).json({ message: 'Доступ запрещен. Токен не предоставлен' });
+    return;
   }
 
   // Извлекаем токен из заголовка
@@ -32,7 +46,7 @@ const auth = async (req, res, next) => {
 
   try {
     // Верифицируем токен
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET) as { user: { id: string } };
     console.log('Токен успешно верифицирован');
     console.log('Данные пользователя:', decoded.user);
 
@@ -65,12 +79,7 @@ const auth = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Ошибка верификации токена:', error.message);
+    console.error('Ошибка верификации токена:', (error as Error).message);
     res.status(401).json({ message: 'Недействительный токен' });
   }
-};
-
-module.exports = {
-  auth,
-  JWT_SECRET,
 };

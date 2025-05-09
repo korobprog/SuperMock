@@ -1,11 +1,64 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function SessionCreate({ token, onSessionCreated }) {
   const [videoLink, setVideoLink] = useState('');
-  const [startTime, setStartTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [dateError, setDateError] = useState('');
+
+  // Функция для форматирования даты в формат YYYY-MM-DD
+  const formatDateForDateInput = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Функция для форматирования времени в формат HH:MM
+  const formatTimeForTimeInput = (date) => {
+    const hours = String(date.getHours()).padStart(2, '0');
+
+    // Округляем минуты до ближайших 10 минут
+    let minutes = Math.ceil(date.getMinutes() / 10) * 10;
+    if (minutes === 60) {
+      minutes = 0;
+      // Не изменяем часы здесь, так как это может привести к проблемам с датой
+    }
+    minutes = String(minutes).padStart(2, '0');
+
+    return `${hours}:${minutes}`;
+  };
+
+  // Функция для объединения даты и времени
+  const combineDateAndTime = (dateString, timeString) => {
+    if (!dateString || !timeString) return '';
+
+    const [year, month, day] = dateString.split('-');
+    const [hours, minutes] = timeString.split(':');
+
+    const date = new Date(year, month - 1, day, hours, minutes, 0, 0);
+    return date;
+  };
+
+  // Состояния для отдельных полей даты и времени
+  const [dateValue, setDateValue] = useState('');
+  const [timeValue, setTimeValue] = useState('');
+
+  // Инициализация dateValue и timeValue с минимальной допустимой датой при загрузке компонента
+  useEffect(() => {
+    const minDate = new Date();
+    minDate.setHours(minDate.getHours() + 2);
+    setDateValue(formatDateForDateInput(minDate));
+    setTimeValue(formatTimeForTimeInput(minDate));
+  }, []);
+
+  // Функция для получения минимальной допустимой даты
+  const getMinDate = () => {
+    const minDate = new Date();
+    minDate.setHours(minDate.getHours() + 2);
+    return minDate;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,9 +75,30 @@ function SessionCreate({ token, onSessionCreated }) {
         },
         body: JSON.stringify({
           videoLink,
-          startTime: startTime
-            ? new Date(startTime).toISOString()
-            : new Date().toISOString(),
+          startTime:
+            dateValue && timeValue
+              ? (() => {
+                  // Создаем новую дату из выбранной даты и времени
+                  const date = combineDateAndTime(dateValue, timeValue);
+                  // Обнуляем секунды и миллисекунды
+                  date.setSeconds(0, 0);
+                  return date.toISOString();
+                })()
+              : (() => {
+                  // Создаем новую дату из текущего времени
+                  const date = new Date();
+                  // Обнуляем секунды и миллисекунды
+                  date.setSeconds(0, 0);
+                  // Округляем минуты до ближайших 10 минут
+                  const minutes = Math.ceil(date.getMinutes() / 10) * 10;
+                  if (minutes === 60) {
+                    date.setMinutes(0);
+                    date.setHours(date.getHours() + 1);
+                  } else {
+                    date.setMinutes(minutes);
+                  }
+                  return date.toISOString();
+                })(),
         }),
       });
 
@@ -36,7 +110,8 @@ function SessionCreate({ token, onSessionCreated }) {
       const sessionData = await response.json();
       setSuccess(true);
       setVideoLink('');
-      setStartTime('');
+      setDateValue('');
+      setTimeValue('');
 
       // Вызываем функцию обратного вызова с данными новой сессии
       if (onSessionCreated) {
@@ -122,13 +197,110 @@ function SessionCreate({ token, onSessionCreated }) {
             >
               Время начала:
             </label>
-            <input
-              type="datetime-local"
-              id="startTime"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="dateValue"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Дата:
+                </label>
+                <input
+                  type="date"
+                  id="dateValue"
+                  value={dateValue}
+                  onChange={(e) => {
+                    const newDateValue = e.target.value;
+                    setDateValue(newDateValue);
+
+                    // Проверяем, что выбранная дата и время валидны
+                    if (newDateValue && timeValue) {
+                      const selectedDate = combineDateAndTime(
+                        newDateValue,
+                        timeValue
+                      );
+                      const minDate = getMinDate();
+
+                      // Если выбранная дата меньше минимальной, показываем ошибку и устанавливаем минимальную
+                      if (selectedDate < minDate) {
+                        setDateError(
+                          'Нельзя выбрать дату и время в прошлом. Минимальное время: текущее + 2 часа'
+                        );
+                        setDateValue(formatDateForDateInput(minDate));
+                        setTimeValue(formatTimeForTimeInput(minDate));
+                      } else {
+                        setDateError('');
+                      }
+                    }
+                  }}
+                  min={formatDateForDateInput(getMinDate())}
+                  className={`w-full px-3 py-2 border ${
+                    dateError ? 'border-red-500' : 'border-gray-300'
+                  } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="timeValue"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Время:
+                </label>
+                <input
+                  type="time"
+                  id="timeValue"
+                  value={timeValue}
+                  onChange={(e) => {
+                    const newTimeValue = e.target.value;
+                    setTimeValue(newTimeValue);
+
+                    // Проверяем, что выбранная дата и время валидны
+                    if (dateValue && newTimeValue) {
+                      const selectedDate = combineDateAndTime(
+                        dateValue,
+                        newTimeValue
+                      );
+                      const minDate = getMinDate();
+
+                      // Если выбранная дата меньше минимальной, показываем ошибку и устанавливаем минимальную
+                      if (selectedDate < minDate) {
+                        setDateError(
+                          'Нельзя выбрать дату и время в прошлом. Минимальное время: текущее + 2 часа'
+                        );
+                        setDateValue(formatDateForDateInput(minDate));
+                        setTimeValue(formatTimeForTimeInput(minDate));
+                      } else {
+                        setDateError('');
+
+                        // Округляем минуты выбранного времени до ближайших 10 минут
+                        const [hours, minutes] = newTimeValue
+                          .split(':')
+                          .map(Number);
+                        const roundedMinutes = Math.ceil(minutes / 10) * 10;
+                        if (roundedMinutes === 60) {
+                          setTimeValue(
+                            `${String(hours + 1).padStart(2, '0')}:00`
+                          );
+                        } else {
+                          setTimeValue(
+                            `${String(hours).padStart(2, '0')}:${String(
+                              roundedMinutes
+                            ).padStart(2, '0')}`
+                          );
+                        }
+                      }
+                    }
+                  }}
+                  step="600" // Шаг в 10 минут (600 секунд)
+                  className={`w-full px-3 py-2 border ${
+                    dateError ? 'border-red-500' : 'border-gray-300'
+                  } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                />
+              </div>
+            </div>
+            {dateError && (
+              <p className="mt-1 text-xs text-red-600">{dateError}</p>
+            )}
             <p className="mt-1 text-xs text-gray-500">
               Если не указано, будет использовано текущее время
             </p>

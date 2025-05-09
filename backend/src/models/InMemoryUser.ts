@@ -1,27 +1,62 @@
-// Простая модель пользователя для хранения в памяти
-const bcrypt = require('bcrypt');
-const crypto = require('crypto');
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+
+// Интерфейс для данных пользователя
+export interface UserData {
+  email: string;
+  password: string;
+  roleHistory?: RoleHistoryItem[];
+  feedbackStatus?: 'none' | 'pending' | 'completed';
+  googleId?: string;
+  googleAccessToken?: string;
+  googleRefreshToken?: string;
+}
+
+// Интерфейс для элемента истории ролей
+export interface RoleHistoryItem {
+  sessionId: string;
+  role: string;
+  timestamp: Date;
+}
+
+// Интерфейс для запроса поиска
+export interface UserQuery {
+  email: string;
+}
 
 // Хранилище пользователей в памяти
-const users = [];
+const users: InMemoryUser[] = [];
 
-class InMemoryUser {
-  constructor(userData) {
+export class InMemoryUser {
+  id: string;
+  email: string;
+  password: string;
+  roleHistory: RoleHistoryItem[];
+  feedbackStatus: 'none' | 'pending' | 'completed';
+  createdAt: Date;
+  googleId?: string;
+  googleAccessToken?: string;
+  googleRefreshToken?: string;
+
+  constructor(userData: UserData) {
     this.id = crypto.randomUUID();
     this.email = userData.email;
     this.password = userData.password;
     this.roleHistory = userData.roleHistory || [];
     this.feedbackStatus = userData.feedbackStatus || 'none'; // none, pending, completed
     this.createdAt = new Date();
+    this.googleId = userData.googleId;
+    this.googleAccessToken = userData.googleAccessToken;
+    this.googleRefreshToken = userData.googleRefreshToken;
   }
 
   // Статический метод для поиска пользователя по email
-  static async findOne(query) {
-    return users.find((user) => user.email === query.email);
+  static async findOne(query: UserQuery): Promise<InMemoryUser | null> {
+    return users.find((user) => user.email === query.email) || null;
   }
 
   // Статический метод для поиска пользователя по id
-  static async findById(id) {
+  static async findById(id: string): Promise<InMemoryUser | null> {
     const user = users.find((user) => user.id === id);
     if (!user) return null;
 
@@ -30,6 +65,7 @@ class InMemoryUser {
       email: user.email,
       password: user.password,
       roleHistory: user.roleHistory || [],
+      feedbackStatus: user.feedbackStatus,
     });
 
     // Копируем id и другие поля из найденного пользователя
@@ -37,20 +73,21 @@ class InMemoryUser {
     userInstance.createdAt = user.createdAt;
 
     // Добавляем метод select для поддержки цепочки вызовов
-    userInstance.select = (fields) => {
+    (userInstance as any).select = (fields: string) => {
       // Если поле начинается с '-', исключаем его из результата
       if (fields.startsWith('-')) {
         const fieldToExclude = fields.substring(1);
-        const { [fieldToExclude]: excluded, ...rest } = user;
+        const { [fieldToExclude as keyof typeof user]: excluded, ...rest } =
+          user;
         return rest;
       }
 
       // Иначе включаем только указанные поля
       const fieldList = fields.split(' ');
-      const result = {};
+      const result: Record<string, any> = {};
       fieldList.forEach((field) => {
-        if (user[field] !== undefined) {
-          result[field] = user[field];
+        if ((user as any)[field] !== undefined) {
+          result[field] = (user as any)[field];
         }
       });
       return result;
@@ -60,7 +97,7 @@ class InMemoryUser {
   }
 
   // Метод для сохранения пользователя
-  async save() {
+  async save(): Promise<InMemoryUser> {
     try {
       console.log('Сохранение пользователя:', this.id, this.email);
 
@@ -119,14 +156,14 @@ class InMemoryUser {
       return this;
     } catch (error) {
       console.error('Ошибка при сохранении пользователя:', error);
-      throw new Error(`Ошибка при сохранении пользователя: ${error.message}`);
+      throw new Error(
+        `Ошибка при сохранении пользователя: ${(error as Error).message}`
+      );
     }
   }
 
   // Метод для сравнения паролей
-  async comparePassword(candidatePassword) {
+  async comparePassword(candidatePassword: string): Promise<boolean> {
     return bcrypt.compare(candidatePassword, this.password);
   }
 }
-
-module.exports = InMemoryUser;

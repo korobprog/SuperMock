@@ -1,107 +1,68 @@
-/**
- * Сервис для работы с Google Meet API
- *
- * В реальном проекте здесь должна быть настроена аутентификация с использованием
- * сервисного аккаунта Google Cloud Platform и соответствующих ключей.
- *
- * Документация: https://developers.google.com/meet/api/reference/rest
- */
-
 const { google } = require('googleapis');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 
-// Загрузка конфигурации из JSON-файла
-let GOOGLE_API_CONFIG;
-try {
-  const keyFilePath = path.join(
-    __dirname,
-    '../config/supermook-21c2050f93f8.json'
-  );
-  const keyFileContent = fs.readFileSync(keyFilePath, 'utf8');
-  const keyData = JSON.parse(keyFileContent);
+// Путь к файлу с ключом сервисного аккаунта
+const CREDENTIALS_PATH = path.join(__dirname, process.env.GOOGLE_KEY);
 
-  GOOGLE_API_CONFIG = {
-    clientEmail: keyData.client_email,
-    privateKey: keyData.private_key,
-    scopes: ['https://www.googleapis.com/auth/calendar'],
-  };
-
-  console.log('Google API ключ успешно загружен');
-} catch (error) {
-  console.error('Ошибка при загрузке Google API ключа:', error);
-  // Запасная конфигурация для разработки
-  GOOGLE_API_CONFIG = {
-    clientEmail: 'service-account@project-id.iam.gserviceaccount.com',
-    privateKey: 'your-private-key',
-    scopes: ['https://www.googleapis.com/auth/calendar'],
-  };
+// Проверяем наличие файла с ключом
+if (!fs.existsSync(CREDENTIALS_PATH)) {
+  console.error(`Файл с ключом не найден по пути: ${CREDENTIALS_PATH}`);
+  throw new Error('Файл с ключом сервисного аккаунта не найден');
 }
 
-/**
- * Инициализация клиента Google API
- * В реальном проекте здесь должна быть настройка аутентификации
- * с использованием сервисного аккаунта
- */
-function initializeGoogleClient() {
-  try {
-    // В реальном проекте здесь должна быть настройка JWT клиента
-    // с использованием сервисного аккаунта
-    const auth = new google.auth.JWT(
-      GOOGLE_API_CONFIG.clientEmail,
-      null,
-      GOOGLE_API_CONFIG.privateKey,
-      GOOGLE_API_CONFIG.scopes
-    );
+// Создаем JWT клиент с помощью ключа сервисного аккаунта
+const auth = new google.auth.GoogleAuth({
+  keyFile: CREDENTIALS_PATH,
+  scopes: ['https://www.googleapis.com/auth/calendar'],
+});
 
-    return google.calendar({ version: 'v3', auth });
-  } catch (error) {
-    console.error('Ошибка при инициализации Google API клиента:', error);
-    // В режиме имитации возвращаем null, чтобы использовать запасной вариант
-    return null;
-  }
-}
+// Создаем клиент для работы с Calendar API
+const calendar = google.calendar({ version: 'v3', auth });
 
 /**
- * Создание встречи в Google Meet
+ * Создает встречу в Google Meet через Calendar API
  * @param {Object} options - Параметры встречи
  * @param {string} options.summary - Название встречи
  * @param {Date} options.startTime - Время начала встречи
  * @param {number} options.durationMinutes - Продолжительность встречи в минутах
- * @returns {Promise<string>} - URL встречи в Google Meet
+ * @returns {Promise<string>} - Ссылка на Google Meet
  */
-async function createMeeting(options) {
+async function createMeeting({ summary, startTime, durationMinutes = 60 }) {
   try {
-    const calendar = initializeGoogleClient();
+    console.log('Создание встречи в Google Meet...');
+    console.log('Параметры:', { summary, startTime, durationMinutes });
 
-    // Если клиент не инициализирован (например, в режиме разработки),
-    // используем имитацию создания встречи
-    if (!calendar) {
-      console.log('Используется имитация создания встречи в Google Meet');
-      return generateMockMeetingUrl(options);
-    }
+    // Проверяем параметры
+    if (!summary) throw new Error('Не указано название встречи');
+    if (!startTime) throw new Error('Не указано время начала встречи');
+    if (!durationMinutes)
+      throw new Error('Не указана продолжительность встречи');
 
-    // Настройка параметров встречи
-    const startTime = options.startTime || new Date();
-    const endTime = new Date(startTime);
-    endTime.setMinutes(endTime.getMinutes() + (options.durationMinutes || 60));
+    // Преобразуем startTime в объект Date, если это строка
+    const startDateTime =
+      typeof startTime === 'string' ? new Date(startTime) : startTime;
 
-    // Создание события в календаре с включенной видеоконференцией
+    // Вычисляем время окончания встречи
+    const endDateTime = new Date(
+      startDateTime.getTime() + durationMinutes * 60000
+    );
+
+    // Создаем событие в календаре с конференцией
     const event = {
-      summary: options.summary || 'Собеседование',
+      summary,
       start: {
-        dateTime: startTime.toISOString(),
-        timeZone: 'UTC',
+        dateTime: startDateTime.toISOString(),
+        timeZone: 'Europe/Moscow',
       },
       end: {
-        dateTime: endTime.toISOString(),
-        timeZone: 'UTC',
+        dateTime: endDateTime.toISOString(),
+        timeZone: 'Europe/Moscow',
       },
       conferenceData: {
         createRequest: {
-          requestId: `${Date.now()}-${Math.random()
-            .toString(36)
-            .substring(2, 11)}`,
+          requestId: uuidv4(),
           conferenceSolutionKey: {
             type: 'hangoutsMeet',
           },
@@ -109,58 +70,119 @@ async function createMeeting(options) {
       },
     };
 
+    console.log('Создаваемое событие:', JSON.stringify(event, null, 2));
+
+    // Получаем ID календаря пользователя
+    const calendarId = 'primary';
+
+    // Создаем событие в календаре
     const response = await calendar.events.insert({
-      calendarId: 'primary',
+      calendarId,
       resource: event,
       conferenceDataVersion: 1,
     });
 
-    // Извлечение URL видеоконференции из ответа
-    const meetingUrl = response.data.conferenceData?.entryPoints?.find(
-      (entry) => entry.entryPointType === 'video'
+    console.log('Ответ от API:', JSON.stringify(response.data, null, 2));
+
+    // Получаем ссылку на Google Meet из ответа
+    const conferenceData = response.data.conferenceData;
+    const meetLink = conferenceData?.entryPoints?.find(
+      (entryPoint) => entryPoint.entryPointType === 'video'
     )?.uri;
 
-    if (!meetingUrl) {
-      throw new Error('Не удалось получить URL видеоконференции');
+    if (!meetLink) {
+      throw new Error(
+        'Не удалось получить ссылку на Google Meet из ответа API'
+      );
     }
 
-    return meetingUrl;
+    console.log('Создана ссылка на Google Meet:', meetLink);
+    return meetLink;
   } catch (error) {
     console.error('Ошибка при создании встречи в Google Meet:', error);
-    // В случае ошибки используем имитацию
-    return generateMockMeetingUrl(options);
+    console.error('Стек ошибки:', error.stack);
+
+    // Добавляем дополнительную информацию об ошибке
+    if (error.response) {
+      console.error('Ответ API:', JSON.stringify(error.response.data, null, 2));
+    }
+
+    throw error;
   }
 }
 
 /**
- * Генерация имитации URL для Google Meet
- * Используется, когда реальная интеграция с API недоступна
- * @param {Object} options - Параметры встречи
- * @returns {string} - Имитация URL встречи
+ * Проверяет валидность ссылки на Google Meet
+ * @param {string} url - Ссылка на Google Meet
+ * @returns {Promise<{isValid: boolean, message: string}>} - Результат проверки
  */
-function generateMockMeetingUrl(options) {
-  // Генерируем три группы случайных символов в формате xxx-xxxx-xxx
-  const part1 = Math.random().toString(36).substring(2, 5);
-  const part2 = Math.random().toString(36).substring(2, 6);
-  const part3 = Math.random().toString(36).substring(2, 5);
-  const meetingId = `${part1}-${part2}-${part3}`;
-  return `https://meet.google.com/${meetingId}`;
+async function isValidMeetUrl(url) {
+  try {
+    if (!url) {
+      return { isValid: false, message: 'Ссылка не указана' };
+    }
+
+    // Проверяем формат ссылки с помощью регулярного выражения
+    const meetRegex =
+      /^https:\/\/meet\.google\.com\/[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{3}$/;
+    if (!meetRegex.test(url)) {
+      return {
+        isValid: false,
+        message: 'Неверный формат ссылки Google Meet',
+      };
+    }
+
+    // Здесь можно добавить дополнительную проверку через API, если необходимо
+    // Например, проверить, существует ли встреча с таким ID
+
+    return { isValid: true, message: 'Ссылка валидна' };
+  } catch (error) {
+    console.error('Ошибка при проверке ссылки Google Meet:', error);
+    return {
+      isValid: false,
+      message: `Ошибка при проверке ссылки: ${error.message}`,
+    };
+  }
 }
 
 /**
- * Проверка валидности URL Google Meet
- * @param {string} url - URL для проверки
- * @returns {boolean} - true, если URL валиден
+ * Проверяет статус встречи Google Meet
+ * @param {string} url - Ссылка на Google Meet
+ * @returns {Promise<{status: string, message: string}>} - Статус встречи
  */
-function isValidMeetUrl(url) {
-  if (!url) return false;
+async function checkMeetingStatus(url) {
+  try {
+    if (!url) {
+      return { status: 'error', message: 'Ссылка не указана' };
+    }
 
-  // Проверка формата URL Google Meet
-  const meetRegex = /^https:\/\/meet\.google\.com\/[a-z0-9\-]+$/i;
-  return meetRegex.test(url);
+    // Извлекаем ID встречи из ссылки
+    const meetingId = url.split('/').pop();
+    // Проверяем формат ID встречи (xxx-xxxx-xxx)
+    const meetIdRegex = /^[a-z0-9]{3}-[a-z0-9]{4}-[a-z0-9]{3}$/;
+    if (!meetingId || !meetIdRegex.test(meetingId)) {
+      return {
+        status: 'error',
+        message: 'Неверный формат ссылки Google Meet',
+      };
+    }
+
+    // Здесь должна быть логика проверки статуса встречи через API
+    // Но Google Meet API не предоставляет прямой способ проверки статуса встречи
+    // Поэтому возвращаем статус на основе проверки формата ссылки
+
+    return { status: 'active', message: 'Встреча активна' };
+  } catch (error) {
+    console.error('Ошибка при проверке статуса встречи:', error);
+    return {
+      status: 'error',
+      message: `Ошибка при проверке статуса: ${error.message}`,
+    };
+  }
 }
 
 module.exports = {
   createMeeting,
   isValidMeetUrl,
+  checkMeetingStatus,
 };

@@ -1,10 +1,17 @@
-const socketIO = require('socket.io');
-const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('./middleware/auth');
+import { Server as SocketIOServer, Socket } from 'socket.io';
+import { Server as HttpServer } from 'http';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from './middleware/auth';
+
+// Типы для Redis адаптера
+interface RedisAdapter {
+  (pubClient: any, subClient: any): any;
+}
 
 // Проверяем наличие пакетов для Redis
-let redisAdapter;
-let redis;
+let redisAdapter: RedisAdapter | undefined;
+let redis: any;
+
 try {
   redisAdapter = require('@socket.io/redis-adapter');
   redis = require('redis');
@@ -16,12 +23,17 @@ try {
   );
 }
 
+// Интерфейс для расширения Socket
+interface AuthenticatedSocket extends Socket {
+  userId: string;
+}
+
 // Хранилище активных соединений
-const activeConnections = new Map();
+const activeConnections = new Map<string, AuthenticatedSocket>();
 
 // Инициализация Socket.IO сервера
-function initializeWebSocket(server) {
-  const io = socketIO(server, {
+function initializeWebSocket(server: HttpServer): SocketIOServer {
+  const io = new SocketIOServer(server, {
     cors: {
       origin: [
         'http://localhost:5173',
@@ -30,6 +42,8 @@ function initializeWebSocket(server) {
         'http://127.0.0.1:5174',
         'http://localhost:5175',
         'http://127.0.0.1:5175',
+        'http://localhost:5177',
+        'http://127.0.0.1:5177',
       ],
       methods: ['GET', 'POST'],
       credentials: true,
@@ -45,7 +59,7 @@ function initializeWebSocket(server) {
       if (useRedis) {
         // Получаем параметры подключения из переменных окружения или используем значения по умолчанию
         const redisHost = process.env.REDIS_HOST || 'localhost';
-        const redisPort = process.env.REDIS_PORT || 6379;
+        const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10);
         const redisPassword = process.env.REDIS_PASSWORD;
         const redisUrl = `redis://${
           redisPassword ? `:${redisPassword}@` : ''
@@ -59,7 +73,7 @@ function initializeWebSocket(server) {
         const pubClient = redis.createClient({
           url: redisUrl,
           socket: {
-            reconnectStrategy: (retries) => {
+            reconnectStrategy: (retries: number) => {
               // Максимум 3 попытки переподключения
               if (retries > 3) {
                 console.log(
@@ -90,32 +104,44 @@ function initializeWebSocket(server) {
               `Redis адаптер успешно подключен (${redisHost}:${redisPort})`
             );
           })
-          .catch((error) => {
+          .catch((error: Error) => {
             clearTimeout(connectTimeout);
             console.log(
               'Ошибка при подключении к Redis, используется стандартный адаптер Socket.IO'
             );
           });
 
-        // Обработка ошибок подключения к Redis
-        pubClient.on('error', (error) => {
-          // Логируем только первую ошибку для каждого клиента
-          if (!pubClient.hasLoggedError) {
-            console.log(
-              'Ошибка Redis pub клиента, используется стандартный адаптер Socket.IO'
-            );
-            pubClient.hasLoggedError = true;
-          }
-        });
+        // Расширяем интерфейс для клиентов Redis
+        interface RedisClientWithError
+          extends ReturnType<typeof redis.createClient> {
+          hasLoggedError?: boolean;
+        }
 
-        subClient.on('error', (error) => {
-          if (!subClient.hasLoggedError) {
-            console.log(
-              'Ошибка Redis sub клиента, используется стандартный адаптер Socket.IO'
-            );
-            subClient.hasLoggedError = true;
+        // Обработка ошибок подключения к Redis
+        (pubClient as RedisClientWithError).on(
+          'error',
+          (error: Error): void => {
+            // Логируем только первую ошибку для каждого клиента
+            if (!(pubClient as RedisClientWithError).hasLoggedError) {
+              console.log(
+                'Ошибка Redis pub клиента, используется стандартный адаптер Socket.IO'
+              );
+              (pubClient as RedisClientWithError).hasLoggedError = true;
+            }
           }
-        });
+        );
+
+        (subClient as RedisClientWithError).on(
+          'error',
+          (error: Error): void => {
+            if (!(subClient as RedisClientWithError).hasLoggedError) {
+              console.log(
+                'Ошибка Redis sub клиента, используется стандартный адаптер Socket.IO'
+              );
+              (subClient as RedisClientWithError).hasLoggedError = true;
+            }
+          }
+        );
       } else {
         console.log('Redis отключен в настройках (USE_REDIS != true)');
         console.log('Используется стандартный адаптер Socket.IO');
@@ -127,58 +153,63 @@ function initializeWebSocket(server) {
   }
 
   // Middleware для аутентификации WebSocket соединений
-  io.use((socket, next) => {
+  io.use((socket: Socket, next): void => {
     const token = socket.handshake.auth.token;
 
     if (!token) {
-      return next(new Error('Требуется аутентификация'));
+      next(new Error('Требуется аутентификация'));
+      return;
     }
 
     try {
       // Верифицируем JWT-токен
-      const decoded = jwt.verify(token, JWT_SECRET);
-      socket.userId = decoded.user.id;
+      const decoded = jwt.verify(token, JWT_SECRET) as { user: { id: string } };
+      (socket as AuthenticatedSocket).userId = decoded.user.id;
       next();
     } catch (error) {
-      console.error('Ошибка аутентификации WebSocket:', error.message);
+      console.error(
+        'Ошибка аутентификации WebSocket:',
+        (error as Error).message
+      );
       next(new Error('Недействительный токен'));
     }
   });
 
   // Обработка подключения клиента
-  io.on('connection', (socket) => {
+  io.on('connection', (socket: Socket): void => {
+    const authSocket = socket as AuthenticatedSocket;
     console.log(
-      `WebSocket подключение установлено: ${socket.id}, пользователь: ${socket.userId}`
+      `WebSocket подключение установлено: ${authSocket.id}, пользователь: ${authSocket.userId}`
     );
 
     // Сохраняем соединение в хранилище
-    activeConnections.set(socket.userId, socket);
+    activeConnections.set(authSocket.userId, authSocket);
 
     // Подписываем пользователя на личный канал
-    socket.join(`user:${socket.userId}`);
+    authSocket.join(`user:${authSocket.userId}`);
 
     // Обработка отключения клиента
-    socket.on('disconnect', () => {
+    authSocket.on('disconnect', (): void => {
       console.log(
-        `WebSocket отключен: ${socket.id}, пользователь: ${socket.userId}`
+        `WebSocket отключен: ${authSocket.id}, пользователь: ${authSocket.userId}`
       );
-      activeConnections.delete(socket.userId);
+      activeConnections.delete(authSocket.userId);
     });
 
     // Подписка на сессию
-    socket.on('join-session', (sessionId) => {
+    authSocket.on('join-session', (sessionId: string): void => {
       console.log(
-        `Пользователь ${socket.userId} подписался на сессию ${sessionId}`
+        `Пользователь ${authSocket.userId} подписался на сессию ${sessionId}`
       );
-      socket.join(`session:${sessionId}`);
+      authSocket.join(`session:${sessionId}`);
     });
 
     // Отписка от сессии
-    socket.on('leave-session', (sessionId) => {
+    authSocket.on('leave-session', (sessionId: string): void => {
       console.log(
-        `Пользователь ${socket.userId} отписался от сессии ${sessionId}`
+        `Пользователь ${authSocket.userId} отписался от сессии ${sessionId}`
       );
-      socket.leave(`session:${sessionId}`);
+      authSocket.leave(`session:${sessionId}`);
     });
   });
 
@@ -186,8 +217,18 @@ function initializeWebSocket(server) {
   return io;
 }
 
+// Интерфейс для сессии
+interface Session {
+  id: string;
+  [key: string]: any;
+}
+
 // Функция для отправки уведомления об обновлении сессии
-function notifySessionUpdated(io, sessionId, session) {
+function notifySessionUpdated(
+  io: SocketIOServer,
+  sessionId: string,
+  session: Session
+): void {
   io.to(`session:${sessionId}`).emit('session-updated', {
     sessionId,
     session,
@@ -195,7 +236,12 @@ function notifySessionUpdated(io, sessionId, session) {
 }
 
 // Функция для отправки уведомления о выборе роли
-function notifyRoleSelected(io, sessionId, userId, role) {
+function notifyRoleSelected(
+  io: SocketIOServer,
+  sessionId: string,
+  userId: string,
+  role: string
+): void {
   io.to(`session:${sessionId}`).emit('role-selected', {
     sessionId,
     userId,
@@ -204,20 +250,29 @@ function notifyRoleSelected(io, sessionId, userId, role) {
 }
 
 // Функция для отправки напоминания о необходимости заполнить форму обратной связи
-function notifyFeedbackRequired(io, userId, sessionId) {
+function notifyFeedbackRequired(
+  io: SocketIOServer,
+  userId: string,
+  sessionId: string
+): void {
   io.to(`user:${userId}`).emit('feedback-required', {
     sessionId,
   });
 }
 
+// Интерфейс для обновлений обратной связи
+interface FeedbackUpdates {
+  [key: string]: any;
+}
+
 // Функция для отправки уведомления об обновлении обратной связи
 function notifyFeedbackUpdated(
-  io,
-  sessionId,
-  feedbackId,
-  updates,
-  newFeedback = null
-) {
+  io: SocketIOServer,
+  sessionId: string,
+  feedbackId: string,
+  updates: FeedbackUpdates,
+  newFeedback: any = null
+): void {
   io.to(`session:${sessionId}`).emit('feedback-updated', {
     sessionId,
     feedbackId,
@@ -229,11 +284,11 @@ function notifyFeedbackUpdated(
 
 // Функция для отправки уведомления об обновлении статуса ссылки на видеозвонок
 function notifyVideoLinkStatusUpdated(
-  io,
-  sessionId,
-  videoLink,
-  videoLinkStatus
-) {
+  io: SocketIOServer,
+  sessionId: string,
+  videoLink: string,
+  videoLinkStatus: string
+): void {
   io.to(`session:${sessionId}`).emit('video-link-updated', {
     sessionId,
     videoLink,
@@ -242,7 +297,7 @@ function notifyVideoLinkStatusUpdated(
   });
 }
 
-module.exports = {
+export {
   initializeWebSocket,
   notifySessionUpdated,
   notifyRoleSelected,

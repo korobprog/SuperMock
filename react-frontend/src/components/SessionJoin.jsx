@@ -33,10 +33,50 @@ function SessionJoin({ token, session, onRoleSelected, onCancel }) {
           errorMessage += `: ${errorData.details}`;
         }
 
+        // Добавляем специальную обработку для ошибок, связанных с Google Meet
+        if (errorMessage.includes('Google Meet')) {
+          errorMessage +=
+            '. Пожалуйста, проверьте ссылку или создайте встречу вручную через интерфейс Google Meet.';
+        }
+
         throw new Error(errorMessage);
       }
 
       const data = await response.json();
+
+      // Если выбрана роль "Собеседующий", проверяем статус ссылки на видеозвонок
+      if (selectedRole === 'interviewer') {
+        try {
+          // Запрашиваем обновленное состояние сессии
+          const sessionResponse = await fetch(`/api/sessions/${session.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+            },
+          });
+
+          if (sessionResponse.ok) {
+            const sessionData = await sessionResponse.json();
+
+            // Обновляем данные сессии
+            if (sessionData.videoLinkStatus === 'active') {
+              console.log(
+                'Ссылка на видеозвонок сгенерирована автоматически:',
+                sessionData.videoLink
+              );
+              // Обновляем данные сессии с автоматически сгенерированной ссылкой
+              data.session = sessionData;
+            }
+          }
+        } catch (sessionError) {
+          console.error(
+            'Ошибка при получении обновленного состояния сессии:',
+            sessionError
+          );
+          // Не выбрасываем ошибку, так как основная операция выбора роли уже успешно выполнена
+        }
+      }
+
       setSuccess(true);
 
       // Вызываем функцию обратного вызова с данными обновленной сессии
@@ -72,7 +112,14 @@ function SessionJoin({ token, session, onRoleSelected, onCancel }) {
             <div>
               <p className="text-sm text-gray-500">Время начала:</p>
               <p className="font-medium">
-                {new Date(session.startTime).toLocaleString()}
+                {new Date(session.startTime).toLocaleString(undefined, {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false, // 24-часовой формат
+                })}
               </p>
             </div>
             {session.videoLink && (

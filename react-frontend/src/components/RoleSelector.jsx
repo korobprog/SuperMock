@@ -1,11 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function RoleSelector({ session, onRoleSelect, disabled = false }) {
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
   const [error, setError] = useState('');
 
+  // Проверяем, вошел ли пользователь через Google
+  useEffect(() => {
+    const checkGoogleAuth = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch('/api/user', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setIsGoogleUser(!!userData.googleId);
+        }
+      } catch (error) {
+        console.error('Ошибка при проверке Google аутентификации:', error);
+      }
+    };
+
+    checkGoogleAuth();
+  }, []);
+
   // Проверяем доступность ролей
-  const isInterviewerAvailable = !session.interviewerId;
+  const isInterviewerAvailable = !session.interviewerId && isGoogleUser;
+  const isInterviewerTaken = !!session.interviewerId; // Исправлено: роль занята, если есть interviewerId
   const isIntervieweeAvailable = !session.intervieweeId;
   // Наблюдателей может быть сколько угодно
 
@@ -58,7 +85,17 @@ function RoleSelector({ session, onRoleSelect, disabled = false }) {
               />
               <div className="ml-3">
                 <span className="font-medium">Собеседующий</span>
-                {!isInterviewerAvailable && (
+                {!isGoogleUser && (
+                  <span className="ml-2 text-sm text-red-500">
+                    (требуется Google аккаунт)
+                  </span>
+                )}
+                {isGoogleUser && !isInterviewerTaken && (
+                  <span className="ml-2 text-sm text-green-500">
+                    (доступно)
+                  </span>
+                )}
+                {isInterviewerTaken && (
                   <span className="ml-2 text-sm text-red-500">(занято)</span>
                 )}
                 <p className="text-xs text-gray-500 mt-1">
@@ -68,6 +105,19 @@ function RoleSelector({ session, onRoleSelect, disabled = false }) {
                     Может генерировать ссылки на видеозвонки Google Meet.
                   </span>
                 </p>
+                {!isGoogleUser && (
+                  <p className="text-xs text-red-500 mt-1">
+                    <strong>Важно:</strong> Для выбора этой роли необходимо
+                    войти через Google аккаунт. Это требуется для доступа к API
+                    Google Meet.
+                    <a
+                      href="/api/auth/google"
+                      className="ml-1 text-blue-500 underline block mt-1"
+                    >
+                      Войти через Google
+                    </a>
+                  </p>
+                )}
               </div>
             </label>
 

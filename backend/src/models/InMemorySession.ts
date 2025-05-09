@@ -1,11 +1,33 @@
-// Простая модель сессии для хранения в памяти
-const crypto = require('crypto');
+import crypto from 'crypto';
+
+// Интерфейс для данных сессии
+export interface SessionData {
+  interviewerId?: string | null;
+  intervieweeId?: string | null;
+  observerIds?: string[];
+  videoLink?: string | null;
+  videoLinkStatus?: 'pending' | 'active' | 'manual' | 'expired';
+  status?: 'pending' | 'active' | 'completed';
+  startTime?: Date;
+  creatorId?: string;
+}
 
 // Хранилище сессий в памяти
-const sessions = [];
+const sessions: InMemorySession[] = [];
 
-class InMemorySession {
-  constructor(sessionData) {
+export class InMemorySession {
+  id: string;
+  interviewerId: string | null;
+  intervieweeId: string | null;
+  observerIds: string[];
+  videoLink: string | null;
+  videoLinkStatus: 'pending' | 'active' | 'manual' | 'expired';
+  status: 'pending' | 'active' | 'completed';
+  startTime: Date;
+  createdAt: Date;
+  creatorId?: string;
+
+  constructor(sessionData: SessionData) {
     this.id = crypto.randomUUID();
     this.interviewerId = sessionData.interviewerId || null;
     this.intervieweeId = sessionData.intervieweeId || null;
@@ -15,20 +37,23 @@ class InMemorySession {
     this.status = sessionData.status || 'pending'; // pending, active, completed
     this.startTime = sessionData.startTime || new Date();
     this.createdAt = new Date();
+    this.creatorId = sessionData.creatorId;
   }
 
   // Статический метод для поиска всех сессий
-  static async find() {
+  static async find(): Promise<InMemorySession[]> {
     return [...sessions];
   }
 
   // Статический метод для поиска сессии по id
-  static async findById(id) {
-    return sessions.find((session) => session.id === id);
+  static async findById(id: string): Promise<InMemorySession | null> {
+    return sessions.find((session) => session.id === id) || null;
   }
 
   // Статический метод для поиска последней сессии, где пользователь был интервьюером
-  static async findLastSessionAsInterviewer(userId) {
+  static async findLastSessionAsInterviewer(
+    userId: string
+  ): Promise<InMemorySession | null> {
     try {
       if (!userId) {
         console.error('findLastSessionAsInterviewer: userId не определен');
@@ -37,19 +62,26 @@ class InMemorySession {
 
       // Сортируем сессии по дате создания (от новых к старым)
       const sortedSessions = [...sessions].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
       // Находим первую сессию, где пользователь был интервьюером
-      return sortedSessions.find((session) => session.interviewerId === userId);
+      return (
+        sortedSessions.find((session) => session.interviewerId === userId) ||
+        null
+      );
     } catch (error) {
-      console.error('Ошибка в findLastSessionAsInterviewer:', error.message);
+      console.error(
+        'Ошибка в findLastSessionAsInterviewer:',
+        (error as Error).message
+      );
       return null;
     }
   }
 
   // Метод для сохранения сессии
-  async save() {
+  async save(): Promise<InMemorySession> {
     try {
       // Проверяем, существует ли сессия с таким id
       const existingSessionIndex = sessions.findIndex(
@@ -72,12 +104,17 @@ class InMemorySession {
       return this;
     } catch (error) {
       console.error('Ошибка при сохранении сессии:', error);
-      throw new Error(`Ошибка при сохранении сессии: ${error.message}`);
+      throw new Error(
+        `Ошибка при сохранении сессии: ${(error as Error).message}`
+      );
     }
   }
 
   // Метод для обновления роли пользователя в сессии
-  async assignRole(userId, role) {
+  async assignRole(
+    userId: string,
+    role: 'interviewer' | 'interviewee' | 'observer'
+  ): Promise<InMemorySession> {
     try {
       if (!userId) {
         throw new Error('userId не определен при назначении роли');
@@ -106,9 +143,9 @@ class InMemorySession {
       return this.save();
     } catch (error) {
       console.error('Ошибка в методе assignRole:', error);
-      throw new Error(`Ошибка при назначении роли: ${error.message}`);
+      throw new Error(
+        `Ошибка при назначении роли: ${(error as Error).message}`
+      );
     }
   }
 }
-
-module.exports = InMemorySession;
