@@ -47,6 +47,11 @@ app.use(
       'http://127.0.0.1:5175',
       'http://localhost:5177',
       'http://127.0.0.1:5177',
+      'http://localhost:5179',
+      'http://127.0.0.1:5179',
+      'http://localhost:5180',
+      'http://127.0.0.1:5180',
+      'http://localhost:5181',
     ], // Разрешаем запросы с Vite dev сервера
     credentials: true, // Разрешаем передачу куки и заголовков авторизации
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -70,7 +75,7 @@ app.get('/api', (req: Request, res: Response): void => {
 });
 
 // Подключаем маршруты
-app.use('/api', authRoutes);
+app.use('/api', authRoutes); // Этот маршрут также обрабатывает корневой URL '/' для Google OAuth
 app.use('/api/sessions', sessionRoutes);
 app.use('/api', feedbackRoutes);
 

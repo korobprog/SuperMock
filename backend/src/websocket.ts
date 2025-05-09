@@ -45,9 +45,13 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
         'http://localhost:5177',
         'http://127.0.0.1:5177',
       ],
-      methods: ['GET', 'POST'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       credentials: true,
+      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     },
+    // Добавляем явные настройки для транспорта
+    transports: ['polling', 'websocket'],
+    allowUpgrades: true,
   });
 
   // Настройка Redis адаптера, если доступен
@@ -155,8 +159,15 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
   // Middleware для аутентификации WebSocket соединений
   io.use((socket: Socket, next): void => {
     const token = socket.handshake.auth.token;
+    console.log(
+      'Получен токен для аутентификации WebSocket:',
+      token ? `${token.substring(0, 10)}...` : 'отсутствует'
+    );
+    console.log('Транспорт соединения:', socket.conn.transport.name);
+    console.log('Заголовки запроса:', socket.handshake.headers);
 
     if (!token) {
+      console.error('Ошибка: токен отсутствует');
       next(new Error('Требуется аутентификация'));
       return;
     }
@@ -164,6 +175,10 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
     try {
       // Верифицируем JWT-токен
       const decoded = jwt.verify(token, JWT_SECRET) as { user: { id: string } };
+      console.log(
+        'Токен успешно верифицирован для пользователя:',
+        decoded.user.id
+      );
       (socket as AuthenticatedSocket).userId = decoded.user.id;
       next();
     } catch (error) {

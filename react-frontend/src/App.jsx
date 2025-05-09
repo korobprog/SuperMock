@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import reactLogo from './assets/react.svg';
 import './App.css';
 import Register from './components/Register';
 import Login from './components/Login';
 import UserProfile from './components/UserProfile';
 import SessionManager from './components/SessionManager';
+import AuthCallback from './components/AuthCallback';
 import './components/Auth.css';
 
 function App() {
@@ -12,6 +14,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!token);
   const [activeTab, setActiveTab] = useState('login');
   const [apiData, setApiData] = useState('Загрузка данных...');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch('/api')
@@ -22,17 +25,41 @@ function App() {
       );
   }, []);
 
+  // Проверяем токен при изменении и в URL
+  useEffect(() => {
+    // Проверяем наличие токена в URL (для Google OAuth)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+
+    if (urlToken) {
+      // Сохраняем токен из URL в localStorage
+      localStorage.setItem('token', urlToken);
+      // Удаляем токен из URL для безопасности
+      navigate('/', { replace: true });
+      // Устанавливаем токен и статус аутентификации
+      setToken(urlToken);
+      setIsAuthenticated(true);
+    } else {
+      // Если токена в URL нет, проверяем localStorage
+      const storedToken = localStorage.getItem('token');
+      setToken(storedToken);
+      setIsAuthenticated(!!storedToken);
+    }
+  }, [navigate]);
+
   const handleLoginSuccess = (token) => {
     setToken(token);
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
     setToken(null);
     setIsAuthenticated(false);
+    navigate('/');
   };
 
-  return (
+  const MainContent = () => (
     <>
       <div>
         <a href="https://react.dev" target="_blank">
@@ -80,6 +107,14 @@ function App() {
         )}
       </div>
     </>
+  );
+
+  return (
+    <Routes>
+      <Route path="/" element={<MainContent />} />
+      <Route path="/auth-callback" element={<AuthCallback />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

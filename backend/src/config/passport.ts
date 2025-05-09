@@ -34,6 +34,14 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         console.log('Google OAuth профиль:', profile);
+        console.log(
+          'Google OAuth accessToken:',
+          accessToken ? 'Получен' : 'Отсутствует'
+        );
+        console.log(
+          'Google OAuth refreshToken:',
+          refreshToken ? 'Получен' : 'Отсутствует'
+        );
 
         // Получаем email из профиля или создаем временный
         const email =
@@ -41,8 +49,13 @@ passport.use(
             ? profile.emails[0].value
             : `google_${profile.id}@example.com`;
 
-        // Ищем пользователя по email
+        // Ищем пользователя по email или googleId
         let user = await InMemoryUser.findOne({ email });
+
+        // Если пользователь не найден по email, ищем по googleId
+        if (!user) {
+          user = await InMemoryUser.findByGoogleId(profile.id);
+        }
 
         if (user) {
           // Обновляем Google данные существующего пользователя

@@ -735,6 +735,7 @@ router.post(
           summary: `Mock Interview ${session.id}`,
           startTime: session.startTime,
           durationMinutes: 60, // Длительность по умолчанию - 60 минут
+          googleAccessToken: user.googleAccessToken, // Добавляем токен пользователя
         };
 
         try {
@@ -750,7 +751,6 @@ router.post(
           });
 
           // Генерируем новую ссылку на Google Meet с использованием googleAccessToken пользователя
-          // В реальной реализации здесь можно было бы передать googleAccessToken пользователя
           const videoLink = await createMeeting(meetingOptions);
 
           // Проверяем валидность новой ссылки

@@ -161,7 +161,7 @@ router.get('/user', auth, (async (req: Request, res: Response) => {
 }) as RequestHandler);
 
 // Маршрут для инициирования Google OAuth
-// GET /api/auth/google
+// GET /auth/google
 router.get(
   '/auth/google',
   passport.authenticate('google', {
@@ -175,7 +175,7 @@ router.get(
 );
 
 // Маршрут для обработки обратного вызова Google OAuth
-// GET /api/auth/google/callback
+// GET /google/callback
 router.get(
   '/auth/google/callback',
   passport.authenticate('google', { session: false }),
@@ -194,6 +194,7 @@ router.get(
         user: {
           id: user.id,
           googleId: user.googleId,
+          googleAccessToken: user.googleAccessToken,
         },
       };
 
@@ -205,7 +206,8 @@ router.get(
         }
 
         // Перенаправляем пользователя на фронтенд с токеном
-        res.redirect(`http://localhost:5173/auth-callback?token=${token}`);
+        // Используем порт 5174, на котором запущен фронтенд
+        res.redirect(`http://localhost:5174/auth-callback?token=${token}`);
       });
     } catch (error) {
       console.error('Ошибка при обработке Google OAuth callback:', error);

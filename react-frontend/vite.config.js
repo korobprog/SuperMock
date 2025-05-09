@@ -13,5 +13,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, '/api'),
       },
     },
+    // Добавляем настройку для обработки истории (SPA routing)
+    historyApiFallback: true,
   },
 });

@@ -23,28 +23,44 @@ export const SocketProvider = ({ children, token }) => {
     // Создаем новое соединение с сервером
     const socketInstance = io('http://localhost:9877', {
       auth: { token },
-      transports: ['polling'], // Используем только polling транспорт
+      transports: ['polling', 'websocket'], // Поддержка обоих транспортов
+      upgrade: true, // Разрешаем обновление до WebSocket
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: maxReconnectAttempts,
       reconnectionDelay: reconnectDelay,
       reconnectionDelayMax: reconnectDelay * 2,
-      timeout: 20000, // Увеличиваем таймаут до 20 секунд
+      timeout: 30000, // Увеличиваем таймаут до 30 секунд
       forceNew: true, // Принудительно создаем новое соединение
     });
 
     // Обработчики событий Socket.IO
     socketInstance.on('connect', () => {
       console.log('WebSocket соединение установлено');
+      console.log(
+        'Используемый транспорт:',
+        socketInstance.io.engine?.transport?.name
+      );
       setConnected(true);
       setError(null);
       setReconnectAttempts(0); // Сбрасываем счетчик попыток при успешном подключении
     });
 
     socketInstance.on('connect_error', (err) => {
-      console.error('Ошибка подключения WebSocket:', err.message);
+      console.error('Ошибка подключения WebSocket:', err);
+      console.error('Сообщение ошибки:', err.message);
+      console.error('Данные ошибки:', err.data); // Может содержать дополнительную информацию
+      console.error(
+        'Текущий транспорт:',
+        socketInstance.io.engine?.transport?.name
+      );
+      console.error(
+        'Доступные транспорты:',
+        socketInstance.io.engine?.transports
+      );
+
       setConnected(false);
-      setError(err.message);
+      setError(`Ошибка подключения: ${err.message}`);
       setReconnectAttempts((prev) => prev + 1);
     });
 

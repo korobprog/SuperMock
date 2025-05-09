@@ -66,6 +66,8 @@ export const auth = async (
       const newUser = new InMemoryUser({
         email: `user_${req.user.id}@example.com`, // Временный email
         password: 'temporary_password', // Временный пароль
+        googleId: req.user.googleId,
+        googleAccessToken: req.user.googleAccessToken,
       });
 
       // Устанавливаем ID из токена

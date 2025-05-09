@@ -4,19 +4,68 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 // Путь к файлу с ключом сервисного аккаунта
-const CREDENTIALS_PATH = path.join(__dirname, process.env.GOOGLE_KEY);
+// Используем имя файла напрямую, так как переменные окружения могут не загружаться
+const keyFileName = 'supermook-21c2050f93f8.json';
+let CREDENTIALS_PATH = path.join(__dirname, keyFileName);
 
 // Проверяем наличие файла с ключом
 if (!fs.existsSync(CREDENTIALS_PATH)) {
   console.error(`Файл с ключом не найден по пути: ${CREDENTIALS_PATH}`);
-  throw new Error('Файл с ключом сервисного аккаунта не найден');
+  console.error('Проверяем наличие файла в других директориях...');
+
+  // Проверяем различные возможные пути к файлу с ключом
+  const possiblePaths = [
+    // Текущая директория
+    path.join(__dirname, keyFileName),
+    // Директория src/services
+    path.join(__dirname, '..', 'src', 'services', keyFileName),
+    // Корневая директория проекта
+    path.join(__dirname, '..', keyFileName),
+  ];
+
+  let found = false;
+  for (const filePath of possiblePaths) {
+    console.log(`Проверяем путь: ${filePath}`);
+    if (fs.existsSync(filePath)) {
+      console.log(`Файл с ключом найден по пути: ${filePath}`);
+      CREDENTIALS_PATH = filePath; // Обновляем путь к файлу
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    throw new Error('Файл с ключом сервисного аккаунта не найден');
+  }
 }
 
-// Создаем JWT клиент с помощью ключа сервисного аккаунта
-const auth = new google.auth.GoogleAuth({
-  keyFile: CREDENTIALS_PATH,
-  scopes: ['https://www.googleapis.com/auth/calendar'],
-});
+console.log(`Используем файл с ключом по пути: ${CREDENTIALS_PATH}`);
+
+// Загружаем данные сервисного аккаунта из файла
+const serviceAccount = require(CREDENTIALS_PATH);
+
+// Переменная для хранения email администратора или пользователя, от имени которого действует сервисный аккаунт
+// ВАЖНО: Замените 'admin@your-domain.com' на реальный email администратора вашего домена Google Workspace
+// Этот пользователь должен иметь доступ к календарю, в котором будут создаваться события
+const IMPERSONATED_USER_EMAIL =
+  process.env.GOOGLE_ADMIN_EMAIL || 'admin@your-domain.com';
+
+// ВАЖНО: Для работы с сервисным аккаунтом необходимо настроить делегирование домена в консоли администратора Google Workspace:
+// 1. Перейдите в консоль администратора Google Workspace (admin.google.com)
+// 2. Выберите "Безопасность" > "Управление доступом и данными" > "API-контроль"
+// 3. В разделе "Делегирование домена" нажмите "ДОБАВИТЬ НОВЫЙ"
+// 4. Введите ID клиента сервисного аккаунта (client_id из файла ключа)
+// 5. Добавьте скоп: https://www.googleapis.com/auth/calendar
+// 6. Нажмите "АВТОРИЗОВАТЬ"
+
+// Создаем JWT клиент с помощью ключа сервисного аккаунта и делегированием домена
+const auth = new google.auth.JWT(
+  serviceAccount.client_email,
+  null,
+  serviceAccount.private_key,
+  ['https://www.googleapis.com/auth/calendar'],
+  IMPERSONATED_USER_EMAIL // Email пользователя, от имени которого действует сервисный аккаунт
+);
 
 // Создаем клиент для работы с Calendar API
 const calendar = google.calendar({ version: 'v3', auth });
@@ -27,9 +76,15 @@ const calendar = google.calendar({ version: 'v3', auth });
  * @param {string} options.summary - Название встречи
  * @param {Date} options.startTime - Время начала встречи
  * @param {number} options.durationMinutes - Продолжительность встречи в минутах
+ * @param {string} options.googleAccessToken - Токен доступа пользователя Google (опционально)
  * @returns {Promise<string>} - Ссылка на Google Meet
  */
-async function createMeeting({ summary, startTime, durationMinutes = 60 }) {
+async function createMeeting({
+  summary,
+  startTime,
+  durationMinutes = 60,
+  googleAccessToken,
+}) {
   try {
     console.log('Создание встречи в Google Meet...');
     console.log('Параметры:', { summary, startTime, durationMinutes });
@@ -72,11 +127,28 @@ async function createMeeting({ summary, startTime, durationMinutes = 60 }) {
 
     console.log('Создаваемое событие:', JSON.stringify(event, null, 2));
 
-    // Получаем ID календаря пользователя
-    const calendarId = 'primary';
+    // Получаем ID календаря
+    // При использовании сервисного аккаунта с делегированием домена,
+    // calendarId должен быть email пользователя, от имени которого действует сервисный аккаунт
+    const calendarId = googleAccessToken ? 'primary' : IMPERSONATED_USER_EMAIL;
+
+    // Определяем, какой метод аутентификации использовать
+    let calendarClient;
+
+    if (googleAccessToken) {
+      // Используем токен пользователя для аутентификации
+      console.log('Используем токен пользователя для создания встречи');
+      const oauth2Client = new google.auth.OAuth2();
+      oauth2Client.setCredentials({ access_token: googleAccessToken });
+      calendarClient = google.calendar({ version: 'v3', auth: oauth2Client });
+    } else {
+      // Используем сервисный аккаунт как запасной вариант
+      console.log('Используем сервисный аккаунт для создания встречи');
+      calendarClient = calendar;
+    }
 
     // Создаем событие в календаре
-    const response = await calendar.events.insert({
+    const response = await calendarClient.events.insert({
       calendarId,
       resource: event,
       conferenceDataVersion: 1,
@@ -86,9 +158,16 @@ async function createMeeting({ summary, startTime, durationMinutes = 60 }) {
 
     // Получаем ссылку на Google Meet из ответа
     const conferenceData = response.data.conferenceData;
-    const meetLink = conferenceData?.entryPoints?.find(
-      (entryPoint) => entryPoint.entryPointType === 'video'
-    )?.uri;
+
+    // Сначала пробуем получить hangoutLink
+    let meetLink = response.data.hangoutLink;
+
+    // Если hangoutLink отсутствует, ищем в entryPoints
+    if (!meetLink) {
+      meetLink = conferenceData?.entryPoints?.find(
+        (entryPoint) => entryPoint.entryPointType === 'video'
+      )?.uri;
+    }
 
     if (!meetLink) {
       throw new Error(

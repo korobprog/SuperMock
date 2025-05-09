@@ -77,6 +77,20 @@ function UserProfile({ token, onLogout }) {
           {new Date(userData.createdAt).toLocaleString()}
         </p>
 
+        {/* Отображение статуса Google-аутентификации */}
+        <p className="text-white mb-2">
+          <strong className="text-blue-300">Google аккаунт:</strong>{' '}
+          {userData.googleId ? (
+            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+              Подключен
+            </span>
+          ) : (
+            <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+              Не подключен
+            </span>
+          )}
+        </p>
+
         {userData.roleHistory && userData.roleHistory.length > 0 && (
           <div className="mt-4">
             <p className="text-white mb-2">

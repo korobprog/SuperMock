@@ -55,6 +55,11 @@ export class InMemoryUser {
     return users.find((user) => user.email === query.email) || null;
   }
 
+  // Статический метод для поиска пользователя по googleId
+  static async findByGoogleId(googleId: string): Promise<InMemoryUser | null> {
+    return users.find((user) => user.googleId === googleId) || null;
+  }
+
   // Статический метод для поиска пользователя по id
   static async findById(id: string): Promise<InMemoryUser | null> {
     const user = users.find((user) => user.id === id);
@@ -66,6 +71,9 @@ export class InMemoryUser {
       password: user.password,
       roleHistory: user.roleHistory || [],
       feedbackStatus: user.feedbackStatus,
+      googleId: user.googleId,
+      googleAccessToken: user.googleAccessToken,
+      googleRefreshToken: user.googleRefreshToken,
     });
 
     // Копируем id и другие поля из найденного пользователя

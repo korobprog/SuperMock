@@ -77,11 +77,36 @@ if (!CREDENTIALS_PATH) {
 
 console.log('Используем файл с ключом по пути:', CREDENTIALS_PATH);
 
-// Создаем JWT клиент с помощью ключа сервисного аккаунта
-const auth = new google.auth.GoogleAuth({
-  keyFile: CREDENTIALS_PATH,
-  scopes: ['https://www.googleapis.com/auth/calendar'],
-});
+// Загружаем данные сервисного аккаунта из файла
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const serviceAccount = require(CREDENTIALS_PATH) as {
+  client_email: string;
+  private_key: string;
+  client_id: string;
+};
+
+// Переменная для хранения email администратора или пользователя, от имени которого действует сервисный аккаунт
+// ВАЖНО: Замените 'admin@your-domain.com' на реальный email администратора вашего домена Google Workspace
+// Этот пользователь должен иметь доступ к календарю, в котором будут создаваться события
+const IMPERSONATED_USER_EMAIL =
+  process.env.GOOGLE_ADMIN_EMAIL || 'korobprog@gmail.com';
+
+// ВАЖНО: Для работы с сервисным аккаунтом необходимо настроить делегирование домена в консоли администратора Google Workspace:
+// 1. Перейдите в консоль администратора Google Workspace (admin.google.com)
+// 2. Выберите "Безопасность" > "Управление доступом и данными" > "API-контроль"
+// 3. В разделе "Делегирование домена" нажмите "ДОБАВИТЬ НОВЫЙ"
+// 4. Введите ID клиента сервисного аккаунта (client_id из файла ключа)
+// 5. Добавьте скоп: https://www.googleapis.com/auth/calendar
+// 6. Нажмите "АВТОРИЗОВАТЬ"
+
+// Создаем JWT клиент с помощью ключа сервисного аккаунта и делегированием домена
+const auth = new google.auth.JWT(
+  serviceAccount.client_email,
+  undefined, // Используем undefined вместо null для TypeScript
+  serviceAccount.private_key,
+  ['https://www.googleapis.com/auth/calendar'],
+  IMPERSONATED_USER_EMAIL // Email пользователя, от имени которого действует сервисный аккаунт
+);
 
 // Создаем клиент для работы с Calendar API
 const calendar = google.calendar({ version: 'v3', auth });
@@ -139,8 +164,10 @@ export async function createMeeting({
 
     console.log('Создаваемое событие:', JSON.stringify(event, null, 2));
 
-    // Получаем ID календаря пользователя
-    const calendarId = 'primary';
+    // Получаем ID календаря
+    // При использовании сервисного аккаунта с делегированием домена,
+    // calendarId должен быть email пользователя, от имени которого действует сервисный аккаунт
+    const calendarId = googleAccessToken ? 'primary' : IMPERSONATED_USER_EMAIL;
 
     // Определяем, какой метод аутентификации использовать
     let calendarClient;
@@ -152,7 +179,7 @@ export async function createMeeting({
       oauth2Client.setCredentials({ access_token: googleAccessToken });
       calendarClient = google.calendar({ version: 'v3', auth: oauth2Client });
     } else {
-      // Используем сервисный аккаунт как запасной вариант
+      // Используем сервисный аккаунт с делегированием домена
       console.log('Используем сервисный аккаунт для создания встречи');
       calendarClient = calendar;
     }
