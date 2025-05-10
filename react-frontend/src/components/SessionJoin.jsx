@@ -33,10 +33,10 @@ function SessionJoin({ token, session, onRoleSelected, onCancel }) {
           errorMessage += `: ${errorData.details}`;
         }
 
-        // Добавляем специальную обработку для ошибок, связанных с Google Meet
-        if (errorMessage.includes('Google Meet')) {
+        // Добавляем специальную обработку для ошибок, связанных с Видео Чат
+        if (errorMessage.includes('Видео Чат')) {
           errorMessage +=
-            '. Пожалуйста, проверьте ссылку или создайте встречу вручную через интерфейс Google Meet.';
+            '. Пожалуйста, проверьте ссылку или создайте встречу вручную через интерфейс Видео Чат.';
         }
 
         throw new Error(errorMessage);

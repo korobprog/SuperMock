@@ -1,9 +1,11 @@
 ### Задача
-Обнови функционал видеоинтеграции для приложения тренировочных собеседований. Вместо Google Meet реализуй поддержку вставки ссылок на видео (YouTube, Vimeo, Zoom и т.д.) пользователями с ролью «Собеседующий», хранение ссылок в календаре (in-memory) и WebRTC-видеочат (до 4 участников, видео/аудио, демонстрация экрана, управление микрофоном/камерой). Используй React (Vite, TypeScript) для фронтенда и Node.js (TypeScript, WebSocket) для бэкенда. Данные хранятся в памяти (без базы данных). Уведомления через WebSocket включают ссылки на видео и возможность присоединиться.
+
+Обнови функционал видеоинтеграции для приложения тренировочных собеседований. Вместо Видео Чат реализуй поддержку вставки ссылок на видео (YouTube, Vimeo, Zoom и т.д.) пользователями с ролью «Собеседующий», хранение ссылок в календаре (in-memory) и WebRTC-видеочат (до 4 участников, видео/аудио, демонстрация экрана, управление микрофоном/камерой). Используй React (Vite, TypeScript) для фронтенда и Node.js (TypeScript, WebSocket) для бэкенда. Данные хранятся в памяти (без базы данных). Уведомления через WebSocket включают ссылки на видео и возможность присоединиться.
 
 ### Требования
 
 #### 1. Бэкенд (Node.js, TypeScript)
+
 - **Хранение данных**:
   - Создай in-memory хранилище (Map) для сеансов: `{ id: string, interviewerId: string | null, intervieweeId: string | null, observerIds: string[], videoLink: string | null, videoLinkStatus: 'active' | 'pending' | 'manual', startTime: Date, creatorId: string }`.
   - Создай in-memory календарь (Map) для встреч: `{ sessionId: string, videoLink: string | null, startTime: Date, participants: string[] }`.
@@ -48,6 +50,7 @@
   - События: `sessionCreated`, `roleSelected`, `videoLinkUpdated`, `webrtc-offer`, `webrtc-answer`, `webrtc-ice`.
 
 #### 2. Фронтенд (React, Vite, TypeScript)
+
 - **Настройка**:
   - Используй Vite с TypeScript и React.
   - Подключи Tailwind CSS через `npm`.

@@ -747,7 +747,7 @@ router.post(
         } else {
           // Если ссылка не прошла валидацию, возвращаем ошибку
           res.status(400).json({
-            message: 'Неверный формат ссылки Google Meet',
+            message: 'Неверный формат ссылки Видео Чат',
             details: validationResult.message,
           });
         }
@@ -1000,14 +1000,47 @@ router.get(
 // GET /api/sessions/:id
 router.get('/:id', auth, async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('=== Получен запрос GET /api/sessions/:id ===');
+    console.log('Параметры запроса:', req.params);
+    console.log('ID сессии из параметров:', req.params.id);
+    console.log('Заголовки запроса:', req.headers);
+    console.log('Пользователь из запроса:', req.user);
+
     const sessionId = req.params.id;
+    console.log('Используемый ID сессии:', sessionId);
+    console.log('Тип ID сессии:', typeof sessionId);
 
     // Получаем сессию по ID
+    console.log('Поиск сессии в хранилище...');
     const session = await InMemorySession.findById(sessionId);
+    console.log('Результат поиска сессии:', session ? 'Найдена' : 'Не найдена');
+
     if (!session) {
+      console.log(`Сессия с ID ${sessionId} не найдена в хранилище`);
+      console.log('Все доступные сессии:');
+      const allSessions = await InMemorySession.find();
+      console.log('Количество сессий в хранилище:', allSessions.length);
+      allSessions.forEach((s, index) => {
+        console.log(`Сессия ${index + 1}:`, {
+          id: s.id,
+          interviewerId: s.interviewerId,
+          intervieweeId: s.intervieweeId,
+          status: s.status,
+        });
+      });
+
       res.status(404).json({ message: 'Сессия не найдена' });
       return;
     }
+
+    console.log('Отправка данных сессии клиенту:', {
+      id: session.id,
+      interviewerId: session.interviewerId,
+      intervieweeId: session.intervieweeId,
+      status: session.status,
+      videoLink: session.videoLink,
+      videoLinkStatus: session.videoLinkStatus,
+    });
 
     res.json(session);
   } catch (error) {

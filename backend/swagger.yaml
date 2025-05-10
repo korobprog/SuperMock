@@ -432,7 +432,7 @@ paths:
   /sessions/{id}/video:
     post:
       summary: Генерация и сохранение ссылки на видеозвонок
-      description: Генерирует и сохраняет ссылку на Google Meet для сессии (только для интервьюера)
+      description: Генерирует и сохраняет ссылку на Видео Чат для сессии (только для интервьюера)
       parameters:
         - name: id
           in: path
@@ -449,7 +449,7 @@ paths:
               properties:
                 customVideoLink:
                   type: string
-                  description: Пользовательская ссылка на Google Meet (опционально)
+                  description: Пользовательская ссылка на Видео Чат (опционально)
       responses:
         '200':
           description: Успешная генерация и сохранение ссылки
@@ -467,7 +467,7 @@ paths:
                   session:
                     $ref: '#/components/schemas/Session'
         '400':
-          description: Некорректная ссылка на Google Meet
+          description: Некорректная ссылка на Видео Чат
           content:
             application/json:
               schema:

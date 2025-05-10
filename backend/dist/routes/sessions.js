@@ -1,38 +1,48 @@
-const express = require('express');
-const router = express.Router();
-const { auth } = require('../middleware/auth');
-const InMemorySession = require('../models/InMemorySession');
-const InMemoryUser = require('../models/InMemoryUser');
-const Session = require('../models/Session'); // Добавляем MongoDB модель
-const Log = require('../models/Log'); // Добавляем модель для логирования
-const {
-  notifySessionUpdated,
-  notifyRoleSelected,
-  notifyFeedbackRequired,
-  notifyVideoLinkStatusUpdated,
-} = require('../websocket');
-const {
-  createMeeting,
-  isValidMeetUrl,
-  checkMeetingStatus,
-} = require('../services/googleMeetService');
-
+'use strict';
+var __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
+Object.defineProperty(exports, '__esModule', { value: true });
+const express_1 = __importDefault(require('express'));
+const auth_1 = require('../middleware/auth');
+const InMemorySession_1 = require('../models/InMemorySession');
+const InMemoryUser_1 = require('../models/InMemoryUser');
+const InMemoryCalendar_1 = require('../models/InMemoryCalendar');
+const websocket_1 = require('../websocket');
+const webRTCService_1 = require('../services/webRTCService');
+// Заглушка для модели Log
+class LogModel {
+  constructor(data) {
+    this.sessionId = data.sessionId;
+    this.userId = data.userId;
+    this.action = data.action;
+    this.details = data.details;
+  }
+  async save() {
+    console.log('Логирование:', this.action, this.details);
+    return this;
+  }
+  static async create(data) {
+    const log = new LogModel(data);
+    return log.save();
+  }
+}
+const router = express_1.default.Router();
 // Флаг для переключения между InMemory и MongoDB
 const USE_MONGODB = process.env.USE_MONGODB === 'true';
-
 // Выбор модели в зависимости от флага
-const SessionModel = USE_MONGODB ? Session : InMemorySession;
-
+const SessionModel = InMemorySession_1.InMemorySession;
+const Log = LogModel;
 // Получение списка всех сессий
 // GET /api/sessions
-router.get('/', auth, async (req, res) => {
+router.get('/', auth_1.auth, async (req, res) => {
   try {
     console.log('Получен запрос на /api/sessions');
     console.log('Пользователь:', req.user);
-
-    const sessions = await InMemorySession.find();
+    const sessions = await InMemorySession_1.InMemorySession.find();
     console.log('Найдено сессий:', sessions.length);
-
     // Устанавливаем заголовок Content-Type явно
     res.setHeader('Content-Type', 'application/json');
     res.json(sessions);
@@ -41,57 +51,54 @@ router.get('/', auth, async (req, res) => {
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 });
-
 // Создание новой сессии
 // POST /api/sessions
-router.post('/', auth, async (req, res) => {
+router.post('/', auth_1.auth, async (req, res) => {
   try {
     const { videoLink, startTime } = req.body;
-    const userId = req.user.id;
-
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Пользователь не авторизован' });
+      return;
+    }
     // Проверка времени начала сессии
     const now = new Date();
     const minStartTime = new Date(now);
     minStartTime.setHours(minStartTime.getHours() + 2); // Минимум 2 часа вперед
-
     let sessionStartTime;
-
     if (startTime) {
       const requestedStartTime = new Date(startTime);
-
       // Проверяем, не находится ли запрошенное время в прошлом
       if (requestedStartTime < now) {
         console.warn(
           `Запрошенное время начала (${requestedStartTime.toISOString()}) находится в прошлом.`
         );
-        return res.status(400).json({
+        res.status(400).json({
           message: 'Невозможно создать сессию с временем начала в прошлом',
           suggestedStartTime: minStartTime.toISOString(),
         });
+        return;
       }
-
       // Проверяем, соответствует ли запрошенное время минимальному требованию (2 часа вперед)
       if (requestedStartTime < minStartTime) {
         console.warn(
           `Запрошенное время начала (${requestedStartTime.toISOString()}) меньше минимально допустимого.`
         );
-        return res.status(400).json({
+        res.status(400).json({
           message:
             'Время начала должно быть как минимум на 2 часа позже текущего времени',
           suggestedStartTime: minStartTime.toISOString(),
         });
+        return;
       }
-
       sessionStartTime = requestedStartTime;
     } else {
       // Если время не указано, используем минимальное допустимое время
       sessionStartTime = minStartTime;
     }
-
     console.log(
       `Создание сессии с временем начала: ${sessionStartTime.toISOString()}`
     );
-
     // Создаем новую сессию
     const session = new SessionModel({
       videoLink,
@@ -100,9 +107,16 @@ router.post('/', auth, async (req, res) => {
       creatorId: userId, // Добавляем ID создателя сессии
       videoLinkStatus: videoLink ? 'manual' : 'pending', // Если ссылка предоставлена, устанавливаем статус 'manual', иначе 'pending'
     });
-
     await session.save();
-
+    // Создаем запись в календаре
+    const calendarEntry = new InMemoryCalendar_1.InMemoryCalendarEntry({
+      sessionId: session.id,
+      videoLink: session.videoLink,
+      startTime: sessionStartTime,
+      participants: [userId], // Добавляем создателя как участника
+    });
+    await calendarEntry.save();
+    console.log(`Создана запись в календаре для сессии ${session.id}`);
     // Логируем создание сессии
     if (USE_MONGODB) {
       await new Log({
@@ -112,142 +126,159 @@ router.post('/', auth, async (req, res) => {
         details: { videoLink },
       }).save();
     }
-
     // Получаем экземпляр Socket.IO из объекта запроса
     const io = req.app.get('io');
-
     // Отправляем уведомление о создании новой сессии
-    notifySessionUpdated(io, session.id, session);
-
+    (0, websocket_1.notifySessionUpdated)(io, session.id, session);
     res.status(201).json(session);
   } catch (error) {
     console.error('Ошибка при создании сессии:', error.message);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 });
-
 // Выбор роли в сессии
 // POST /api/sessions/:id/roles
-router.post('/:id/roles', auth, async (req, res) => {
+router.post('/:id/roles', auth_1.auth, async (req, res) => {
   try {
     const { role } = req.body;
     const sessionId = req.params.id;
-    const userId = req.user.id;
-
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Пользователь не авторизован' });
+      return;
+    }
     console.log('Выбор роли для сессии:', sessionId);
     console.log('Пользователь ID:', userId);
     console.log('Выбранная роль:', role);
-
     // Проверяем, что роль указана корректно
     if (!['interviewer', 'interviewee', 'observer'].includes(role)) {
       console.log('Некорректная роль:', role);
-      return res.status(400).json({
+      res.status(400).json({
         message:
           'Некорректная роль. Допустимые значения: interviewer, interviewee, observer',
       });
+      return;
     }
-
     // Получаем сессию по ID
     const session = await SessionModel.findById(sessionId);
     console.log('Найдена сессия:', session ? 'Да' : 'Нет');
     if (!session) {
-      return res.status(404).json({ message: 'Сессия не найдена' });
+      res.status(404).json({ message: 'Сессия не найдена' });
+      return;
     }
-
     // Получаем пользователя
-    let user = await InMemoryUser.findById(userId);
+    let user = await InMemoryUser_1.InMemoryUser.findById(userId);
     console.log('Найден пользователь:', user ? 'Да' : 'Нет');
-
     // Если пользователь не найден, создаем его
     if (!user) {
       console.log(
         'Пользователь не найден в базе данных. Создаем нового пользователя.'
       );
-
       // Создаем нового пользователя с тем же ID
-      user = new InMemoryUser({
+      user = new InMemoryUser_1.InMemoryUser({
         email: `user_${userId}@example.com`, // Временный email
         password: 'temporary_password', // Временный пароль
       });
-
       // Устанавливаем ID из токена
       user.id = userId;
-
       // Сохраняем пользователя
       await user.save();
-
       console.log('Создан новый пользователь с ID:', userId);
     }
-
     // Проверяем статус обратной связи пользователя
     if (user.feedbackStatus === 'pending' && role !== 'observer') {
-      return res.status(403).json({
+      res.status(403).json({
         message:
           'Вы не можете выбрать эту роль, пока не заполните форму обратной связи',
       });
+      return;
     }
-
     // Проверяем ограничения для выбора роли
     try {
       if (role === 'interviewer') {
+        // Удалена проверка на вход через Google OAuth
         // Проверяем, был ли пользователь интервьюером в последней сессии
         const lastSession = await SessionModel.findLastSessionAsInterviewer(
           userId
         );
-
         console.log('Последняя сессия как интервьюер:', lastSession);
-
         if (lastSession) {
-          return res.status(400).json({
+          res.status(400).json({
             message:
               'Вы не можете выбрать роль интервьюера, так как были интервьюером в последней сессии',
           });
+          return;
         }
       }
     } catch (error) {
       console.error('Ошибка при проверке ограничений для выбора роли:', error);
-      return res.status(500).json({
+      res.status(500).json({
         message: 'Ошибка при проверке ограничений для выбора роли',
         details: error.message,
       });
+      return;
     }
-
     // Проверяем, не занята ли уже роль
     if (role === 'interviewer' && session.interviewerId) {
-      return res.status(400).json({ message: 'Роль Собеседующего уже занята' });
+      res.status(400).json({ message: 'Роль Собеседующего уже занята' });
+      return;
     }
-
     if (role === 'interviewee' && session.intervieweeId) {
-      return res.status(400).json({ message: 'Роль Отвечающего уже занята' });
+      res.status(400).json({ message: 'Роль Отвечающего уже занята' });
+      return;
     }
-
     // Получаем экземпляр Socket.IO из объекта запроса
     const io = req.app.get('io');
-
     // Если пользователь выбирает роль интервьюера и видеоссылка отсутствует или в статусе pending,
-    // автоматически генерируем ссылку через Видео Чат API
+    // автоматически генерируем ссылку через WebRTC сервис
     if (
       role === 'interviewer' &&
       (!session.videoLink || session.videoLinkStatus === 'pending')
     ) {
       // Определяем параметры встречи до блока try-catch
+      // Убедимся, что ID сессии включен в summary для использования в requestId
       const meetingOptions = {
         summary: `Mock Interview ${session.id}`,
         startTime: session.startTime,
         durationMinutes: 60, // Длительность по умолчанию - 60 минут
       };
-
       try {
-        // Генерируем новую ссылку на Видео Чат
-        const videoLink = await createMeeting(meetingOptions);
-
+        // Генерируем новую ссылку на WebRTC комнату
+        console.log('Создаем новую WebRTC комнату для сессии');
+        const videoLink = await (0, webRTCService_1.createMeeting)(
+          meetingOptions
+        );
         // Проверяем валидность новой ссылки
-        const validationResult = await isValidMeetUrl(videoLink);
-
+        const validationResult = await (0, webRTCService_1.isValidMeetUrl)(
+          videoLink
+        );
         if (validationResult.isValid) {
           session.videoLink = videoLink;
           session.videoLinkStatus = 'active';
-
+          // Обновляем запись в календаре
+          const calendarEntry =
+            await InMemoryCalendar_1.InMemoryCalendarEntry.findBySessionId(
+              sessionId
+            );
+          if (calendarEntry) {
+            await calendarEntry.updateVideoLink(videoLink);
+            console.log(
+              `Обновлена ссылка на видео в календаре для сессии ${sessionId}`
+            );
+          } else {
+            // Если запись в календаре не найдена, создаем новую
+            const newCalendarEntry =
+              new InMemoryCalendar_1.InMemoryCalendarEntry({
+                sessionId,
+                videoLink,
+                startTime: session.startTime,
+                participants: [userId],
+              });
+            await newCalendarEntry.save();
+            console.log(
+              `Создана новая запись в календаре для сессии ${sessionId} с видеоссылкой`
+            );
+          }
           // Логируем генерацию ссылки
           if (USE_MONGODB) {
             await new Log({
@@ -261,17 +292,19 @@ router.post('/:id/roles', auth, async (req, res) => {
               },
             }).save();
           }
-
           // Отправляем уведомление об обновлении ссылки на видеозвонок
-          notifyVideoLinkStatusUpdated(io, sessionId, videoLink, 'active');
-
+          (0, websocket_1.notifyVideoLinkStatusUpdated)(
+            io,
+            sessionId,
+            videoLink,
+            'active'
+          );
           console.log(
             `Автоматически сгенерирована валидная ссылка на видеозвонок: ${videoLink}`
           );
         } else {
           // Если ссылка не прошла валидацию, устанавливаем статус pending
           session.videoLinkStatus = 'pending';
-
           // Логируем неудачную попытку генерации ссылки
           if (USE_MONGODB) {
             await new Log({
@@ -286,7 +319,6 @@ router.post('/:id/roles', auth, async (req, res) => {
               },
             }).save();
           }
-
           console.warn(
             `Автоматически сгенерированная ссылка не прошла валидацию: ${validationResult.message}`
           );
@@ -297,23 +329,21 @@ router.post('/:id/roles', auth, async (req, res) => {
         );
         console.error('Ошибка при генерации видеоссылки:', error);
         console.error('Стек ошибки:', error.stack);
-
         // Логируем тип ошибки и её конструктор
         console.error('Тип ошибки:', error.constructor.name);
         console.error('Сообщение ошибки:', error.message);
-
         // Логируем все свойства ошибки для более полного анализа
         console.error('Все свойства ошибки:');
-        for (const prop in error) {
-          if (typeof error[prop] !== 'function') {
+        const errorObj = error;
+        for (const prop in errorObj) {
+          if (typeof errorObj[prop] !== 'function') {
             try {
-              console.error(`- ${prop}:`, JSON.stringify(error[prop]));
+              console.error(`- ${prop}:`, JSON.stringify(errorObj[prop]));
             } catch (e) {
               console.error(`- ${prop}: [Невозможно сериализовать]`);
             }
           }
         }
-
         // Логируем контекст, в котором произошла ошибка
         console.error('Контекст ошибки:');
         console.error('- ID сессии:', sessionId);
@@ -322,7 +352,6 @@ router.post('/:id/roles', auth, async (req, res) => {
           JSON.stringify(meetingOptions, null, 2)
         );
         console.error('- Выбранная роль:', role);
-
         // Логируем в базу данных информацию об ошибке
         if (USE_MONGODB) {
           try {
@@ -346,30 +375,47 @@ router.post('/:id/roles', auth, async (req, res) => {
             );
           }
         }
-
         // Устанавливаем статус pending, чтобы пользователь мог попробовать еще раз
         session.videoLinkStatus = 'pending';
         console.error('=== КОНЕЦ ОТЧЕТА ОБ ОШИБКЕ ===');
       }
     }
-
     // Назначаем роль пользователю в сессии
     await session.assignRole(userId, role);
-
+    // Обновляем запись в календаре - добавляем пользователя в список участников
+    const calendarEntry =
+      await InMemoryCalendar_1.InMemoryCalendarEntry.findBySessionId(sessionId);
+    if (calendarEntry) {
+      await calendarEntry.addParticipant(userId);
+      console.log(
+        `Пользователь ${userId} добавлен в календарь для сессии ${sessionId}`
+      );
+    } else {
+      // Если запись в календаре не найдена, создаем новую
+      const newCalendarEntry = new InMemoryCalendar_1.InMemoryCalendarEntry({
+        sessionId,
+        videoLink: session.videoLink,
+        startTime: session.startTime,
+        participants: [userId],
+      });
+      await newCalendarEntry.save();
+      console.log(`Создана новая запись в календаре для сессии ${sessionId}`);
+    }
+    // Если пользователь выбрал роль интервьюера, устанавливаем videoLinkStatus = active
+    if (role === 'interviewer' && session.videoLink) {
+      session.videoLinkStatus = 'active';
+    }
     // Отправляем уведомление о выборе роли
-    notifyRoleSelected(io, sessionId, userId, role);
-
+    (0, websocket_1.notifyRoleSelected)(io, sessionId, userId, role);
     // Если пользователь выбирает роль интервьюера или отвечающего,
     // устанавливаем статус обратной связи как "pending"
     if (role === 'interviewer' || role === 'interviewee') {
       user.feedbackStatus = 'pending';
     }
-
     // Обновляем историю ролей пользователя
     if (!user.roleHistory || !Array.isArray(user.roleHistory)) {
       user.roleHistory = [];
     }
-
     try {
       // Добавляем новую запись в историю ролей
       user.roleHistory.push({
@@ -379,17 +425,13 @@ router.post('/:id/roles', auth, async (req, res) => {
       });
     } catch (error) {
       console.error('Ошибка при обновлении истории ролей:', error.message);
-      return res
-        .status(500)
-        .json({ message: 'Ошибка при обновлении истории ролей' });
+      res.status(500).json({ message: 'Ошибка при обновлении истории ролей' });
+      return;
     }
-
     // Сохраняем пользователя
     await user.save();
-
     // Отправляем уведомление об обновлении сессии всем подписчикам
-    notifySessionUpdated(io, sessionId, session);
-
+    (0, websocket_1.notifySessionUpdated)(io, sessionId, session);
     res.json({
       message: 'Роль успешно назначена',
       session,
@@ -403,59 +445,64 @@ router.post('/:id/roles', auth, async (req, res) => {
     });
   }
 });
-
 // Изменение статуса сессии
 // PUT /api/sessions/:id/status
-router.put('/:id/status', auth, async (req, res) => {
+router.put('/:id/status', auth_1.auth, async (req, res) => {
   try {
     const sessionId = req.params.id;
     const { status } = req.body;
-    const userId = req.user.id;
-
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Пользователь не авторизован' });
+      return;
+    }
     // Проверяем, что статус указан корректно
     if (!['pending', 'active', 'completed'].includes(status)) {
-      return res.status(400).json({
+      res.status(400).json({
         message:
           'Некорректный статус. Допустимые значения: pending, active, completed',
       });
+      return;
     }
-
     // Получаем сессию по ID
-    const session = await InMemorySession.findById(sessionId);
+    const session = await InMemorySession_1.InMemorySession.findById(sessionId);
     if (!session) {
-      return res.status(404).json({ message: 'Сессия не найдена' });
+      res.status(404).json({ message: 'Сессия не найдена' });
+      return;
     }
-
     // Проверяем права доступа (только интервьюер может изменять статус)
     if (session.interviewerId !== userId) {
-      return res.status(403).json({
+      res.status(403).json({
         message: 'Только интервьюер может изменять статус сессии',
       });
+      return;
     }
-
     // Обновляем статус сессии
     session.status = status;
     await session.save();
-
     // Получаем экземпляр Socket.IO из объекта запроса
     const io = req.app.get('io');
-
     // Отправляем уведомление об изменении статуса сессии
-    notifySessionUpdated(io, sessionId, session);
-
+    (0, websocket_1.notifySessionUpdated)(io, sessionId, session);
     // Если статус изменен на "completed", отправляем напоминание о необходимости заполнить форму обратной связи
     if (status === 'completed') {
       // Отправляем напоминание интервьюеру
       if (session.interviewerId) {
-        notifyFeedbackRequired(io, session.interviewerId, sessionId);
+        (0, websocket_1.notifyFeedbackRequired)(
+          io,
+          session.interviewerId,
+          sessionId
+        );
       }
-
       // Отправляем напоминание отвечающему
       if (session.intervieweeId) {
-        notifyFeedbackRequired(io, session.intervieweeId, sessionId);
+        (0, websocket_1.notifyFeedbackRequired)(
+          io,
+          session.intervieweeId,
+          sessionId
+        );
       }
     }
-
     res.json({
       message: 'Статус сессии успешно обновлен',
       session,
@@ -468,19 +515,360 @@ router.put('/:id/status', auth, async (req, res) => {
     });
   }
 });
-
-// Получение информации о конкретной сессии
-// GET /api/sessions/:id
-router.get('/:id', auth, async (req, res) => {
+// Генерация или обновление ссылки на видеозвонок
+// POST /api/sessions/:id/video
+router.post('/:id/video', auth_1.auth, async (req, res) => {
   try {
     const sessionId = req.params.id;
-
-    // Получаем сессию по ID
-    const session = await InMemorySession.findById(sessionId);
-    if (!session) {
-      return res.status(404).json({ message: 'Сессия не найдена' });
+    const { manualLink } = req.body;
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Пользователь не авторизован' });
+      return;
     }
-
+    // Получаем сессию по ID
+    const session = await SessionModel.findById(sessionId);
+    if (!session) {
+      res.status(404).json({ message: 'Сессия не найдена' });
+      return;
+    }
+    // Получаем пользователя
+    const user = await InMemoryUser_1.InMemoryUser.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: 'Пользователь не найден' });
+      return;
+    }
+    // Проверяем, является ли пользователь интервьюером сессии
+    if (session.interviewerId !== userId) {
+      res.status(403).json({
+        message: 'Только интервьюер может управлять ссылкой на видеозвонок',
+      });
+      return;
+    }
+    // Удалена проверка на наличие googleId
+    // Если ссылка уже активна, возвращаем её
+    if (session.videoLinkStatus === 'active' && session.videoLink) {
+      // Логируем запрос на получение уже активной ссылки
+      await Log.create({
+        sessionId: session.id,
+        userId,
+        action: 'get_active_video_link',
+        details: {
+          videoLink: session.videoLink,
+          videoLinkStatus: session.videoLinkStatus,
+          timestamp: new Date(),
+        },
+      });
+      res.json({
+        message: 'Ссылка уже активна',
+        videoLink: session.videoLink,
+        videoLinkStatus: session.videoLinkStatus,
+      });
+      return;
+    }
+    // Если предоставлена ручная ссылка, проверяем ее валидность
+    if (manualLink) {
+      const validationResult = await (0, webRTCService_1.isValidMeetUrl)(
+        manualLink
+      );
+      if (validationResult.isValid) {
+        // Обновляем сессию с ручной ссылкой
+        session.videoLink = manualLink;
+        session.videoLinkStatus = 'manual';
+        await session.save();
+        // Обновляем запись в календаре
+        const calendarEntry =
+          await InMemoryCalendar_1.InMemoryCalendarEntry.findBySessionId(
+            sessionId
+          );
+        if (calendarEntry) {
+          await calendarEntry.updateVideoLink(manualLink);
+          console.log(
+            `Обновлена ссылка на видео в календаре для сессии ${sessionId}`
+          );
+        } else {
+          // Если запись в календаре не найдена, создаем новую
+          const newCalendarEntry = new InMemoryCalendar_1.InMemoryCalendarEntry(
+            {
+              sessionId,
+              videoLink: manualLink,
+              startTime: session.startTime,
+              participants: [userId],
+            }
+          );
+          await newCalendarEntry.save();
+          console.log(
+            `Создана новая запись в календаре для сессии ${sessionId} с видеоссылкой`
+          );
+        }
+        // Логируем добавление ручной ссылки
+        await Log.create({
+          sessionId: session.id,
+          userId,
+          action: 'add_manual_video_link',
+          details: {
+            videoLink: manualLink,
+            validationResult: 'valid',
+          },
+        });
+        // Отправляем уведомление об обновлении ссылки на видеозвонок
+        const io = req.app.get('io');
+        (0, websocket_1.notifyVideoLinkStatusUpdated)(
+          io,
+          sessionId,
+          manualLink,
+          'manual'
+        );
+        res.json({
+          message: 'Ссылка на видеозвонок успешно добавлена',
+          videoLink: manualLink,
+          videoLinkStatus: 'manual',
+        });
+      } else {
+        // Если ссылка не прошла валидацию, возвращаем ошибку
+        res.status(400).json({
+          message: 'Неверный формат ссылки Видео Чат',
+          details: validationResult.message,
+        });
+      }
+    } else {
+      // Если ручная ссылка не предоставлена, генерируем новую через WebRTC сервис
+      // Определяем параметры встречи
+      const meetingOptions = {
+        summary: `Mock Interview ${session.id}`,
+        startTime: session.startTime,
+        durationMinutes: 60, // Длительность по умолчанию - 60 минут
+      };
+      try {
+        // Логируем попытку генерации новой ссылки
+        await Log.create({
+          sessionId: session.id,
+          userId,
+          action: 'generate_video_link_attempt',
+          details: {
+            meetingOptions,
+            timestamp: new Date(),
+          },
+        });
+        // Генерируем новую ссылку на WebRTC комнату
+        const videoLink = await (0, webRTCService_1.createMeeting)(
+          meetingOptions
+        );
+        // Проверяем валидность новой ссылки
+        const validationResult = await (0, webRTCService_1.isValidMeetUrl)(
+          videoLink
+        );
+        if (validationResult.isValid) {
+          // Обновляем сессию с новой ссылкой
+          session.videoLink = videoLink;
+          session.videoLinkStatus = 'active';
+          await session.save();
+          // Обновляем запись в календаре
+          const calendarEntry =
+            await InMemoryCalendar_1.InMemoryCalendarEntry.findBySessionId(
+              sessionId
+            );
+          if (calendarEntry) {
+            await calendarEntry.updateVideoLink(videoLink);
+            console.log(
+              `Обновлена ссылка на видео в календаре для сессии ${sessionId}`
+            );
+          } else {
+            // Если запись в календаре не найдена, создаем новую
+            const newCalendarEntry =
+              new InMemoryCalendar_1.InMemoryCalendarEntry({
+                sessionId,
+                videoLink,
+                startTime: session.startTime,
+                participants: [userId],
+              });
+            await newCalendarEntry.save();
+            console.log(
+              `Создана новая запись в календаре для сессии ${sessionId} с видеоссылкой`
+            );
+          }
+          // Логируем генерацию ссылки
+          await Log.create({
+            sessionId: session.id,
+            userId,
+            action: 'generate_video_link',
+            details: {
+              videoLink,
+              validationResult: 'valid',
+            },
+          });
+          // Отправляем уведомление об обновлении ссылки на видеозвонок
+          const io = req.app.get('io');
+          (0, websocket_1.notifyVideoLinkStatusUpdated)(
+            io,
+            sessionId,
+            videoLink,
+            'active'
+          );
+          res.json({
+            message: 'Ссылка на WebRTC видеочат успешно сгенерирована',
+            videoLink,
+            videoLinkStatus: 'active',
+          });
+        } else {
+          // Если ссылка не прошла валидацию, возвращаем ошибку
+          res.status(400).json({
+            message:
+              'Сгенерированная ссылка на WebRTC комнату не прошла валидацию',
+            details: validationResult.message,
+          });
+        }
+      } catch (error) {
+        console.error('=== ОШИБКА ПРИ ГЕНЕРАЦИИ ВИДЕОССЫЛКИ ===');
+        console.error('Ошибка при генерации видеоссылки:', error);
+        console.error('Стек ошибки:', error.stack);
+        // Логируем тип ошибки и её конструктор
+        console.error('Тип ошибки:', error.constructor.name);
+        console.error('Сообщение ошибки:', error.message);
+        // Логируем все свойства ошибки для более полного анализа
+        console.error('Все свойства ошибки:');
+        const errorObj = error;
+        for (const prop in errorObj) {
+          if (typeof errorObj[prop] !== 'function') {
+            try {
+              console.error(`- ${prop}:`, JSON.stringify(errorObj[prop]));
+            } catch (e) {
+              console.error(`- ${prop}: [Невозможно сериализовать]`);
+            }
+          }
+        }
+        // Логируем контекст, в котором произошла ошибка
+        console.error('Контекст ошибки:');
+        console.error('- ID сессии:', sessionId);
+        console.error(
+          '- Параметры встречи:',
+          JSON.stringify(
+            {
+              summary: `Mock Interview ${session.id}`,
+              startTime: session.startTime,
+              durationMinutes: 60,
+            },
+            null,
+            2
+          )
+        );
+        // Логируем в базу данных информацию об ошибке
+        try {
+          await Log.create({
+            sessionId: session.id,
+            userId,
+            action: 'generate_video_link_error',
+            details: {
+              errorMessage: error.message,
+              errorType: error.constructor.name,
+              errorStack: error.stack,
+              meetingParams: {
+                summary: `Mock Interview ${session.id}`,
+                startTime: session.startTime,
+                durationMinutes: 60,
+              },
+            },
+          });
+          console.log('Информация об ошибке сохранена в логах');
+        } catch (logError) {
+          console.error(
+            'Ошибка при сохранении информации об ошибке в логах:',
+            logError
+          );
+        }
+        console.error('=== КОНЕЦ ОТЧЕТА ОБ ОШИБКЕ ===');
+        // Возвращаем ошибку клиенту
+        res.status(500).json({
+          message: 'Ошибка при генерации ссылки на WebRTC комнату',
+          details: error.message,
+        });
+      }
+    }
+  } catch (error) {
+    console.error(
+      'Ошибка при обработке запроса на генерацию видеоссылки:',
+      error
+    );
+    res.status(500).json({
+      message: 'Ошибка сервера при обработке запроса',
+      details: error.message,
+    });
+  }
+});
+// Получение информации о ссылке на видеозвонок
+// GET /api/sessions/:id/video
+router.get('/:id/video', auth_1.auth, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: 'Пользователь не авторизован' });
+      return;
+    }
+    // Получаем сессию по ID
+    const session = await SessionModel.findById(sessionId);
+    if (!session) {
+      res.status(404).json({ message: 'Сессия не найдена' });
+      return;
+    }
+    // Проверяем, является ли пользователь участником сессии
+    const isParticipant =
+      session.creatorId === userId ||
+      session.interviewerId === userId ||
+      session.intervieweeId === userId ||
+      (session.observerIds && session.observerIds.includes(userId));
+    if (!isParticipant) {
+      res.status(403).json({
+        message: 'У вас нет прав для просмотра ссылки на видеозвонок',
+      });
+      return;
+    }
+    // Логируем запрос на получение информации о ссылке
+    await Log.create({
+      sessionId: session.id,
+      userId,
+      action: 'get_video_link_info',
+      details: {
+        timestamp: new Date(),
+        videoLinkStatus: session.videoLinkStatus || 'pending',
+      },
+    });
+    // Если ссылка отсутствует или в статусе pending, возвращаем соответствующее сообщение
+    if (!session.videoLink || session.videoLinkStatus === 'pending') {
+      res.json({
+        message: 'Ссылка еще не сгенерирована',
+        videoLinkStatus: 'pending',
+      });
+      return;
+    }
+    // Возвращаем информацию о ссылке на видеозвонок
+    res.json({
+      videoLink: session.videoLink,
+      videoLinkStatus: session.videoLinkStatus,
+    });
+  } catch (error) {
+    console.error(
+      'Ошибка при получении информации о ссылке на видеозвонок:',
+      error
+    );
+    res.status(500).json({
+      message:
+        'Ошибка сервера при получении информации о ссылке на видеозвонок',
+      details: error.message,
+    });
+  }
+});
+// Получение информации о конкретной сессии
+// GET /api/sessions/:id
+router.get('/:id', auth_1.auth, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    // Получаем сессию по ID
+    const session = await InMemorySession_1.InMemorySession.findById(sessionId);
+    if (!session) {
+      res.status(404).json({ message: 'Сессия не найдена' });
+      return;
+    }
     res.json(session);
   } catch (error) {
     console.error('Ошибка при получении информации о сессии:', error);
@@ -490,392 +878,5 @@ router.get('/:id', auth, async (req, res) => {
     });
   }
 });
-
-// Генерация и сохранение ссылки на Видео Чат для сессии
-// POST /api/sessions/:id/video
-router.post('/:id/video', auth, async (req, res) => {
-  try {
-    const sessionId = req.params.id;
-    const userId = req.user.id;
-    const { manualLink } = req.body;
-
-    // Получаем сессию по ID
-    const session = await SessionModel.findById(sessionId);
-    if (!session) {
-      return res.status(404).json({ message: 'Сессия не найдена' });
-    }
-
-    // Проверяем права доступа (только Собеседующий может генерировать ссылку)
-    if (session.interviewerId !== userId) {
-      return res.status(403).json({
-        message: 'Только Собеседующий может сгенерировать ссылку',
-      });
-    }
-
-    // Логируем попытку изменения ссылки
-    if (USE_MONGODB) {
-      await new Log({
-        sessionId: session.id,
-        userId,
-        action: 'update_video_link',
-        details: {
-          previousLink: session.videoLink,
-          previousStatus: session.videoLinkStatus,
-          manualLinkProvided: !!manualLink,
-        },
-      }).save();
-    }
-
-    // Если ссылка уже существует и активна, возвращаем её без генерации новой
-    if (session.videoLink && session.videoLinkStatus === 'active') {
-      return res.json({
-        message: 'Ссылка уже активна',
-        videoLink: session.videoLink,
-        videoLinkStatus: session.videoLinkStatus,
-        session,
-      });
-    }
-
-    // Если передана manualLink, сохраняем её с статусом 'manual'
-    if (manualLink) {
-      // Проверяем, что ссылка имеет правильный формат и существует
-      try {
-        const validationResult = await isValidMeetUrl(manualLink);
-
-        if (!validationResult.isValid) {
-          return res.status(400).json({
-            message: `Некорректная ссылка на Видео Чат: ${validationResult.message}`,
-          });
-        }
-
-        session.videoLink = manualLink;
-        session.videoLinkStatus = 'manual';
-
-        // Получаем экземпляр Socket.IO из объекта запроса
-        const io = req.app.get('io');
-
-        // Отправляем уведомление об обновлении ссылки на видеозвонок
-        notifyVideoLinkStatusUpdated(io, sessionId, manualLink, 'manual');
-
-        console.log(
-          `Ручная ссылка на Видео Чат успешно проверена: ${manualLink}`
-        );
-      } catch (error) {
-        console.error('Ошибка при проверке ссылки на Видео Чат:', error);
-        return res.status(500).json({
-          message: 'Ошибка при проверке ссылки на Видео Чат',
-          details: error.message,
-        });
-      }
-    }
-    // Если ссылка отсутствует, пустая или истекла, генерируем новую
-    else if (
-      !session.videoLink ||
-      session.videoLink === '' ||
-      session.videoLinkStatus === 'expired'
-    ) {
-      // Генерируем новую ссылку на Видео Чат
-      const meetingOptions = {
-        summary: `Mock Interview ${session.id}`,
-        startTime: session.startTime,
-        durationMinutes: 60, // Длительность по умолчанию - 60 минут
-      };
-
-      try {
-        const videoLink = await createMeeting(meetingOptions);
-
-        // Проверяем валидность новой ссылки
-        const validationResult = await isValidMeetUrl(videoLink);
-
-        if (validationResult.isValid) {
-          session.videoLink = videoLink;
-          session.videoLinkStatus = 'active';
-
-          // Получаем экземпляр Socket.IO из объекта запроса
-          const io = req.app.get('io');
-
-          // Отправляем уведомление об обновлении ссылки на видеозвонок
-          notifyVideoLinkStatusUpdated(io, sessionId, videoLink, 'active');
-
-          console.log(
-            `Успешно сгенерирована новая ссылка на видеозвонок: ${videoLink}`
-          );
-        } else {
-          console.warn(
-            `Сгенерированная ссылка не прошла валидацию: ${validationResult.message}`
-          );
-
-          // Устанавливаем статус ссылки как pending, чтобы пользователь мог попробовать еще раз
-          session.videoLinkStatus = 'pending';
-
-          // Добавляем информацию об ошибке в ответ
-          res.status(400).json({
-            message: `Не удалось сгенерировать валидную ссылку: ${validationResult.message}`,
-            videoLinkStatus: 'pending',
-            session,
-          });
-          return; // Прерываем выполнение функции
-        }
-      } catch (error) {
-        console.error('=== ОШИБКА ПРИ ГЕНЕРАЦИИ ССЫЛКИ НА ВИДЕОЗВОНОК ===');
-        console.error('Ошибка при генерации ссылки на видеозвонок:', error);
-        console.error('Стек ошибки:', error.stack);
-
-        // Логируем тип ошибки и её конструктор
-        console.error('Тип ошибки:', error.constructor.name);
-        console.error('Сообщение ошибки:', error.message);
-
-        // Логируем все свойства ошибки для более полного анализа
-        console.error('Все свойства ошибки:');
-        for (const prop in error) {
-          if (typeof error[prop] !== 'function') {
-            try {
-              console.error(`- ${prop}:`, JSON.stringify(error[prop]));
-            } catch (e) {
-              console.error(`- ${prop}: [Невозможно сериализовать]`);
-            }
-          }
-        }
-
-        // Логируем контекст, в котором произошла ошибка
-        console.error('Контекст ошибки:');
-        console.error('- ID сессии:', sessionId);
-        console.error(
-          '- Параметры встречи:',
-          JSON.stringify(meetingOptions, null, 2)
-        );
-
-        // Логируем информацию о сессии
-        console.error('Информация о сессии:');
-        console.error('- ID:', session.id);
-        console.error('- Статус:', session.status);
-        console.error('- Время начала:', session.startTime);
-        console.error('- ID интервьюера:', session.interviewerId);
-        console.error('- ID отвечающего:', session.intervieweeId);
-
-        // Устанавливаем статус ссылки как pending, чтобы пользователь мог попробовать еще раз
-        session.videoLinkStatus = 'pending';
-
-        // Логируем в базу данных информацию об ошибке
-        if (USE_MONGODB) {
-          try {
-            await new Log({
-              sessionId: session.id,
-              userId: req.user.id,
-              action: 'generate_video_link_error',
-              details: {
-                errorMessage: error.message,
-                errorType: error.constructor.name,
-                errorStack: error.stack,
-                meetingOptions,
-              },
-            }).save();
-            console.log('Информация об ошибке сохранена в логах');
-          } catch (logError) {
-            console.error(
-              'Ошибка при сохранении информации об ошибке в логах:',
-              logError
-            );
-          }
-        }
-
-        // Создаем более информативное сообщение об ошибке для клиента
-        let clientErrorMessage = 'Ошибка при генерации ссылки на видеозвонок';
-
-        // Добавляем детали ошибки в зависимости от её типа
-        if (error.code) {
-          // Ошибки сети
-          if (error.code === 'ENOTFOUND') {
-            clientErrorMessage +=
-              ': проблема с подключением к серверу Видео Чат';
-          } else if (error.code === 'ECONNREFUSED') {
-            clientErrorMessage += ': сервер Видео Чат отклонил соединение';
-          } else if (error.code === 'ETIMEDOUT') {
-            clientErrorMessage +=
-              ': превышено время ожидания ответа от сервера Видео Чат';
-          } else {
-            clientErrorMessage += `: ошибка сети (${error.code})`;
-          }
-        } else if (error.response && error.response.status) {
-          // Ошибки HTTP
-          if (error.response.status === 401) {
-            clientErrorMessage += ': ошибка авторизации в Видео Чат API';
-          } else if (error.response.status === 403) {
-            clientErrorMessage += ': отказано в доступе к Видео Чат API';
-          } else if (error.response.status === 404) {
-            clientErrorMessage += ': ресурс Видео Чат API не найден';
-          } else if (error.response.status === 429) {
-            clientErrorMessage += ': превышен лимит запросов к Видео Чат API';
-          } else {
-            clientErrorMessage += `: ошибка API (HTTP ${error.response.status})`;
-          }
-        } else {
-          // Другие ошибки
-          clientErrorMessage += `: ${error.message}`;
-        }
-
-        console.error('=== КОНЕЦ ОТЧЕТА ОБ ОШИБКЕ ===');
-
-        // Добавляем информацию об ошибке в ответ
-        res.status(500).json({
-          message: clientErrorMessage,
-          videoLinkStatus: 'pending',
-          session,
-          errorDetails: {
-            type: error.constructor.name,
-            code: error.code || null,
-            httpStatus: error.response ? error.response.status : null,
-          },
-        });
-        return; // Прерываем выполнение функции
-      }
-    }
-
-    // Сохраняем обновленную сессию
-    await session.save();
-
-    // Используем уже полученный экземпляр Socket.IO из объекта запроса
-    // или получаем его, если он еще не был получен
-    const io = req.app.get('io');
-
-    // Отправляем уведомление об обновлении сессии
-    notifySessionUpdated(io, sessionId, session);
-
-    // Логируем обновление ссылки
-    await Log.create({
-      sessionId: session.id,
-      userId: req.user.id,
-      action: 'video_link_updated',
-      timestamp: new Date(),
-    });
-
-    res.json({
-      message: 'Ссылка на видеозвонок успешно обновлена',
-      videoLink: session.videoLink,
-      videoLinkStatus: session.videoLinkStatus,
-      session,
-    });
-  } catch (error) {
-    console.error('Ошибка при обновлении ссылки на видеозвонок:', error);
-    res.status(500).json({
-      message: 'Ошибка сервера при обновлении ссылки на видеозвонок',
-      details: error.message,
-    });
-  }
-});
-
-// Получение ссылки на видеозвонок для сессии
-// GET /api/sessions/:id/video
-router.get('/:id/video', auth, async (req, res) => {
-  try {
-    const sessionId = req.params.id;
-    const userId = req.user.id;
-
-    // Получаем сессию по ID
-    const session = await SessionModel.findById(sessionId);
-    if (!session) {
-      return res.status(404).json({ message: 'Сессия не найдена' });
-    }
-
-    // Если статус ссылки 'pending', возвращаем соответствующее сообщение
-    if (!session.videoLink || session.videoLinkStatus === 'pending') {
-      return res.json({
-        message: 'Ссылка еще не сгенерирована',
-        videoLinkStatus: 'pending',
-        isInterviewer: session.interviewerId === userId,
-      });
-    }
-
-    // Проверяем статус ссылки через Видео Чат API (если API поддерживает)
-    if (session.videoLink && session.videoLinkStatus === 'active') {
-      const currentStatus = await checkMeetingStatus(session.videoLink);
-
-      // Если статус изменился, обновляем его в базе данных
-      if (
-        currentStatus === 'expired' &&
-        session.videoLinkStatus !== 'expired'
-      ) {
-        session.videoLinkStatus = 'expired';
-        await session.save();
-
-        // Логируем изменение статуса
-        if (USE_MONGODB) {
-          await new Log({
-            sessionId: session.id,
-            userId,
-            action: 'video_link_expired',
-            details: { videoLink: session.videoLink },
-          }).save();
-        }
-
-        // Получаем экземпляр Socket.IO из объекта запроса
-        const io = req.app.get('io');
-
-        // Отправляем уведомление об изменении статуса ссылки
-        notifyVideoLinkStatusUpdated(
-          io,
-          session.id,
-          session.videoLink,
-          'expired'
-        );
-
-        // Проверяем, является ли пользователь интервьюером
-        if (session.interviewerId === userId) {
-          console.log(
-            'Интервьюер запросил ссылку, которая истекла. Генерируем новую ссылку...'
-          );
-
-          // Генерируем новую ссылку на Видео Чат
-          const meetingOptions = {
-            summary: `Mock Interview ${session.id}`,
-            startTime: session.startTime,
-            durationMinutes: 60, // Длительность по умолчанию - 60 минут
-          };
-
-          try {
-            const videoLink = await createMeeting(meetingOptions);
-
-            // Проверяем валидность новой ссылки
-            const validationResult = await isValidMeetUrl(videoLink);
-
-            if (validationResult.isValid) {
-              session.videoLink = videoLink;
-              session.videoLinkStatus = 'active';
-              await session.save();
-
-              // Отправляем уведомление об обновлении ссылки на видеозвонок
-              notifyVideoLinkStatusUpdated(io, session.id, videoLink, 'active');
-
-              console.log(
-                `Автоматически сгенерирована новая ссылка на видеозвонок: ${videoLink}`
-              );
-            } else {
-              console.warn(
-                `Не удалось сгенерировать валидную ссылку: ${validationResult.message}`
-              );
-            }
-          } catch (error) {
-            console.error(
-              'Ошибка при автоматической генерации новой ссылки:',
-              error
-            );
-          }
-        }
-      }
-    }
-
-    res.json({
-      videoLink: session.videoLink,
-      videoLinkStatus: session.videoLinkStatus,
-      isInterviewer: session.interviewerId === userId,
-    });
-  } catch (error) {
-    console.error('Ошибка при получении ссылки на видеозвонок:', error);
-    res.status(500).json({
-      message: 'Ошибка сервера при получении ссылки на видеозвонок',
-      details: error.message,
-    });
-  }
-});
-
-module.exports = router;
+exports.default = router;
+//# sourceMappingURL=sessions.js.map

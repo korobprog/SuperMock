@@ -80,7 +80,7 @@ function RoleSelector({ session, onRoleSelect, disabled = false }) {
             <span className="font-medium">Внимание!</span>
           </div>
           <p className="mt-1">
-            Для выбора роли Собеседующего и генерации ссылок на Google Meet
+            Для выбора роли Собеседующего и генерации ссылок на Видео Чат
             необходимо войти через Google аккаунт.
           </p>
           <a
@@ -140,14 +140,13 @@ function RoleSelector({ session, onRoleSelect, disabled = false }) {
                   Проводит собеседование и задает вопросы.
                   <span className="text-indigo-600 font-medium">
                     {' '}
-                    Может генерировать ссылки на видеозвонки Google Meet.
+                    Может генерировать ссылки на видеозвонки Видео Чат.
                   </span>
                 </p>
                 {!isGoogleUser && (
                   <p className="text-xs text-red-500 mt-1">
                     <strong>Важно:</strong> Для выбора этой роли необходимо
-                    войти через Google аккаунт. Это требуется для доступа к API
-                    Google Meet.
+                    войти в аккаунт. Это требуется для доступа к API Видео Чат.
                     <a
                       href="/auth/google"
                       className="ml-1 text-blue-500 underline block mt-1"

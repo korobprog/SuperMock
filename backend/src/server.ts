@@ -4,7 +4,7 @@ import http from 'http';
 import cors from 'cors';
 import passport from 'passport';
 import dotenv from 'dotenv';
-import { initializeWebSocket } from '../src/websocket';
+import { initializeWebSocket } from './websocket'; // Импорт из локального файла в той же директории
 import { BACKEND_PORT, FRONTEND_PORT } from './config/app';
 
 // Загружаем переменные окружения из файла .env

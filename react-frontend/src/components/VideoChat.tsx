@@ -153,12 +153,49 @@ const VideoChat: FC = () => {
 
           console.log('VideoChat: Видео устройства:', videoDevices.length);
           console.log('VideoChat: Аудио устройства:', audioDevices.length);
-        } catch (enumError) {
+
+          // Детальная информация о каждом устройстве
+          videoDevices.forEach((device, index) => {
+            console.log(`VideoChat: Видео устройство ${index + 1}:`, {
+              deviceId: device.deviceId,
+              groupId: device.groupId,
+              label: device.label,
+            });
+          });
+
+          audioDevices.forEach((device, index) => {
+            console.log(`VideoChat: Аудио устройство ${index + 1}:`, {
+              deviceId: device.deviceId,
+              groupId: device.groupId,
+              label: device.label,
+            });
+          });
+
+          // Проверяем разрешения
+          console.log('VideoChat: Проверка разрешений для медиа-устройств');
+          const permissions = await navigator.permissions.query({
+            name: 'camera' as PermissionName,
+          });
+          console.log(
+            'VideoChat: Статус разрешения для камеры:',
+            permissions.state
+          );
+        } catch (enumError: any) {
           console.error(
             'VideoChat: Ошибка при перечислении устройств:',
             enumError
           );
+          console.error('VideoChat: Тип ошибки:', enumError.name);
+          console.error('VideoChat: Сообщение ошибки:', enumError.message);
         }
+
+        console.log(
+          'VideoChat: Попытка получения медиа-потока с параметрами:',
+          {
+            video: true,
+            audio: true,
+          }
+        );
 
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
@@ -173,7 +210,30 @@ const VideoChat: FC = () => {
           audioTrackLabel: stream.getAudioTracks()[0]?.label,
         });
 
+        console.log(
+          'VideoChat: Перед сохранением локального потока в состоянии:',
+          {
+            streamExists: !!stream,
+            videoTracks: stream.getVideoTracks().length,
+            audioTracks: stream.getAudioTracks().length,
+            videoTrackEnabled: stream.getVideoTracks()[0]?.enabled,
+            audioTrackEnabled: stream.getAudioTracks()[0]?.enabled,
+          }
+        );
+
         setLocalStream(stream);
+
+        // Проверка состояния после setLocalStream (будет асинхронным)
+        setTimeout(() => {
+          console.log(
+            'VideoChat: Проверка состояния localStream после setState:',
+            {
+              streamInStateExists: !!localStream,
+              videoTracksInState: localStream?.getVideoTracks()?.length || 0,
+              audioTracksInState: localStream?.getAudioTracks()?.length || 0,
+            }
+          );
+        }, 100);
 
         // Получаем userId из сокета
         const userIdFromSocket = socket.id;
@@ -199,19 +259,60 @@ const VideoChat: FC = () => {
         );
         console.error('VideoChat: Название ошибки:', error.name);
         console.error('VideoChat: Сообщение ошибки:', error.message);
+        console.error('VideoChat: Стек ошибки:', error.stack);
+
+        // Проверяем, поддерживается ли getUserMedia в браузере
+        console.log(
+          'VideoChat: Проверка поддержки getUserMedia в браузере:',
+          'mediaDevices' in navigator &&
+            'getUserMedia' in navigator.mediaDevices
+        );
+
+        // Проверяем, есть ли ограничения в контексте безопасности
+        console.log(
+          'VideoChat: Проверка контекста безопасности:',
+          window.isSecureContext
+            ? 'Безопасный контекст'
+            : 'Небезопасный контекст'
+        );
+
+        // Проверяем протокол
+        console.log('VideoChat: Текущий протокол:', window.location.protocol);
 
         // Более детальная обработка ошибок доступа к медиа
         if (error.name === 'NotAllowedError') {
+          console.log(
+            'VideoChat: Пользователь запретил доступ к медиа-устройствам'
+          );
           setConnectionStatus(
             'Доступ к камере/микрофону запрещен пользователем'
           );
         } else if (error.name === 'NotFoundError') {
+          console.log('VideoChat: Медиа-устройства не найдены');
           setConnectionStatus('Камера или микрофон не найдены');
         } else if (error.name === 'NotReadableError') {
+          console.log('VideoChat: Медиа-устройства заняты другим приложением');
           setConnectionStatus(
             'Устройство камеры/микрофона занято другим приложением'
           );
+        } else if (error.name === 'AbortError') {
+          console.log(
+            'VideoChat: Запрос на доступ к медиа-устройствам был отменен'
+          );
+          setConnectionStatus(
+            'Запрос на доступ к медиа-устройствам был отменен'
+          );
+        } else if (error.name === 'SecurityError') {
+          console.log(
+            'VideoChat: Ошибка безопасности при доступе к медиа-устройствам'
+          );
+          setConnectionStatus(
+            'Ошибка безопасности при доступе к медиа-устройствам'
+          );
         } else {
+          console.log(
+            'VideoChat: Неизвестная ошибка при доступе к медиа-устройствам'
+          );
           setConnectionStatus('Ошибка доступа к камере/микрофону');
         }
       }
@@ -388,6 +489,19 @@ const VideoChat: FC = () => {
     myUserId: string,
     incomingSignal?: WebRTCSignal
   ): Peer.Instance | undefined => {
+    console.log('VideoChat: Состояние перед созданием peer:', {
+      socketExists: !!socket,
+      socketConnected: socket?.connected,
+      localStreamExists: !!localStream,
+      videoTracks: localStream?.getVideoTracks()?.length || 0,
+      audioTracks: localStream?.getAudioTracks()?.length || 0,
+      videoTrackEnabled: localStream?.getVideoTracks()[0]?.enabled,
+      audioTrackEnabled: localStream?.getAudioTracks()[0]?.enabled,
+      targetUserId,
+      isInitiator,
+      myUserId,
+    });
+
     if (!socket || !localStream) {
       const errorMessage =
         'VideoChat: Невозможно создать peer - отсутствует сокет или локальный поток';
@@ -404,6 +518,14 @@ const VideoChat: FC = () => {
         audioTracks: localStream?.getAudioTracks()?.length || 0,
       });
 
+      // Проверка состояния React
+      console.log('VideoChat: Проверка состояния React компонента:', {
+        isMounted: true, // Если функция выполняется, компонент смонтирован
+        roomId,
+        userId,
+        participantsCount: participants.length,
+      });
+
       // Обновляем статус соединения для пользователя
       if (!socket) {
         setConnectionStatus('Ошибка: отсутствует соединение с сервером');
@@ -417,25 +539,84 @@ const VideoChat: FC = () => {
           console.log(
             'VideoChat: Повторная попытка получить доступ к медиа-устройствам'
           );
-          navigator.mediaDevices
-            .getUserMedia({ video: true, audio: true })
-            .then((stream) => {
-              setLocalStream(stream);
+
+          // Проверяем состояние разрешений перед повторной попыткой
+          navigator.permissions
+            .query({ name: 'camera' as PermissionName })
+            .then((permissionStatus) => {
               console.log(
-                'VideoChat: Доступ к медиа-устройствам получен при повторной попытке'
+                'VideoChat: Текущий статус разрешения для камеры:',
+                permissionStatus.state
               );
-              // Повторно создаем соединение
-              if (targetUserId) {
-                createPeer(targetUserId, isInitiator, myUserId, incomingSignal);
-              }
+
+              // Пробуем получить доступ только к аудио, если есть проблемы с видео
+              console.log(
+                'VideoChat: Пробуем получить доступ с разными параметрами'
+              );
+
+              // Сначала пробуем с видео и аудио
+              navigator.mediaDevices
+                .getUserMedia({ video: true, audio: true })
+                .then((stream) => {
+                  setLocalStream(stream);
+                  console.log(
+                    'VideoChat: Доступ к видео и аудио получен при повторной попытке'
+                  );
+                  // Повторно создаем соединение
+                  if (targetUserId) {
+                    createPeer(
+                      targetUserId,
+                      isInitiator,
+                      myUserId,
+                      incomingSignal
+                    );
+                  }
+                })
+                .catch((videoAudioError) => {
+                  console.error(
+                    'VideoChat: Повторная попытка получить доступ к видео и аудио не удалась:',
+                    videoAudioError
+                  );
+
+                  // Пробуем только аудио
+                  console.log(
+                    'VideoChat: Пробуем получить доступ только к аудио'
+                  );
+                  navigator.mediaDevices
+                    .getUserMedia({ video: false, audio: true })
+                    .then((audioStream) => {
+                      setLocalStream(audioStream);
+                      console.log(
+                        'VideoChat: Доступ только к аудио получен при повторной попытке'
+                      );
+                      setConnectionStatus(
+                        'Подключено только аудио (видео недоступно)'
+                      );
+                      // Повторно создаем соединение
+                      if (targetUserId) {
+                        createPeer(
+                          targetUserId,
+                          isInitiator,
+                          myUserId,
+                          incomingSignal
+                        );
+                      }
+                    })
+                    .catch((audioError) => {
+                      console.error(
+                        'VideoChat: Повторная попытка получить доступ только к аудио не удалась:',
+                        audioError
+                      );
+                      setConnectionStatus(
+                        'Ошибка: не удалось получить доступ к камере/микрофону'
+                      );
+                    });
+                });
             })
-            .catch((error) => {
+            .catch((permError) => {
               console.error(
-                'VideoChat: Повторная попытка получить доступ к медиа-устройствам не удалась:',
-                error
-              );
-              setConnectionStatus(
-                'Ошибка: не удалось получить доступ к камере/микрофону'
+                'VideoChat: Ошибка при проверке разрешений:',
+                permError
               );
             });
         }

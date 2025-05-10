@@ -34,30 +34,180 @@ const VideoLinkManager: FC<VideoLinkManagerProps> = ({
   const fetchSessionData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `http://localhost:9876/api/sessions/${sessionId}`,
-        {
+      console.log('VideoLinkManager: Начало запроса данных сессии');
+      console.log('VideoLinkManager: ID сессии:', sessionId);
+
+      // Добавляем дополнительные логи для отладки
+      console.log(
+        'VideoLinkManager: Текущий URL страницы:',
+        window.location.href
+      );
+      console.log('VideoLinkManager: Текущий origin:', window.location.origin);
+      console.log(
+        'VideoLinkManager: Текущий hostname:',
+        window.location.hostname
+      );
+      console.log('VideoLinkManager: Текущий порт:', window.location.port);
+      console.log(
+        'VideoLinkManager: Текущий протокол:',
+        window.location.protocol
+      );
+
+      // Проверяем, что sessionId определен и не пустой
+      if (!sessionId) {
+        console.error('VideoLinkManager: sessionId не определен или пустой');
+        setError('Ошибка: ID сессии не определен');
+        setLoading(false);
+        return;
+      }
+
+      console.log('VideoLinkManager: Тип sessionId:', typeof sessionId);
+      console.log('VideoLinkManager: Длина sessionId:', sessionId.length);
+
+      // Проверяем, как формируется URL и как он обрабатывается
+      const apiUrl = `/api/sessions/${sessionId}`;
+      console.log(`VideoLinkManager: Запрос к API: ${apiUrl}`);
+      console.log(
+        'VideoLinkManager: Полный URL запроса:',
+        `${window.location.origin}${apiUrl}`
+      );
+      console.log(
+        'VideoLinkManager: Используется относительный URL для прокси Vite'
+      );
+
+      // Добавляем дополнительные логи для отладки прокси
+      console.log(
+        'VideoLinkManager: Конфигурация Vite прокси должна перенаправить запрос на http://localhost:9877'
+      );
+      console.log(
+        'VideoLinkManager: Проверяем, работает ли прокси с относительным URL'
+      );
+      console.log(
+        'VideoLinkManager: Токен авторизации:',
+        token ? `${token.substring(0, 10)}...` : 'отсутствует'
+      );
+
+      let response;
+      try {
+        console.log('VideoLinkManager: Перед выполнением fetch запроса');
+        console.log(
+          'VideoLinkManager: Токен авторизации:',
+          token ? `${token.substring(0, 10)}...` : 'отсутствует'
+        );
+        console.log('VideoLinkManager: Заголовки запроса:', {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        });
+
+        // Проверяем, что токен определен
+        if (!token) {
+          console.error('VideoLinkManager: Токен авторизации отсутствует');
+          setError('Ошибка: Токен авторизации отсутствует');
+          setLoading(false);
+          return;
+        }
+
+        console.log('VideoLinkManager: Начало выполнения fetch запроса');
+        console.log('VideoLinkManager: URL для fetch:', apiUrl);
+        console.log('VideoLinkManager: Тип URL:', typeof apiUrl);
+
+        // Попробуем использовать новый URL с явным указанием базового URL
+        const baseUrl = window.location.origin;
+        console.log('VideoLinkManager: Базовый URL:', baseUrl);
+
+        // Создаем новый URL объект для проверки
+        const fullUrl = new URL(apiUrl, baseUrl);
+        console.log(
+          'VideoLinkManager: Полный URL через URL объект:',
+          fullUrl.href
+        );
+
+        // Вместо использования относительного URL, который может быть неправильно обработан,
+        // используем явно указанный URL без origin, чтобы прокси Vite мог правильно перенаправить запрос
+
+        // Важно: НЕ используем window.location.origin при формировании URL для fetch
+        // Это гарантирует, что запрос будет обработан прокси Vite
+        response = await fetch(apiUrl, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+        });
+        console.log('VideoLinkManager: Fetch запрос выполнен');
+
+        console.log(
+          'VideoLinkManager: Статус ответа API:',
+          response.status,
+          response.statusText
+        );
+
+        // Логируем заголовки ответа
+        const responseHeaders: Record<string, string> = {};
+        response.headers.forEach((value, name) => {
+          responseHeaders[name] = value;
+        });
+        console.log('VideoLinkManager: Заголовки ответа:', responseHeaders);
+
+        // Если ответ не OK, пытаемся получить текст ошибки
+        if (!response.ok) {
+          try {
+            const errorText = await response.text();
+            console.log('VideoLinkManager: Текст ошибки:', errorText);
+          } catch (textError) {
+            console.error(
+              'VideoLinkManager: Не удалось получить текст ошибки:',
+              textError
+            );
+          }
         }
-      );
+      } catch (fetchError) {
+        console.error(
+          'VideoLinkManager: Ошибка при выполнении fetch запроса:',
+          fetchError
+        );
+        if (fetchError instanceof Error) {
+          console.error('VideoLinkManager: Тип ошибки:', fetchError.name);
+          console.error(
+            'VideoLinkManager: Сообщение ошибки:',
+            fetchError.message
+          );
+          console.error('VideoLinkManager: Стек ошибки:', fetchError.stack);
+        }
+        console.log(
+          'VideoLinkManager: Проверьте, запущен ли сервер на порту 9877'
+        );
+        throw fetchError;
+      }
 
       if (!response.ok) {
         throw new Error('Не удалось получить данные сессии');
       }
 
       const data = await response.json();
+      console.log('VideoLinkManager: Получен ответ от API:', data);
+
       if (data.videoLink) {
         setVideoLink(data.videoLink);
+        console.log(
+          'VideoLinkManager: Установлена ссылка на видео:',
+          data.videoLink
+        );
       }
       if (data.videoLinkStatus) {
         setVideoLinkStatus(data.videoLinkStatus);
+        console.log(
+          'VideoLinkManager: Установлен статус ссылки:',
+          data.videoLinkStatus
+        );
       }
       setError('');
     } catch (err) {
       console.error('Ошибка при получении данных сессии:', err);
+      if (err instanceof Error) {
+        console.error('VideoLinkManager: Тип ошибки:', err.name);
+        console.error('VideoLinkManager: Сообщение ошибки:', err.message);
+        console.error('VideoLinkManager: Стек ошибки:', err.stack);
+      }
       setError('Не удалось загрузить данные сессии');
     } finally {
       setLoading(false);
@@ -76,6 +226,11 @@ const VideoLinkManager: FC<VideoLinkManagerProps> = ({
       new URL(link);
       return true;
     } catch (err) {
+      console.error('Ошибка при валидации URL:', err);
+      if (err instanceof Error) {
+        console.error('VideoLinkManager: Тип ошибки:', err.name);
+        console.error('VideoLinkManager: Сообщение ошибки:', err.message);
+      }
       setValidationMessage('Введите корректный URL');
       return false;
     }
@@ -97,18 +252,49 @@ const VideoLinkManager: FC<VideoLinkManagerProps> = ({
       }
 
       setLoading(true);
-      const response = await fetch(
-        `http://localhost:9876/api/sessions/${sessionId}/video`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            manualLink: videoLink,
-          }),
-        }
+
+      // Добавляем дополнительные логи для отладки
+      console.log('VideoLinkManager: Обновление ссылки на видео');
+      console.log('VideoLinkManager: ID сессии:', sessionId);
+      console.log('VideoLinkManager: Новая ссылка:', videoLink);
+
+      const apiUrl = `/api/sessions/${sessionId}/video`;
+      console.log(`VideoLinkManager: Запрос к API для обновления: ${apiUrl}`);
+      console.log(
+        'VideoLinkManager: Токен авторизации для обновления:',
+        token ? `${token.substring(0, 10)}...` : 'отсутствует'
+      );
+      console.log('VideoLinkManager: Заголовки запроса для обновления:', {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      });
+      console.log(
+        'VideoLinkManager: Тело запроса:',
+        JSON.stringify({
+          manualLink: videoLink,
+        })
+      );
+
+      // Добавляем логи для отладки
+      console.log('VideoLinkManager: URL для fetch при обновлении:', apiUrl);
+      console.log('VideoLinkManager: Тип URL при обновлении:', typeof apiUrl);
+
+      // Используем относительный URL без origin, чтобы прокси Vite мог правильно перенаправить запрос
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          manualLink: videoLink,
+        }),
+      });
+
+      console.log(
+        'VideoLinkManager: Статус ответа API при обновлении:',
+        response.status,
+        response.statusText
       );
 
       if (!response.ok) {
@@ -127,6 +313,11 @@ const VideoLinkManager: FC<VideoLinkManagerProps> = ({
       setValidationMessage('Ссылка на видео успешно обновлена');
     } catch (err) {
       console.error('Ошибка при обновлении ссылки на видео:', err);
+      if (err instanceof Error) {
+        console.error('VideoLinkManager: Тип ошибки:', err.name);
+        console.error('VideoLinkManager: Сообщение ошибки:', err.message);
+        console.error('VideoLinkManager: Стек ошибки:', err.stack);
+      }
       setError('Не удалось обновить ссылку на видео');
     } finally {
       setLoading(false);

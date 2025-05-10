@@ -718,7 +718,7 @@ function SessionList({
                     {formatDate(session.startTime)}
                   </p>
 
-                  {/* Отображение ссылки на Google Meet, если она есть */}
+                  {/* Отображение ссылки на Видео Чат, если она есть */}
                   {session.videoLink && (
                     <div className="mt-2 border border-gray-200 rounded-md p-3 bg-gray-50">
                       <div className="flex justify-between items-center mb-2">
@@ -738,7 +738,7 @@ function SessionList({
                                 d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
                               />
                             </svg>
-                            Google Meet
+                            Видео Чат
                           </span>
                         </p>
                         <div className="flex items-center space-x-2">
@@ -830,10 +830,9 @@ function SessionList({
                                   Автоматически сгенерированная ссылка
                                 </p>
                                 <p className="text-xs text-yellow-700 mt-1">
-                                  В режиме разработки автоматически
-                                  сгенерированные ссылки могут не работать. Если
-                                  возникнет ошибка, создайте встречу вручную
-                                  через Google Meet и введите ссылку ниже.
+                                  Если, возникнет ошибка, создайте встречу
+                                  вручную через Google Meet или любые другие
+                                  сирвисы введите ссылку ниже.
                                 </p>
                               </div>
                             </div>
