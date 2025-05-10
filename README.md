@@ -178,6 +178,36 @@ API документация доступна в формате Swagger:
 - `feedback-required` - напоминание о необходимости заполнить обратную связь
 - `feedback-updated` - обновление обратной связи
 
+## Recent Updates
+
+We have made several significant improvements to the SuperMook application:
+
+1. **TypeScript Migration**: Migrated key components and backend services from JavaScript to TypeScript for improved type safety, better code organization, and enhanced developer experience.
+
+2. **Calendar System**: Implemented a calendar functionality for scheduling and managing interview sessions, allowing users to plan and organize their mock interviews more efficiently.
+
+3. **Authentication Enhancements**: Improved the login system with more robust authentication mechanisms and better security practices.
+
+4. **Session Management**: Enhanced the session management system with more intuitive controls for creating, joining, and monitoring interview sessions.
+
+5. **Role Selection System**: Refined the role selection interface to provide a more seamless experience when choosing between interviewer, interviewee, and observer roles.
+
+6. **Feedback System**: Expanded the feedback functionality with improved data models and routing, allowing for more detailed and structured feedback after mock interviews.
+
+## Последние обновления
+
+Мы внесли несколько значительных улучшений в приложение SuperMook:
+
+1. **Миграция на TypeScript**: Перенесли ключевые компоненты и серверные сервисы с JavaScript на TypeScript для улучшения типобезопасности, лучшей организации кода и повышения удобства разработки.
+
+2. **Система календаря**: Реализовали функциональность календаря для планирования и управления сессиями собеседований, позволяющую пользователям более эффективно организовывать тренировочные интервью.
+
+3. **Улучшения аутентификации**: Усовершенствовали систему входа с более надежными механизмами аутентификации и улучшенными практиками безопасности.
+
+4. **Управление сессиями**: Расширили систему управления сессиями с более интуитивными элементами управления для создания, присоединения и мониторинга сессий собеседований.
+
+5. **Система выбора ролей**: Улучшили интерфейс выбора ролей для обеспечения более удобного опыта при выборе между ролями интервьюера, от
+
 ## Дополнительная информация
 
 Подробная документация по фронтенду доступна в [react-frontend/README.md](react-frontend/README.md).
