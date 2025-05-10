@@ -2,6 +2,12 @@ import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from './middleware/auth';
+import { FRONTEND_PORT } from './config/app';
+import {
+  addParticipant,
+  removeParticipant,
+  getRoomInfo,
+} from './services/webRTCService';
 
 // Типы для Redis адаптера
 interface RedisAdapter {
@@ -28,6 +34,22 @@ interface AuthenticatedSocket extends Socket {
   userId: string;
 }
 
+// Интерфейс для WebRTC сигналов
+interface WebRTCSignal {
+  type: string;
+  sdp?: string;
+  // Определяем структуру ICE кандидата без использования RTCIceCandidate
+  candidate?: {
+    candidate: string;
+    sdpMid?: string;
+    sdpMLineIndex?: number;
+    usernameFragment?: string;
+  };
+  roomId: string;
+  userId: string;
+  targetUserId?: string;
+}
+
 // Хранилище активных соединений
 const activeConnections = new Map<string, AuthenticatedSocket>();
 
@@ -36,14 +58,29 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
   const io = new SocketIOServer(server, {
     cors: {
       origin: [
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
+        `http://localhost:${FRONTEND_PORT}`,
+        `http://127.0.0.1:${FRONTEND_PORT}`,
+        // Добавляем несколько соседних портов на случай, если основной порт занят
+        `http://localhost:${Number(FRONTEND_PORT) + 1}`,
+        `http://127.0.0.1:${Number(FRONTEND_PORT) + 1}`,
+        `http://localhost:${Number(FRONTEND_PORT) + 2}`,
+        `http://127.0.0.1:${Number(FRONTEND_PORT) + 2}`,
+        `http://localhost:${Number(FRONTEND_PORT) + 3}`,
+        `http://127.0.0.1:${Number(FRONTEND_PORT) + 3}`,
+        `http://localhost:${Number(FRONTEND_PORT) + 4}`,
+        `http://127.0.0.1:${Number(FRONTEND_PORT) + 4}`,
+        // Добавляем порты, на которых может работать фронтенд
         'http://localhost:5174',
         'http://127.0.0.1:5174',
         'http://localhost:5175',
         'http://127.0.0.1:5175',
-        'http://localhost:5177',
-        'http://127.0.0.1:5177',
+        'http://localhost:5176',
+        'http://127.0.0.1:5176',
+        'http://localhost:5184',
+        'http://127.0.0.1:5184',
+        // Разрешаем подключения с любого порта в режиме разработки
+        'http://localhost:*',
+        'http://127.0.0.1:*',
       ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       credentials: true,
@@ -226,6 +263,176 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
       );
       authSocket.leave(`session:${sessionId}`);
     });
+
+    // Подписка на обновления календаря
+    authSocket.on('subscribe-calendar', (): void => {
+      console.log(
+        `Пользователь ${authSocket.userId} подписался на обновления календаря`
+      );
+      authSocket.join('calendar-subscribers');
+    });
+
+    // Отписка от обновлений календаря
+    authSocket.on('unsubscribe-calendar', (): void => {
+      console.log(
+        `Пользователь ${authSocket.userId} отписался от обновлений календаря`
+      );
+      authSocket.leave('calendar-subscribers');
+    });
+
+    // WebRTC: Присоединение к комнате
+    authSocket.on('join-room', (roomId: string): void => {
+      console.log(
+        `WebRTC: Пользователь ${authSocket.userId} присоединяется к комнате ${roomId}`
+      );
+      console.log(`WebRTC: ID сокета: ${authSocket.id}`);
+      console.log(`WebRTC: Транспорт: ${authSocket.conn.transport.name}`);
+
+      // Добавляем пользователя в комнату
+      const room = addParticipant(roomId, authSocket.userId);
+
+      if (!room) {
+        console.log(`WebRTC: Комната ${roomId} не найдена`);
+        authSocket.emit('room-error', { message: 'Комната не найдена' });
+        return;
+      }
+
+      console.log(`WebRTC: Участники комнаты ${roomId}:`, room.participants);
+
+      // Подписываем пользователя на канал комнаты
+      authSocket.join(`room:${roomId}`);
+      console.log(
+        `WebRTC: Пользователь ${authSocket.userId} подписан на канал room:${roomId}`
+      );
+
+      // Отправляем информацию о комнате
+      console.log(
+        `WebRTC: Отправка события room-joined пользователю ${authSocket.userId}`
+      );
+      authSocket.emit('room-joined', {
+        roomId,
+        participants: room.participants,
+        userId: authSocket.userId,
+      });
+
+      // Уведомляем других участников о новом пользователе
+      console.log(
+        `WebRTC: Отправка события user-joined другим участникам комнаты ${roomId}`
+      );
+      authSocket.to(`room:${roomId}`).emit('user-joined', {
+        roomId,
+        userId: authSocket.userId,
+      });
+    });
+
+    // WebRTC: Выход из комнаты
+    authSocket.on('leave-room', (roomId: string): void => {
+      console.log(
+        `Пользователь ${authSocket.userId} покидает комнату ${roomId}`
+      );
+
+      // Удаляем пользователя из комнаты
+      removeParticipant(roomId, authSocket.userId);
+
+      // Отписываем пользователя от канала комнаты
+      authSocket.leave(`room:${roomId}`);
+
+      // Уведомляем других участников об уходе пользователя
+      authSocket.to(`room:${roomId}`).emit('user-left', {
+        roomId,
+        userId: authSocket.userId,
+      });
+    });
+
+    // WebRTC: Обмен сигналами
+    authSocket.on('webrtc-signal', (signal: WebRTCSignal): void => {
+      console.log(
+        `WebRTC: Получен сигнал от ${authSocket.userId} в комнате ${signal.roomId}`
+      );
+      console.log(`WebRTC: Тип сигнала: ${signal.type}`);
+      console.log(
+        `WebRTC: Целевой пользователь: ${
+          signal.targetUserId || 'все участники'
+        }`
+      );
+
+      if (signal.sdp) {
+        console.log(
+          `WebRTC: Сигнал содержит SDP (${signal.sdp.substring(0, 50)}...)`
+        );
+      }
+
+      if (signal.candidate) {
+        console.log(`WebRTC: Сигнал содержит ICE candidate`);
+      }
+
+      // Проверяем, что пользователь находится в комнате
+      const room = getRoomInfo(signal.roomId);
+
+      if (!room) {
+        console.log(`WebRTC: Комната ${signal.roomId} не найдена`);
+        return;
+      }
+
+      if (!room.participants.includes(authSocket.userId)) {
+        console.log(
+          `WebRTC: Пользователь ${authSocket.userId} не находится в комнате ${signal.roomId}`
+        );
+        console.log(
+          `WebRTC: Участники комнаты: ${room.participants.join(', ')}`
+        );
+        return;
+      }
+
+      // Если указан конкретный получатель, отправляем сигнал только ему
+      if (signal.targetUserId) {
+        const targetSocket = activeConnections.get(signal.targetUserId);
+
+        if (targetSocket) {
+          console.log(
+            `WebRTC: Отправка сигнала пользователю ${signal.targetUserId}`
+          );
+          try {
+            targetSocket.emit('webrtc-signal', {
+              ...signal,
+              userId: authSocket.userId,
+            });
+            console.log(
+              `WebRTC: Сигнал успешно отправлен пользователю ${signal.targetUserId}`
+            );
+          } catch (error) {
+            console.error(`WebRTC: Ошибка при отправке сигнала:`, error);
+          }
+        } else {
+          console.log(
+            `WebRTC: Целевой пользователь ${signal.targetUserId} не найден в активных соединениях`
+          );
+          console.log(
+            `WebRTC: Активные соединения:`,
+            Array.from(activeConnections.keys())
+          );
+        }
+      } else {
+        // Иначе отправляем всем участникам комнаты, кроме отправителя
+        console.log(
+          `WebRTC: Отправка сигнала всем участникам комнаты ${signal.roomId}`
+        );
+        try {
+          authSocket.to(`room:${signal.roomId}`).emit('webrtc-signal', {
+            ...signal,
+            userId: authSocket.userId,
+          });
+          console.log(
+            `WebRTC: Сигнал успешно отправлен всем участникам комнаты ${signal.roomId}`
+          );
+        } catch (error) {
+          console.error(
+            `WebRTC: Ошибка при отправке сигнала всем участникам:`,
+            error
+          );
+        }
+      }
+    });
   });
 
   // Возвращаем экземпляр Socket.IO для использования в других модулях
@@ -312,6 +519,50 @@ function notifyVideoLinkStatusUpdated(
   });
 }
 
+// Функция для отправки уведомления о WebRTC событии
+function notifyWebRTCEvent(
+  io: SocketIOServer,
+  roomId: string,
+  eventType: string,
+  data: any
+): void {
+  io.to(`room:${roomId}`).emit(eventType, {
+    roomId,
+    ...data,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+// Интерфейс для обновлений календаря
+interface CalendarUpdate {
+  calendarEntryId: string;
+  sessionId: string;
+  startTime: Date;
+  videoLink?: string | null;
+  participants?: string[];
+  [key: string]: any;
+}
+
+// Функция для отправки уведомления об обновлении календаря
+function notifyCalendarUpdated(
+  io: SocketIOServer,
+  calendarUpdate: CalendarUpdate
+): void {
+  // Отправляем уведомление всем подписчикам календаря
+  io.to('calendar-subscribers').emit('calendar-updated', {
+    ...calendarUpdate,
+    timestamp: new Date().toISOString(),
+  });
+
+  // Если указан sessionId, отправляем уведомление всем участникам сессии
+  if (calendarUpdate.sessionId) {
+    io.to(`session:${calendarUpdate.sessionId}`).emit('calendar-updated', {
+      ...calendarUpdate,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
 export {
   initializeWebSocket,
   notifySessionUpdated,
@@ -319,4 +570,6 @@ export {
   notifyFeedbackRequired,
   notifyFeedbackUpdated,
   notifyVideoLinkStatusUpdated,
+  notifyWebRTCEvent,
+  notifyCalendarUpdated,
 };

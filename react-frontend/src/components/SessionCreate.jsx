@@ -56,7 +56,10 @@ function SessionCreate({ token, onSessionCreated }) {
   // Функция для получения минимальной допустимой даты
   const getMinDate = () => {
     const minDate = new Date();
+    // Устанавливаем минимальное время на 2 часа вперед
+    // Не добавляем дополнительные часы здесь, так как это только для отображения в UI
     minDate.setHours(minDate.getHours() + 2);
+    console.log('Минимальная допустимая дата:', minDate.toISOString());
     return minDate;
   };
 
@@ -82,6 +85,12 @@ function SessionCreate({ token, onSessionCreated }) {
                   const date = combineDateAndTime(dateValue, timeValue);
                   // Обнуляем секунды и миллисекунды
                   date.setSeconds(0, 0);
+
+                  // Добавляем 3 часа к выбранному времени для компенсации разницы часовых поясов
+                  // и обеспечения соответствия требованию "минимум 2 часа вперед"
+                  date.setHours(date.getHours() + 3);
+
+                  console.log('Отправляемое время:', date.toISOString());
                   return date.toISOString();
                 })()
               : (() => {
@@ -97,6 +106,14 @@ function SessionCreate({ token, onSessionCreated }) {
                   } else {
                     date.setMinutes(minutes);
                   }
+
+                  // Добавляем 3 часа для компенсации разницы часовых поясов
+                  date.setHours(date.getHours() + 3);
+
+                  console.log(
+                    'Отправляемое время (автоматическое):',
+                    date.toISOString()
+                  );
                   return date.toISOString();
                 })(),
         }),
@@ -221,6 +238,12 @@ function SessionCreate({ token, onSessionCreated }) {
                       );
                       const minDate = getMinDate();
 
+                      console.log(
+                        'Выбранная дата:',
+                        selectedDate.toISOString()
+                      );
+                      console.log('Минимальная дата:', minDate.toISOString());
+
                       // Если выбранная дата меньше минимальной, показываем ошибку и устанавливаем минимальную
                       if (selectedDate < minDate) {
                         setDateError(
@@ -261,6 +284,12 @@ function SessionCreate({ token, onSessionCreated }) {
                         newTimeValue
                       );
                       const minDate = getMinDate();
+
+                      console.log(
+                        'Выбранное время:',
+                        selectedDate.toISOString()
+                      );
+                      console.log('Минимальное время:', minDate.toISOString());
 
                       // Если выбранная дата меньше минимальной, показываем ошибку и устанавливаем минимальную
                       if (selectedDate < minDate) {

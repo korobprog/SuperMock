@@ -7,6 +7,8 @@ import Login from './components/Login';
 import UserProfile from './components/UserProfile';
 import SessionManager from './components/SessionManager';
 import AuthCallback from './components/AuthCallback';
+import VideoChat from './components/VideoChat';
+import { SocketProvider } from './contexts/SocketContext';
 import './components/Auth.css';
 
 function App() {
@@ -113,6 +115,18 @@ function App() {
     <Routes>
       <Route path="/" element={<MainContent />} />
       <Route path="/auth-callback" element={<AuthCallback />} />
+      <Route
+        path="/video-chat/:sessionId?"
+        element={
+          isAuthenticated ? (
+            <SocketProvider token={token}>
+              <VideoChat />
+            </SocketProvider>
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

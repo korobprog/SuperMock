@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import { auth } from '../middleware/auth';
 import { InMemorySession } from '../models/InMemorySession';
 import { InMemoryUser } from '../models/InMemoryUser';
+import { InMemoryCalendarEntry } from '../models/InMemoryCalendar';
 import {
   notifySessionUpdated,
   notifyRoleSelected,
@@ -12,7 +13,7 @@ import {
   createMeeting,
   isValidMeetUrl,
   checkMeetingStatus,
-} from '../services/googleMeetService';
+} from '../services/webRTCService';
 
 // Интерфейс для модели Log
 interface Log {
@@ -157,6 +158,17 @@ router.post('/', auth, async (req: Request, res: Response): Promise<void> => {
 
     await session.save();
 
+    // Создаем запись в календаре
+    const calendarEntry = new InMemoryCalendarEntry({
+      sessionId: session.id,
+      videoLink: session.videoLink,
+      startTime: sessionStartTime,
+      participants: [userId], // Добавляем создателя как участника
+    });
+
+    await calendarEntry.save();
+    console.log(`Создана запись в календаре для сессии ${session.id}`);
+
     // Логируем создание сессии
     if (USE_MONGODB) {
       await new Log({
@@ -255,14 +267,7 @@ router.post(
       // Проверяем ограничения для выбора роли
       try {
         if (role === 'interviewer') {
-          // Проверяем, вошел ли пользователь через Google OAuth и есть ли у него googleAccessToken
-          if (!user.googleId || !user.googleAccessToken) {
-            res.status(403).json({
-              message: 'Для роли Собеседующего требуется вход через Google',
-              requiresGoogleAuth: true,
-            });
-            return;
-          }
+          // Удалена проверка на вход через Google OAuth
 
           // Проверяем, был ли пользователь интервьюером в последней сессии
           const lastSession = await SessionModel.findLastSessionAsInterviewer(
@@ -306,7 +311,7 @@ router.post(
       const io = req.app.get('io');
 
       // Если пользователь выбирает роль интервьюера и видеоссылка отсутствует или в статусе pending,
-      // автоматически генерируем ссылку через Google Meet API с использованием googleAccessToken пользователя
+      // автоматически генерируем ссылку через WebRTC сервис
       if (
         role === 'interviewer' &&
         (!session.videoLink || session.videoLinkStatus === 'pending')
@@ -317,42 +322,11 @@ router.post(
           summary: `Mock Interview ${session.id}`,
           startTime: session.startTime,
           durationMinutes: 60, // Длительность по умолчанию - 60 минут
-          googleAccessToken: user.googleAccessToken, // Передаем токен пользователя
         };
 
         try {
-          // Генерируем новую ссылку на Google Meet с использованием googleAccessToken пользователя
-          // Проверяем наличие googleAccessToken у пользователя
-          if (!user.googleAccessToken) {
-            console.warn(
-              'У пользователя отсутствует googleAccessToken для создания встречи'
-            );
-            session.videoLinkStatus = 'pending';
-
-            // Логируем отсутствие токена
-            if (USE_MONGODB) {
-              await new Log({
-                sessionId: session.id,
-                userId,
-                action: 'generate_video_link_failed',
-                details: {
-                  reason: 'missing_google_access_token',
-                  role: 'interviewer',
-                },
-              }).save();
-            }
-
-            res.status(403).json({
-              message:
-                'Для создания ссылки на Google Meet требуется вход через Google',
-              requiresGoogleAuth: true,
-            });
-            return;
-          } else {
-            console.log(
-              'Используем googleAccessToken пользователя для создания встречи'
-            );
-          }
+          // Генерируем новую ссылку на WebRTC комнату
+          console.log('Создаем новую WebRTC комнату для сессии');
 
           const videoLink = await createMeeting(meetingOptions);
 
@@ -362,6 +336,29 @@ router.post(
           if (validationResult.isValid) {
             session.videoLink = videoLink;
             session.videoLinkStatus = 'active';
+
+            // Обновляем запись в календаре
+            const calendarEntry = await InMemoryCalendarEntry.findBySessionId(
+              sessionId
+            );
+            if (calendarEntry) {
+              await calendarEntry.updateVideoLink(videoLink);
+              console.log(
+                `Обновлена ссылка на видео в календаре для сессии ${sessionId}`
+              );
+            } else {
+              // Если запись в календаре не найдена, создаем новую
+              const newCalendarEntry = new InMemoryCalendarEntry({
+                sessionId,
+                videoLink,
+                startTime: session.startTime,
+                participants: [userId],
+              });
+              await newCalendarEntry.save();
+              console.log(
+                `Создана новая запись в календаре для сессии ${sessionId} с видеоссылкой`
+              );
+            }
 
             // Логируем генерацию ссылки
             if (USE_MONGODB) {
@@ -474,6 +471,27 @@ router.post(
         userId,
         role as 'interviewer' | 'interviewee' | 'observer'
       );
+
+      // Обновляем запись в календаре - добавляем пользователя в список участников
+      const calendarEntry = await InMemoryCalendarEntry.findBySessionId(
+        sessionId
+      );
+      if (calendarEntry) {
+        await calendarEntry.addParticipant(userId);
+        console.log(
+          `Пользователь ${userId} добавлен в календарь для сессии ${sessionId}`
+        );
+      } else {
+        // Если запись в календаре не найдена, создаем новую
+        const newCalendarEntry = new InMemoryCalendarEntry({
+          sessionId,
+          videoLink: session.videoLink,
+          startTime: session.startTime,
+          participants: [userId],
+        });
+        await newCalendarEntry.save();
+        console.log(`Создана новая запись в календаре для сессии ${sessionId}`);
+      }
 
       // Если пользователь выбрал роль интервьюера, устанавливаем videoLinkStatus = active
       if (role === 'interviewer' && session.videoLink) {
@@ -649,24 +667,7 @@ router.post(
         return;
       }
 
-      // Проверяем, есть ли у пользователя googleId
-      if (!user.googleId) {
-        // Логируем попытку доступа без Google-аутентификации
-        await Log.create({
-          sessionId: session.id,
-          userId,
-          action: 'video_link_access_denied',
-          details: {
-            reason: 'missing_google_id',
-            timestamp: new Date(),
-          },
-        });
-
-        res.status(403).json({
-          message: 'Для управления ссылкой требуется вход через Google',
-        });
-        return;
-      }
+      // Удалена проверка на наличие googleId
 
       // Если ссылка уже активна, возвращаем её
       if (session.videoLinkStatus === 'active' && session.videoLink) {
@@ -700,6 +701,29 @@ router.post(
           session.videoLinkStatus = 'manual';
           await session.save();
 
+          // Обновляем запись в календаре
+          const calendarEntry = await InMemoryCalendarEntry.findBySessionId(
+            sessionId
+          );
+          if (calendarEntry) {
+            await calendarEntry.updateVideoLink(manualLink);
+            console.log(
+              `Обновлена ссылка на видео в календаре для сессии ${sessionId}`
+            );
+          } else {
+            // Если запись в календаре не найдена, создаем новую
+            const newCalendarEntry = new InMemoryCalendarEntry({
+              sessionId,
+              videoLink: manualLink,
+              startTime: session.startTime,
+              participants: [userId],
+            });
+            await newCalendarEntry.save();
+            console.log(
+              `Создана новая запись в календаре для сессии ${sessionId} с видеоссылкой`
+            );
+          }
+
           // Логируем добавление ручной ссылки
           await Log.create({
             sessionId: session.id,
@@ -728,14 +752,13 @@ router.post(
           });
         }
       } else {
-        // Если ручная ссылка не предоставлена, генерируем новую через Google Meet API
+        // Если ручная ссылка не предоставлена, генерируем новую через WebRTC сервис
 
         // Определяем параметры встречи
         const meetingOptions = {
           summary: `Mock Interview ${session.id}`,
           startTime: session.startTime,
           durationMinutes: 60, // Длительность по умолчанию - 60 минут
-          googleAccessToken: user.googleAccessToken, // Добавляем токен пользователя
         };
 
         try {
@@ -750,7 +773,7 @@ router.post(
             },
           });
 
-          // Генерируем новую ссылку на Google Meet с использованием googleAccessToken пользователя
+          // Генерируем новую ссылку на WebRTC комнату
           const videoLink = await createMeeting(meetingOptions);
 
           // Проверяем валидность новой ссылки
@@ -761,6 +784,29 @@ router.post(
             session.videoLink = videoLink;
             session.videoLinkStatus = 'active';
             await session.save();
+
+            // Обновляем запись в календаре
+            const calendarEntry = await InMemoryCalendarEntry.findBySessionId(
+              sessionId
+            );
+            if (calendarEntry) {
+              await calendarEntry.updateVideoLink(videoLink);
+              console.log(
+                `Обновлена ссылка на видео в календаре для сессии ${sessionId}`
+              );
+            } else {
+              // Если запись в календаре не найдена, создаем новую
+              const newCalendarEntry = new InMemoryCalendarEntry({
+                sessionId,
+                videoLink,
+                startTime: session.startTime,
+                participants: [userId],
+              });
+              await newCalendarEntry.save();
+              console.log(
+                `Создана новая запись в календаре для сессии ${sessionId} с видеоссылкой`
+              );
+            }
 
             // Логируем генерацию ссылки
             await Log.create({
@@ -778,14 +824,15 @@ router.post(
             notifyVideoLinkStatusUpdated(io, sessionId, videoLink, 'active');
 
             res.json({
-              message: 'Ссылка на видеозвонок успешно сгенерирована',
+              message: 'Ссылка на WebRTC видеочат успешно сгенерирована',
               videoLink,
               videoLinkStatus: 'active',
             });
           } else {
             // Если ссылка не прошла валидацию, возвращаем ошибку
             res.status(400).json({
-              message: 'Сгенерированная ссылка не прошла валидацию',
+              message:
+                'Сгенерированная ссылка на WebRTC комнату не прошла валидацию',
               details: validationResult.message,
             });
           }
@@ -856,7 +903,7 @@ router.post(
 
           // Возвращаем ошибку клиенту
           res.status(500).json({
-            message: 'Ошибка при генерации ссылки на видеозвонок',
+            message: 'Ошибка при генерации ссылки на WebRTC комнату',
             details: (error as Error).message,
           });
         }

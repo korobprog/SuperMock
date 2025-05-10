@@ -25,17 +25,13 @@ passport.use(
       callbackURL:
         process.env.GOOGLE_CALLBACK_URL ||
         'http://localhost:9877/api/auth/google/callback',
-      scope: [
-        'profile',
-        'email',
-        'https://www.googleapis.com/auth/calendar.events',
-      ],
+      scope: ['profile', 'email'],
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
         console.log('Google OAuth профиль:', profile);
         console.log(
-          'Google OAuth accessToken:',
+          'OAuth accessToken:',
           accessToken ? 'Получен' : 'Отсутствует'
         );
         console.log(

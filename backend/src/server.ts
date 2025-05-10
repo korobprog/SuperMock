@@ -5,9 +5,24 @@ import cors from 'cors';
 import passport from 'passport';
 import dotenv from 'dotenv';
 import { initializeWebSocket } from '../src/websocket';
+import { BACKEND_PORT, FRONTEND_PORT } from './config/app';
 
 // Загружаем переменные окружения из файла .env
 dotenv.config();
+
+// Добавляем расширенное логирование для отладки
+console.log('=== ЗАПУСК СЕРВЕРА ===');
+console.log(`Текущий порт: ${process.env.PORT || 9999}`);
+console.log(`Текущая директория: ${__dirname}`);
+console.log('Переменные окружения:', {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  FRONTEND_PORT: process.env.FRONTEND_PORT,
+});
+console.log('Импортированные константы:', {
+  BACKEND_PORT,
+  FRONTEND_PORT,
+});
 
 // Импортируем конфигурацию Passport
 import './config/passport';
@@ -16,11 +31,12 @@ import './config/passport';
 import authRoutes from './routes/auth';
 import sessionRoutes from './routes/sessions';
 import feedbackRoutes from './routes/feedback';
+import calendarRoutes from './routes/calendar';
 
 // Инициализация приложения Express
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 9877; // Изменяем порт на 9877, чтобы не конфликтовать с уже запущенными серверами
+const PORT = BACKEND_PORT; // Используем порт из конфигурации
 
 // Инициализация Socket.IO
 const io = initializeWebSocket(server);
@@ -39,19 +55,47 @@ app.use(passport.initialize());
 app.use(
   cors({
     origin: [
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
+      // HTTP варианты
+      `http://localhost:${FRONTEND_PORT}`,
+      `http://127.0.0.1:${FRONTEND_PORT}`,
+      // HTTPS варианты
+      `https://localhost:${FRONTEND_PORT}`,
+      `https://127.0.0.1:${FRONTEND_PORT}`,
+      // Добавляем несколько соседних портов на случай, если основной порт занят
+      `http://localhost:${Number(FRONTEND_PORT) + 1}`,
+      `http://127.0.0.1:${Number(FRONTEND_PORT) + 1}`,
+      `https://localhost:${Number(FRONTEND_PORT) + 1}`,
+      `https://127.0.0.1:${Number(FRONTEND_PORT) + 1}`,
+      `http://localhost:${Number(FRONTEND_PORT) + 2}`,
+      `http://127.0.0.1:${Number(FRONTEND_PORT) + 2}`,
+      `https://localhost:${Number(FRONTEND_PORT) + 2}`,
+      `https://127.0.0.1:${Number(FRONTEND_PORT) + 2}`,
+      `http://localhost:${Number(FRONTEND_PORT) + 3}`,
+      `http://127.0.0.1:${Number(FRONTEND_PORT) + 3}`,
+      `https://localhost:${Number(FRONTEND_PORT) + 3}`,
+      `https://127.0.0.1:${Number(FRONTEND_PORT) + 3}`,
+      `http://localhost:${Number(FRONTEND_PORT) + 4}`,
+      `http://127.0.0.1:${Number(FRONTEND_PORT) + 4}`,
+      `https://localhost:${Number(FRONTEND_PORT) + 4}`,
+      `https://127.0.0.1:${Number(FRONTEND_PORT) + 4}`,
+      // Добавляем порты, на которых может работать фронтенд
       'http://localhost:5174',
       'http://127.0.0.1:5174',
+      'https://localhost:5174',
+      'https://127.0.0.1:5174',
       'http://localhost:5175',
       'http://127.0.0.1:5175',
-      'http://localhost:5177',
-      'http://127.0.0.1:5177',
-      'http://localhost:5179',
-      'http://127.0.0.1:5179',
-      'http://localhost:5180',
-      'http://127.0.0.1:5180',
-      'http://localhost:5181',
+      'https://localhost:5175',
+      'https://127.0.0.1:5175',
+      'http://localhost:5176',
+      'http://127.0.0.1:5176',
+      'https://localhost:5176',
+      'https://127.0.0.1:5176',
+      // В режиме разработки разрешаем запросы с любого порта
+      'http://localhost:*',
+      'http://127.0.0.1:*',
+      'https://localhost:*',
+      'https://127.0.0.1:*',
     ], // Разрешаем запросы с Vite dev сервера
     credentials: true, // Разрешаем передачу куки и заголовков авторизации
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -78,12 +122,21 @@ app.get('/api', (req: Request, res: Response): void => {
 app.use('/api', authRoutes); // Этот маршрут также обрабатывает корневой URL '/' для Google OAuth
 app.use('/api/sessions', sessionRoutes);
 app.use('/api', feedbackRoutes);
+app.use('/api/calendar', calendarRoutes);
 
 // Обработка ошибок API
 app.use(
   '/api',
   (err: Error, req: Request, res: Response, next: NextFunction): void => {
     console.error('API ошибка:', err.stack);
+    console.error('Детали запроса:', {
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      protocol: req.protocol,
+      secure: req.secure,
+      originalUrl: req.originalUrl,
+    });
     res.status(500).json({ message: 'Что-то пошло не так на сервере!' });
   }
 );
@@ -104,8 +157,36 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction): void => {
 
 // Запуск сервера
 server.listen(PORT, (): void => {
+  const address = server.address();
+  const actualPort =
+    typeof address === 'object' && address ? address.port : PORT;
+
   console.log(`Сервер запущен на порту ${PORT}`);
-  console.log(`WebSocket сервер инициализирован`);
+  console.log(`Фактический порт сервера: ${actualPort}`);
+  console.log(`WebSocket сервер инициализирован на порту ${actualPort}`);
+
+  if (actualPort !== Number(PORT)) {
+    console.warn(
+      `ВНИМАНИЕ: Фактический порт (${actualPort}) отличается от запрошенного (${PORT})`
+    );
+  }
+});
+
+// Обработчики для корректного завершения процесса
+process.on('SIGINT', () => {
+  console.log('Получен сигнал SIGINT. Закрытие сервера...');
+  server.close(() => {
+    console.log('Сервер закрыт.');
+    process.exit(0);
+  });
+});
+
+process.on('SIGTERM', () => {
+  console.log('Получен сигнал SIGTERM. Закрытие сервера...');
+  server.close(() => {
+    console.log('Сервер закрыт.');
+    process.exit(0);
+  });
 });
 
 // Экспортируем app для тестирования

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Приложение для тренировочных собеседований",
   "scripts": {
-    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
+    "dev": "concurrently \"kill-port 5173\" \"cd backend && nodemon --watch src -e ts --exec ts-node src/server.ts\" \"cd react-frontend && npm run dev\"",
     "start:backend": "cd backend && npm start",
     "dev:backend": "cd backend && npm run dev",
     "start:frontend": "cd react-frontend && npm run preview",

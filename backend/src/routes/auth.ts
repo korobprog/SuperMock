@@ -165,11 +165,7 @@ router.get('/user', auth, (async (req: Request, res: Response) => {
 router.get(
   '/auth/google',
   passport.authenticate('google', {
-    scope: [
-      'profile',
-      'email',
-      'https://www.googleapis.com/auth/calendar.events',
-    ],
+    scope: ['profile', 'email'],
     session: false,
   })
 );
@@ -206,8 +202,8 @@ router.get(
         }
 
         // Перенаправляем пользователя на фронтенд с токеном
-        // Используем порт 5174, на котором запущен фронтенд
-        res.redirect(`http://localhost:5174/auth-callback?token=${token}`);
+        // Используем порт 5173, на котором запущен фронтенд
+        res.redirect(`http://localhost:5173/auth-callback?token=${token}`);
       });
     } catch (error) {
       console.error('Ошибка при обработке Google OAuth callback:', error);

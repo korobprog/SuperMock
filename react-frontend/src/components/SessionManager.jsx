@@ -4,10 +4,11 @@ import SessionCreate from './SessionCreate';
 import SessionJoin from './SessionJoin';
 import FeedbackForm from './FeedbackForm';
 import FeedbackResults from './FeedbackResults';
+import Calendar from './Calendar';
 import { SocketProvider } from '../contexts/SocketContext';
 
 function SessionManager({ token }) {
-  const [activeView, setActiveView] = useState('list'); // list, create, join, feedback, results
+  const [activeView, setActiveView] = useState('list'); // list, create, join, feedback, results, calendar
   const [selectedSession, setSelectedSession] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -84,6 +85,16 @@ function SessionManager({ token }) {
         >
           Создать сессию
         </button>
+        <button
+          className={`px-4 py-3 font-medium text-sm focus:outline-none ${
+            activeView === 'calendar'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveView('calendar')}
+        >
+          Календарь
+        </button>
       </div>
 
       <div className="p-4">
@@ -130,6 +141,12 @@ function SessionManager({ token }) {
             sessionId={selectedSession.id}
             onBack={() => setActiveView('list')}
           />
+        )}
+
+        {activeView === 'calendar' && (
+          <SocketProvider token={token}>
+            <Calendar token={token} />
+          </SocketProvider>
         )}
       </div>
     </div>
