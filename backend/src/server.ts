@@ -24,6 +24,17 @@ console.log('Импортированные константы:', {
   FRONTEND_PORT,
 });
 
+// Добавляем расширенное логирование для отладки портов
+console.log('=== КОНФИГУРАЦИЯ ПОРТОВ ===');
+console.log(`- Порт бэкенда (BACKEND_PORT): ${BACKEND_PORT}`);
+console.log(`- Порт фронтенда (FRONTEND_PORT): ${FRONTEND_PORT}`);
+console.log(
+  `- Порт из переменной окружения (PORT): ${process.env.PORT || 'не определен'}`
+);
+console.log(
+  `- Порт, который будет использоваться: ${process.env.PORT || BACKEND_PORT}`
+);
+
 // Импортируем конфигурацию Passport
 import './config/passport';
 
@@ -164,6 +175,21 @@ server.listen(PORT, (): void => {
   console.log(`Сервер запущен на порту ${PORT}`);
   console.log(`Фактический порт сервера: ${actualPort}`);
   console.log(`WebSocket сервер инициализирован на порту ${actualPort}`);
+
+  // Добавляем информацию о конфигурации CORS
+  console.log('=== КОНФИГУРАЦИЯ CORS ===');
+  console.log('CORS настроен для следующих источников:');
+  // Выводим список источников, которые мы явно указали в настройках CORS
+  [
+    `http://localhost:${FRONTEND_PORT}`,
+    `http://127.0.0.1:${FRONTEND_PORT}`,
+    `https://localhost:${FRONTEND_PORT}`,
+    `https://127.0.0.1:${FRONTEND_PORT}`,
+    // И другие порты, указанные в настройках
+  ].forEach((origin, index) => {
+    console.log(`  ${index + 1}. ${origin}`);
+  });
+  console.log('  ... и другие порты, включая динамически рассчитанные');
 
   if (actualPort !== Number(PORT)) {
     console.warn(

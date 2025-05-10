@@ -1,8 +1,8 @@
 import { createContext, useEffect, useState, ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-// Фиксированный порт бэкенда
-const BACKEND_PORT = 9877;
+// Используем переменную окружения для URL бэкенда
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
 // Определяем тип для контекста
 interface SocketContextType {
@@ -57,18 +57,28 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       token ? `${token.substring(0, 10)}...` : 'отсутствует'
     );
 
+    // Добавляем расширенное логирование для отладки портов
+    console.log('SocketContext: Конфигурация портов:');
+    console.log(
+      `- BACKEND_URL из переменных окружения: ${
+        import.meta.env.VITE_BACKEND_URL || 'не определен'
+      }`
+    );
+    console.log(`- BACKEND_URL используемый: ${BACKEND_URL}`);
+    console.log(`- Порт бэкенда: ${BACKEND_URL.split(':').pop()}`);
+    console.log(
+      `- Порт фронтенда: ${window.location.port || 'стандартный (80/443)'}`
+    );
+
     // Создаем новое соединение с сервером
-    // Определяем текущий протокол (http или https) динамически
-    const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
-    console.log(
-      `SocketContext: Создание соединения с сервером ${protocol}://localhost:${BACKEND_PORT}`
-    );
+    // Используем переменную окружения для URL бэкенда
+    console.log(`SocketContext: Создание соединения с сервером ${BACKEND_URL}`);
     // Определяем текущий порт фронтенда динамически
-    const currentPort = window.location.port || '5173';
+    const currentPort = window.location.port || '3000';
     console.log(
-      `SocketContext: Текущие порты - бэкенд: ${BACKEND_PORT}, фронтенд: ${currentPort}, протокол: ${protocol}`
+      `SocketContext: Текущие порты - фронтенд: ${currentPort}, бэкенд URL: ${BACKEND_URL}`
     );
-    const socketInstance = io(`${protocol}://localhost:${BACKEND_PORT}`, {
+    const socketInstance = io(BACKEND_URL, {
       auth: { token },
       transports: ['polling', 'websocket'], // Поддержка обоих транспортов
       upgrade: true, // Разрешаем обновление до WebSocket

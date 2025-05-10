@@ -4,7 +4,7 @@
   "description": "Приложение для тренировочных собеседований",
   "scripts": {
     "start": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
-    "dev": "concurrently \"kill-port 5173\" \"npm run dev:backend\" \"cd backend && nodemon --watch src -e ts --exec ts-node src/server.ts\" \"cd react-frontend && npm run dev\"",
+    "dev": "concurrently \"kill-port 3000\" \"npm run dev:backend\" \"cd backend && nodemon --watch src -e ts --exec ts-node src/server.ts\" \"cd react-frontend && npm run dev\"",
     "start:backend": "cd backend && npm start",
     "dev:backend": "cd backend && npm run dev",
     "start:frontend": "cd react-frontend && npm run preview",

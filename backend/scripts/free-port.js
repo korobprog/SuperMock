@@ -8,7 +8,7 @@
 const { execSync } = require('child_process');
 const os = require('os');
 
-const port = process.argv[2] || 9877;
+const port = process.argv[2] || 3000;
 
 if (!port) {
   console.error('Пожалуйста, укажите номер порта');

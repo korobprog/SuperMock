@@ -24,7 +24,23 @@ function Calendar({ token }) {
   const fetchCalendarEntries = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:9877/api/calendar', {
+      console.log('Calendar: Отправка запроса на API. Переменные окружения:', {
+        VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+        MODE: import.meta.env.MODE,
+        DEV: import.meta.env.DEV,
+        PROD: import.meta.env.PROD,
+      });
+
+      // Используем переменную окружения для URL бэкенда
+      const apiUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const endpoint = `${apiUrl}/api/calendar`;
+      console.log('Calendar: Полный URL запроса:', endpoint);
+      console.log(
+        'Calendar: Старый жестко закодированный URL:',
+        'http://localhost:3000/api/calendar'
+      );
+
+      const response = await fetch(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',

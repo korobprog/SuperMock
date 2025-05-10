@@ -2,13 +2,16 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 // https://vite.dev/config/
-console.log('=== VITE КОНФИГУРАЦИЯ ===');
+console.log('=== VITE КОНФИГУРАЦИЯ TS ===');
+console.log('Используется файл vite.config.ts');
 console.log('Текущая директория:', process.cwd());
 console.log('Переменные окружения:', {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
   FRONTEND_PORT: process.env.FRONTEND_PORT,
+  VITE_BACKEND_URL: process.env.VITE_BACKEND_URL,
 });
+// import.meta.env доступно только во время выполнения, не в конфигурации
 
 export default defineConfig({
   plugins: [react()],
@@ -16,23 +19,23 @@ export default defineConfig({
     // Добавляем логирование при запуске
     hmr: {
       // Фиксируем порт для HMR WebSocket
-      port: 5173,
+      port: 3000,
       // Добавляем логирование
       overlay: true,
       // Фиксируем клиентский порт
-      clientPort: 5173,
+      clientPort: 3000,
     },
     // Явно указываем хост и порт
     host: 'localhost',
-    port: 5173,
+    port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:9877', // Порт обновлен автоматически
+        target: process.env.VITE_BACKEND_URL || 'http://localhost:8080',
         changeOrigin: true,
-        secure: true, // Разрешаем безопасные (HTTPS) соединения
+        secure: false, // Отключаем проверку HTTPS для локальной разработки
         rewrite: (path) => {
           console.log('Прокси запрос:', path);
-          return path.replace(/^\/api/, '/api');
+          return path; // Не меняем путь
         },
         // Добавляем логирование для отладки
         configure: (proxy, options) => {

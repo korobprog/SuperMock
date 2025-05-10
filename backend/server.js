@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 // Настройка CORS
 app.use(
   cors({
-    origin: ['https://localhost:5173', 'https://127.0.0.1:5173'], // Разрешаем запросы с Vite dev сервера
+    origin: ['https://localhost:3000', 'https://127.0.0.1:3000'], // Разрешаем запросы с Vite dev сервера
     credentials: true, // Разрешаем передачу куки и заголовков авторизации
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],

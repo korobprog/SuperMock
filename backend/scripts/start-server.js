@@ -12,7 +12,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Основной порт
-const basePort = 9877;
+const basePort = 3000;
 // Максимальное количество попыток найти свободный порт
 const maxAttempts = 10;
 

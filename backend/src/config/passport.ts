@@ -17,15 +17,30 @@ passport.deserializeUser(async (id: string, done) => {
 });
 
 // Настройка стратегии Google OAuth
+// Определяем фактический callback URL, который будет использоваться
+const actualCallbackURL =
+  process.env.GOOGLE_CALLBACK_URL ||
+  'http://localhost:8080/api/google/callback';
+
+console.log('=== НАСТРОЙКА GOOGLE OAUTH СТРАТЕГИИ ===');
+console.log('Используемый callbackURL:', actualCallbackURL);
+console.log(
+  'GOOGLE_CLIENT_ID установлен:',
+  process.env.GOOGLE_CLIENT_ID ? 'Да' : 'Нет'
+);
+console.log(
+  'GOOGLE_CLIENT_SECRET установлен:',
+  process.env.GOOGLE_CLIENT_SECRET ? 'Да' : 'Нет'
+);
+
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      callbackURL:
-        process.env.GOOGLE_CALLBACK_URL ||
-        'http://localhost:9877/api/auth/google/callback',
+      callbackURL: actualCallbackURL,
       scope: ['profile', 'email'],
+      proxy: true, // Добавляем поддержку прокси для корректной обработки перенаправлений
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -38,6 +53,29 @@ passport.use(
           'Google OAuth refreshToken:',
           refreshToken ? 'Получен' : 'Отсутствует'
         );
+
+        // Добавляем расширенное логирование для отладки redirect_uri_mismatch
+        console.log('=== ОТЛАДКА GOOGLE OAUTH REDIRECT ===');
+        console.log(
+          'Используемый callbackURL:',
+          process.env.GOOGLE_CALLBACK_URL ||
+            'http://localhost:8080/api/auth/google/callback'
+        );
+        console.log('Фактический порт бэкенда:', process.env.PORT || 8080);
+        console.log(
+          'Порт фронтенда из конфигурации:',
+          require('../config/app').FRONTEND_PORT
+        );
+        console.log(
+          'Полный URL обратного вызова:',
+          `http://localhost:${process.env.PORT || 8080}/api/google/callback`
+        );
+        console.log('Параметры запроса:', {
+          accessToken: accessToken ? 'Получен' : 'Отсутствует',
+          refreshToken: refreshToken ? 'Получен' : 'Отсутствует',
+          profileId: profile.id,
+          profileEmails: profile.emails,
+        });
 
         // Получаем email из профиля или создаем временный
         const email =

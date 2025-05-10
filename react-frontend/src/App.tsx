@@ -1,21 +1,45 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FC } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import reactLogo from './assets/react.svg';
 import './App.css';
-import Register from './components/Register';
+// Импорт компонентов с указанием расширений для ясности
+import Register from './components/Register.jsx';
 import Login from './components/Login';
-import UserProfile from './components/UserProfile';
-import SessionManager from './components/SessionManager';
-import AuthCallback from './components/AuthCallback';
+import UserProfile from './components/UserProfile.jsx';
+import SessionManager from './components/SessionManager.jsx';
+import AuthCallback from './components/AuthCallback.jsx';
 import VideoChat from './components/VideoChat';
 import { SocketProvider } from './contexts/SocketContext';
 import './components/Auth.css';
 
-function App() {
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [isAuthenticated, setIsAuthenticated] = useState(!!token);
-  const [activeTab, setActiveTab] = useState('login');
-  const [apiData, setApiData] = useState('Загрузка данных...');
+// Добавим отладочный лог для проверки загрузки компонента
+console.log('App.tsx загружен');
+
+// Определение типов для компонентов
+interface RegisterProps {
+  onRegisterSuccess: (token: string) => void;
+}
+
+interface LoginProps {
+  onLoginSuccess: (token: string) => void;
+}
+
+interface UserProfileProps {
+  token: string | null;
+  onLogout: () => void;
+}
+
+interface SessionManagerProps {
+  token: string | null;
+}
+
+const App: FC = () => {
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem('token')
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token);
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [apiData, setApiData] = useState<string>('Загрузка данных...');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,22 +73,22 @@ function App() {
     }
   }, [navigate]);
 
-  const handleLoginSuccess = (token) => {
+  const handleLoginSuccess = (token: string): void => {
     setToken(token);
     setIsAuthenticated(true);
   };
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     localStorage.removeItem('token');
     setToken(null);
     setIsAuthenticated(false);
     navigate('/');
   };
 
-  const MainContent = () => (
+  const MainContent: FC = () => (
     <>
       <div>
-        <a href="https://react.dev" target="_blank">
+        <a href="https://react.dev" target="_blank" rel="noreferrer">
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
@@ -130,6 +154,6 @@ function App() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
-}
+};
 
 export default App;

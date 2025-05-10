@@ -24,7 +24,7 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
     clientID: process.env.GOOGLE_CLIENT_ID || '',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     callbackURL: process.env.GOOGLE_CALLBACK_URL ||
-        'http://localhost:9877/api/auth/google/callback',
+        'http://localhost:3000/api/auth/google/callback',
     scope: ['profile', 'email'],
 }, async (accessToken, refreshToken, profile, done) => {
     try {

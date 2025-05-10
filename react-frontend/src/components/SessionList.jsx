@@ -45,7 +45,19 @@ function SessionList({
         token.substring(0, 10) + '...'
       );
 
-      const response = await fetch('/api/sessions', {
+      console.log('Отправка запроса на API. Переменные окружения:', {
+        VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+        MODE: import.meta.env.MODE,
+        DEV: import.meta.env.DEV,
+        PROD: import.meta.env.PROD,
+      });
+
+      // Используем переменную окружения для URL бэкенда
+      const apiUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const endpoint = `${apiUrl}/api/sessions`;
+      console.log('Полный URL запроса:', endpoint);
+
+      const response = await fetch(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json', // Явно указываем, что ожидаем JSON
@@ -165,7 +177,9 @@ function SessionList({
     if (!token) return;
 
     try {
-      const response = await fetch('/api/user', {
+      // Используем переменную окружения для URL бэкенда
+      const apiUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const response = await fetch(`${apiUrl}/api/user`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -344,11 +358,16 @@ function SessionList({
       }
 
       try {
-        const response = await fetch(`/api/sessions/${sessionId}/feedback`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        // Используем переменную окружения для URL бэкенда
+        const apiUrl = import.meta.env.VITE_BACKEND_URL || '';
+        const response = await fetch(
+          `${apiUrl}/api/sessions/${sessionId}/feedback`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           // Если ошибка 404 или 403, устанавливаем статус "нет обратной связи"
@@ -400,16 +419,21 @@ function SessionList({
     setVideoLinkError(null);
 
     try {
-      const response = await fetch(`/api/sessions/${sessionId}/video`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          manualLink: manualLink || '',
-        }),
-      });
+      // Используем переменную окружения для URL бэкенда
+      const apiUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const response = await fetch(
+        `${apiUrl}/api/sessions/${sessionId}/video`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            manualLink: manualLink || '',
+          }),
+        }
+      );
 
       // Получаем текст ответа для анализа
       const responseText = await response.text();

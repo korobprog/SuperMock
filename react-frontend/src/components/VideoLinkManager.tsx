@@ -77,7 +77,7 @@ const VideoLinkManager: FC<VideoLinkManagerProps> = ({
 
       // Добавляем дополнительные логи для отладки прокси
       console.log(
-        'VideoLinkManager: Конфигурация Vite прокси должна перенаправить запрос на http://localhost:9877'
+        'VideoLinkManager: Конфигурация Vite прокси должна перенаправить запрос на http://localhost:3000'
       );
       console.log(
         'VideoLinkManager: Проверяем, работает ли прокси с относительным URL'
@@ -174,7 +174,7 @@ const VideoLinkManager: FC<VideoLinkManagerProps> = ({
           console.error('VideoLinkManager: Стек ошибки:', fetchError.stack);
         }
         console.log(
-          'VideoLinkManager: Проверьте, запущен ли сервер на порту 9877'
+          'VideoLinkManager: Проверьте, запущен ли сервер на порту 3000'
         );
         throw fetchError;
       }

@@ -1,4 +1,5 @@
 import { useState, FC } from 'react';
+console.log('Login.tsx загружен');
 
 interface LoginProps {
   onLoginSuccess?: (token: string) => void;

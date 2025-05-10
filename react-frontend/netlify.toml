@@ -1,0 +1,15 @@
+# Конфигурация для деплоя на Netlify
+[build]
+  command = "npm run build" # Команда для сборки проекта
+  publish = "dist" # Папка, которая будет опубликована
+
+# Настройка для SPA (Single Page Application)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Переменные окружения для сборки
+# ВАЖНО: Заменить <server-ip> на реальный IP-адрес сервера!
+[build.environment]
+  VITE_BACKEND_URL = "https://<server-ip>:3000" # Плейсхолдер, требует замены

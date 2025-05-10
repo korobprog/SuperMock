@@ -3,13 +3,13 @@
  */
 
 // Порт бэкенда (фиксированный)
-export const BACKEND_PORT = 9877;
+export const BACKEND_PORT = 8080;
 
 // Порт WebSocket сервера (фиксированный)
 export const WEBSOCKET_PORT = 9878;
 
 // Порт фронтенда (фиксированный)
-export const FRONTEND_PORT = 5173;
+export const FRONTEND_PORT = 3000;
 
 // Базовый URL фронтенда
 export const FRONTEND_URL = `http://localhost:${FRONTEND_PORT}`;
