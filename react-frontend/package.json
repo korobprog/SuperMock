@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000",
-    "build": "node ./node_modules/vite/bin/vite.js build",
+    "build": "npx vite build --force",
     "lint": "eslint .",
     "preview": "vite preview"
   },

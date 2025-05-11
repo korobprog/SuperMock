@@ -1,6 +1,6 @@
 # Конфигурация для деплоя на Netlify
 [build]
-  command = "npm ci && npm run build" # Используем npm ci для чистой установки зависимостей
+  command = "npm ci --include=dev && npm run build" # Явно включаем devDependencies
   publish = "dist" # Папка, которая будет опубликована
 
 # Редирект для API запросов на бэкенд-сервер
@@ -21,4 +21,4 @@
   VITE_BACKEND_URL = "http://217.198.6.238:80"
   VITE_API_URL = "http://217.198.6.238:80/api"
   VITE_WS_URL = "http://217.198.6.238:80"
-  NODE_VERSION = "18" # Явно указываем версию Node.js
+  NODE_VERSION = "20" # Обновляем до Node.js 20 для совместимости с react-router
