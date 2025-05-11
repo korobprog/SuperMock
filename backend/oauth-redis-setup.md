@@ -1,8 +1,8 @@
-# Руководство по настройке Google OAuth и Redis для удаленного сервера
+# Руководство по настройке Google OAuth и Redis для удаленного сервера и Netlify
 
 ## Настройка Google OAuth
 
-### 1. Обновление настроек в консоли Google Cloud
+### 1. Обновление настроек в консоли Google Cloud для удаленного сервера
 
 1. Перейдите в [Google Cloud Console](https://console.cloud.google.com/)
 2. Выберите ваш проект
@@ -20,15 +20,42 @@
    ```
 7. Нажмите "Save"
 
-### 2. Обновление переменных окружения
+### 2. Обновление настроек в консоли Google Cloud для Netlify
 
-Добавьте следующие переменные в файл `.env.production`:
+1. Перейдите в [Google Cloud Console](https://console.cloud.google.com/)
+2. Выберите ваш проект
+3. Перейдите в "APIs & Services" > "Credentials"
+4. Найдите ваш OAuth 2.0 Client ID и нажмите на него для редактирования
+5. В разделе "Authorized JavaScript origins" добавьте:
+   ```
+   https://supermock.netlify.app
+   ```
+6. В разделе "Authorized redirect URIs" добавьте:
+   ```
+   https://supermock.netlify.app/api/google/callback
+   ```
+7. Нажмите "Save"
+
+### 3. Обновление переменных окружения для удаленного сервера
+
+Добавьте следующие переменные в файл `.env.production` для удаленного сервера:
 
 ```
 GOOGLE_CLIENT_ID=ваш_client_id
 GOOGLE_CLIENT_SECRET=ваш_client_secret
 GOOGLE_CALLBACK_URL=http://217.198.6.238/api/google/callback
 FRONTEND_URL=http://217.198.6.238
+```
+
+### 4. Обновление переменных окружения для Netlify
+
+Добавьте следующие переменные в файл `.env.production` для деплоя на Netlify:
+
+```
+GOOGLE_CLIENT_ID=ваш_client_id
+GOOGLE_CLIENT_SECRET=ваш_client_secret
+GOOGLE_CALLBACK_URL=https://supermock.netlify.app/api/google/callback
+FRONTEND_URL=https://supermock.netlify.app
 ```
 
 ## Настройка Redis

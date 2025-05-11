@@ -128,6 +128,30 @@ const Login: FC<LoginProps> = ({ onLoginSuccess }) => {
             <a
               href="/api/auth/google"
               className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              onClick={(e) => {
+                // Предотвращаем стандартное поведение ссылки для логирования
+                e.preventDefault();
+
+                console.log('=== ОТЛАДКА GOOGLE АВТОРИЗАЦИИ ===');
+                console.log('Нажата кнопка Google авторизации');
+                console.log('URL для авторизации:', '/api/auth/google');
+                console.log(
+                  'Полный URL:',
+                  window.location.origin + '/api/auth/google'
+                );
+                console.log('Netlify домен:', window.location.hostname);
+                console.log('Протокол:', window.location.protocol);
+                console.log('Порт:', window.location.port);
+                console.log('Переменные окружения:');
+                console.log(
+                  'VITE_BACKEND_URL:',
+                  import.meta.env.VITE_BACKEND_URL
+                );
+                console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
+
+                // После логирования продолжаем перенаправление
+                window.location.href = '/api/auth/google';
+              }}
             >
               <svg
                 className="w-5 h-5 mr-2"
