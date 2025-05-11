@@ -1,0 +1,25 @@
+# Корневой файл конфигурации Netlify
+# Указываем базовую директорию для проекта
+[build]
+  base = "react-frontend"
+  command = "npm run build"
+  publish = "dist"
+
+# Редирект для API запросов на бэкенд-сервер
+[[redirects]]
+  from = "/api/*"
+  to = "http://217.198.6.238:80/api/:splat"
+  status = 200
+  force = true
+
+# Настройка для SPA (Single Page Application)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Переменные окружения для сборки
+[build.environment]
+  VITE_BACKEND_URL = "http://217.198.6.238:80"
+  VITE_API_URL = "http://217.198.6.238:80/api"
+  VITE_WS_URL = "http://217.198.6.238:80"
