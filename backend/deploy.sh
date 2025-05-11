@@ -53,6 +53,7 @@ fi
 # Сборка Docker образа
 log "Сборка Docker образа..."
 log "Используем Docker username: $DOCKER_USERNAME"
+# Используем флаг --no-cache, чтобы гарантировать полную пересборку образа
 docker build -t $DOCKER_USERNAME/mock-interviews-backend ./ --no-cache
 
 # Проверка успешности сборки

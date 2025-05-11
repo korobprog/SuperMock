@@ -1,5 +1,5 @@
 // Простая модель пользователя для хранения в памяти
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 // Хранилище пользователей в памяти

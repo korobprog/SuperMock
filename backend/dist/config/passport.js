@@ -20,17 +20,65 @@ passport_1.default.deserializeUser(async (id, done) => {
     }
 });
 // Настройка стратегии Google OAuth
+// Определяем фактический callback URL, который будет использоваться
+const actualCallbackURL = process.env.GOOGLE_CALLBACK_URL ||
+    'https://supermock.netlify.app/api/google/callback';
+console.log('=== НАСТРОЙКА GOOGLE OAUTH СТРАТЕГИИ ===');
+console.log('Используемый callbackURL:', actualCallbackURL);
+console.log('Значение GOOGLE_CALLBACK_URL из env:', process.env.GOOGLE_CALLBACK_URL || 'не установлен');
+console.log('Значение GOOGLE_CALLBACK_URL из Netlify:', process.env.NETLIFY_GOOGLE_CALLBACK_URL || 'не установлен');
+console.log('GOOGLE_CLIENT_ID установлен:', process.env.GOOGLE_CLIENT_ID ? 'Да' : 'Нет');
+console.log('GOOGLE_CLIENT_SECRET установлен:', process.env.GOOGLE_CLIENT_SECRET ? 'Да' : 'Нет');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('HOST:', process.env.HOST);
+console.log('PORT:', process.env.PORT);
+console.log('FRONTEND_URL из env:', process.env.FRONTEND_URL || 'не установлен');
+console.log('MONGO_URI:', process.env.MONGO_URI ? '***скрыто***' : 'не установлен');
+console.log('REDIS_HOST:', process.env.REDIS_HOST || 'не установлен');
+console.log('=== ОТЛАДКА NETLIFY ПЕРЕМЕННЫХ В PASSPORT ===');
+console.log('Все переменные окружения:');
+Object.keys(process.env).forEach((key) => {
+    if (key.includes('NETLIFY') ||
+        key.includes('GOOGLE') ||
+        key.includes('URL')) {
+        console.log(`${key}: ${key.includes('SECRET') ? '***скрыто***' : process.env[key]}`);
+    }
+});
 passport_1.default.use(new passport_google_oauth20_1.Strategy({
     clientID: process.env.GOOGLE_CLIENT_ID || '',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    callbackURL: process.env.GOOGLE_CALLBACK_URL ||
-        'http://localhost:3000/api/auth/google/callback',
+    callbackURL: actualCallbackURL,
     scope: ['profile', 'email'],
+    proxy: true, // Добавляем поддержку прокси для корректной обработки перенаправлений
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         console.log('Google OAuth профиль:', profile);
         console.log('OAuth accessToken:', accessToken ? 'Получен' : 'Отсутствует');
         console.log('Google OAuth refreshToken:', refreshToken ? 'Получен' : 'Отсутствует');
+        // Добавляем расширенное логирование для отладки redirect_uri_mismatch
+        console.log('=== ОТЛАДКА GOOGLE OAUTH REDIRECT ===');
+        console.log('Используемый callbackURL:', process.env.GOOGLE_CALLBACK_URL ||
+            'https://supermock.netlify.app/api/google/callback');
+        console.log('Значение GOOGLE_CALLBACK_URL из env:', process.env.GOOGLE_CALLBACK_URL || 'не установлен');
+        console.log('Значение GOOGLE_CALLBACK_URL из Netlify:', process.env.NETLIFY_GOOGLE_CALLBACK_URL || 'не установлен');
+        console.log('Фактический порт бэкенда:', process.env.PORT || 8080);
+        console.log('Порт фронтенда из конфигурации:', require('../config/app').FRONTEND_PORT);
+        console.log('Полный URL обратного вызова:', `http://localhost:${process.env.PORT || 8080}/api/google/callback`);
+        console.log('Параметры запроса:', {
+            accessToken: accessToken ? 'Получен' : 'Отсутствует',
+            refreshToken: refreshToken ? 'Получен' : 'Отсутствует',
+            profileId: profile.id,
+            profileEmails: profile.emails,
+        });
+        console.log('=== ОТЛАДКА NETLIFY ПЕРЕМЕННЫХ В CALLBACK ===');
+        console.log('Все переменные окружения в callback:');
+        Object.keys(process.env).forEach((key) => {
+            if (key.includes('NETLIFY') ||
+                key.includes('GOOGLE') ||
+                key.includes('URL')) {
+                console.log(`${key}: ${key.includes('SECRET') ? '***скрыто***' : process.env[key]}`);
+            }
+        });
         // Получаем email из профиля или создаем временный
         const email = profile.emails && profile.emails[0] && profile.emails[0].value
             ? profile.emails[0].value

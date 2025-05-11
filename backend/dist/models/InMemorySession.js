@@ -26,7 +26,21 @@ class InMemorySession {
     }
     // Статический метод для поиска сессии по id
     static async findById(id) {
-        return sessions.find((session) => session.id === id) || null;
+        console.log('InMemorySession.findById: Поиск сессии по ID:', id);
+        console.log('InMemorySession.findById: Тип ID:', typeof id);
+        console.log('InMemorySession.findById: Количество сессий в хранилище:', sessions.length);
+        if (!id) {
+            console.log('InMemorySession.findById: ID не определен или пустой');
+            return null;
+        }
+        // Логируем ID всех сессий для сравнения
+        sessions.forEach((session, index) => {
+            console.log(`InMemorySession.findById: Сессия ${index + 1}, ID:`, session.id);
+            console.log(`InMemorySession.findById: Совпадение с искомым ID:`, session.id === id);
+        });
+        const foundSession = sessions.find((session) => session.id === id);
+        console.log('InMemorySession.findById: Результат поиска:', foundSession ? 'Найдена' : 'Не найдена');
+        return foundSession || null;
     }
     // Статический метод для поиска последней сессии, где пользователь был интервьюером
     static async findLastSessionAsInterviewer(userId) {

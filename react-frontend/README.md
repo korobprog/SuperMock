@@ -23,6 +23,11 @@ react-frontend/
 
 ## Компоненты
 
+## Запуск
+
+- в package.js скрипт вход по логину паролю, база мокавая сбрасывется при завершении сессии.
+  "dev": "concurrently \"kill-port 3000\" \"npm run dev:backend\" \"cd backend && nodemon --watch src -e ts --exec ts-node src/server.ts\" \"cd react-frontend && npm run dev\"",
+
 ### Основные компоненты
 
 #### `App.jsx`

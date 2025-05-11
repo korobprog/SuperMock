@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InMemoryUser = void 0;
-const bcrypt_1 = __importDefault(require("bcrypt"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const crypto_1 = __importDefault(require("crypto"));
 // Хранилище пользователей в памяти
 const users = [];
@@ -103,8 +103,8 @@ class InMemoryUser {
                     this.roleHistory = [];
                 }
                 // Хешируем пароль перед сохранением только для нового пользователя
-                const salt = await bcrypt_1.default.genSalt(10);
-                this.password = await bcrypt_1.default.hash(this.password, salt);
+                const salt = await bcryptjs_1.default.genSalt(10);
+                this.password = await bcryptjs_1.default.hash(this.password, salt);
                 // Добавляем пользователя в хранилище
                 users.push(this);
                 console.log('Новый пользователь добавлен');
@@ -118,7 +118,7 @@ class InMemoryUser {
     }
     // Метод для сравнения паролей
     async comparePassword(candidatePassword) {
-        return bcrypt_1.default.compare(candidatePassword, this.password);
+        return bcryptjs_1.default.compare(candidatePassword, this.password);
     }
 }
 exports.InMemoryUser = InMemoryUser;

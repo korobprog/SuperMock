@@ -1,6 +1,6 @@
 import { InMemoryUser } from './InMemoryUser';
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 // Интерфейс для пользователя, общий для обоих реализаций
 export interface IUser {
