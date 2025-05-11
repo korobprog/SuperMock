@@ -32,6 +32,18 @@ console.log(
   'GOOGLE_CLIENT_SECRET установлен:',
   process.env.GOOGLE_CLIENT_SECRET ? 'Да' : 'Нет'
 );
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('HOST:', process.env.HOST);
+console.log('PORT:', process.env.PORT);
+console.log(
+  'FRONTEND_URL из env:',
+  process.env.FRONTEND_URL || 'не установлен'
+);
+console.log(
+  'MONGO_URI:',
+  process.env.MONGO_URI ? '***скрыто***' : 'не установлен'
+);
+console.log('REDIS_HOST:', process.env.REDIS_HOST || 'не установлен');
 
 passport.use(
   new GoogleStrategy(

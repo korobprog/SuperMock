@@ -4,6 +4,17 @@ import { io, Socket } from 'socket.io-client';
 // Используем переменную окружения для URL бэкенда
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
+// Добавляем расширенное логирование для отладки переменных окружения
+console.log('=== ОТЛАДКА ПЕРЕМЕННЫХ ОКРУЖЕНИЯ ===');
+console.log('VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
+console.log('BACKEND_URL (используемый):', BACKEND_URL);
+console.log('Все переменные окружения:', import.meta.env);
+console.log('=== ОТЛАДКА ПОРТОВ ХОСТИНГА ===');
+console.log('Ожидаемые порты на хостинге:');
+console.log('- Бэкенд: http://c641b068463c.vps.myjino.ru:49226');
+console.log('- Redis: http://c641b068463c.vps.myjino.ru:49327');
+console.log('- MongoDB: http://c641b068463c.vps.myjino.ru:49305');
+
 // Определяем тип для контекста
 interface SocketContextType {
   socket: Socket | null;

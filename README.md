@@ -1,10 +1,10 @@
-# SuperMook
+# SuperMock
 
 SuperMook - приложение для проведения тренировочных собеседований с возможностью выбора ролей, обратной связи и интеграцией с Видео Чат.
 
 ## Описание проекта
 
-SuperMook позволяет пользователям организовывать и участвовать в тренировочных собеседованиях. Пользователи могут выбирать роли (интервьюер, отвечающий, наблюдатель), проводить собеседования через Видео Чат и оставлять структурированную обратную связь.
+SuperMock позволяет пользователям организовывать и участвовать в тренировочных собеседованиях. Пользователи могут выбирать роли (интервьюер, отвечающий, наблюдатель), проводить собеседования через Видео Чат и оставлять структурированную обратную связь.
 
 ### Основные возможности
 
@@ -32,8 +32,8 @@ SuperMook позволяет пользователям организовыва
 ### Клонирование репозитория
 
 ```bash
-git clone https://github.com/yourusername/SuperMook.git
-cd SuperMook
+git clone https://github.com/yourusername/SuperMock.git
+cd SuperMock
 ```
 
 ### Установка зависимостей
@@ -141,6 +141,7 @@ API документация доступна в формате Swagger:
 - **Socket.IO** - библиотека для работы с WebSocket
 - **JWT** - аутентификация на основе токенов
 - **In-Memory хранилище** - для хранения данных (пользователи, сессии, обратная связь)
+- **WebRTC** - P2P видео-чат потокового вещания
 
 ### Фронтенд
 
@@ -194,19 +195,45 @@ We have made several significant improvements to the SuperMook application:
 
 6. **Feedback System**: Expanded the feedback functionality with improved data models and routing, allowing for more detailed and structured feedback after mock interviews.
 
+## Последние обновления 1.0
+
+Мы внесли несколько значительных улучшений в приложение SuperMook:
+
+## Recent Updates
+
+We have made several significant improvements to the SuperMook application:
+
+1. **TypeScript Migration**: Migrated key components and backend services from JavaScript to TypeScript for improved type safety, better code organization, and enhanced developer experience.
+
+2. **WebRTC Integration**: Implemented custom video chat functionality using WebRTC technology, allowing for peer-to-peer video communication directly in the browser without additional plugins.
+
+3. **Calendar System**: Implemented a calendar functionality for scheduling and managing interview sessions, allowing users to plan and organize their mock interviews more efficiently.
+
+4. **Authentication Enhancements**: Improved the login system with more robust authentication mechanisms and better security practices.
+
+5. **Session Management**: Enhanced the session management system with more intuitive controls for creating, joining, and monitoring interview sessions.
+
+6. **Role Selection System**: Refined the role selection interface to provide a more seamless experience when choosing between interviewer, interviewee, and observer roles.
+
+7. **Feedback System**: Expanded the feedback functionality with improved data models and routing, allowing for more detailed and structured feedback after mock interviews.
+
 ## Последние обновления
 
 Мы внесли несколько значительных улучшений в приложение SuperMook:
 
 1. **Миграция на TypeScript**: Перенесли ключевые компоненты и серверные сервисы с JavaScript на TypeScript для улучшения типобезопасности, лучшей организации кода и повышения удобства разработки.
 
-2. **Система календаря**: Реализовали функциональность календаря для планирования и управления сессиями собеседований, позволяющую пользователям более эффективно организовывать тренировочные интервью.
+2. **Интеграция WebRTC**: Реализовали собственную функциональность видеочата с использованием технологии WebRTC, обеспечивающую одноранговую видеосвязь непосредственно в браузере без дополнительных плагинов.
 
-3. **Улучшения аутентификации**: Усовершенствовали систему входа с более надежными механизмами аутентификации и улучшенными практиками безопасности.
+3. **Система календаря**: Реализовали функциональность календаря для планирования и управления сессиями собеседований, позволяющую пользователям более эффективно организовывать тренировочные интервью.
 
-4. **Управление сессиями**: Расширили систему управления сессиями с более интуитивными элементами управления для создания, присоединения и мониторинга сессий собеседований.
+4. **Улучшения аутентификации**: Усовершенствовали систему входа с более надежными механизмами аутентификации и улучшенными практиками безопасности.
 
-5. **Система выбора ролей**: Улучшили интерфейс выбора ролей для обеспечения более удобного опыта при выборе между ролями интервьюера, от
+5. **Управление сессиями**: Расширили систему управления сессиями с более интуитивными элементами управления для создания, присоединения и мониторинга сессий собеседований.
+
+6. **Система выбора ролей**: Улучшили интерфейс выбора ролей для обеспечения более удобного опыта при выборе между ролями интервьюера, отвечающего и наблюдателя.
+
+7. **Система обратной связи**: Расширили функциональность обратной связи с улучшенными моделями данных и маршрутизацией, позволяющими получать более детальную и структурированную обратную связь после тренировочных собеседований.
 
 ## Дополнительная информация
 

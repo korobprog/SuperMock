@@ -43,12 +43,30 @@ const App: FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Добавляем отладочное логирование для API запросов
+    console.log('=== ОТЛАДКА API ЗАПРОСОВ ===');
+    console.log('Выполняем fetch запрос к /api');
+    console.log('Текущий URL:', window.location.href);
+    console.log('Базовый URL:', window.location.origin);
+
     fetch('/api')
-      .then((response) => response.text())
-      .then((data) => setApiData(data))
-      .catch((error) =>
-        setApiData('Ошибка при загрузке данных: ' + error.message)
-      );
+      .then((response) => {
+        console.log(
+          'Получен ответ от API:',
+          response.status,
+          response.statusText
+        );
+        console.log('Заголовки ответа:', response.headers);
+        return response.text();
+      })
+      .then((data) => {
+        console.log('Данные от API:', data);
+        setApiData(data);
+      })
+      .catch((error) => {
+        console.error('Ошибка при запросе к API:', error);
+        setApiData('Ошибка при загрузке данных: ' + error.message);
+      });
   }, []);
 
   // Проверяем токен при изменении и в URL

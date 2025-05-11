@@ -1,14 +1,25 @@
 version: '3.8'
 services:
   backend:
-    image: ${DOCKER_USERNAME:-username}/mock-interviews-backend:latest
+    image: ${DOCKER_USERNAME:-makstreid}/mock-interviews-backend:latest
     ports:
-      - '3000:3000'
+      - '0.0.0.0:8080:8080'
+      - '0.0.0.0:80:80'
     environment:
-      - MONGO_URI=${MONGO_URI}
+      # Если MONGO_URI не задан, используем локальную MongoDB
+      - MONGO_URI=${MONGO_URI:-mongodb://admin:krishna1284radha@mongo:27017/mock_interviews?authSource=admin}
       - JWT_SECRET=${JWT_SECRET}
+      - USE_MONGODB=${USE_MONGODB:-true}
+      - USE_REDIS=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=krishna1284radha
+      - PORT=80
+      - NODE_ENV=production
+      - HOST=217.198.6.238
     depends_on:
       - mongo
+      - redis
     restart: always
     networks:
       - app-network
@@ -16,15 +27,30 @@ services:
   mongo:
     image: mongo:5
     ports:
-      - '27017:27017'
+      - '0.0.0.0:27017:27017'
     volumes:
       - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=krishna1284radha
     networks:
       - app-network
     restart: always
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '0.0.0.0:6379:6379'
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    restart: always
+    command: redis-server --appendonly yes --requirepass krishna1284radha
+
 volumes:
   mongo-data:
+  redis-data:
 
 networks:
   app-network:

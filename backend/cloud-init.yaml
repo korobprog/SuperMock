@@ -1,0 +1,140 @@
+#cloud-config
+
+# Обновление пакетов
+package_update: true
+package_upgrade: true
+
+# Установка необходимых пакетов
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - git
+
+# Выполнение команд при первом запуске
+runcmd:
+  # Установка Docker
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  - 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null'
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io
+
+  # Установка Docker Compose
+  - 'curl -L "https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose'
+  - chmod +x /usr/local/bin/docker-compose
+
+  # Создание директории для приложения
+  - mkdir -p /app
+
+  # Создание docker-compose.yml
+  - |
+    cat > /app/docker-compose.yml << 'EOL'
+    version: '3.8'
+    services:
+      backend:
+        image: ${DOCKER_USERNAME:-makstreid}/mock-interviews-backend:latest
+        ports:
+          - '0.0.0.0:8080:8080'
+          - '0.0.0.0:80:80'
+        environment:
+          - MONGO_URI=${MONGO_URI:-mongodb://admin:krishna1284radha@mongo:27017/mock_interviews?authSource=admin}
+          - JWT_SECRET=${JWT_SECRET:-9b6ecece4b5db27805f484e5b68f039f4eab9bb9f492d3ca97b11dc682818ac2}
+          - USE_MONGODB=${USE_MONGODB:-true}
+          - USE_REDIS=true
+          - REDIS_HOST=redis
+          - REDIS_PORT=6379
+          - REDIS_PASSWORD=krishna1284radha
+          - PORT=80
+          - NODE_ENV=production
+          - HOST=217.198.6.238
+        depends_on:
+          - mongo
+          - redis
+        restart: always
+        networks:
+          - app-network
+
+      mongo:
+        image: mongo:5
+        ports:
+          - '0.0.0.0:27017:27017'
+        volumes:
+          - mongo-data:/data/db
+        environment:
+          - MONGO_INITDB_ROOT_USERNAME=admin
+          - MONGO_INITDB_ROOT_PASSWORD=krishna1284radha
+        networks:
+          - app-network
+        restart: always
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - '0.0.0.0:6379:6379'
+        volumes:
+          - redis-data:/data
+        networks:
+          - app-network
+        restart: always
+        command: redis-server --appendonly yes --requirepass krishna1284radha
+
+    volumes:
+      mongo-data:
+      redis-data:
+
+    networks:
+      app-network:
+        driver: bridge
+    EOL
+
+  # Создание .env файла
+  - |
+    cat > /app/.env << 'EOL'
+    # Продакшн окружение
+    DOCKER_USERNAME=makstreid
+    MONGO_URI=mongodb://admin:krishna1284radha@217.198.6.238:27017/mock_interviews?authSource=admin
+    VITE_API_URL=http://217.198.6.238:80/api
+    VITE_WS_URL=http://217.198.6.238:80
+    JWT_SECRET=9b6ecece4b5db27805f484e5b68f039f4eab9bb9f492d3ca97b11dc682818ac2
+    USE_MONGODB=true
+    USE_REDIS=true
+    REDIS_HOST=217.198.6.238
+    REDIS_PORT=6379
+    REDIS_PASSWORD=krishna1284radha
+    NODE_ENV=production
+    PORT=80
+    HOST=217.198.6.238
+    EOL
+
+  # Запуск Docker Compose
+  - cd /app && docker-compose pull
+  - cd /app && docker-compose up -d
+
+  # Настройка автозапуска Docker при загрузке
+  - systemctl enable docker
+
+  # Настройка автоматического обновления образов
+  - 'echo "0 3 * * * cd /app && docker-compose pull && docker-compose up -d && docker image prune -af" | crontab -'
+
+  # Добавление логов для отладки
+  - 'echo "Cloud-init: Docker installation completed" > /var/log/cloud-init-custom.log'
+  - 'echo "Cloud-init: Docker Compose installation completed" >> /var/log/cloud-init-custom.log'
+  - 'echo "Cloud-init: Configuration files created" >> /var/log/cloud-init-custom.log'
+  - 'echo "Cloud-init: Docker Compose started" >> /var/log/cloud-init-custom.log'
+  - 'echo "Cloud-init: Server IP: 217.198.6.238" >> /var/log/cloud-init-custom.log'
+
+  # Проверка открытых портов
+  - 'netstat -tulpn | grep LISTEN >> /var/log/cloud-init-custom.log'
+
+# Настройка пользователей
+users:
+  - default
+  - name: admin
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    # Замените на свой публичный SSH-ключ, если необходимо
+    # ssh-authorized-keys:
+    #   - ssh-rsa YOUR_SSH_PUBLIC_KEY

@@ -55,33 +55,58 @@ const activeConnections = new Map<string, AuthenticatedSocket>();
 
 // Инициализация Socket.IO сервера
 function initializeWebSocket(server: HttpServer): SocketIOServer {
+  // Логируем переменные окружения для Redis
+  console.log('=== НАСТРОЙКИ REDIS ===');
+  console.log('USE_REDIS:', process.env.USE_REDIS);
+  console.log('REDIS_HOST:', process.env.REDIS_HOST);
+  console.log('REDIS_PORT:', process.env.REDIS_PORT);
+  console.log(
+    'REDIS_PASSWORD:',
+    process.env.REDIS_PASSWORD ? '***скрыто***' : 'не указан'
+  );
+
+  // Добавляем отладочную информацию о портах на хостинге
+  console.log('=== ОТЛАДКА ПОРТОВ ХОСТИНГА ===');
+  console.log('Текущие настройки Redis:');
+  console.log(`- REDIS_HOST: ${process.env.REDIS_HOST}`);
+  console.log(`- REDIS_PORT: ${process.env.REDIS_PORT}`);
+  console.log('Ожидаемые настройки Redis на хостинге:');
+  console.log('- Redis хост: c641b068463c.vps.myjino.ru');
+  console.log('- Redis порт: 49327');
+
   const io = new SocketIOServer(server, {
     cors: {
-      origin: [
-        `http://localhost:${FRONTEND_PORT}`,
-        `http://127.0.0.1:${FRONTEND_PORT}`,
-        // Добавляем несколько соседних портов на случай, если основной порт занят
-        `http://localhost:${Number(FRONTEND_PORT) + 1}`,
-        `http://127.0.0.1:${Number(FRONTEND_PORT) + 1}`,
-        `http://localhost:${Number(FRONTEND_PORT) + 2}`,
-        `http://127.0.0.1:${Number(FRONTEND_PORT) + 2}`,
-        `http://localhost:${Number(FRONTEND_PORT) + 3}`,
-        `http://127.0.0.1:${Number(FRONTEND_PORT) + 3}`,
-        `http://localhost:${Number(FRONTEND_PORT) + 4}`,
-        `http://127.0.0.1:${Number(FRONTEND_PORT) + 4}`,
-        // Добавляем порты, на которых может работать фронтенд
-        'http://localhost:5174',
-        'http://127.0.0.1:5174',
-        'http://localhost:5175',
-        'http://127.0.0.1:5175',
-        'http://localhost:5176',
-        'http://127.0.0.1:5176',
-        'http://localhost:5184',
-        'http://127.0.0.1:5184',
-        // Разрешаем подключения с любого порта в режиме разработки
-        'http://localhost:*',
-        'http://127.0.0.1:*',
-      ],
+      origin:
+        process.env.NODE_ENV === 'production'
+          ? '*' // В продакшн-режиме разрешаем подключения с любого домена
+          : [
+              `http://localhost:${FRONTEND_PORT}`,
+              `http://127.0.0.1:${FRONTEND_PORT}`,
+              // Добавляем несколько соседних портов на случай, если основной порт занят
+              `http://localhost:${Number(FRONTEND_PORT) + 1}`,
+              `http://127.0.0.1:${Number(FRONTEND_PORT) + 1}`,
+              `http://localhost:${Number(FRONTEND_PORT) + 2}`,
+              `http://127.0.0.1:${Number(FRONTEND_PORT) + 2}`,
+              `http://localhost:${Number(FRONTEND_PORT) + 3}`,
+              `http://127.0.0.1:${Number(FRONTEND_PORT) + 3}`,
+              `http://localhost:${Number(FRONTEND_PORT) + 4}`,
+              `http://127.0.0.1:${Number(FRONTEND_PORT) + 4}`,
+              // Добавляем порты, на которых может работать фронтенд
+              'http://localhost:5174',
+              'http://127.0.0.1:5174',
+              'http://localhost:5175',
+              'http://127.0.0.1:5175',
+              'http://localhost:5176',
+              'http://127.0.0.1:5176',
+              'http://localhost:5184',
+              'http://127.0.0.1:5184',
+              // Разрешаем подключения с любого порта в режиме разработки
+              'http://localhost:*',
+              'http://127.0.0.1:*',
+              // Добавляем домен VPS Jino
+              'http://c641b068463c.vps.myjino.ru',
+              'https://c641b068463c.vps.myjino.ru',
+            ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -102,13 +127,27 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
         const redisHost = process.env.REDIS_HOST || 'localhost';
         const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10);
         const redisPassword = process.env.REDIS_PASSWORD;
+        // Исправленное формирование URL для Redis
         const redisUrl = `redis://${
-          redisPassword ? `:${redisPassword}@` : ''
+          redisPassword ? `default:${redisPassword}@` : ''
         }${redisHost}:${redisPort}`;
 
         console.log(
           `Попытка подключения к Redis (${redisHost}:${redisPort})...`
         );
+        console.log(
+          'Redis URL:',
+          redisUrl.replace(redisPassword || '', '***скрыто***')
+        );
+        console.log('Redis настройки из переменных окружения:');
+        console.log('- REDIS_HOST:', process.env.REDIS_HOST || 'не установлен');
+        console.log('- REDIS_PORT:', process.env.REDIS_PORT || 'не установлен');
+        console.log(
+          '- REDIS_PASSWORD:',
+          process.env.REDIS_PASSWORD ? '***скрыто***' : 'не установлен'
+        );
+        console.log('- USE_REDIS:', process.env.USE_REDIS || 'не установлен');
+        console.log('- NODE_ENV:', process.env.NODE_ENV || 'не установлен');
 
         // Создаем клиенты Redis для публикации и подписки (новый API Redis v5+)
         const pubClient = redis.createClient({
@@ -150,6 +189,13 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
             console.log(
               'Ошибка при подключении к Redis, используется стандартный адаптер Socket.IO'
             );
+            console.log('Детали ошибки Redis:', error.message);
+            console.log('Параметры подключения Redis:', {
+              host: redisHost,
+              port: redisPort,
+              password: redisPassword ? '***скрыто***' : 'не указан',
+              url: redisUrl.replace(redisPassword || '', '***скрыто***'),
+            });
           });
 
         // Расширяем интерфейс для клиентов Redis
@@ -167,6 +213,35 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
               console.log(
                 'Ошибка Redis pub клиента, используется стандартный адаптер Socket.IO'
               );
+              console.log('Детали ошибки Redis pub клиента:', error.message);
+              console.log('Стек ошибки:', error.stack);
+              console.log('Параметры подключения Redis:');
+              console.log(
+                '- REDIS_HOST:',
+                process.env.REDIS_HOST || 'не установлен'
+              );
+              console.log(
+                '- REDIS_PORT:',
+                process.env.REDIS_PORT || 'не установлен'
+              );
+              console.log(
+                '- REDIS_PASSWORD:',
+                process.env.REDIS_PASSWORD ? '***скрыто***' : 'не установлен'
+              );
+              console.log(
+                '- USE_REDIS:',
+                process.env.USE_REDIS || 'не установлен'
+              );
+              console.log(
+                '- NODE_ENV:',
+                process.env.NODE_ENV || 'не установлен'
+              );
+              console.log('- Используемый redisHost:', redisHost);
+              console.log('- Используемый redisPort:', redisPort);
+              console.log(
+                '- Используемый redisUrl:',
+                redisUrl.replace(redisPassword || '', '***скрыто***')
+              );
               (pubClient as RedisClientWithError).hasLoggedError = true;
             }
           }
@@ -178,6 +253,35 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
             if (!(subClient as RedisClientWithError).hasLoggedError) {
               console.log(
                 'Ошибка Redis sub клиента, используется стандартный адаптер Socket.IO'
+              );
+              console.log('Детали ошибки Redis sub клиента:', error.message);
+              console.log('Стек ошибки:', error.stack);
+              console.log('Параметры подключения Redis:');
+              console.log(
+                '- REDIS_HOST:',
+                process.env.REDIS_HOST || 'не установлен'
+              );
+              console.log(
+                '- REDIS_PORT:',
+                process.env.REDIS_PORT || 'не установлен'
+              );
+              console.log(
+                '- REDIS_PASSWORD:',
+                process.env.REDIS_PASSWORD ? '***скрыто***' : 'не установлен'
+              );
+              console.log(
+                '- USE_REDIS:',
+                process.env.USE_REDIS || 'не установлен'
+              );
+              console.log(
+                '- NODE_ENV:',
+                process.env.NODE_ENV || 'не установлен'
+              );
+              console.log('- Используемый redisHost:', redisHost);
+              console.log('- Используемый redisPort:', redisPort);
+              console.log(
+                '- Используемый redisUrl:',
+                redisUrl.replace(redisPassword || '', '***скрыто***')
               );
               (subClient as RedisClientWithError).hasLoggedError = true;
             }
@@ -193,15 +297,35 @@ function initializeWebSocket(server: HttpServer): SocketIOServer {
     }
   }
 
+  // Расширенное логирование для диагностики
+  console.log('Инициализация WebSocket сервера с настройками:');
+  // Используем безопасный способ логирования без доступа к приватным свойствам
+  console.log(
+    '- Порт сервера:',
+    server.address() ? (server.address() as any).port : 'неизвестно'
+  );
+  console.log('- NODE_ENV:', process.env.NODE_ENV || 'не установлен');
+  console.log('- FRONTEND_PORT:', FRONTEND_PORT);
+  console.log('- Домен VPS:', 'c641b068463c.vps.myjino.ru');
+
   // Middleware для аутентификации WebSocket соединений
   io.use((socket: Socket, next): void => {
+    console.log('=== Новое WebSocket соединение ===');
+    console.log('ID соединения:', socket.id);
+    console.log('IP клиента:', socket.handshake.address);
+    console.log('Источник запроса (origin):', socket.handshake.headers.origin);
+    console.log('User-Agent:', socket.handshake.headers['user-agent']);
+
     const token = socket.handshake.auth.token;
     console.log(
       'Получен токен для аутентификации WebSocket:',
       token ? `${token.substring(0, 10)}...` : 'отсутствует'
     );
     console.log('Транспорт соединения:', socket.conn.transport.name);
-    console.log('Заголовки запроса:', socket.handshake.headers);
+    console.log(
+      'Заголовки запроса:',
+      JSON.stringify(socket.handshake.headers, null, 2)
+    );
 
     if (!token) {
       console.error('Ошибка: токен отсутствует');

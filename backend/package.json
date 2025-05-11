@@ -1,5 +1,5 @@
 {
-  "name": "interview-training-app",
+  "name": "SuperMock-backend",
   "version": "1.0.0",
   "description": "Приложение для тренировочных собеседований",
   "main": "dist/server.js",

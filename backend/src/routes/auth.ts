@@ -8,12 +8,9 @@ const router = express.Router();
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import passport from 'passport';
-import { InMemoryUser } from '../models/InMemoryUser'; // Используем InMemoryUser вместо MongoDB
+import { User } from '../models/UserModel'; // Импортируем модель пользователя из UserModel
 import { auth, JWT_SECRET } from '../middleware/auth';
 import { FRONTEND_PORT, FRONTEND_URL } from '../config/app'; // Импортируем FRONTEND_PORT и FRONTEND_URL из конфигурации
-
-// Используем InMemoryUser как User для совместимости с кодом
-const User = InMemoryUser;
 
 // Маршрут для регистрации пользователя
 // POST /api/register
@@ -136,27 +133,66 @@ router.post(
 // GET /api/user
 router.get('/user', auth, (async (req: Request, res: Response) => {
   try {
+    console.log('=== ПОЛУЧЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЯ ===');
+    console.log('ID пользователя из токена:', req.user?.id);
+    console.log('Заголовки запроса:', req.headers);
+    console.log('Метод запроса:', req.method);
+    console.log('URL запроса:', req.originalUrl);
+    console.log('IP клиента:', req.ip);
+    console.log('User-Agent:', req.headers['user-agent']);
+    console.log('Cookies:', req.cookies);
+    console.log('Параметры запроса:', req.query);
+    console.log('Тело запроса:', req.body);
+    console.log('Используемая модель пользователя:', User.name || 'Неизвестно');
+    console.log('USE_MONGODB:', process.env.USE_MONGODB);
+    console.log('MONGO_URI установлен:', process.env.MONGO_URI ? 'Да' : 'Нет');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+
     // Получаем пользователя из хранилища (без пароля)
+    console.log('Попытка найти пользователя по ID:', req.user?.id);
     const userWithSelect = await User.findById(req.user!.id);
+    console.log(
+      'Результат поиска пользователя:',
+      userWithSelect ? 'Найден' : 'Не найден'
+    );
+
     if (!userWithSelect) {
+      console.log('Пользователь не найден в базе данных');
       res.status(404).json({ message: 'Пользователь не найден' });
       return;
     }
 
+    console.log('Данные пользователя (без пароля):', {
+      id: userWithSelect.id,
+      email: userWithSelect.email,
+      googleId: userWithSelect.googleId || 'отсутствует',
+      feedbackStatus: userWithSelect.feedbackStatus || 'none',
+    });
+
     // Используем метод select для исключения пароля
+    console.log('Применение метода select для исключения пароля');
     const user = (userWithSelect as any).select('-password');
+    console.log('Результат после select:', user ? 'Успешно' : 'Ошибка');
 
     // Добавляем статус обратной связи, если он не был включен
     if (user && !user.feedbackStatus) {
+      console.log('Добавление статуса обратной связи');
       user.feedbackStatus = userWithSelect.feedbackStatus || 'none';
     }
 
+    console.log('Отправка данных пользователя клиенту');
     res.json(user);
   } catch (error) {
     console.error(
       'Ошибка при получении данных пользователя:',
       (error as Error).message
     );
+    console.error('Стек ошибки:', (error as Error).stack);
+    console.error(
+      'Тип ошибки:',
+      error instanceof Error ? 'Error' : typeof error
+    );
+    console.error('Полная ошибка:', error);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 }) as RequestHandler);
@@ -181,6 +217,23 @@ router.get(
     console.log(
       'GOOGLE_CALLBACK_URL из env:',
       process.env.GOOGLE_CALLBACK_URL || 'не установлен'
+    );
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('HOST:', process.env.HOST);
+    console.log('PORT:', process.env.PORT);
+    console.log(
+      'FRONTEND_URL из env:',
+      process.env.FRONTEND_URL || 'не установлен'
+    );
+    console.log('FRONTEND_URL из конфигурации:', FRONTEND_URL);
+    console.log('FRONTEND_PORT из конфигурации:', FRONTEND_PORT);
+    console.log(
+      'Удаленное подключение к базе данных:',
+      process.env.MONGO_URI ? 'Да' : 'Нет'
+    );
+    console.log(
+      'Удаленное подключение к Redis:',
+      process.env.REDIS_HOST ? 'Да' : 'Нет'
     );
     next();
   },
@@ -246,6 +299,25 @@ router.get(
         console.log('Перенаправление на:', redirectUrl);
         console.log('FRONTEND_URL из конфигурации:', FRONTEND_URL);
         console.log('FRONTEND_PORT из конфигурации:', FRONTEND_PORT);
+        console.log(
+          'FRONTEND_URL из env:',
+          process.env.FRONTEND_URL || 'не установлен'
+        );
+        console.log('NODE_ENV:', process.env.NODE_ENV);
+        console.log('HOST:', process.env.HOST);
+        console.log('PORT:', process.env.PORT);
+        console.log(
+          'Полный URL обратного вызова:',
+          `${req.protocol}://${req.get('host')}/api/google/callback`
+        );
+        console.log(
+          'Удаленное подключение к базе данных:',
+          process.env.MONGO_URI ? 'Да' : 'Нет'
+        );
+        console.log(
+          'Удаленное подключение к Redis:',
+          process.env.REDIS_HOST ? 'Да' : 'Нет'
+        );
 
         res.redirect(redirectUrl);
       });

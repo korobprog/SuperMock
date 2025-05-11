@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Открываем порт для API и WebSocket
-EXPOSE 3000
+EXPOSE 8080
 
 # Запускаем сервер
 CMD ["node", "dist/server.js"]

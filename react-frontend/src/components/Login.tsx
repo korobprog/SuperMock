@@ -26,6 +26,14 @@ const Login: FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
+      // Добавляем отладочное логирование для авторизации
+      console.log('=== ОТЛАДКА АВТОРИЗАЦИИ ===');
+      console.log('Выполняем fetch запрос к /api/login');
+      console.log('Данные для авторизации:', {
+        email,
+        password: '***скрыто***',
+      });
+
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
@@ -34,7 +42,18 @@ const Login: FC<LoginProps> = ({ onLoginSuccess }) => {
         body: JSON.stringify({ email, password }),
       });
 
+      console.log(
+        'Получен ответ от API авторизации:',
+        response.status,
+        response.statusText
+      );
+      console.log('Заголовки ответа:', response.headers);
+
       const data = await response.json();
+      console.log('Данные ответа (без токена):', {
+        ...data,
+        token: data.token ? '***скрыто***' : null,
+      });
 
       if (!response.ok) {
         throw new Error(data.message || 'Ошибка при входе');

@@ -18,6 +18,10 @@ console.log('Переменные окружения:', {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
   FRONTEND_PORT: process.env.FRONTEND_PORT,
+  USE_MONGODB: process.env.USE_MONGODB,
+  MONGO_URI: process.env.MONGO_URI ? '***скрыто***' : 'не определено',
+  JWT_SECRET: process.env.JWT_SECRET ? '***скрыто***' : 'не определено',
+  DOCKER_USERNAME: process.env.DOCKER_USERNAME,
 });
 console.log('Импортированные константы:', {
   BACKEND_PORT,
@@ -34,6 +38,14 @@ console.log(
 console.log(
   `- Порт, который будет использоваться: ${process.env.PORT || BACKEND_PORT}`
 );
+
+// Добавляем отладочную информацию о портах на хостинге
+console.log('=== ОТЛАДКА ПОРТОВ ХОСТИНГА ===');
+console.log('Текущие настройки порта бэкенда:');
+console.log(`- BACKEND_PORT: ${BACKEND_PORT}`);
+console.log(`- PORT: ${process.env.PORT || 'не определен'}`);
+console.log('Ожидаемые настройки на хостинге:');
+console.log('- Бэкенд порт: 49226');
 
 // Импортируем конфигурацию Passport
 import './config/passport';
@@ -121,8 +133,22 @@ app.use((req: Request, res: Response, next: NextFunction): void => {
   next();
 });
 
-// Используем InMemoryUser вместо MongoDB
-console.log('Используется хранилище пользователей в памяти');
+// Проверяем, нужно ли использовать MongoDB
+if (process.env.USE_MONGODB === 'true') {
+  console.log('=== НАСТРОЙКА БАЗЫ ДАННЫХ ===');
+  console.log('Флаг USE_MONGODB=true, но в коде используется InMemoryUser');
+  console.log('ВНИМАНИЕ: Несоответствие между настройками и кодом!');
+  console.log(
+    'В docker-compose.yml настроен сервис mongo, но приложение использует InMemoryUser'
+  );
+  console.log(
+    'Рекомендуется либо изменить код для использования MongoDB, либо удалить сервис mongo из docker-compose.yml'
+  );
+} else {
+  console.log('=== НАСТРОЙКА БАЗЫ ДАННЫХ ===');
+  console.log('Используется хранилище пользователей в памяти (InMemoryUser)');
+  console.log('Флаг USE_MONGODB не установлен или равен false');
+}
 
 // API маршруты
 app.get('/api', (req: Request, res: Response): void => {

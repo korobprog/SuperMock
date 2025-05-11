@@ -3,6 +3,14 @@
   command = "npm run build" # Команда для сборки проекта
   publish = "dist" # Папка, которая будет опубликована
 
+# Редирект для API запросов на бэкенд-сервер
+# ВАЖНО: Заменить <server-ip> на реальный IP-адрес сервера!
+[[redirects]]
+  from = "/api/*"
+  to = "http://217.198.6.238:80/api/:splat"
+  status = 200
+  force = true
+
 # Настройка для SPA (Single Page Application)
 [[redirects]]
   from = "/*"
@@ -10,6 +18,6 @@
   status = 200
 
 # Переменные окружения для сборки
-# ВАЖНО: Заменить <server-ip> на реальный IP-адрес сервера!
+# IP-адрес сервера обновлен
 [build.environment]
-  VITE_BACKEND_URL = "https://<server-ip>:3000" # Плейсхолдер, требует замены
+  VITE_BACKEND_URL = "http://217.198.6.238:80" # Обновлено для соответствия .env.production
