@@ -2,7 +2,7 @@
 # Указываем базовую директорию для проекта
 [build]
   base = "react-frontend"
-  command = "npm run build"
+  command = "npm install && npm run build"
   publish = "dist"
 
 # Редирект для API запросов на бэкенд-сервер
