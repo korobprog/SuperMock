@@ -1,6 +1,6 @@
 # Конфигурация для деплоя на Netlify
 [build]
-  command = "npm install && npm run build" # Команда для сборки проекта с установкой зависимостей
+  command = "npm ci && npm run build" # Используем npm ci для чистой установки зависимостей
   publish = "dist" # Папка, которая будет опубликована
 
 # Редирект для API запросов на бэкенд-сервер
@@ -18,6 +18,7 @@
 
 # Переменные окружения для сборки
 [build.environment]
-  VITE_BACKEND_URL = "http://217.198.6.238:80" # Обновлено для соответствия .env.production
+  VITE_BACKEND_URL = "http://217.198.6.238:80"
   VITE_API_URL = "http://217.198.6.238:80/api"
   VITE_WS_URL = "http://217.198.6.238:80"
+  NODE_VERSION = "18" # Явно указываем версию Node.js
