@@ -1,12 +1,37 @@
-import { useState } from 'react';
+import { useState, FC } from 'react';
 import RoleSelector from './RoleSelector';
 
-function SessionJoin({ token, session, onRoleSelected, onCancel }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+// Используем тот же интерфейс Session, что и в RoleSelector
+interface Session {
+  id: string;
+  interviewerId: string | null;
+  intervieweeId: string | null;
+  observerIds?: string[];
+  status: string;
+  date: string; // В RoleSelector используется date
+  startTime?: string; // Оставляем для совместимости, но делаем опциональным
+  videoLink?: string;
+  videoLinkStatus?: string;
+}
 
-  const handleRoleSelect = async (selectedRole) => {
+interface SessionJoinProps {
+  token: string | null;
+  session: Session;
+  onRoleSelected: (updatedSession: Session) => void;
+  onCancel: () => void;
+}
+
+const SessionJoin: FC<SessionJoinProps> = ({
+  token,
+  session,
+  onRoleSelected,
+  onCancel,
+}) => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<boolean>(false);
+
+  const handleRoleSelect = async (selectedRole: string) => {
     setLoading(true);
     setError('');
     setSuccess(false);
@@ -16,7 +41,7 @@ function SessionJoin({ token, session, onRoleSelected, onCancel }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token || ''}`,
         },
         body: JSON.stringify({
           role: selectedRole,
@@ -50,7 +75,7 @@ function SessionJoin({ token, session, onRoleSelected, onCancel }) {
           // Запрашиваем обновленное состояние сессии
           const sessionResponse = await fetch(`/api/sessions/${session.id}`, {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token || ''}`,
               Accept: 'application/json',
             },
           });
@@ -84,7 +109,7 @@ function SessionJoin({ token, session, onRoleSelected, onCancel }) {
         onRoleSelected(data.session);
       }
     } catch (error) {
-      setError(error.message);
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -112,7 +137,7 @@ function SessionJoin({ token, session, onRoleSelected, onCancel }) {
             <div>
               <p className="text-sm text-gray-500">Время начала:</p>
               <p className="font-medium">
-                {new Date(session.startTime).toLocaleString(undefined, {
+                {new Date(session.date).toLocaleString(undefined, {
                   year: 'numeric',
                   month: '2-digit',
                   day: '2-digit',
@@ -196,6 +221,6 @@ function SessionJoin({ token, session, onRoleSelected, onCancel }) {
       </div>
     </div>
   );
-}
+};
 
 export default SessionJoin;

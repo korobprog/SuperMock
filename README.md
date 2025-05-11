@@ -181,7 +181,7 @@ API документация доступна в формате Swagger:
 
 ## Recent Updates
 
-We have made several significant improvements to the SuperMook application:
+We have made several significant improvements to the SuperMock application:
 
 1. **TypeScript Migration**: Migrated key components and backend services from JavaScript to TypeScript for improved type safety, better code organization, and enhanced developer experience.
 
@@ -197,11 +197,11 @@ We have made several significant improvements to the SuperMook application:
 
 ## Последние обновления 1.0
 
-Мы внесли несколько значительных улучшений в приложение SuperMook:
+Мы внесли несколько значительных улучшений в приложение SuperMock:
 
 ## Recent Updates
 
-We have made several significant improvements to the SuperMook application:
+We have made several significant improvements to the SuperMock application:
 
 1. **TypeScript Migration**: Migrated key components and backend services from JavaScript to TypeScript for improved type safety, better code organization, and enhanced developer experience.
 
@@ -219,7 +219,7 @@ We have made several significant improvements to the SuperMook application:
 
 ## Последние обновления
 
-Мы внесли несколько значительных улучшений в приложение SuperMook:
+Мы внесли несколько значительных улучшений в приложение SuperMock:
 
 1. **Миграция на TypeScript**: Перенесли ключевые компоненты и серверные сервисы с JavaScript на TypeScript для улучшения типобезопасности, лучшей организации кода и повышения удобства разработки.
 

@@ -1,24 +1,69 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import React from 'react';
 import { useSocket } from '../hooks/useSocket';
 
-function SessionList({
+// Определение типов
+interface Session {
+  id: string;
+  interviewerId: string | null;
+  intervieweeId: string | null;
+  observerIds?: string[];
+  status: string;
+  startTime: string;
+  date: string; // Добавляем поле date для совместимости с SessionManager
+  videoLink?: string;
+  videoLinkStatus?: string;
+}
+
+interface UserFeedbackStatus {
+  status: string;
+  userId: string;
+}
+
+interface SessionFeedbackStatus {
+  hasFeedback: boolean;
+  bothSidesSubmitted: boolean;
+}
+
+interface Notification {
+  id: number;
+  type: string;
+  sessionId: string;
+  message: string;
+}
+
+interface SessionListProps {
+  token: string | null;
+  onJoinSession: (session: Session) => void;
+  onOpenFeedbackForm: (session: Session) => void;
+  onOpenFeedbackResults: (session: Session) => void;
+}
+
+// Явно указываем тип возвращаемого значения как React.ReactElement
+const SessionList = ({
   token,
   onJoinSession,
   onOpenFeedbackForm,
   onOpenFeedbackResults,
-}) {
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [userFeedbackStatus, setUserFeedbackStatus] = useState({});
-  const [sessionFeedbackStatus, setSessionFeedbackStatus] = useState({});
-  const [notifications, setNotifications] = useState([]);
-  const [generatingVideoLink, setGeneratingVideoLink] = useState(null); // ID сессии, для которой генерируется ссылка
-  const [videoLinkError, setVideoLinkError] = useState(null); // Ошибка при генерации ссылки
-  const [manualVideoLinks, setManualVideoLinks] = useState({}); // Ручные ссылки на видеозвонок для каждой сессии
-
+}: SessionListProps): React.ReactElement => {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+  const [userFeedbackStatus, setUserFeedbackStatus] =
+    useState<UserFeedbackStatus>({} as UserFeedbackStatus);
+  const [sessionFeedbackStatus, setSessionFeedbackStatus] = useState<
+    Record<string, SessionFeedbackStatus>
+  >({});
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [generatingVideoLink, setGeneratingVideoLink] = useState<string | null>(
+    null
+  ); // ID сессии, для которой генерируется ссылка
+  const [videoLinkError, setVideoLinkError] = useState<string | null>(null); // Ошибка при генерации ссылки
+  const [manualVideoLinks, setManualVideoLinks] = useState<
+    Record<string, string>
+  >({});
   // Выносим функцию fetchSessions из useEffect, чтобы использовать ее для обновления списка
-  const fetchSessions = useCallback(async () => {
+  const fetchSessions = useCallback(async (): Promise<void> => {
     if (!token) {
       setLoading(false);
       return;
@@ -112,12 +157,14 @@ function SessionList({
       }
 
       // Парсим ответ как JSON
-      let data;
+      let data: Session[];
       try {
         data = JSON.parse(responseText);
       } catch (parseError) {
         console.error('Ошибка при разборе JSON:', parseError);
-        throw new Error(`Ошибка при разборе JSON: ${parseError.message}`);
+        throw new Error(
+          `Ошибка при разборе JSON: ${(parseError as Error).message}`
+        );
       }
 
       console.log('Полученные данные:', data);
@@ -166,14 +213,16 @@ function SessionList({
       });
     } catch (error) {
       console.error('Ошибка при получении сессий:', error);
-      setError(error.message || 'Произошла ошибка при загрузке данных');
+      setError(
+        (error as Error).message || 'Произошла ошибка при загрузке данных'
+      );
     } finally {
       setLoading(false);
     }
   }, [token]);
 
   // Функция для получения профиля пользователя с информацией о статусе обратной связи
-  const fetchUserProfile = useCallback(async () => {
+  const fetchUserProfile = useCallback(async (): Promise<void> => {
     if (!token) return;
 
     try {
@@ -204,36 +253,39 @@ function SessionList({
   }, [token]);
 
   // Обработчик события session-updated
-  const handleSessionUpdated = useCallback((data) => {
-    console.log('Получено событие session-updated:', data);
+  const handleSessionUpdated = useCallback(
+    (data: { sessionId: string; session: Partial<Session> }): void => {
+      console.log('Получено событие session-updated:', data);
 
-    // Обновляем сессию в списке, если она уже есть
-    setSessions((prevSessions) => {
-      const updatedSessions = prevSessions.map((session) => {
-        if (session.id === data.sessionId) {
-          return { ...session, ...data.session };
+      // Обновляем сессию в списке, если она уже есть
+      setSessions((prevSessions) => {
+        const updatedSessions = prevSessions.map((session) => {
+          if (session.id === data.sessionId) {
+            return { ...session, ...data.session };
+          }
+          return session;
+        });
+
+        // Если сессии нет в списке, добавляем ее
+        const sessionExists = updatedSessions.some(
+          (session) => session.id === data.sessionId
+        );
+
+        if (!sessionExists && data.session) {
+          return [...updatedSessions, data.session as Session];
         }
-        return session;
+
+        return updatedSessions;
       });
 
-      // Если сессии нет в списке, добавляем ее
-      const sessionExists = updatedSessions.some(
-        (session) => session.id === data.sessionId
-      );
-
-      if (!sessionExists && data.session) {
-        return [...updatedSessions, data.session];
-      }
-
-      return updatedSessions;
-    });
-
-    // Не вызываем checkSessionFeedbackStatus здесь, так как это будет сделано в useEffect
-  }, []);
+      // Не вызываем checkSessionFeedbackStatus здесь, так как это будет сделано в useEffect
+    },
+    []
+  );
 
   // Обработчик события feedback-required
   const handleFeedbackRequired = useCallback(
-    (data) => {
+    (data: { sessionId: string }): void => {
       console.log('Получено событие feedback-required:', data);
 
       // Добавляем уведомление
@@ -254,42 +306,49 @@ function SessionList({
   );
 
   // Обработчик события video-link-updated
-  const handleVideoLinkUpdated = useCallback((data) => {
-    console.log('Получено событие video-link-updated:', data);
+  const handleVideoLinkUpdated = useCallback(
+    (data: {
+      sessionId: string;
+      videoLink: string;
+      videoLinkStatus: string;
+    }): void => {
+      console.log('Получено событие video-link-updated:', data);
 
-    // Обновляем статус ссылки на видеозвонок в списке сессий
-    setSessions((prevSessions) => {
-      return prevSessions.map((session) => {
-        if (session.id === data.sessionId) {
-          return {
-            ...session,
-            videoLink: data.videoLink,
-            videoLinkStatus: data.videoLinkStatus,
-          };
-        }
-        return session;
+      // Обновляем статус ссылки на видеозвонок в списке сессий
+      setSessions((prevSessions) => {
+        return prevSessions.map((session) => {
+          if (session.id === data.sessionId) {
+            return {
+              ...session,
+              videoLink: data.videoLink,
+              videoLinkStatus: data.videoLinkStatus,
+            };
+          }
+          return session;
+        });
       });
-    });
 
-    // Если статус ссылки изменился на 'expired', добавляем уведомление
-    if (data.videoLinkStatus === 'expired') {
-      setNotifications((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          type: 'video-link-expired',
-          sessionId: data.sessionId,
-          message: 'Ссылка на видеозвонок истекла',
-        },
-      ]);
-    }
-  }, []);
+      // Если статус ссылки изменился на 'expired', добавляем уведомление
+      if (data.videoLinkStatus === 'expired') {
+        setNotifications((prev) => [
+          ...prev,
+          {
+            id: Date.now(),
+            type: 'video-link-expired',
+            sessionId: data.sessionId,
+            message: 'Ссылка на видеозвонок истекла',
+          },
+        ]);
+      }
+    },
+    []
+  );
 
   // Используем useEffect для первоначальной загрузки данных
   useEffect(() => {
     fetchSessions();
     fetchUserProfile();
-  }, [token]); // Используем только token как зависимость, так как обе функции зависят от него
+  }, [fetchSessions, fetchUserProfile]);
 
   // Мемоизируем объект events, чтобы он не создавался заново при каждом рендере
   const socketEvents = useMemo(
@@ -309,7 +368,7 @@ function SessionList({
 
   // Эффект для автоматического переподключения при разрыве соединения
   useEffect(() => {
-    let reconnectInterval;
+    let reconnectInterval: NodeJS.Timeout | undefined;
 
     if (!connected && reconnectAttempts < maxReconnectAttempts) {
       console.log('WebSocket соединение разорвано, попытка переподключения...');
@@ -331,11 +390,9 @@ function SessionList({
       }
     };
   }, [connected, reconnect, reconnectAttempts, maxReconnectAttempts]);
-
   // Функция для проверки статуса обратной связи для сессии
-  // Используем useCallback для мемоизации функции checkSessionFeedbackStatus
   const checkSessionFeedbackStatus = useCallback(
-    async (sessionId) => {
+    async (sessionId: string): Promise<void> => {
       if (!token || !sessionId) return;
 
       // Находим сессию по ID
@@ -412,8 +469,13 @@ function SessionList({
   );
 
   // Функция для генерации ссылки на видеозвонок
-  const generateVideoLink = async (sessionId, manualLink = null) => {
-    if (!token || !sessionId) return;
+  const generateVideoLink = async (
+    sessionId: string,
+    manualLink: string | null = null
+  ): Promise<string | null> => {
+    if (!token || !sessionId) return null;
+
+    console.log('generateVideoLink: manualLink получен:', manualLink);
 
     setGeneratingVideoLink(sessionId);
     setVideoLinkError(null);
@@ -464,7 +526,9 @@ function SessionList({
         data = JSON.parse(responseText);
       } catch (parseError) {
         console.error('Ошибка при разборе JSON:', parseError);
-        throw new Error(`Ошибка при разборе JSON: ${parseError.message}`);
+        throw new Error(
+          `Ошибка при разборе JSON: ${(parseError as Error).message}`
+        );
       }
 
       // Обновляем сессию в списке
@@ -481,10 +545,22 @@ function SessionList({
         });
       });
 
+      // Если была передана ручная ссылка, сохраняем её в состоянии
+      if (manualLink) {
+        console.log(
+          'generateVideoLink: Сохраняем manualLink в состоянии:',
+          manualLink
+        );
+        setManualVideoLinks((prev) => ({
+          ...prev,
+          [sessionId]: manualLink,
+        }));
+      }
+
       return data.videoLink;
     } catch (error) {
       console.error('Ошибка при генерации ссылки на видеозвонок:', error);
-      setVideoLinkError(error.message);
+      setVideoLinkError((error as Error).message);
       return null;
     } finally {
       setGeneratingVideoLink(null);
@@ -498,9 +574,9 @@ function SessionList({
         checkSessionFeedbackStatus(session.id);
       });
     }
-  }, [sessions, token, checkSessionFeedbackStatus]);
+  }, [sessions, checkSessionFeedbackStatus]);
 
-  const getStatusText = (status) => {
+  const getStatusText = (status: string): string => {
     switch (status) {
       case 'pending':
         return 'Ожидание';
@@ -513,7 +589,7 @@ function SessionList({
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
@@ -526,7 +602,7 @@ function SessionList({
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     // Форматируем дату без секунд
     return date.toLocaleString(undefined, {
@@ -538,7 +614,6 @@ function SessionList({
       hour12: false, // 24-часовой формат
     });
   };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -609,6 +684,41 @@ function SessionList({
           </button>
         )}
       </div>
+
+      {/* Уведомления об ошибках генерации ссылок */}
+      {videoLinkError && (
+        <div className="mb-4">
+          <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-2 flex justify-between items-center">
+            <div className="flex items-start">
+              <svg
+                className="h-5 w-5 text-red-400 mr-2 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-red-800">
+                  Ошибка при генерации ссылки на видеозвонок
+                </p>
+                <p className="text-xs text-red-700 mt-1">{videoLinkError}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setVideoLinkError(null)}
+              className="text-sm px-2 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200"
+            >
+              Закрыть
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Уведомления */}
       {notifications.length > 0 && (
@@ -722,7 +832,9 @@ function SessionList({
               key={session.id}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
             >
+              {/* Содержимое карточки сессии */}
               <div className="p-4">
+                {/* Заголовок с ID и статусом */}
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-xs text-gray-500">
                     ID: {session.id.substring(0, 8)}...
@@ -736,224 +848,75 @@ function SessionList({
                   </span>
                 </div>
 
+                {/* Информация о сессии */}
                 <div className="mb-3">
                   <p className="text-sm text-gray-600">
                     <span className="font-medium">Дата начала:</span>{' '}
                     {formatDate(session.startTime)}
                   </p>
 
-                  {/* Отображение ссылки на Видео Чат, если она есть */}
-                  {session.videoLink && (
-                    <div className="mt-2 border border-gray-200 rounded-md p-3 bg-gray-50">
-                      <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm font-medium text-gray-700">
-                          <span className="flex items-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4 mr-1 text-green-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                              />
-                            </svg>
-                            Видео Чат
-                          </span>
-                        </p>
-                        <div className="flex items-center space-x-2">
-                          {/* Статус ссылки */}
-                          {session.videoLinkStatus && (
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full ${
-                                session.videoLinkStatus === 'active'
-                                  ? 'bg-green-100 text-green-800'
-                                  : session.videoLinkStatus === 'expired'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}
-                            >
-                              {session.videoLinkStatus === 'active'
-                                ? 'Активна'
-                                : session.videoLinkStatus === 'expired'
-                                ? 'Истекла'
-                                : 'Ручная'}
-                            </span>
-                          )}
-
-                          {/* Метка "Только просмотр" для наблюдателей */}
-                          {session.observerIds &&
-                            session.observerIds.includes(
-                              userFeedbackStatus.userId
-                            ) && (
-                              <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                                Только просмотр
-                              </span>
-                            )}
-                        </div>
-                      </div>
-
-                      {/* Уведомления о статусе ссылки */}
-                      {session.videoLinkStatus === 'expired' && (
-                        <div className="mb-3 bg-red-50 border border-red-200 rounded-md p-2">
-                          <div className="flex items-start">
-                            <svg
-                              className="h-5 w-5 text-red-400 mr-2 mt-0.5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                              />
-                            </svg>
-                            <div>
-                              <p className="text-sm font-medium text-red-800">
-                                Ссылка на видеозвонок истекла
-                              </p>
-                              {session.interviewerId ===
-                                userFeedbackStatus.userId && (
-                                <p className="text-xs text-red-700 mt-1">
-                                  Ссылка истекла, сгенерируйте новую.
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Предупреждение для автоматически сгенерированных ссылок */}
-                      {session.videoLinkStatus === 'active' &&
-                        !session.videoLink.includes(
-                          'meet.google.com/lookup/'
-                        ) && (
-                          <div className="mb-3 bg-yellow-50 border border-yellow-200 rounded-md p-2">
-                            <div className="flex items-start">
-                              <svg
-                                className="h-5 w-5 text-yellow-400 mr-2 mt-0.5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                                />
-                              </svg>
-                              <div>
-                                <p className="text-sm font-medium text-yellow-800">
-                                  Автоматически сгенерированная ссылка
-                                </p>
-                                <p className="text-xs text-yellow-700 mt-1">
-                                  Если, возникнет ошибка, создайте встречу
-                                  вручную через Google Meet или любые другие
-                                  сирвисы введите ссылку ниже.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                      <div className="flex flex-col space-y-2">
+                  {/* Отображение ручной ссылки на видеозвонок, если она есть */}
+                  {manualVideoLinks[session.id] && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Ручная ссылка:</span>{' '}
                         <a
-                          href={session.videoLink}
+                          href={manualVideoLinks[session.id]}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-gray-500 truncate hover:text-gray-700"
+                          className="text-blue-600 hover:text-blue-800 break-all"
                         >
-                          {session.videoLink}
+                          {manualVideoLinks[session.id]}
                         </a>
-                        {(session.videoLinkStatus === 'active' ||
-                          session.videoLinkStatus === 'manual') && (
-                          <button
-                            onClick={() =>
-                              window.open(session.videoLink, '_blank')
-                            }
-                            className="w-full py-2 px-4 rounded-md bg-green-600 hover:bg-green-700 text-white font-medium flex items-center justify-center transition-colors duration-200"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4 mr-2"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                              />
-                            </svg>
-                            Присоединиться к видеозвонку
-                          </button>
-                        )}
-                      </div>
+                      </p>
                     </div>
                   )}
                 </div>
 
-                {/* Уведомление о необходимости заполнить форму обратной связи */}
-                {showFeedbackReminder && (
-                  <div className="mb-3 bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                    <div className="flex items-start">
-                      <svg
-                        className="h-5 w-5 text-yellow-400 mr-2 mt-0.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                        />
-                      </svg>
-                      <div>
-                        <p className="text-sm font-medium text-yellow-800">
-                          Необходимо заполнить форму обратной связи
-                        </p>
-                        <p className="text-xs text-yellow-700 mt-1">
-                          Пожалуйста, заполните форму обратной связи для этой
-                          сессии.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div className="text-center p-2 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-500">Собеседующий</p>
-                    <p className="text-sm font-medium">
-                      {session.interviewerId ? 'Занято' : 'Свободно'}
-                    </p>
-                  </div>
-                  <div className="text-center p-2 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-500">Отвечающий</p>
-                    <p className="text-sm font-medium">
-                      {session.intervieweeId ? 'Занято' : 'Свободно'}
-                    </p>
-                  </div>
-                  <div className="text-center p-2 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-500">Наблюдатели</p>
-                    <p className="text-sm font-medium">
-                      {session.observerIds ? session.observerIds.length : 0}
-                    </p>
-                  </div>
-                </div>
-
+                {/* Кнопки действий */}
                 <div className="flex flex-col space-y-2">
+                  {/* Индикатор генерации ссылки */}
+                  {generatingVideoLink === session.id && (
+                    <div className="text-xs text-blue-600 animate-pulse mb-2">
+                      Генерация ссылки на видеозвонок...
+                    </div>
+                  )}
+
+                  {/* Кнопка для генерации ссылки на видеозвонок */}
+                  {session.status === 'active' && (
+                    <button
+                      onClick={() => {
+                        // Запрашиваем у пользователя ручную ссылку (опционально)
+                        const manualLink = window.prompt(
+                          'Введите ссылку на видеозвонок (оставьте пустым для автоматической генерации):'
+                        );
+
+                        // Генерируем ссылку
+                        generateVideoLink(session.id, manualLink || null).then(
+                          (link) => {
+                            if (link) {
+                              // Если ссылка успешно сгенерирована, показываем сообщение
+                              alert(
+                                `Ссылка на видеозвонок успешно сгенерирована: ${link}`
+                              );
+                            }
+                          }
+                        );
+                      }}
+                      disabled={generatingVideoLink === session.id}
+                      className={`w-full py-2 px-4 rounded-md text-white font-medium mb-2
+                        ${
+                          generatingVideoLink === session.id
+                            ? 'bg-gray-300 cursor-not-allowed'
+                            : 'bg-purple-600 hover:bg-purple-700'
+                        }`}
+                    >
+                      {session.videoLink
+                        ? 'Обновить ссылку'
+                        : 'Создать ссылку на видеозвонок'}
+                    </button>
+                  )}
+
                   <div className="flex space-x-2">
                     <button
                       onClick={() => onJoinSession(session)}
@@ -969,170 +932,21 @@ function SessionList({
                     </button>
                     <button
                       onClick={() => onOpenFeedbackForm(session)}
-                      className="py-2 px-4 rounded-md bg-green-600 hover:bg-green-700 text-white font-medium"
+                      className={`py-2 px-4 rounded-md text-white font-medium relative
+                        ${
+                          showFeedbackReminder
+                            ? 'bg-yellow-600 hover:bg-yellow-700 animate-pulse'
+                            : 'bg-green-600 hover:bg-green-700'
+                        }`}
                     >
                       Отзыв
+                      {showFeedbackReminder && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          !
+                        </span>
+                      )}
                     </button>
                   </div>
-
-                  {/* Кнопки и поле для управления ссылкой на видеозвонок (только для интервьюера) */}
-                  {session.interviewerId === userFeedbackStatus.userId && (
-                    <div className="mt-3 space-y-3">
-                      {/* Поле для ввода ручной ссылки */}
-                      <div className="flex flex-col space-y-2">
-                        <label
-                          htmlFor={`manual-link-${session.id}`}
-                          className="text-xs text-gray-600 font-medium"
-                        >
-                          Ручная ссылка на видеозвонок (резервный вариант)
-                        </label>
-                        <div className="flex space-x-2">
-                          <input
-                            id={`manual-link-${session.id}`}
-                            type="text"
-                            placeholder="https://meet.google.com/xxx-xxxx-xxx"
-                            value={manualVideoLinks[session.id] || ''}
-                            onChange={(e) =>
-                              setManualVideoLinks((prev) => ({
-                                ...prev,
-                                [session.id]: e.target.value,
-                              }))
-                            }
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                          <button
-                            onClick={() => {
-                              generateVideoLink(
-                                session.id,
-                                manualVideoLinks[session.id]
-                              );
-                              setManualVideoLinks((prev) => ({
-                                ...prev,
-                                [session.id]: '',
-                              }));
-                            }}
-                            disabled={
-                              !manualVideoLinks[session.id] ||
-                              generatingVideoLink === session.id
-                            }
-                            className={`px-3 py-2 rounded-md text-white font-medium ${
-                              !manualVideoLinks[session.id] ||
-                              generatingVideoLink === session.id
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-blue-600 hover:bg-blue-700'
-                            }`}
-                          >
-                            Сохранить
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Кнопка для генерации/обновления ссылки */}
-                      <button
-                        onClick={() => generateVideoLink(session.id)}
-                        disabled={generatingVideoLink === session.id}
-                        className={`w-full py-2 px-4 rounded-md text-white font-medium flex items-center justify-center
-                          ${
-                            generatingVideoLink === session.id
-                              ? 'bg-gray-400 cursor-not-allowed'
-                              : session.videoLink &&
-                                session.videoLinkStatus !== 'expired'
-                              ? 'bg-purple-600 hover:bg-purple-700'
-                              : 'bg-indigo-600 hover:bg-indigo-700'
-                          }`}
-                      >
-                        {generatingVideoLink === session.id ? (
-                          <>
-                            <svg
-                              className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                            Генерация...
-                          </>
-                        ) : session.videoLink ? (
-                          session.videoLinkStatus === 'expired' ? (
-                            'Сгенерировать новую ссылку'
-                          ) : (
-                            'Обновить ссылку на видеозвонок'
-                          )
-                        ) : (
-                          'Сгенерировать ссылку на видеозвонок'
-                        )}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Информационное сообщение для пользователей, которые не являются интервьюерами */}
-                  {session.interviewerId !== userFeedbackStatus.userId && (
-                    <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded-md">
-                      <p className="text-xs text-blue-800">
-                        <svg
-                          className="inline-block h-4 w-4 mr-1 text-blue-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        {!session.videoLink ||
-                        session.videoLinkStatus === 'pending'
-                          ? 'Ссылка на видеозвонок будет доступна после выбора Собеседующего'
-                          : 'Ссылка на видеозвонок может быть сгенерирована только пользователем в роли интервьюера'}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Эта секция удалена, так как она дублирует функциональность, которая теперь включена в блок выше */}
-
-                  {/* Сообщение об ошибке при генерации ссылки */}
-                  {videoLinkError && session.id === generatingVideoLink && (
-                    <div className="bg-red-50 border border-red-200 rounded-md p-3 mt-2">
-                      <div className="flex items-start">
-                        <svg
-                          className="h-5 w-5 text-red-400 mr-2 mt-0.5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
-                        </svg>
-                        <div>
-                          <p className="text-sm font-medium text-red-800">
-                            Ошибка при генерации ссылки
-                          </p>
-                          <p className="text-xs text-red-700 mt-1">
-                            {videoLinkError}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Кнопка для просмотра результатов обратной связи */}
                   {showResultsButton && (
@@ -1164,6 +978,6 @@ function SessionList({
       </div>
     </div>
   );
-}
+};
 
 export default SessionList;

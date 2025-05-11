@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: SuperMook API
+  title: SuperMock API
   description: API для приложения тренировочных собеседований
   version: 1.0.0
 servers:

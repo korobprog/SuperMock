@@ -15,6 +15,9 @@ console.log('Переменные окружения:', {
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
+  },
   server: {
     // Добавляем логирование при запуске
     hmr: {

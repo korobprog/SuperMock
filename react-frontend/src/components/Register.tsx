@@ -1,22 +1,26 @@
-import { useState } from 'react';
+import { useState, FC, ChangeEvent, FormEvent } from 'react';
 
-function Register({ onRegisterSuccess }) {
+interface RegisterProps {
+  onRegisterSuccess?: (token: string) => void;
+}
+
+const Register: FC<RegisterProps> = ({ onRegisterSuccess }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
 
   const { email, password, confirmPassword } = formData;
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Проверка совпадения паролей
@@ -59,7 +63,7 @@ function Register({ onRegisterSuccess }) {
         onRegisterSuccess(data.token);
       }
     } catch (error) {
-      setError(error.message);
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -120,6 +124,6 @@ function Register({ onRegisterSuccess }) {
       )}
     </div>
   );
-}
+};
 
 export default Register;

@@ -1,14 +1,34 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FC, ChangeEvent, FormEvent } from 'react';
 
-function SessionCreate({ token, onSessionCreated }) {
-  const [videoLink, setVideoLink] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [dateError, setDateError] = useState('');
+interface SessionCreateProps {
+  token: string | null;
+  onSessionCreated?: (sessionData: any) => void;
+}
+
+interface SessionResponse {
+  id: string;
+  interviewerId: string | null;
+  intervieweeId: string | null;
+  observerIds?: string[];
+  status: string;
+  date: string;
+  videoLink?: string;
+  videoLinkStatus?: string;
+}
+
+const SessionCreate: FC<SessionCreateProps> = ({ token, onSessionCreated }) => {
+  const [videoLink, setVideoLink] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<boolean>(false);
+  const [dateError, setDateError] = useState<string>('');
+
+  // Состояния для отдельных полей даты и времени
+  const [dateValue, setDateValue] = useState<string>('');
+  const [timeValue, setTimeValue] = useState<string>('');
 
   // Функция для форматирования даты в формат YYYY-MM-DD
-  const formatDateForDateInput = (date) => {
+  const formatDateForDateInput = (date: Date): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -16,34 +36,33 @@ function SessionCreate({ token, onSessionCreated }) {
   };
 
   // Функция для форматирования времени в формат HH:MM
-  const formatTimeForTimeInput = (date) => {
+  const formatTimeForTimeInput = (date: Date): string => {
     const hours = String(date.getHours()).padStart(2, '0');
 
     // Округляем минуты до ближайших 10 минут
-    let minutes = Math.ceil(date.getMinutes() / 10) * 10;
-    if (minutes === 60) {
-      minutes = 0;
+    let minutesNum = Math.ceil(date.getMinutes() / 10) * 10;
+    if (minutesNum === 60) {
+      minutesNum = 0;
       // Не изменяем часы здесь, так как это может привести к проблемам с датой
     }
-    minutes = String(minutes).padStart(2, '0');
+    const minutes = String(minutesNum).padStart(2, '0');
 
     return `${hours}:${minutes}`;
   };
 
   // Функция для объединения даты и времени
-  const combineDateAndTime = (dateString, timeString) => {
-    if (!dateString || !timeString) return '';
+  const combineDateAndTime = (
+    dateString: string,
+    timeString: string
+  ): Date | null => {
+    if (!dateString || !timeString) return null;
 
-    const [year, month, day] = dateString.split('-');
-    const [hours, minutes] = timeString.split(':');
+    const [year, month, day] = dateString.split('-').map(Number);
+    const [hours, minutes] = timeString.split(':').map(Number);
 
     const date = new Date(year, month - 1, day, hours, minutes, 0, 0);
     return date;
   };
-
-  // Состояния для отдельных полей даты и времени
-  const [dateValue, setDateValue] = useState('');
-  const [timeValue, setTimeValue] = useState('');
 
   // Инициализация dateValue и timeValue с минимальной допустимой датой при загрузке компонента
   useEffect(() => {
@@ -54,7 +73,7 @@ function SessionCreate({ token, onSessionCreated }) {
   }, []);
 
   // Функция для получения минимальной допустимой даты
-  const getMinDate = () => {
+  const getMinDate = (): Date => {
     const minDate = new Date();
     // Устанавливаем минимальное время на 2 часа вперед
     // Не добавляем дополнительные часы здесь, так как это только для отображения в UI
@@ -63,7 +82,7 @@ function SessionCreate({ token, onSessionCreated }) {
     return minDate;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -83,6 +102,8 @@ function SessionCreate({ token, onSessionCreated }) {
               ? (() => {
                   // Создаем новую дату из выбранной даты и времени
                   const date = combineDateAndTime(dateValue, timeValue);
+                  if (!date) return null;
+
                   // Обнуляем секунды и миллисекунды
                   date.setSeconds(0, 0);
 
@@ -124,7 +145,7 @@ function SessionCreate({ token, onSessionCreated }) {
         throw new Error(errorData.message || 'Не удалось создать сессию');
       }
 
-      const sessionData = await response.json();
+      const sessionData: SessionResponse = await response.json();
       setSuccess(true);
       setVideoLink('');
       setDateValue('');
@@ -135,7 +156,7 @@ function SessionCreate({ token, onSessionCreated }) {
         onSessionCreated(sessionData);
       }
     } catch (error) {
-      setError(error.message);
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -174,7 +195,9 @@ function SessionCreate({ token, onSessionCreated }) {
               type="text"
               id="videoLink"
               value={videoLink}
-              onChange={(e) => setVideoLink(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setVideoLink(e.target.value)
+              }
               placeholder="https://meet.google.com/..."
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
@@ -226,7 +249,7 @@ function SessionCreate({ token, onSessionCreated }) {
                   type="date"
                   id="dateValue"
                   value={dateValue}
-                  onChange={(e) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     const newDateValue = e.target.value;
                     setDateValue(newDateValue);
 
@@ -238,21 +261,23 @@ function SessionCreate({ token, onSessionCreated }) {
                       );
                       const minDate = getMinDate();
 
-                      console.log(
-                        'Выбранная дата:',
-                        selectedDate.toISOString()
-                      );
-                      console.log('Минимальная дата:', minDate.toISOString());
-
-                      // Если выбранная дата меньше минимальной, показываем ошибку и устанавливаем минимальную
-                      if (selectedDate < minDate) {
-                        setDateError(
-                          'Нельзя выбрать дату и время в прошлом. Минимальное время: текущее + 2 часа'
+                      if (selectedDate && minDate) {
+                        console.log(
+                          'Выбранная дата:',
+                          selectedDate.toISOString()
                         );
-                        setDateValue(formatDateForDateInput(minDate));
-                        setTimeValue(formatTimeForTimeInput(minDate));
-                      } else {
-                        setDateError('');
+                        console.log('Минимальная дата:', minDate.toISOString());
+
+                        // Если выбранная дата меньше минимальной, показываем ошибку и устанавливаем минимальную
+                        if (selectedDate < minDate) {
+                          setDateError(
+                            'Нельзя выбрать дату и время в прошлом. Минимальное время: текущее + 2 часа'
+                          );
+                          setDateValue(formatDateForDateInput(minDate));
+                          setTimeValue(formatTimeForTimeInput(minDate));
+                        } else {
+                          setDateError('');
+                        }
                       }
                     }
                   }}
@@ -273,7 +298,7 @@ function SessionCreate({ token, onSessionCreated }) {
                   type="time"
                   id="timeValue"
                   value={timeValue}
-                  onChange={(e) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     const newTimeValue = e.target.value;
                     setTimeValue(newTimeValue);
 
@@ -285,37 +310,42 @@ function SessionCreate({ token, onSessionCreated }) {
                       );
                       const minDate = getMinDate();
 
-                      console.log(
-                        'Выбранное время:',
-                        selectedDate.toISOString()
-                      );
-                      console.log('Минимальное время:', minDate.toISOString());
-
-                      // Если выбранная дата меньше минимальной, показываем ошибку и устанавливаем минимальную
-                      if (selectedDate < minDate) {
-                        setDateError(
-                          'Нельзя выбрать дату и время в прошлом. Минимальное время: текущее + 2 часа'
+                      if (selectedDate && minDate) {
+                        console.log(
+                          'Выбранное время:',
+                          selectedDate.toISOString()
                         );
-                        setDateValue(formatDateForDateInput(minDate));
-                        setTimeValue(formatTimeForTimeInput(minDate));
-                      } else {
-                        setDateError('');
+                        console.log(
+                          'Минимальное время:',
+                          minDate.toISOString()
+                        );
 
-                        // Округляем минуты выбранного времени до ближайших 10 минут
-                        const [hours, minutes] = newTimeValue
-                          .split(':')
-                          .map(Number);
-                        const roundedMinutes = Math.ceil(minutes / 10) * 10;
-                        if (roundedMinutes === 60) {
-                          setTimeValue(
-                            `${String(hours + 1).padStart(2, '0')}:00`
+                        // Если выбранная дата меньше минимальной, показываем ошибку и устанавливаем минимальную
+                        if (selectedDate < minDate) {
+                          setDateError(
+                            'Нельзя выбрать дату и время в прошлом. Минимальное время: текущее + 2 часа'
                           );
+                          setDateValue(formatDateForDateInput(minDate));
+                          setTimeValue(formatTimeForTimeInput(minDate));
                         } else {
-                          setTimeValue(
-                            `${String(hours).padStart(2, '0')}:${String(
-                              roundedMinutes
-                            ).padStart(2, '0')}`
-                          );
+                          setDateError('');
+
+                          // Округляем минуты выбранного времени до ближайших 10 минут
+                          const [hours, minutes] = newTimeValue
+                            .split(':')
+                            .map(Number);
+                          const roundedMinutes = Math.ceil(minutes / 10) * 10;
+                          if (roundedMinutes === 60) {
+                            setTimeValue(
+                              `${String(hours + 1).padStart(2, '0')}:00`
+                            );
+                          } else {
+                            setTimeValue(
+                              `${String(hours).padStart(2, '0')}:${String(
+                                roundedMinutes
+                              ).padStart(2, '0')}`
+                            );
+                          }
                         }
                       }
                     }
@@ -350,6 +380,6 @@ function SessionCreate({ token, onSessionCreated }) {
       </div>
     </div>
   );
-}
+};
 
 export default SessionCreate;

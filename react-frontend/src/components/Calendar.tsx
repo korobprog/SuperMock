@@ -1,16 +1,56 @@
 import { useState, useEffect, useContext } from 'react';
 import { SocketContext } from '../contexts/SocketContext';
+import { Socket } from 'socket.io-client';
 
-function Calendar({ token }) {
-  const [calendarEntries, setCalendarEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const socketContext = useContext(SocketContext);
+// Определение типов
+interface CalendarProps {
+  token: string | null;
+}
+
+interface CalendarEntry {
+  id: string;
+  sessionId: string;
+  videoLink: string | null;
+  startTime: Date;
+  participants: Array<any>; // Можно уточнить тип участников при необходимости
+}
+
+interface CalendarUpdate {
+  calendarEntryId: string;
+  sessionId: string;
+  videoLink: string;
+  startTime: string | Date;
+  participants: Array<any>; // Можно уточнить тип участников при необходимости
+}
+
+// Определяем тип для SocketContext
+interface SocketContextType {
+  socket: Socket | null;
+  connected: boolean;
+  error: string | null;
+  reconnectAttempts: number;
+  maxReconnectAttempts: number;
+  reconnect: () => void;
+  joinSession: (sessionId: string) => void;
+  leaveSession: (sessionId: string) => void;
+  subscribeToCalendarUpdates: () => void;
+  unsubscribeFromCalendarUpdates: () => void;
+}
+
+function Calendar({ token }: CalendarProps) {
+  const [calendarEntries, setCalendarEntries] = useState<CalendarEntry[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<number>(
+    new Date().getMonth()
+  );
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
+  const socketContext = useContext(SocketContext) as SocketContextType | null;
 
   // Функция для форматирования даты
-  const formatDate = (date) => {
+  const formatDate = (date: Date | string): string => {
     return new Date(date).toLocaleString('ru-RU', {
       day: 'numeric',
       month: 'long',
@@ -21,7 +61,7 @@ function Calendar({ token }) {
   };
 
   // Функция для получения записей календаря с сервера
-  const fetchCalendarEntries = async () => {
+  const fetchCalendarEntries = async (): Promise<void> => {
     try {
       setLoading(true);
       console.log('Calendar: Отправка запроса на API. Переменные окружения:', {
@@ -71,7 +111,7 @@ function Calendar({ token }) {
       socketContext.subscribeToCalendarUpdates();
 
       // Обработчик события обновления календаря
-      const handleCalendarUpdated = (update) => {
+      const handleCalendarUpdated = (update: CalendarUpdate) => {
         console.log('Получено обновление календаря:', update);
         // Обновляем список записей календаря
         setCalendarEntries((prevEntries) => {
@@ -107,12 +147,12 @@ function Calendar({ token }) {
       };
 
       // Регистрируем обработчик события
-      socketContext.socket.on('calendar-updated', handleCalendarUpdated);
+      socketContext.socket?.on('calendar-updated', handleCalendarUpdated);
 
       // Очистка при размонтировании компонента
       return () => {
         socketContext.unsubscribeFromCalendarUpdates();
-        socketContext.socket.off('calendar-updated', handleCalendarUpdated);
+        socketContext.socket?.off('calendar-updated', handleCalendarUpdated);
       };
     }
   }, [socketContext]);

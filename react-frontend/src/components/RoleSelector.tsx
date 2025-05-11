@@ -1,4 +1,5 @@
-import { useState, useEffect, FC } from 'react';
+import { useState, FC } from 'react';
+// useEffect был удален, так как не используется после рефакторинга Google аутентификации
 
 interface Session {
   id: string;

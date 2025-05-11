@@ -1,7 +1,39 @@
-import { useState } from 'react';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
 
-function FeedbackForm({ token, sessionId, onSubmitSuccess, onCancel }) {
-  const [formData, setFormData] = useState({
+// Определение типов для пропсов компонента
+interface FeedbackFormProps {
+  token: string | null;
+  sessionId: string | number;
+  onSubmitSuccess?: () => void;
+  onCancel: () => void;
+}
+
+// Типы для рейтингов
+interface Ratings {
+  preparation: number;
+  communication: number;
+  technicalSkills: number;
+  problemSolving: number;
+  overall: number;
+}
+
+// Типы для данных формы
+interface FormData {
+  ratings: Ratings;
+  comments: string;
+  recommendations: string;
+}
+
+// Тип для активной секции
+type ActiveSection = 'ratings' | 'comments' | 'recommendations';
+
+function FeedbackForm({
+  token,
+  sessionId,
+  onSubmitSuccess,
+  onCancel,
+}: FeedbackFormProps) {
+  const [formData, setFormData] = useState<FormData>({
     ratings: {
       preparation: 0,
       communication: 0,
@@ -13,22 +45,22 @@ function FeedbackForm({ token, sessionId, onSubmitSuccess, onCancel }) {
     recommendations: '',
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [activeSection, setActiveSection] = useState('ratings'); // 'ratings', 'comments', 'recommendations'
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<boolean>(false);
+  const [activeSection, setActiveSection] = useState<ActiveSection>('ratings');
 
-  const handleRatingChange = (category, value) => {
+  const handleRatingChange = (category: keyof Ratings, value: number): void => {
     setFormData((prev) => ({
       ...prev,
       ratings: {
         ...prev.ratings,
-        [category]: parseInt(value, 10),
+        [category]: parseInt(value.toString(), 10),
       },
     }));
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>): void => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -36,7 +68,7 @@ function FeedbackForm({ token, sessionId, onSubmitSuccess, onCancel }) {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -63,13 +95,17 @@ function FeedbackForm({ token, sessionId, onSubmitSuccess, onCancel }) {
         onSubmitSuccess();
       }
     } catch (error) {
-      setError(error.message);
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderRatingInput = (category, label, description) => {
+  const renderRatingInput = (
+    category: keyof Ratings,
+    label: string,
+    description?: string
+  ): React.ReactElement => {
     return (
       <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all">
         <div className="flex justify-between items-center mb-2">
@@ -145,12 +181,12 @@ function FeedbackForm({ token, sessionId, onSubmitSuccess, onCancel }) {
   }
 
   // Функция для проверки заполнения всех оценок
-  const allRatingsCompleted = () => {
+  const allRatingsCompleted = (): boolean => {
     return Object.values(formData.ratings).every((rating) => rating > 0);
   };
 
   // Функция для перехода к следующему разделу
-  const goToNextSection = () => {
+  const goToNextSection = (): void => {
     if (activeSection === 'ratings') {
       setActiveSection('comments');
     } else if (activeSection === 'comments') {
@@ -159,7 +195,7 @@ function FeedbackForm({ token, sessionId, onSubmitSuccess, onCancel }) {
   };
 
   // Функция для перехода к предыдущему разделу
-  const goToPrevSection = () => {
+  const goToPrevSection = (): void => {
     if (activeSection === 'recommendations') {
       setActiveSection('comments');
     } else if (activeSection === 'comments') {
@@ -275,7 +311,7 @@ function FeedbackForm({ token, sessionId, onSubmitSuccess, onCancel }) {
                 value={formData.comments}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                rows="6"
+                rows={6}
                 placeholder="Ваши комментарии о сессии..."
               ></textarea>
             </div>
@@ -322,7 +358,7 @@ function FeedbackForm({ token, sessionId, onSubmitSuccess, onCancel }) {
                 value={formData.recommendations}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                rows="6"
+                rows={6}
                 placeholder="Ваши рекомендации для улучшения..."
               ></textarea>
             </div>

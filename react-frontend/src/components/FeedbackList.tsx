@@ -1,9 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FC } from 'react';
 
-function FeedbackList({ token, userId }) {
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+interface FeedbackListProps {
+  token: string | null;
+  userId: string;
+}
+
+interface Feedback {
+  id: string;
+  sessionId: string;
+  createdAt: string;
+  ratings: {
+    preparation?: number;
+    communication?: number;
+    technicalSkills?: number;
+    problemSolving?: number;
+    overall?: number;
+    [key: string]: number | undefined;
+  };
+  comments?: string;
+  recommendations?: string;
+}
+
+const FeedbackList: FC<FeedbackListProps> = ({ token, userId }) => {
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const fetchFeedbacks = async () => {
@@ -26,7 +47,7 @@ function FeedbackList({ token, userId }) {
         const data = await response.json();
         setFeedbacks(data);
       } catch (error) {
-        setError(error.message);
+        setError((error as Error).message);
       } finally {
         setLoading(false);
       }
@@ -59,7 +80,7 @@ function FeedbackList({ token, userId }) {
   }
 
   // Функция для отображения рейтинга в виде звездочек
-  const renderRating = (rating) => {
+  const renderRating = (rating: number) => {
     return (
       <div className="flex">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -102,7 +123,7 @@ function FeedbackList({ token, userId }) {
                   {category === 'problemSolving' && 'Решение проблем'}
                   {category === 'overall' && 'Общая оценка'}
                 </span>
-                {renderRating(rating)}
+                {rating !== undefined && renderRating(rating)}
               </div>
             ))}
           </div>
@@ -124,6 +145,6 @@ function FeedbackList({ token, userId }) {
       ))}
     </div>
   );
-}
+};
 
 export default FeedbackList;

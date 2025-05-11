@@ -1,12 +1,67 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSocket } from '../hooks/useSocket';
 
-function FeedbackResults({ token, sessionId, onBack }) {
-  const [feedbackData, setFeedbackData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+// Определение типов для пропсов компонента
+interface FeedbackResultsProps {
+  token: string | null;
+  sessionId: string;
+  onBack: () => void;
+}
+
+// Типы для рейтингов
+interface Ratings {
+  preparation: number;
+  communication: number;
+  technicalSkills: number;
+  problemSolving: number;
+  overall: number;
+  [key: string]: number; // Для динамического доступа к свойствам
+}
+
+// Типы для данных обратной связи
+interface Feedback {
+  id: string;
+  userId: string;
+  ratings: Ratings;
+  comments: string;
+  recommendations: string;
+  [key: string]: any; // Для динамических обновлений
+}
+
+// Типы для сессии
+interface Session {
+  id: string;
+  interviewerId: string;
+  intervieweeId: string;
+  observerIds?: string[];
+  [key: string]: any;
+}
+
+// Типы для данных, получаемых от API
+interface FeedbackData {
+  feedbacks: Feedback[];
+  bothSidesSubmitted: boolean;
+  session: Session;
+}
+
+// Типы для событий WebSocket
+interface FeedbackUpdatedEvent {
+  sessionId: string;
+  feedbackId: string;
+  updates: Partial<Feedback>;
+  newFeedback?: Feedback;
+}
+
+interface SessionCompletedEvent {
+  sessionId: string;
+}
+
+function FeedbackResults({ token, sessionId, onBack }: FeedbackResultsProps) {
+  const [feedbackData, setFeedbackData] = useState<FeedbackData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
   // Счетчик обновлений в реальном времени
-  const [realTimeUpdates, setRealTimeUpdates] = useState(0);
+  const [realTimeUpdates, setRealTimeUpdates] = useState<number>(0);
 
   // Используем хук useSocket для подписки на обновления обратной связи
   const {
@@ -17,7 +72,7 @@ function FeedbackResults({ token, sessionId, onBack }) {
     sessionId,
     events: {
       // Обработчик события обновления обратной связи
-      'feedback-updated': (data) => {
+      'feedback-updated': (data: FeedbackUpdatedEvent) => {
         console.log('Получено обновление обратной связи:', data);
         if (data.sessionId === sessionId) {
           // Обновляем данные без перезагрузки с сервера
@@ -60,7 +115,7 @@ function FeedbackResults({ token, sessionId, onBack }) {
         }
       },
       // Обработчик события завершения сессии
-      'session-completed': (data) => {
+      'session-completed': (data: SessionCompletedEvent) => {
         if (data.sessionId === sessionId) {
           // Перезагружаем данные с сервера, так как сессия завершена
           fetchFeedbackResults();
@@ -70,13 +125,18 @@ function FeedbackResults({ token, sessionId, onBack }) {
   });
 
   // Функция для загрузки данных обратной связи
-  const fetchFeedbackResults = async () => {
+  const fetchFeedbackResults = async (): Promise<void> => {
+    console.log('FeedbackResults: token =', token);
     if (!token || !sessionId) {
+      console.log(
+        'FeedbackResults: token или sessionId отсутствуют, прерываем запрос'
+      );
       setLoading(false);
       return;
     }
 
     try {
+      console.log('FeedbackResults: отправляем запрос с token =', token);
       const response = await fetch(`/api/sessions/${sessionId}/feedback`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -90,7 +150,7 @@ function FeedbackResults({ token, sessionId, onBack }) {
       const data = await response.json();
       setFeedbackData(data);
     } catch (error) {
-      setError(error.message);
+      setError((error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -102,7 +162,7 @@ function FeedbackResults({ token, sessionId, onBack }) {
   }, [token, sessionId]);
 
   // Функция для отображения рейтинга в виде звездочек
-  const renderRating = (rating) => {
+  const renderRating = (rating: number): React.ReactElement => {
     return (
       <div className="flex">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -116,7 +176,7 @@ function FeedbackResults({ token, sessionId, onBack }) {
   };
 
   // Функция для получения названия роли
-  const getRoleName = (userId, session) => {
+  const getRoleName = (userId: string, session: Session): string => {
     if (userId === session.interviewerId) return 'Интервьюер';
     if (userId === session.intervieweeId) return 'Интервьюируемый';
     if (session.observerIds && session.observerIds.includes(userId))
@@ -125,8 +185,8 @@ function FeedbackResults({ token, sessionId, onBack }) {
   };
 
   // Функция для получения среднего рейтинга
-  const getAverageRating = (ratings) => {
-    if (!ratings || Object.keys(ratings).length === 0) return 0;
+  const getAverageRating = (ratings: Ratings): string => {
+    if (!ratings || Object.keys(ratings).length === 0) return '0';
 
     const sum = Object.values(ratings).reduce((acc, val) => acc + val, 0);
     return (sum / Object.keys(ratings).length).toFixed(1);

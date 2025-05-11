@@ -2,12 +2,12 @@ import { useState, useEffect, FC } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import reactLogo from './assets/react.svg';
 import './App.css';
-// Импорт компонентов с указанием расширений для ясности
-import Register from './components/Register.jsx';
+// Импорт компонентов без указания расширений
+import Register from './components/Register';
 import Login from './components/Login';
-import UserProfile from './components/UserProfile.jsx';
-import SessionManager from './components/SessionManager.jsx';
-import AuthCallback from './components/AuthCallback.jsx';
+import UserProfile from './components/UserProfile';
+import SessionManager from './components/SessionManager';
+import AuthCallback from './components/AuthCallback';
 import VideoChat from './components/VideoChat';
 import { SocketProvider } from './contexts/SocketContext';
 import './components/Auth.css';
@@ -15,23 +15,18 @@ import './components/Auth.css';
 // Добавим отладочный лог для проверки загрузки компонента
 console.log('App.tsx загружен');
 
-// Определение типов для компонентов
-interface RegisterProps {
-  onRegisterSuccess: (token: string) => void;
-}
+// Добавим отладочные логи для проверки импортов
+console.log('=== ОТЛАДКА ИМПОРТОВ ===');
+console.log('Register компонент:', Register);
+console.log('Login компонент:', Login);
+console.log('UserProfile компонент:', UserProfile);
+console.log('SessionManager компонент:', SessionManager);
+console.log('AuthCallback компонент:', AuthCallback);
+console.log('VideoChat компонент:', VideoChat);
+console.log('SocketProvider компонент:', SocketProvider);
 
-interface LoginProps {
-  onLoginSuccess: (token: string) => void;
-}
-
-interface UserProfileProps {
-  token: string | null;
-  onLogout: () => void;
-}
-
-interface SessionManagerProps {
-  token: string | null;
-}
+// Импортируем типы из компонентов
+// Определение типов для компонентов не нужно, так как они уже определены в соответствующих файлах компонентов
 
 const App: FC = () => {
   const [token, setToken] = useState<string | null>(

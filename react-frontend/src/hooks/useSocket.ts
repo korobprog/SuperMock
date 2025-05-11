@@ -1,14 +1,44 @@
 import { useContext, useEffect, useState, useCallback } from 'react';
 import { SocketContext } from '../contexts/SocketContext';
+import { Socket } from 'socket.io-client';
+
+// Типы для событий WebSocket
+type EventHandler = (data: any) => void;
+type EventsMap = Record<string, EventHandler>;
+
+// Типы для опций хука
+interface UseSocketOptions {
+  sessionId?: string;
+  events?: EventsMap;
+  autoJoin?: boolean;
+}
+
+// Типы для возвращаемого значения хука
+interface UseSocketReturn {
+  socket: Socket | null;
+  connected: boolean;
+  error: string | null;
+  isSubscribed: boolean;
+  emit: (event: string, data: any) => boolean;
+  subscribe: (event: string, handler: EventHandler) => void;
+  unsubscribe: (event: string, handler?: EventHandler) => void;
+  subscribeToSession: (sid: string) => void;
+  unsubscribeFromSession: (sid: string) => void;
+  reconnect: () => void;
+  reconnectAttempts: number;
+  maxReconnectAttempts: number;
+  lastEventTimestamp: number | null;
+  activeEvents: Record<string, EventHandler[]>;
+}
 
 /**
  * Хук для использования WebSocket соединения в компонентах React
  *
- * @param {Object} options - Опции хука
- * @param {string} options.sessionId - ID сессии для подписки (опционально)
- * @param {Object} options.events - Объект с обработчиками событий в формате { eventName: handlerFunction }
- * @param {boolean} options.autoJoin - Автоматически подписываться на сессию при монтировании (по умолчанию true)
- * @returns {Object} - Объект с состоянием соединения и методами для работы с WebSocket
+ * @param options - Опции хука
+ * @param options.sessionId - ID сессии для подписки (опционально)
+ * @param options.events - Объект с обработчиками событий в формате { eventName: handlerFunction }
+ * @param options.autoJoin - Автоматически подписываться на сессию при монтировании (по умолчанию true)
+ * @returns - Объект с состоянием соединения и методами для работы с WebSocket
  *
  * @example
  * // Базовое использование
@@ -36,7 +66,17 @@ import { SocketContext } from '../contexts/SocketContext';
  *   return () => unsubscribe('new-data', handler);
  * }, []);
  */
-export const useSocket = ({ sessionId, events = {}, autoJoin = true } = {}) => {
+export const useSocket = ({
+  sessionId,
+  events = {},
+  autoJoin = true,
+}: UseSocketOptions = {}): UseSocketReturn => {
+  const socketContext = useContext(SocketContext);
+
+  if (!socketContext) {
+    throw new Error('useSocket должен использоваться внутри SocketProvider');
+  }
+
   const {
     socket,
     connected,
@@ -46,18 +86,23 @@ export const useSocket = ({ sessionId, events = {}, autoJoin = true } = {}) => {
     reconnect: contextReconnect,
     reconnectAttempts,
     maxReconnectAttempts,
-  } = useContext(SocketContext);
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [activeEvents, setActiveEvents] = useState(new Map());
-  const [lastEventTimestamp, setLastEventTimestamp] = useState(null);
+  } = socketContext;
+
+  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
+  const [activeEvents, setActiveEvents] = useState<
+    Map<string, Set<EventHandler>>
+  >(new Map());
+  const [lastEventTimestamp, setLastEventTimestamp] = useState<number | null>(
+    null
+  );
 
   /**
    * Подписка на событие WebSocket
-   * @param {string} event - Название события
-   * @param {Function} handler - Обработчик события
+   * @param event - Название события
+   * @param handler - Обработчик события
    */
   const subscribe = useCallback(
-    (event, handler) => {
+    (event: string, handler: EventHandler): void => {
       if (!socket || !connected) return;
 
       socket.on(event, handler);
@@ -66,7 +111,7 @@ export const useSocket = ({ sessionId, events = {}, autoJoin = true } = {}) => {
         if (!newMap.has(event)) {
           newMap.set(event, new Set());
         }
-        newMap.get(event).add(handler);
+        newMap.get(event)?.add(handler);
         return newMap;
       });
     },
@@ -75,11 +120,11 @@ export const useSocket = ({ sessionId, events = {}, autoJoin = true } = {}) => {
 
   /**
    * Отписка от события WebSocket
-   * @param {string} event - Название события
-   * @param {Function} handler - Обработчик события (опционально, если не указан - отписываемся от всех обработчиков события)
+   * @param event - Название события
+   * @param handler - Обработчик события (опционально, если не указан - отписываемся от всех обработчиков события)
    */
   const unsubscribe = useCallback(
-    (event, handler) => {
+    (event: string, handler?: EventHandler): void => {
       if (!socket) return;
 
       if (handler) {
@@ -87,9 +132,12 @@ export const useSocket = ({ sessionId, events = {}, autoJoin = true } = {}) => {
         setActiveEvents((prev) => {
           const newMap = new Map(prev);
           if (newMap.has(event)) {
-            newMap.get(event).delete(handler);
-            if (newMap.get(event).size === 0) {
-              newMap.delete(event);
+            const handlers = newMap.get(event);
+            if (handlers) {
+              handlers.delete(handler);
+              if (handlers.size === 0) {
+                newMap.delete(event);
+              }
             }
           }
           return newMap;
@@ -108,10 +156,10 @@ export const useSocket = ({ sessionId, events = {}, autoJoin = true } = {}) => {
 
   /**
    * Подписка на сессию
-   * @param {string} sid - ID сессии
+   * @param sid - ID сессии
    */
   const subscribeToSession = useCallback(
-    (sid) => {
+    (sid: string): void => {
       if (!socket || !connected || !sid) return;
 
       joinSession(sid);
@@ -122,10 +170,10 @@ export const useSocket = ({ sessionId, events = {}, autoJoin = true } = {}) => {
 
   /**
    * Отписка от сессии
-   * @param {string} sid - ID сессии
+   * @param sid - ID сессии
    */
   const unsubscribeFromSession = useCallback(
-    (sid) => {
+    (sid: string): void => {
       if (!socket || !sid) return;
 
       leaveSession(sid);
@@ -175,12 +223,12 @@ export const useSocket = ({ sessionId, events = {}, autoJoin = true } = {}) => {
 
   /**
    * Отправка события через WebSocket
-   * @param {string} event - Название события
-   * @param {any} data - Данные для отправки
-   * @returns {boolean} - Успешность отправки
+   * @param event - Название события
+   * @param data - Данные для отправки
+   * @returns - Успешность отправки
    */
   const emit = useCallback(
-    (event, data) => {
+    (event: string, data: any): boolean => {
       if (!socket || !connected) return false;
 
       socket.emit(event, data);
@@ -192,7 +240,7 @@ export const useSocket = ({ sessionId, events = {}, autoJoin = true } = {}) => {
   /**
    * Переподключение WebSocket соединения
    */
-  const reconnect = useCallback(() => {
+  const reconnect = useCallback((): void => {
     if (!socket) return;
 
     contextReconnect();

@@ -1,11 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FC } from 'react';
 import FeedbackList from './FeedbackList';
 
-function UserProfile({ token, onLogout }) {
-  const [showFeedbacks, setShowFeedbacks] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+interface UserData {
+  _id: string;
+  email: string;
+  createdAt: string;
+  googleId?: string;
+  roleHistory?: Array<{
+    role: string;
+    sessionId?: string;
+    timestamp: string;
+  }>;
+}
+
+interface UserProfileProps {
+  token: string | null;
+  onLogout: () => void;
+}
+
+const UserProfile: FC<UserProfileProps> = ({ token, onLogout }) => {
+  const [showFeedbacks, setShowFeedbacks] = useState<boolean>(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -28,7 +45,7 @@ function UserProfile({ token, onLogout }) {
         const data = await response.json();
         setUserData(data);
       } catch (error) {
-        setError(error.message);
+        setError((error as Error).message);
       } finally {
         setLoading(false);
       }
@@ -138,6 +155,6 @@ function UserProfile({ token, onLogout }) {
       </div>
     </div>
   );
-}
+};
 
 export default UserProfile;

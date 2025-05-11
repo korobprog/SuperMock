@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function AuthCallback() {
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+const AuthCallback: FC = () => {
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,7 +26,8 @@ function AuthCallback() {
       } catch (error) {
         console.error('Ошибка при обработке обратного вызова:', error);
         setError(
-          error.message || 'Произошла ошибка при обработке обратного вызова'
+          (error as Error).message ||
+            'Произошла ошибка при обработке обратного вызова'
         );
         setLoading(false);
       }
@@ -66,6 +67,6 @@ function AuthCallback() {
   }
 
   return null;
-}
+};
 
 export default AuthCallback;

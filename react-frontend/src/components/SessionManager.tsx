@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, FC } from 'react';
 import SessionList from './SessionList';
 import SessionCreate from './SessionCreate';
 import SessionJoin from './SessionJoin';
@@ -7,51 +7,66 @@ import FeedbackResults from './FeedbackResults';
 import Calendar from './Calendar';
 import { SocketProvider } from '../contexts/SocketContext';
 
-function SessionManager({ token }) {
-  const [activeView, setActiveView] = useState('list'); // list, create, join, feedback, results, calendar
-  const [selectedSession, setSelectedSession] = useState(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+interface Session {
+  id: string;
+  interviewerId: string | null;
+  intervieweeId: string | null;
+  observerIds?: string[];
+  status: string;
+  date: string;
+  videoLink?: string;
+  videoLinkStatus?: string;
+}
+
+interface SessionManagerProps {
+  token: string | null;
+}
+
+const SessionManager: FC<SessionManagerProps> = ({ token }) => {
+  const [activeView, setActiveView] = useState<string>('list'); // list, create, join, feedback, results, calendar
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
   // Обработчик создания новой сессии
-  const handleSessionCreated = () => {
+  const handleSessionCreated = (): void => {
     // Переключаемся на список сессий и обновляем его
     setActiveView('list');
     setRefreshTrigger((prev) => prev + 1);
   };
 
   // Обработчик выбора сессии для присоединения
-  const handleJoinSession = (session) => {
+  const handleJoinSession = (session: Session): void => {
     setSelectedSession(session);
     setActiveView('join');
   };
 
   // Обработчик выбора роли в сессии
-  const handleRoleSelected = () => {
+  const handleRoleSelected = (): void => {
     // Переключаемся на список сессий и обновляем его
     setActiveView('list');
     setRefreshTrigger((prev) => prev + 1);
   };
 
   // Обработчик отмены выбора роли
-  const handleCancelJoin = () => {
+  const handleCancelJoin = (): void => {
     setSelectedSession(null);
     setActiveView('list');
   };
 
   // Обработчик для открытия формы обратной связи
-  const handleOpenFeedbackForm = (session) => {
+  const handleOpenFeedbackForm = (session: Session): void => {
     setSelectedSession(session);
     setActiveView('feedback');
   };
 
   // Обработчик для открытия результатов обратной связи
-  const handleOpenFeedbackResults = (session) => {
+  const handleOpenFeedbackResults = (session: Session): void => {
     setSelectedSession(session);
     setActiveView('results');
   };
 
   // Обработчик успешной отправки обратной связи
-  const handleFeedbackSubmitted = () => {
+  const handleFeedbackSubmitted = (): void => {
     setActiveView('list');
     setRefreshTrigger((prev) => prev + 1);
   };
@@ -136,11 +151,17 @@ function SessionManager({ token }) {
         )}
 
         {activeView === 'results' && selectedSession && (
-          <FeedbackResults
-            token={token}
-            sessionId={selectedSession.id}
-            onBack={() => setActiveView('list')}
-          />
+          <>
+            {console.log(
+              'SessionManager: передаем token в FeedbackResults, token =',
+              token
+            )}
+            <FeedbackResults
+              token={token}
+              sessionId={selectedSession.id}
+              onBack={() => setActiveView('list')}
+            />
+          </>
         )}
 
         {activeView === 'calendar' && (
@@ -151,6 +172,6 @@ function SessionManager({ token }) {
       </div>
     </div>
   );
-}
+};
 
 export default SessionManager;
