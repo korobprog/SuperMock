@@ -1,10 +1,9 @@
 # Конфигурация для деплоя на Netlify
 [build]
-  command = "npm run build" # Команда для сборки проекта
+  command = "npm install && npm run build" # Команда для сборки проекта с установкой зависимостей
   publish = "dist" # Папка, которая будет опубликована
 
 # Редирект для API запросов на бэкенд-сервер
-# ВАЖНО: Заменить <server-ip> на реальный IP-адрес сервера!
 [[redirects]]
   from = "/api/*"
   to = "http://217.198.6.238:80/api/:splat"
@@ -18,6 +17,7 @@
   status = 200
 
 # Переменные окружения для сборки
-# IP-адрес сервера обновлен
 [build.environment]
   VITE_BACKEND_URL = "http://217.198.6.238:80" # Обновлено для соответствия .env.production
+  VITE_API_URL = "http://217.198.6.238:80/api"
+  VITE_WS_URL = "http://217.198.6.238:80"
