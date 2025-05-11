@@ -20,10 +20,18 @@ passport.deserializeUser(async (id: string, done) => {
 // Определяем фактический callback URL, который будет использоваться
 const actualCallbackURL =
   process.env.GOOGLE_CALLBACK_URL ||
-  'http://localhost:8080/api/google/callback';
+  'https://supermock.netlify.app/api/google/callback';
 
 console.log('=== НАСТРОЙКА GOOGLE OAUTH СТРАТЕГИИ ===');
 console.log('Используемый callbackURL:', actualCallbackURL);
+console.log(
+  'Значение GOOGLE_CALLBACK_URL из env:',
+  process.env.GOOGLE_CALLBACK_URL || 'не установлен'
+);
+console.log(
+  'Значение GOOGLE_CALLBACK_URL из Netlify:',
+  process.env.NETLIFY_GOOGLE_CALLBACK_URL || 'не установлен'
+);
 console.log(
   'GOOGLE_CLIENT_ID установлен:',
   process.env.GOOGLE_CLIENT_ID ? 'Да' : 'Нет'
@@ -44,6 +52,19 @@ console.log(
   process.env.MONGO_URI ? '***скрыто***' : 'не установлен'
 );
 console.log('REDIS_HOST:', process.env.REDIS_HOST || 'не установлен');
+console.log('=== ОТЛАДКА NETLIFY ПЕРЕМЕННЫХ В PASSPORT ===');
+console.log('Все переменные окружения:');
+Object.keys(process.env).forEach((key) => {
+  if (
+    key.includes('NETLIFY') ||
+    key.includes('GOOGLE') ||
+    key.includes('URL')
+  ) {
+    console.log(
+      `${key}: ${key.includes('SECRET') ? '***скрыто***' : process.env[key]}`
+    );
+  }
+});
 
 passport.use(
   new GoogleStrategy(
@@ -71,7 +92,15 @@ passport.use(
         console.log(
           'Используемый callbackURL:',
           process.env.GOOGLE_CALLBACK_URL ||
-            'http://localhost:8080/api/auth/google/callback'
+            'https://supermock.netlify.app/api/google/callback'
+        );
+        console.log(
+          'Значение GOOGLE_CALLBACK_URL из env:',
+          process.env.GOOGLE_CALLBACK_URL || 'не установлен'
+        );
+        console.log(
+          'Значение GOOGLE_CALLBACK_URL из Netlify:',
+          process.env.NETLIFY_GOOGLE_CALLBACK_URL || 'не установлен'
         );
         console.log('Фактический порт бэкенда:', process.env.PORT || 8080);
         console.log(
@@ -87,6 +116,21 @@ passport.use(
           refreshToken: refreshToken ? 'Получен' : 'Отсутствует',
           profileId: profile.id,
           profileEmails: profile.emails,
+        });
+        console.log('=== ОТЛАДКА NETLIFY ПЕРЕМЕННЫХ В CALLBACK ===');
+        console.log('Все переменные окружения в callback:');
+        Object.keys(process.env).forEach((key) => {
+          if (
+            key.includes('NETLIFY') ||
+            key.includes('GOOGLE') ||
+            key.includes('URL')
+          ) {
+            console.log(
+              `${key}: ${
+                key.includes('SECRET') ? '***скрыто***' : process.env[key]
+              }`
+            );
+          }
         });
 
         // Получаем email из профиля или создаем временный

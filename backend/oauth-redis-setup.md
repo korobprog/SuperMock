@@ -43,7 +43,7 @@
 ```
 GOOGLE_CLIENT_ID=ваш_client_id
 GOOGLE_CLIENT_SECRET=ваш_client_secret
-GOOGLE_CALLBACK_URL=http://217.198.6.238/api/google/callback
+GOOGLE_CALLBACK_URL=https://supermock.netlify.app/api/google/callback
 FRONTEND_URL=http://217.198.6.238
 ```
 

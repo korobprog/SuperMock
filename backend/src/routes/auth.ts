@@ -235,6 +235,36 @@ router.get(
       'Удаленное подключение к Redis:',
       process.env.REDIS_HOST ? 'Да' : 'Нет'
     );
+    console.log('=== ОТЛАДКА NETLIFY ПЕРЕМЕННЫХ ===');
+    console.log(
+      'Netlify домен:',
+      req.headers['x-forwarded-host'] || 'не определен'
+    );
+    console.log(
+      'Netlify протокол:',
+      req.headers['x-forwarded-proto'] || 'не определен'
+    );
+    console.log('Netlify URL:', req.headers['x-url'] || 'не определен');
+    console.log(
+      'Netlify оригинальный URL:',
+      req.headers['x-original-url'] || 'не определен'
+    );
+    console.log(
+      'Netlify переадресация:',
+      req.headers['x-forwarded-for'] || 'не определен'
+    );
+    console.log(
+      'Netlify запрос через:',
+      req.headers['x-forwarded-server'] || 'не определен'
+    );
+    console.log(
+      'Netlify порт:',
+      req.headers['x-forwarded-port'] || 'не определен'
+    );
+    console.log('Netlify схема:', req.headers['x-scheme'] || 'не определен');
+    console.log('Netlify хост:', req.headers['host'] || 'не определен');
+    console.log('Netlify origin:', req.headers['origin'] || 'не определен');
+    console.log('Netlify referer:', req.headers['referer'] || 'не определен');
     next();
   },
   passport.authenticate('google', {
@@ -261,6 +291,40 @@ router.get(
     console.log(
       'Код ошибки (если есть):',
       req.query.error_description || 'нет'
+    );
+    console.log('=== ОТЛАДКА NETLIFY CALLBACK ===');
+    console.log(
+      'Netlify домен:',
+      req.headers['x-forwarded-host'] || 'не определен'
+    );
+    console.log(
+      'Netlify протокол:',
+      req.headers['x-forwarded-proto'] || 'не определен'
+    );
+    console.log('Netlify URL:', req.headers['x-url'] || 'не определен');
+    console.log(
+      'Netlify оригинальный URL:',
+      req.headers['x-original-url'] || 'не определен'
+    );
+    console.log(
+      'Netlify переадресация:',
+      req.headers['x-forwarded-for'] || 'не определен'
+    );
+    console.log(
+      'Netlify запрос через:',
+      req.headers['x-forwarded-server'] || 'не определен'
+    );
+    console.log(
+      'Netlify порт:',
+      req.headers['x-forwarded-port'] || 'не определен'
+    );
+    console.log('Netlify схема:', req.headers['x-scheme'] || 'не определен');
+    console.log('Netlify хост:', req.headers['host'] || 'не определен');
+    console.log('Netlify origin:', req.headers['origin'] || 'не определен');
+    console.log('Netlify referer:', req.headers['referer'] || 'не определен');
+    console.log(
+      'GOOGLE_CALLBACK_URL из env:',
+      process.env.GOOGLE_CALLBACK_URL || 'не установлен'
     );
     next();
   },

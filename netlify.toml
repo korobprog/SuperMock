@@ -23,3 +23,6 @@
   VITE_BACKEND_URL = "http://217.198.6.238:80"
   VITE_API_URL = "http://217.198.6.238:80/api"
   VITE_WS_URL = "http://217.198.6.238:80"
+  # Добавляем переменные для Google OAuth
+  GOOGLE_CALLBACK_URL = "https://supermock.netlify.app/api/google/callback"
+  FRONTEND_URL = "https://supermock.netlify.app"
