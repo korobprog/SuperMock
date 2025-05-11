@@ -17,7 +17,7 @@ export const FRONTEND_PORT = 3000;
 // В продакшн-режиме используем URL VPS Jino, иначе локальный URL
 export const FRONTEND_URL =
   process.env.NODE_ENV === 'production'
-    ? process.env.FRONTEND_URL || 'https://c641b068463c.vps.myjino.ru'
+    ? process.env.FRONTEND_URL || 'https://supermock.netlify.app/'
     : `http://localhost:${FRONTEND_PORT}`;
 
 // Логируем информацию о протоколе

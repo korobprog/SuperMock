@@ -6,7 +6,7 @@
 DOCKER_USERNAME="makstreid"  # Имя пользователя Docker Hub
 SERVER_USER="root"           # Имя пользователя сервера
 SERVER_HOST="217.198.6.238"  # IP-адрес сервера
-SERVER_PATH="/app"           # Путь к приложению на сервере
+SERVER_PATH="/root/supermock"           # Путь к приложению на сервере
 
 # Проверка незамененных переменных
 if [ "$DOCKER_USERNAME" = "username" ]; then
