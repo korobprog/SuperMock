@@ -20,7 +20,16 @@ passport.deserializeUser(async (id: string, done) => {
 // Определяем фактический callback URL, который будет использоваться
 const actualCallbackURL =
   process.env.GOOGLE_CALLBACK_URL ||
-  'https://supermock.netlify.app/api/google/callback';
+  'https://217.198.6.238:443/api/auth/google/callback';
+
+// Добавляем отладочную информацию о несоответствии URL
+console.log('=== ПРОВЕРКА СООТВЕТСТВИЯ URL ОБРАТНОГО ВЫЗОВА ===');
+console.log('Фактический URL в Passport:', actualCallbackURL);
+console.log('Ожидаемый маршрут в auth.ts:', '/auth/google/callback');
+console.log(
+  'Полный ожидаемый URL:',
+  'https://217.198.6.238:443/api/auth/google/callback'
+);
 
 console.log('=== НАСТРОЙКА GOOGLE OAUTH СТРАТЕГИИ ===');
 console.log('Используемый callbackURL:', actualCallbackURL);
@@ -92,7 +101,7 @@ passport.use(
         console.log(
           'Используемый callbackURL:',
           process.env.GOOGLE_CALLBACK_URL ||
-            'https://supermock.netlify.app/api/google/callback'
+            'https://217.198.6.238:443/api/auth/google/callback'
         );
         console.log(
           'Значение GOOGLE_CALLBACK_URL из env:',
@@ -109,7 +118,9 @@ passport.use(
         );
         console.log(
           'Полный URL обратного вызова:',
-          `http://localhost:${process.env.PORT || 8080}/api/google/callback`
+          `http://localhost:${
+            process.env.PORT || 8080
+          }/api/auth/google/callback`
         );
         console.log('Параметры запроса:', {
           accessToken: accessToken ? 'Получен' : 'Отсутствует',

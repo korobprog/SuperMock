@@ -236,6 +236,10 @@ router.get(
       'Полный URL:',
       `${req.protocol}://${req.get('host')}${req.originalUrl}`
     );
+    console.log('Netlify редирект информация:');
+    console.log('x-nf-request-id:', req.headers['x-nf-request-id']);
+    console.log('Netlify URL:', req.headers['x-url']);
+    console.log('Netlify оригинальный URL:', req.headers['x-original-url']);
     console.log(
       'Ожидаемый callback URL:',
       `${req.protocol}://${req.get('host')}/api/google/callback`
@@ -302,7 +306,7 @@ router.get(
 // Маршрут для обработки обратного вызова Google OAuth
 // GET /api/auth/google/callback
 router.get(
-  '/google/callback',
+  '/auth/google/callback',
   (req: Request, res: Response, next: NextFunction) => {
     console.log('=== ОБРАБОТКА GOOGLE OAUTH CALLBACK ===');
     console.log('Получен callback от Google OAuth');
@@ -312,6 +316,11 @@ router.get(
       'Полный URL callback:',
       `${req.protocol}://${req.get('host')}${req.originalUrl}`
     );
+    console.log('Netlify редирект информация для callback:');
+    console.log('x-nf-request-id:', req.headers['x-nf-request-id']);
+    console.log('Netlify URL:', req.headers['x-url']);
+    console.log('Netlify оригинальный URL:', req.headers['x-original-url']);
+    console.log('Netlify редирект статус:', req.headers['x-redirect-status']);
     console.log('Параметры запроса:', req.query);
     console.log('Ошибка (если есть):', req.query.error || 'нет');
     console.log(
@@ -384,7 +393,11 @@ router.get(
 
         // Перенаправляем пользователя на фронтенд с токеном
         // Используем порт 3000, на котором запущен фронтенд
+        // Обновляем URL перенаправления с токеном
         const redirectUrl = `${FRONTEND_URL}/auth-callback?token=${token}`;
+        console.log('=== ОТЛАДКА ПЕРЕНАПРАВЛЕНИЯ С ТОКЕНОМ ===');
+        console.log('Токен получен:', token ? 'Да' : 'Нет');
+        console.log('Длина токена:', token ? token.length : 0);
         console.log('=== ПЕРЕНАПРАВЛЕНИЕ ПОСЛЕ АУТЕНТИФИКАЦИИ ===');
         console.log('Перенаправление на:', redirectUrl);
         console.log('FRONTEND_URL из конфигурации:', FRONTEND_URL);

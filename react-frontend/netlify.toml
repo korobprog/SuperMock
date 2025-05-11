@@ -3,7 +3,21 @@
   command = "npm ci --include=dev && npm run build" # Явно включаем devDependencies
   publish = "dist" # Папка, которая будет опубликована
 
-# Редирект для API запросов на бэкенд-сервер
+# Специальный редирект для Google OAuth
+[[redirects]]
+  from = "/api/auth/google"
+  to = "https://217.198.6.238:443/api/auth/google"
+  status = 200
+  force = true
+
+# Специальный редирект для Google OAuth callback
+[[redirects]]
+  from = "/api/auth/google/callback"
+  to = "https://217.198.6.238:443/api/auth/google/callback"
+  status = 200
+  force = true
+
+# Редирект для остальных API запросов на бэкенд-сервер
 [[redirects]]
   from = "/api/*"
   to = "https://217.198.6.238:443/api/:splat"
@@ -23,5 +37,6 @@
   VITE_WS_URL = "https://217.198.6.238:443"
   NODE_VERSION = "20" # Обновляем до Node.js 20 для совместимости с react-router
   # Добавляем переменные для Google OAuth
-  GOOGLE_CALLBACK_URL = "https://supermock.netlify.app/api/google/callback"
+  # Обновляем URL обратного вызова, чтобы он соответствовал маршруту в auth.ts
+  GOOGLE_CALLBACK_URL = "https://217.198.6.238:443/api/auth/google/callback"
   FRONTEND_URL = "https://supermock.netlify.app"
