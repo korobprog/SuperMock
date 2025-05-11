@@ -119,6 +119,8 @@ app.use(
       'http://127.0.0.1:*',
       'https://localhost:*',
       'https://127.0.0.1:*',
+      // Добавляем домен Netlify
+      'https://supermock.netlify.app',
     ], // Разрешаем запросы с Vite dev сервера
     credentials: true, // Разрешаем передачу куки и заголовков авторизации
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -130,6 +132,11 @@ app.use(
 app.use((req: Request, res: Response, next: NextFunction): void => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   console.log('Заголовки запроса:', req.headers);
+  console.log('Протокол:', req.protocol);
+  console.log('Secure:', req.secure);
+  console.log('X-Forwarded-Proto:', req.get('X-Forwarded-Proto'));
+  console.log('Origin:', req.get('Origin'));
+  console.log('Referer:', req.get('Referer'));
   next();
 });
 

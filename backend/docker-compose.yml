@@ -5,6 +5,7 @@ services:
     ports:
       - '0.0.0.0:8080:8080'
       - '0.0.0.0:80:80'
+      - '0.0.0.0:443:443'
     environment:
       # Если MONGO_URI не задан, используем локальную MongoDB
       - MONGO_URI=${MONGO_URI:-mongodb://admin:krishna1284radha@mongo:27017/mock_interviews?authSource=admin}

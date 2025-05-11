@@ -6,7 +6,7 @@
 # Редирект для API запросов на бэкенд-сервер
 [[redirects]]
   from = "/api/*"
-  to = "http://217.198.6.238:80/api/:splat"
+  to = "https://217.198.6.238:443/api/:splat"
   status = 200
   force = true
 
@@ -18,9 +18,9 @@
 
 # Переменные окружения для сборки
 [build.environment]
-  VITE_BACKEND_URL = "http://217.198.6.238:80"
-  VITE_API_URL = "http://217.198.6.238:80/api"
-  VITE_WS_URL = "http://217.198.6.238:80"
+  VITE_BACKEND_URL = "https://217.198.6.238:443"
+  VITE_API_URL = "https://217.198.6.238:443/api"
+  VITE_WS_URL = "https://217.198.6.238:443"
   NODE_VERSION = "20" # Обновляем до Node.js 20 для совместимости с react-router
   # Добавляем переменные для Google OAuth
   GOOGLE_CALLBACK_URL = "https://supermock.netlify.app/api/google/callback"

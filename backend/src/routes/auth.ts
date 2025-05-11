@@ -25,9 +25,19 @@ router.post(
   ],
   (async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log('=== ОТЛАДКА РЕГИСТРАЦИИ ===');
+      console.log('Получен запрос на регистрацию');
+      console.log('Заголовки запроса:', req.headers);
+      console.log('Тело запроса:', { ...req.body, password: '***скрыто***' });
+      console.log('Origin:', req.headers.origin);
+      console.log('Referer:', req.headers.referer);
+      console.log('IP клиента:', req.ip);
+      console.log('User-Agent:', req.headers['user-agent']);
+
       // Проверяем результаты валидации
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('Ошибки валидации:', errors.array());
         res.status(400).json({ errors: errors.array() });
         return;
       }
@@ -35,13 +45,16 @@ router.post(
       const { email, password } = req.body;
 
       // Проверяем, существует ли пользователь с таким email
+      console.log('Проверка существования пользователя с email:', email);
       let user = await User.findOne({ email });
       if (user) {
+        console.log('Пользователь с таким email уже существует');
         res
           .status(400)
           .json({ message: 'Пользователь с таким email уже существует' });
         return;
       }
+      console.log('Пользователь с таким email не найден, создаем нового');
 
       // Создаем нового пользователя
       user = new User({
@@ -51,7 +64,14 @@ router.post(
 
       // Сохраняем пользователя в хранилище
       // Пароль будет хешироваться автоматически в методе save()
-      await user.save();
+      console.log('Сохранение пользователя в хранилище');
+      try {
+        await user.save();
+        console.log('Пользователь успешно сохранен');
+      } catch (saveError) {
+        console.error('Ошибка при сохранении пользователя:', saveError);
+        throw saveError;
+      }
 
       // Создаем JWT-токен
       const payload = {
@@ -69,6 +89,12 @@ router.post(
       });
     } catch (error) {
       console.error('Ошибка при регистрации:', (error as Error).message);
+      console.error('Стек ошибки:', (error as Error).stack);
+      console.error(
+        'Тип ошибки:',
+        error instanceof Error ? 'Error' : typeof error
+      );
+      console.error('Полная ошибка:', error);
       res.status(500).json({ message: 'Ошибка сервера' });
     }
   }) as RequestHandler
