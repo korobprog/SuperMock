@@ -1,0 +1,30 @@
+[
+    {
+        "Name": "app-network",
+        "Id": "16c72dbc0a38a7e46a009893aadf15c5cf0f0af9ea9ef858cd6cce416300bf19",
+        "Created": "2025-05-12T13:43:46.418613758Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.20.0.0/16",
+                    "Gateway": "172.20.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Options": {},
+        "Labels": {}
+    }
+]

@@ -28,7 +28,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Копируем конфигурацию Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Добавляем скрипт для замены переменных окружения в runtime
+# Копируем скрипт для замены переменных окружения в runtime
 COPY env.sh /docker-entrypoint.d/40-env.sh
 RUN chmod +x /docker-entrypoint.d/40-env.sh
 

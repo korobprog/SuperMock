@@ -1,0 +1,6 @@
+CONTAINER ID   IMAGE                                 COMMAND                  CREATED          STATUS          PORTS                                           NAMES
+2ea7eb835a32   nginx:stable-alpine                   "/docker-entrypoint.…"   47 minutes ago   Up 47 minutes   0.0.0.0:80->80/tcp, :::80->80/tcp               nginx
+48be1ff2f288   makstreid/supermock-frontend:latest   "/docker-entrypoint.…"   47 minutes ago   Up 47 minutes   0.0.0.0:3000->80/tcp, [::]:3000->80/tcp         frontend
+9df30fe93f0a   makstreid/supermock-backend:latest    "docker-entrypoint.s…"   47 minutes ago   Up 47 minutes   0.0.0.0:4000->4000/tcp, :::4000->4000/tcp       backend
+0fb9225c36e9   mongo:5                               "docker-entrypoint.s…"   47 minutes ago   Up 47 minutes   0.0.0.0:27017->27017/tcp, :::27017->27017/tcp   mongo
+6988fd0539b7   redis:7-alpine                        "docker-entrypoint.s…"   47 minutes ago   Up 47 minutes   0.0.0.0:6379->6379/tcp, :::6379->6379/tcp       redis

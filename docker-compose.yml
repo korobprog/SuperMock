@@ -1,91 +1,94 @@
 version: '3.8'
+
 services:
-  # Фронтенд контейнер
+  # Frontend сервис
   frontend:
     build: ./react-frontend
-    container_name: supermock-frontend
+    container_name: frontend
     ports:
-      - '9091:80' # Экспортируем порт 80 контейнера на порт 9091 хоста
+      - '${FRONTEND_PORT:-3000}:3000'
     environment:
-      - VITE_BACKEND_URL=http://217.198.6.238:9091
-      - VITE_API_URL=http://217.198.6.238:9092/api
-      - VITE_WS_URL=http://217.198.6.238:9092
+      - VITE_API_URL=${VITE_API_URL:-http://localhost/api}
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://localhost}
+      - VITE_WS_URL=${VITE_WS_URL:-ws://localhost}
+    depends_on:
+      - backend
     networks:
       - app-network
     restart: always
-    # Добавляем логирование для отладки
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '10m'
-        max-file: '3'
 
-  # Бэкенд контейнер
+  # Backend сервис
   backend:
     build: ./backend
-    container_name: supermock-backend
+    container_name: backend
     ports:
-      - '9092:9092' # Экспортируем порт 9092 контейнера на порт 9092 хоста
+      - '${BACKEND_PORT:-4000}:4000'
     environment:
-      - MONGO_URI=mongodb://admin:krishna1284radha@mongo:27017/mock_interviews?authSource=admin
-      - JWT_SECRET=9b6ecece4b5db27805f484e5b68f039f4eab9bb9f492d3ca97b11dc682818ac2
-      - USE_MONGODB=true
-      - FRONTEND_URL=https://supermock.ru
-      - USE_REDIS=true
+      - PORT=4000
+      - MONGO_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_INITDB_ROOT_PASSWORD:-password123}@mongo:27017/${MONGO_DB_NAME:-mock_interviews}?authSource=admin
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=krishna1284radha
-      - PORT=9092
-      - NODE_ENV=production
-      - HOST=0.0.0.0
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-password123}
+      - NODE_ENV=${NODE_ENV:-production}
+      - JWT_SECRET=${JWT_SECRET:-9b6ecece4b5db27805f484e5b68f039f4eab9bb9f492d3ca97b11dc682818ac2}
+      - USE_MONGODB=${USE_MONGODB:-true}
+      - USE_REDIS=${USE_REDIS:-true}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
     depends_on:
       - mongo
       - redis
     networks:
       - app-network
     restart: always
-    # Добавляем логирование для отладки
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '10m'
-        max-file: '3'
 
-  # MongoDB контейнер
+  # MongoDB сервис
   mongo:
     image: mongo:5
-    container_name: supermock-mongo
+    container_name: mongo
+    ports:
+      - '${MONGO_PORT:-27017}:27017'
     volumes:
       - mongo-data:/data/db
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=krishna1284radha
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:-password123}
     networks:
       - app-network
     restart: always
-    # Добавляем логирование для отладки
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '10m'
-        max-file: '3'
 
-  # Redis контейнер
+  # Redis сервис
   redis:
     image: redis:7-alpine
-    container_name: supermock-redis
+    container_name: redis
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
     volumes:
       - redis-data:/data
+    command: redis-server --requirepass ${REDIS_PASSWORD:-password123} --appendonly yes
     networks:
       - app-network
     restart: always
-    command: redis-server --appendonly yes --requirepass krishna1284radha
-    # Добавляем логирование для отладки
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '10m'
-        max-file: '3'
+
+  # Nginx сервис (reverse proxy)
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: nginx
+    ports:
+      - '${NGINX_PORT:-9080}:8080'
+      - '${NGINX_SSL_PORT:-9443}:8443'
+    volumes:
+      - ./backend/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app-network
+    restart: always
 
 volumes:
   mongo-data:

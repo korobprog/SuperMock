@@ -93,11 +93,26 @@ if [ $? -ne 0 ]; then
   error "Ошибка при сборке Docker образа."
 fi
 
+# Проверка настроек прокси в Docker
+log "Проверка настроек прокси в Docker..."
+docker info | grep -i proxy || log "Настройки прокси не обнаружены"
+
 # Проверка аутентификации в Docker Hub
 log "Проверка аутентификации в Docker Hub..."
 docker info | grep "Username" > /dev/null
 if [ $? -ne 0 ]; then
   log "Аутентификация в Docker Hub не обнаружена. Выполняется вход..."
+  # Попытка выхода из Docker Hub перед входом
+  docker logout
+  log "Выполнен выход из Docker Hub. Повторная попытка входа..."
+  echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
+  if [ $? -ne 0 ]; then
+    error "Ошибка аутентификации в Docker Hub. Проверьте учетные данные."
+  fi
+  log "Аутентификация в Docker Hub успешна"
+else
+  log "Обнаружена существующая аутентификация в Docker Hub. Выполняем повторный вход для обновления..."
+  docker logout
   echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
   if [ $? -ne 0 ]; then
     error "Ошибка аутентификации в Docker Hub. Проверьте учетные данные."
@@ -105,13 +120,43 @@ if [ $? -ne 0 ]; then
   log "Аутентификация в Docker Hub успешна"
 fi
 
+# Проверка конфигурации Docker
+log "Проверка конфигурации Docker..."
+if [ -f "$HOME/.docker/config.json" ]; then
+  log "Файл конфигурации Docker существует"
+  # Выводим содержимое файла конфигурации без секретов
+  grep -v "auth" "$HOME/.docker/config.json" || log "Не удалось прочитать файл конфигурации"
+else
+  log "Файл конфигурации Docker не найден"
+fi
+
+# Проверка сетевого соединения с Docker Hub
+log "Проверка сетевого соединения с Docker Hub..."
+ping -c 3 registry-1.docker.io || log "Не удалось выполнить ping до Docker Hub"
+
 # Отправка образа в Docker Hub
 log "Отправка образа в Docker Hub ($DOCKER_USERNAME/mock-interviews-backend)..."
-docker push $DOCKER_USERNAME/mock-interviews-backend
+# Добавляем флаг --verbose для получения дополнительной информации
+docker push --verbose $DOCKER_USERNAME/mock-interviews-backend
 
 # Проверка успешности отправки
 if [ $? -ne 0 ]; then
-  error "Ошибка при отправке образа в Docker Hub. Проверьте, что вы авторизованы (docker login)."
+  log "Проверка настроек прокси в системе..."
+  env | grep -i proxy || log "Системные настройки прокси не обнаружены"
+  
+  log "Попытка отключения прокси для Docker..."
+  # Создаем или обновляем файл daemon.json для отключения прокси
+  mkdir -p "$HOME/.docker"
+  echo '{ "proxies": { "default": { "httpProxy": "", "httpsProxy": "", "noProxy": "" } } }' > "$HOME/.docker/daemon.json"
+  log "Файл daemon.json создан/обновлен. Попытка перезапуска Docker..."
+  
+  # Повторная попытка отправки образа
+  log "Повторная попытка отправки образа..."
+  docker push $DOCKER_USERNAME/mock-interviews-backend
+  
+  if [ $? -ne 0 ]; then
+    error "Ошибка при отправке образа в Docker Hub. Проверьте, что вы авторизованы (docker login) и настройки прокси."
+  fi
 fi
 
 # Проверка наличия необходимых файлов
@@ -140,6 +185,11 @@ scp -v docker-compose.yml .env.production $SERVER_USER@$SERVER_HOST:$SERVER_PATH
 if [ $? -ne 0 ]; then
   error "Ошибка при копировании файлов на сервер. Проверьте подключение и права доступа."
 fi
+
+# Остановка и удаление локальных контейнеров перед деплоем
+log "Остановка и удаление локальных контейнеров..."
+docker stop supermock-backend || echo "Контейнер supermock-backend не запущен"
+docker rm supermock-backend || echo "Контейнер supermock-backend не существует"
 
 # Подключение к серверу и запуск контейнеров
 log "Запуск контейнеров на сервере ($SERVER_USER@$SERVER_HOST)..."
@@ -180,11 +230,17 @@ ssh -v $SERVER_USER@$SERVER_HOST "export DOCKER_USERNAME=\"$DOCKER_USERNAME\" &&
   echo '--- Секция ports до изменений ---' && \
   cat docker-compose.yml | grep -A 10 'ports:' && \
   echo '--- Применение изменений портов ---' && \
+  # Проверка занятости портов
+  echo '=== Проверка занятости портов на сервере ===' && \
+  netstat -tulpn | grep -E ':9092|:9093|:9094|:9095' || echo 'Команда netstat не найдена' && \
+  
   # Более точные регулярные выражения для замены портов
+  # Используем порт 9095 вместо 9092, так как 9092 уже занят
   sed -i 's/- .\?0.0.0.0:80:80.\?/- 0.0.0.0:9091:80/' docker-compose.yml && \
-  sed -i 's/- .\?0.0.0.0:8080:8080.\?/- 0.0.0.0:9092:8080/' docker-compose.yml && \
+  sed -i 's/- .\?0.0.0.0:8080:8080.\?/- 0.0.0.0:9095:8080/' docker-compose.yml && \
   sed -i 's/- .\?0.0.0.0:9090:80.\?/- 0.0.0.0:9091:80/' docker-compose.yml && \
-  sed -i 's/- .\?0.0.0.0:9090:8080.\?/- 0.0.0.0:9092:8080/' docker-compose.yml && \
+  sed -i 's/- .\?0.0.0.0:9090:8080.\?/- 0.0.0.0:9095:8080/' docker-compose.yml && \
+  sed -i 's/- .\?0.0.0.0:9092:9092.\?/- 0.0.0.0:9096:9092/' docker-compose.yml && \
   sed -i 's/- .\?0.0.0.0:443:443.\?/- 0.0.0.0:8443:443/' docker-compose.yml && \
   echo '--- Секция ports после изменений ---' && \
   cat docker-compose.yml | grep -A 10 'ports:' && \

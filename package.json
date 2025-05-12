@@ -12,7 +12,7 @@
     "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\"",
     "build:backend": "cd backend && npm run build",
     "build:frontend": "cd react-frontend && npm run build",
-    "deploy": "cd backend && bash deploy.sh",
+    "deploy": "cd backend && bash deploy-all.sh",
     "deploy-all": "bash ./deploy-all.sh",
     "fast-debug": "bash ./fast-debug.sh",
     "fast-debug:backend": "bash ./fast-debug.sh --backend",

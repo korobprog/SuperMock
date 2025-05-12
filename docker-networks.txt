@@ -1,0 +1,7 @@
+NETWORK ID     NAME                    DRIVER    SCOPE
+16c72dbc0a38   app-network             bridge    local
+6c559e68ae7b   backend_app-network     bridge    local
+c4c28c62070a   bridge                  bridge    local
+6870e522d2f0   host                    host      local
+8ed62568b1ef   none                    null      local
+af0f09a73e79   supermook_app-network   bridge    local

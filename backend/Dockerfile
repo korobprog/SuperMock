@@ -1,8 +1,7 @@
-# Используем базовый образ Node.js 22 с явным указанием архитектуры
-# Для x86_64/amd64 (большинство серверов)
+# Используем базовый образ Node.js 22
 FROM node:22-bullseye-slim
 
-# Устанавливаем необходимые системные зависимости для компиляции bcrypt
+# Устанавливаем необходимые системные зависимости
 RUN apt-get update && apt-get install -y \
     build-essential \
     python3 \
@@ -15,30 +14,23 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Копируем package.json и package-lock.json
-# Убедитесь, что вы запускаете docker build из директории backend
 COPY package*.json ./
 
-# Удаляем bcrypt и устанавливаем bcryptjs вместо него
-# bcryptjs - это чистая JavaScript-реализация, которая не требует компиляции нативных модулей
-RUN npm uninstall bcrypt && npm install bcryptjs
-
-# Затем устанавливаем остальные зависимости
-RUN npm install --omit=dev
-
-# Добавляем диагностические команды для проверки установки bcrypt
-RUN echo "Версия Node.js:" && node --version
-RUN echo "Проверка архитектуры:" && uname -a
-RUN echo "Проверка наличия bcryptjs:" && ls -la node_modules/bcryptjs
-RUN echo "Информация о bcryptjs:" && file node_modules/bcryptjs/dist/bcrypt.js || true
+# Устанавливаем зависимости
+RUN npm install
 
 # Копируем исходный код
 COPY . .
 
-# Собираем TypeScript
-RUN npm run build
+# Собираем TypeScript (если используется)
+RUN npm run build || echo "Сборка не требуется"
 
-# Открываем порт для API и WebSocket
-EXPOSE 8080
+# Добавляем логирование для отладки
+RUN echo "Версия Node.js:" && node --version
+RUN echo "Проверка переменных окружения:" && printenv | grep -E "PORT|MONGO|REDIS" || echo "Переменные не найдены"
+
+# Открываем порт для API
+EXPOSE 4000
 
 # Запускаем сервер
 CMD ["node", "dist/server.js"]

@@ -217,31 +217,154 @@ if (process.env.USE_MONGODB === 'true') {
     'Рекомендуется либо изменить код для использования MongoDB, либо удалить сервис mongo из docker-compose.yml'
   );
 
-  // Добавляем отладку подключения к MongoDB
-  console.log('=== ОТЛАДКА MONGODB ===');
+  // Добавляем расширенную отладку подключения к MongoDB
+  console.log('=== РАСШИРЕННАЯ ОТЛАДКА MONGODB ===');
   console.log(
     'URI MongoDB:',
     process.env.MONGO_URI
       ? process.env.MONGO_URI.replace(/\/\/.*@/, '//***:***@')
       : 'не определен'
   );
+  console.log(
+    'Используемая модель данных:',
+    'InMemoryUser (несмотря на USE_MONGODB=true)'
+  );
+  console.log(
+    'Это несоответствие может быть причиной ошибки подключения к базе данных'
+  );
 
   // Проверка подключения к MongoDB
   try {
     const { MongoClient } = require('mongodb');
+    console.log(
+      'MONGO_URI:',
+      process.env.MONGO_URI
+        ? process.env.MONGO_URI.replace(/\/\/.*@/, '//***:***@')
+        : 'не определен'
+    );
+    console.log(
+      'Хост MongoDB из URI:',
+      process.env.MONGO_URI
+        ? new URL(process.env.MONGO_URI.replace('mongodb://', 'http://'))
+            .hostname
+        : 'не определен'
+    );
+    console.log(
+      'Порт MongoDB из URI:',
+      process.env.MONGO_URI
+        ? new URL(process.env.MONGO_URI.replace('mongodb://', 'http://')).port
+        : 'не определен'
+    );
+
     const client = new MongoClient(process.env.MONGO_URI);
     console.log('Попытка подключения к MongoDB...');
+    console.log('Детали подключения:');
+    console.log('- USE_MONGODB:', process.env.USE_MONGODB);
+    console.log(
+      '- MONGO_URI (скрыто):',
+      process.env.MONGO_URI ? '***скрыто***' : 'не определен'
+    );
+    console.log(
+      '- Имя хоста MongoDB:',
+      process.env.MONGO_URI
+        ? new URL(process.env.MONGO_URI.replace('mongodb://', 'http://'))
+            .hostname
+        : 'не определен'
+    );
+    console.log(
+      '- Порт MongoDB:',
+      process.env.MONGO_URI
+        ? new URL(process.env.MONGO_URI.replace('mongodb://', 'http://')).port
+        : 'не определен'
+    );
+    console.log(
+      '- Имя базы данных:',
+      process.env.MONGO_URI
+        ? new URL(
+            process.env.MONGO_URI.replace('mongodb://', 'http://')
+          ).pathname.substring(1)
+        : 'не определен'
+    );
+
     client
       .connect()
       .then(() => {
         console.log('Успешное подключение к MongoDB');
+        console.log('Проверка доступности базы данных через ping...');
+        // Проверяем доступность базы данных
+        return client.db().admin().ping();
+      })
+      .then(() => {
+        console.log('MongoDB пинг успешен - база данных отвечает');
         client.close();
       })
       .catch((err: Error) => {
         console.error('Ошибка подключения к MongoDB:', err);
+        console.error('Детали ошибки:', {
+          name: err.name,
+          message: err.message,
+          stack: err.stack,
+        });
+
+        // Дополнительная диагностика
+        console.error('=== ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА ОШИБКИ MONGODB ===');
+        console.error('Проверка сетевой доступности MongoDB...');
+        try {
+          const { exec } = require('child_process');
+
+          // Проверяем наличие MONGO_URI перед использованием
+          if (!process.env.MONGO_URI) {
+            console.error('MONGO_URI не определен в переменных окружения');
+            return;
+          }
+
+          console.log(
+            'Используем MONGO_URI для диагностики:',
+            process.env.MONGO_URI ? '***скрыто***' : 'не определено'
+          );
+
+          const mongoHost = new URL(
+            process.env.MONGO_URI.replace('mongodb://', 'http://')
+          ).hostname;
+          const mongoPort = new URL(
+            process.env.MONGO_URI.replace('mongodb://', 'http://')
+          ).port;
+
+          exec(
+            `ping -c 1 ${mongoHost}`,
+            (error: any, stdout: string, stderr: string) => {
+              console.error(
+                `Результат ping ${mongoHost}:`,
+                error ? `Ошибка: ${error.message}` : 'Успешно'
+              );
+              console.error(stdout);
+
+              // Проверка порта
+              exec(
+                `nc -zv ${mongoHost} ${mongoPort} 2>&1 || echo "Порт недоступен"`,
+                (ncError: any, ncStdout: string, ncStderr: string) => {
+                  console.error(
+                    `Результат проверки порта ${mongoPort}:`,
+                    ncError ? `Ошибка: ${ncError.message}` : 'Успешно'
+                  );
+                  console.error(ncStdout || ncStderr);
+                }
+              );
+            }
+          );
+        } catch (diagError) {
+          console.error('Ошибка при выполнении диагностики:', diagError);
+        }
       });
   } catch (error) {
     console.error('Ошибка при проверке MongoDB:', error);
+    if (error instanceof Error) {
+      console.error('Детали ошибки:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      });
+    }
   }
 } else {
   console.log('=== НАСТРОЙКА БАЗЫ ДАННЫХ ===');
@@ -283,11 +406,46 @@ app.use(
 
     // Проверяем подключение к MongoDB, если используется
     if (process.env.USE_MONGODB === 'true') {
-      console.error('Проверка подключения к MongoDB...');
+      console.error('Проверка подключения к MongoDB при ошибке API...');
       console.error(
         'MONGO_URI:',
-        process.env.MONGO_URI ? '***скрыто***' : 'не определено'
+        process.env.MONGO_URI
+          ? process.env.MONGO_URI.replace(/\/\/.*@/, '//***:***@')
+          : 'не определено'
       );
+
+      // Добавляем проверку подключения к MongoDB при ошибке
+      try {
+        const { MongoClient } = require('mongodb');
+        const client = new MongoClient(process.env.MONGO_URI);
+        console.error('Попытка подключения к MongoDB при ошибке API...');
+        client
+          .connect()
+          .then(() => {
+            console.error('Успешное подключение к MongoDB при ошибке API');
+            return client.db().admin().ping();
+          })
+          .then(() => {
+            console.error('MongoDB пинг успешен при ошибке API');
+            client.close();
+          })
+          .catch((mongoErr: Error) => {
+            console.error(
+              'Ошибка подключения к MongoDB при ошибке API:',
+              mongoErr
+            );
+            console.error('Детали ошибки MongoDB:', {
+              name: mongoErr.name,
+              message: mongoErr.message,
+              stack: mongoErr.stack,
+            });
+          });
+      } catch (mongoCheckError) {
+        console.error(
+          'Ошибка при проверке MongoDB при ошибке API:',
+          mongoCheckError
+        );
+      }
     }
 
     // Проверяем подключение к Redis, если используется
@@ -297,7 +455,14 @@ app.use(
       console.error('REDIS_PORT:', process.env.REDIS_PORT);
     }
 
-    res.status(500).json({ message: 'Что-то пошло не так на сервере!' });
+    // Отправляем более информативный ответ об ошибке
+    res.status(500).json({
+      message: 'Что-то пошло не так на сервере!',
+      error: {
+        name: err.name,
+        message: err.message,
+      },
+    });
   }
 );
 

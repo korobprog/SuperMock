@@ -3,8 +3,8 @@ services:
   backend:
     image: ${DOCKER_USERNAME:-makstreid}/mock-interviews-backend:latest
     ports:
-      - '0.0.0.0:8080:8080'
-      - '0.0.0.0:80:80'
+      - '0.0.0.0:${PORT:-9095}:${PORT:-9095}'
+      - '0.0.0.0:9091:9091'
       - '0.0.0.0:443:443'
     environment:
       # Если MONGO_URI не задан, используем локальную MongoDB
@@ -14,10 +14,10 @@ services:
       - USE_REDIS=true
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=krishna1284radha
-      - PORT=80
-      - NODE_ENV=production
-      - HOST=217.198.6.238
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-krishna1284radha}
+      - PORT=${PORT:-9095}
+      - NODE_ENV=${NODE_ENV:-production}
+      - HOST=${HOST:-0.0.0.0}
     depends_on:
       - mongo
       - redis
