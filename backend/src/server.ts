@@ -4,8 +4,33 @@ import http from 'http';
 import cors from 'cors';
 import passport from 'passport';
 import dotenv from 'dotenv';
+import fs from 'fs'; // Добавляем импорт fs для проверки наличия директории
+
+// Добавляем расширенное логирование для отладки импортов
+console.log('=== ОТЛАДКА ИМПОРТОВ ===');
+try {
+  console.log('Проверка наличия файлов:');
+  const files = [
+    path.join(__dirname, './websocket.ts'),
+    path.join(__dirname, './config/app.ts'),
+    path.join(__dirname, './middleware/cors.ts'),
+    path.join(__dirname, './routes/auth.ts'),
+    path.join(__dirname, './routes/sessions.ts'),
+    path.join(__dirname, './routes/feedback.ts'),
+    path.join(__dirname, './routes/calendar.ts'),
+  ];
+
+  files.forEach((file) => {
+    const exists = fs.existsSync(file);
+    console.log(`Файл ${file}: ${exists ? 'найден' : 'НЕ НАЙДЕН'}`);
+  });
+} catch (error) {
+  console.error('Ошибка при проверке файлов:', error);
+}
+
 import { initializeWebSocket } from './websocket'; // Импорт из локального файла в той же директории
 import { BACKEND_PORT, FRONTEND_PORT } from './config/app';
+import { setupCors } from './middleware/cors'; // Импортируем наш middleware CORS
 
 // Загружаем переменные окружения из файла .env
 dotenv.config();
@@ -22,7 +47,35 @@ console.log('Переменные окружения:', {
   MONGO_URI: process.env.MONGO_URI ? '***скрыто***' : 'не определено',
   JWT_SECRET: process.env.JWT_SECRET ? '***скрыто***' : 'не определено',
   DOCKER_USERNAME: process.env.DOCKER_USERNAME,
+  VITE_API_URL: process.env.VITE_API_URL,
+  VITE_WS_URL: process.env.VITE_WS_URL,
+  REDIS_HOST: process.env.REDIS_HOST,
+  REDIS_PORT: process.env.REDIS_PORT,
+  USE_REDIS: process.env.USE_REDIS,
 });
+
+// Проверяем наличие файла .env
+console.log('=== ПРОВЕРКА ФАЙЛОВ КОНФИГУРАЦИИ ===');
+try {
+  const envPath = path.join(__dirname, '../../.env');
+  const envExists = fs.existsSync(envPath);
+  console.log(
+    `.env файл в корневой директории: ${envExists ? 'найден' : 'не найден'}`
+  );
+
+  if (envExists) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    console.log('Содержимое .env файла (без секретов):');
+    const envLines = envContent
+      .split('\n')
+      .filter((line) => !line.includes('SECRET') && !line.includes('PASSWORD'))
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('#'));
+    console.log(envLines.join('\n'));
+  }
+} catch (error) {
+  console.error('Ошибка при проверке .env файла:', error);
+}
 console.log('Импортированные константы:', {
   BACKEND_PORT,
   FRONTEND_PORT,
@@ -121,12 +174,24 @@ app.use(
       'https://127.0.0.1:*',
       // Добавляем домен Netlify
       'https://supermock.netlify.app',
+      // Добавляем новый домен
+      'https://supermock.ru',
+      // Добавляем IP-адрес сервера с портами
+      'http://217.198.6.238:9091',
+      'http://217.198.6.238:9092',
+      'http://217.198.6.238:8443',
+      'https://217.198.6.238:9091',
+      'https://217.198.6.238:9092',
+      'https://217.198.6.238:8443',
     ], // Разрешаем запросы с Vite dev сервера
     credentials: true, // Разрешаем передачу куки и заголовков авторизации
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   })
 );
+
+// Используем наш middleware CORS для дополнительной гибкости
+app.use(setupCors);
 
 // Добавляем middleware для логирования запросов
 app.use((req: Request, res: Response, next: NextFunction): void => {
@@ -151,6 +216,33 @@ if (process.env.USE_MONGODB === 'true') {
   console.log(
     'Рекомендуется либо изменить код для использования MongoDB, либо удалить сервис mongo из docker-compose.yml'
   );
+
+  // Добавляем отладку подключения к MongoDB
+  console.log('=== ОТЛАДКА MONGODB ===');
+  console.log(
+    'URI MongoDB:',
+    process.env.MONGO_URI
+      ? process.env.MONGO_URI.replace(/\/\/.*@/, '//***:***@')
+      : 'не определен'
+  );
+
+  // Проверка подключения к MongoDB
+  try {
+    const { MongoClient } = require('mongodb');
+    const client = new MongoClient(process.env.MONGO_URI);
+    console.log('Попытка подключения к MongoDB...');
+    client
+      .connect()
+      .then(() => {
+        console.log('Успешное подключение к MongoDB');
+        client.close();
+      })
+      .catch((err: Error) => {
+        console.error('Ошибка подключения к MongoDB:', err);
+      });
+  } catch (error) {
+    console.error('Ошибка при проверке MongoDB:', error);
+  }
 } else {
   console.log('=== НАСТРОЙКА БАЗЫ ДАННЫХ ===');
   console.log('Используется хранилище пользователей в памяти (InMemoryUser)');
@@ -181,17 +273,157 @@ app.use(
       secure: req.secure,
       originalUrl: req.originalUrl,
     });
+
+    // Добавляем расширенное логирование для отладки ошибок
+    console.error('Дополнительная информация об ошибке:', {
+      errorName: err.name,
+      errorMessage: err.message,
+      errorStack: err.stack,
+    });
+
+    // Проверяем подключение к MongoDB, если используется
+    if (process.env.USE_MONGODB === 'true') {
+      console.error('Проверка подключения к MongoDB...');
+      console.error(
+        'MONGO_URI:',
+        process.env.MONGO_URI ? '***скрыто***' : 'не определено'
+      );
+    }
+
+    // Проверяем подключение к Redis, если используется
+    if (process.env.USE_REDIS === 'true') {
+      console.error('Проверка подключения к Redis...');
+      console.error('REDIS_HOST:', process.env.REDIS_HOST);
+      console.error('REDIS_PORT:', process.env.REDIS_PORT);
+    }
+
     res.status(500).json({ message: 'Что-то пошло не так на сервере!' });
   }
 );
 
-// Middleware для статических файлов - после API маршрутов
-app.use(express.static(path.join(__dirname, '../../react-frontend/dist')));
+// Проверяем наличие директории с фронтендом
+const frontendDistPath = path.join(__dirname, '../../react-frontend/dist');
+console.log('=== ОТЛАДКА ФРОНТЕНДА ===');
+console.log(`Проверка пути к фронтенду: ${frontendDistPath}`);
+console.log(`__dirname: ${__dirname}`);
+console.log(`Абсолютный путь: ${path.resolve(frontendDistPath)}`);
 
-// Базовый маршрут для всех остальных запросов - отдаем фронтенд
-app.get('*', (req: Request, res: Response): void => {
-  res.sendFile(path.join(__dirname, '../../react-frontend/dist/index.html'));
+// Проверяем наличие директории
+const frontendExists = fs.existsSync(frontendDistPath);
+console.log(`Директория с фронтендом существует: ${frontendExists}`);
+
+// Проверяем альтернативные пути
+const alternativePaths = [
+  path.join(__dirname, '../react-frontend/dist'),
+  path.join(__dirname, '../../../react-frontend/dist'),
+  path.join(__dirname, '../../dist'),
+  path.join(__dirname, '../dist'),
+  '/usr/share/nginx/html',
+  '/app/react-frontend/dist',
+  '/app/dist',
+];
+
+console.log('Проверка альтернативных путей:');
+alternativePaths.forEach((path) => {
+  const exists = fs.existsSync(path);
+  console.log(`- ${path}: ${exists ? 'существует' : 'не существует'}`);
+
+  if (exists) {
+    try {
+      const files = fs.readdirSync(path);
+      console.log(
+        `  Содержимое (${files.length} файлов): ${files
+          .slice(0, 5)
+          .join(', ')}${files.length > 5 ? '...' : ''}`
+      );
+
+      // Проверяем наличие index.html
+      const hasIndexHtml = files.includes('index.html');
+      console.log(`  index.html: ${hasIndexHtml ? 'найден' : 'не найден'}`);
+    } catch (error) {
+      console.log(
+        `  Ошибка при чтении директории: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
 });
+
+if (frontendExists) {
+  console.log(
+    'Директория с фронтендом найдена. Настраиваем обслуживание статических файлов.'
+  );
+
+  try {
+    const files = fs.readdirSync(frontendDistPath);
+    console.log(`Содержимое директории фронтенда (${files.length} файлов):`);
+    console.log(
+      files.slice(0, 10).join(', ') + (files.length > 10 ? '...' : '')
+    );
+
+    // Проверяем наличие index.html
+    const hasIndexHtml = files.includes('index.html');
+    console.log(`index.html: ${hasIndexHtml ? 'найден' : 'не найден'}`);
+
+    if (hasIndexHtml) {
+      // Проверяем содержимое index.html
+      const indexHtmlPath = path.join(frontendDistPath, 'index.html');
+      const indexHtmlStats = fs.statSync(indexHtmlPath);
+      console.log(`Размер index.html: ${indexHtmlStats.size} байт`);
+    }
+  } catch (error) {
+    console.log(
+      `Ошибка при чтении директории фронтенда: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
+
+  // Middleware для статических файлов - после API маршрутов
+  app.use(express.static(frontendDistPath));
+
+  // Базовый маршрут для всех остальных запросов - отдаем фронтенд
+  app.get('*', (req: Request, res: Response): void => {
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+} else {
+  console.log(
+    'Директория с фронтендом не найдена. Сервер будет обслуживать только API.'
+  );
+  console.log('Ожидаемый путь к фронтенду:', frontendDistPath);
+  console.log('Фронтенд должен обслуживаться через Netlify или другой сервис.');
+
+  // Проверяем наличие директории react-frontend
+  const reactFrontendPath = path.join(__dirname, '../../react-frontend');
+  const reactFrontendExists = fs.existsSync(reactFrontendPath);
+  console.log(`Директория react-frontend существует: ${reactFrontendExists}`);
+
+  if (reactFrontendExists) {
+    try {
+      const files = fs.readdirSync(reactFrontendPath);
+      console.log(
+        `Содержимое директории react-frontend: ${files
+          .slice(0, 10)
+          .join(', ')}${files.length > 10 ? '...' : ''}`
+      );
+    } catch (error) {
+      console.log(
+        `Ошибка при чтении директории react-frontend: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  // Маршрут для всех остальных запросов, когда фронтенд отсутствует
+  app.get('*', (req: Request, res: Response): void => {
+    res.status(404).json({
+      message:
+        'Фронтенд не найден на сервере. Используйте API-эндпоинты или перейдите на https://supermock.netlify.app',
+    });
+  });
+}
 
 // Обработка ошибок
 app.use((err: Error, req: Request, res: Response, next: NextFunction): void => {
@@ -218,11 +450,15 @@ server.listen(PORT, (): void => {
     `http://127.0.0.1:${FRONTEND_PORT}`,
     `https://localhost:${FRONTEND_PORT}`,
     `https://127.0.0.1:${FRONTEND_PORT}`,
+    'https://supermock.ru',
     // И другие порты, указанные в настройках
   ].forEach((origin, index) => {
     console.log(`  ${index + 1}. ${origin}`);
   });
   console.log('  ... и другие порты, включая динамически рассчитанные');
+  console.log(
+    'Также используется дополнительный middleware CORS для гибкой настройки'
+  );
 
   if (actualPort !== Number(PORT)) {
     console.warn(

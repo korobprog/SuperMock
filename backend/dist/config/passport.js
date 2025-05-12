@@ -22,7 +22,12 @@ passport_1.default.deserializeUser(async (id, done) => {
 // Настройка стратегии Google OAuth
 // Определяем фактический callback URL, который будет использоваться
 const actualCallbackURL = process.env.GOOGLE_CALLBACK_URL ||
-    'https://supermock.netlify.app/api/google/callback';
+    'https://217.198.6.238:443/api/auth/google/callback';
+// Добавляем отладочную информацию о несоответствии URL
+console.log('=== ПРОВЕРКА СООТВЕТСТВИЯ URL ОБРАТНОГО ВЫЗОВА ===');
+console.log('Фактический URL в Passport:', actualCallbackURL);
+console.log('Ожидаемый маршрут в auth.ts:', '/auth/google/callback');
+console.log('Полный ожидаемый URL:', 'https://217.198.6.238:443/api/auth/google/callback');
 console.log('=== НАСТРОЙКА GOOGLE OAUTH СТРАТЕГИИ ===');
 console.log('Используемый callbackURL:', actualCallbackURL);
 console.log('Значение GOOGLE_CALLBACK_URL из env:', process.env.GOOGLE_CALLBACK_URL || 'не установлен');
@@ -58,12 +63,12 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
         // Добавляем расширенное логирование для отладки redirect_uri_mismatch
         console.log('=== ОТЛАДКА GOOGLE OAUTH REDIRECT ===');
         console.log('Используемый callbackURL:', process.env.GOOGLE_CALLBACK_URL ||
-            'https://supermock.netlify.app/api/google/callback');
+            'https://217.198.6.238:443/api/auth/google/callback');
         console.log('Значение GOOGLE_CALLBACK_URL из env:', process.env.GOOGLE_CALLBACK_URL || 'не установлен');
         console.log('Значение GOOGLE_CALLBACK_URL из Netlify:', process.env.NETLIFY_GOOGLE_CALLBACK_URL || 'не установлен');
         console.log('Фактический порт бэкенда:', process.env.PORT || 8080);
         console.log('Порт фронтенда из конфигурации:', require('../config/app').FRONTEND_PORT);
-        console.log('Полный URL обратного вызова:', `http://localhost:${process.env.PORT || 8080}/api/google/callback`);
+        console.log('Полный URL обратного вызова:', `http://localhost:${process.env.PORT || 8080}/api/auth/google/callback`);
         console.log('Параметры запроса:', {
             accessToken: accessToken ? 'Получен' : 'Отсутствует',
             refreshToken: refreshToken ? 'Получен' : 'Отсутствует',

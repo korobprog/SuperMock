@@ -12,7 +12,12 @@
     "build": "concurrently \"npm run build:backend\" \"npm run build:frontend\"",
     "build:backend": "cd backend && npm run build",
     "build:frontend": "cd react-frontend && npm run build",
-    "deploy": "cd backend && ./deploy.sh"
+    "deploy": "cd backend && bash deploy.sh",
+    "deploy-all": "bash ./deploy-all.sh",
+    "fast-debug": "bash ./fast-debug.sh",
+    "fast-debug:backend": "bash ./fast-debug.sh --backend",
+    "fast-debug:frontend": "bash ./fast-debug.sh --frontend",
+    "fast-debug:copy-only": "bash ./fast-debug.sh --copy-only"
   },
   "dependencies": {
     "googleapis": "^148.0.0",

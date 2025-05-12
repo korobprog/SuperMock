@@ -1,240 +1,172 @@
-# SuperMock
+# SuperMock - Инструкция по развертыванию
 
-SuperMook - приложение для проведения тренировочных собеседований с возможностью выбора ролей, обратной связи и интеграцией с Видео Чат.
+Это руководство описывает процесс развертывания приложения SuperMock с использованием Docker и Docker Compose, а также настройку Nginx на сервере в качестве обратного прокси. Приложение состоит из фронтенда на React, бэкенда на Node.js, базы данных MongoDB и кэша Redis.
 
-## Описание проекта
+## Предварительные требования
 
-SuperMock позволяет пользователям организовывать и участвовать в тренировочных собеседованиях. Пользователи могут выбирать роли (интервьюер, отвечающий, наблюдатель), проводить собеседования через Видео Чат и оставлять структурированную обратную связь.
-
-### Основные возможности
-
-- Регистрация и аутентификация пользователей
-- Создание и управление сессиями собеседований
-- Выбор ролей в сессиях (интервьюер, отвечающий, наблюдатель)
-- Интеграция с Видео Чат для проведения видеозвонков
-- Система обратной связи с оценками, комментариями и рекомендациями
-- Обновление данных в реальном времени через WebSocket
+- Docker и Docker Compose установлены на сервере
+- Nginx установлен на сервере
+- Доменное имя (supermock.ru) настроено и указывает на IP-адрес сервера
+- SSL-сертификаты Let's Encrypt уже настроены и доступны по путям:
+  - `/etc/letsencrypt/live/supermock.ru/fullchain.pem`
+  - `/etc/letsencrypt/live/supermock.ru/privkey.pem`
 
 ## Структура проекта
 
-Проект состоит из двух основных частей:
-
-1. **Backend** - серверная часть на Node.js с Express
-2. **Frontend** - клиентская часть на React с Vite
-
-## Требования
-
-- Node.js (версия 18.x или выше)
-- npm (версия 9.x или выше)
-
-## Установка и запуск
-
-### Клонирование репозитория
-
-```bash
-git clone https://github.com/yourusername/SuperMock.git
-cd SuperMock
+```
+SuperMock/
+├── docker-compose.yml         # Основной файл Docker Compose
+├── nginx-server-config.conf   # Конфигурация Nginx для сервера
+├── backend/                   # Директория бэкенда
+│   ├── Dockerfile             # Dockerfile для бэкенда
+│   └── ...                    # Исходный код бэкенда
+└── react-frontend/            # Директория фронтенда
+    ├── Dockerfile             # Dockerfile для фронтенда
+    ├── nginx.conf             # Конфигурация Nginx для фронтенда
+    ├── env.sh                 # Скрипт для замены переменных окружения
+    └── ...                    # Исходный код фронтенда
 ```
 
-### Установка зависимостей
+## Запуск приложения
 
-Установка зависимостей для корневого проекта:
+1. Клонируйте репозиторий:
 
-```bash
-npm install
-```
+   ```bash
+   git clone https://github.com/yourusername/SuperMock.git
+   cd SuperMock
+   ```
 
-Установка зависимостей для бэкенда:
+2. Создайте файл `.env` с необходимыми переменными окружения:
 
-```bash
-cd backend
-npm install
-cd ..
-```
+   ```bash
+   echo "JWT_SECRET=your_jwt_secret_key" > .env
+   ```
 
-Установка зависимостей для фронтенда:
+3. Запустите приложение с помощью Docker Compose:
 
-```bash
-cd react-frontend
-npm install
-cd ..
-```
+   ```bash
+   docker-compose up -d
+   ```
 
-### Запуск в режиме разработки
+4. Проверьте, что все контейнеры запущены:
+   ```bash
+   docker-compose ps
+   ```
 
-#### Запуск всего проекта одной командой
+## Настройка Nginx
 
-```bash
-npm run dev
-```
+После запуска Docker-контейнеров необходимо настроить Nginx на сервере:
 
-Эта команда запустит одновременно и бэкенд, и фронтенд в режиме разработки.
+1. Скопируйте файл конфигурации Nginx в директорию sites-available:
 
-#### Запуск бэкенда отдельно
+   ```bash
+   sudo cp nginx-server-config.conf /etc/nginx/sites-available/supermock.ru
+   ```
 
-```bash
-cd backend
-npm run dev
-```
+2. Создайте символическую ссылку в директории sites-enabled:
 
-Сервер будет запущен на порту 9876 (http://localhost:9876).
+   ```bash
+   sudo ln -s /etc/nginx/sites-available/supermock.ru /etc/nginx/sites-enabled/
+   ```
 
-#### Запуск фронтенда отдельно
+3. Проверьте конфигурацию Nginx:
 
-В отдельном терминале:
+   ```bash
+   sudo nginx -t
+   ```
 
-```bash
-cd react-frontend
-npm run dev
-```
+4. Перезагрузите Nginx:
+   ```bash
+   sudo systemctl reload nginx
+   ```
 
-Фронтенд будет запущен на порту 5173 (http://localhost:5173).
+## Проверка работоспособности
 
-### Сборка для продакшена
+1. Откройте в браузере https://supermock.ru/ - должен загрузиться фронтенд
+2. API доступно по адресу https://supermock.ru/api/
 
-#### Сборка всего проекта
+## Логирование и отладка
 
-```bash
-npm run build
-```
-
-Эта команда соберет и бэкенд, и фронтенд для продакшена.
-
-#### Сборка фронтенда отдельно
+Все контейнеры настроены на ведение логов. Вы можете просмотреть логи с помощью следующих команд:
 
 ```bash
-cd react-frontend
-npm run build
+# Логи всех контейнеров
+docker-compose logs
+
+# Логи конкретного контейнера
+docker-compose logs frontend
+docker-compose logs backend
+
+# Логи в реальном времени
+docker-compose logs -f
 ```
 
-Собранные файлы будут находиться в директории `react-frontend/dist`.
-
-#### Запуск в продакшен-режиме
+Логи Nginx доступны в стандартных директориях:
 
 ```bash
-npm start
+sudo tail -f /var/log/nginx/supermock-access.log
+sudo tail -f /var/log/nginx/supermock-error.log
 ```
 
-Эта команда запустит и бэкенд, и фронтенд в продакшен-режиме.
+## Возможные проблемы и их решение
 
-Или можно запустить только бэкенд:
+### Проблема с доступом к SSL-сертификатам
+
+Если контейнер Nginx не может получить доступ к SSL-сертификатам, убедитесь, что:
+
+1. Пути к сертификатам указаны правильно в `docker-compose.yml`
+2. Пользователь, от имени которого запускается Docker, имеет доступ к этим файлам
+
+Решение:
 
 ```bash
-cd backend
-npm start
+sudo chmod -R 755 /etc/letsencrypt/live/
+sudo chmod -R 755 /etc/letsencrypt/archive/
 ```
 
-Сервер будет обслуживать статические файлы фронтенда и API на порту 9876.
+### Проблема с маршрутизацией запросов
 
-## API
+Если запросы к API не проходят, проверьте:
 
-API документация доступна в формате Swagger:
+1. Логи Nginx: `docker-compose logs nginx`
+2. Конфигурацию Nginx: `docker exec supermock-nginx nginx -t`
 
-- Локальная разработка: http://localhost:9876/api-docs
-- Или в файле [backend/swagger.yaml](backend/swagger.yaml)
+### Проблема с переменными окружения
 
-## Архитектура
+Если фронтенд не может подключиться к бэкенду, проверьте:
 
-### Бэкенд
+1. Переменные окружения в `docker-compose.yml`
+2. Логи фронтенда: `docker-compose logs frontend`
 
-- **Express** - веб-фреймворк
-- **Socket.IO** - библиотека для работы с WebSocket
-- **JWT** - аутентификация на основе токенов
-- **In-Memory хранилище** - для хранения данных (пользователи, сессии, обратная связь)
-- **WebRTC** - P2P видео-чат потокового вещания
+## Обновление приложения
 
-### Фронтенд
+Для обновления приложения:
 
-- **React** - библиотека для создания пользовательских интерфейсов
-- **Vite** - инструмент сборки и разработки
-- **Socket.IO Client** - клиент для работы с WebSocket
-- **TailwindCSS** - утилитарный CSS-фреймворк для стилизации
+1. Остановите контейнеры:
 
-## Структура данных
+   ```bash
+   docker-compose down
+   ```
 
-### Пользователи
+2. Получите последние изменения:
 
-- Email
-- Пароль (хешированный)
-- Статус обратной связи
-- История ролей
+   ```bash
+   git pull
+   ```
 
-### Сессии
+3. Пересоберите и запустите контейнеры:
+   ```bash
+   docker-compose up -d --build
+   ```
 
-- Ссылка на видеозвонок
-- Время начала
-- Статус (pending, active, completed)
-- Участники (интервьюер, отвечающий, наблюдатели)
+## Резервное копирование данных
 
-### Обратная связь
+Данные MongoDB и Redis хранятся в Docker volumes. Для создания резервной копии:
 
-- Оценки (подготовка, коммуникация, технические навыки, решение проблем, общая оценка)
-- Комментарии
-- Рекомендации
+```bash
+# Создание резервной копии MongoDB
+docker exec supermock-mongo mongodump --out=/data/db/backup
 
-## WebSocket события
-
-- `session-updated` - обновление информации о сессии
-- `role-selected` - выбор роли в сессии
-- `feedback-required` - напоминание о необходимости заполнить обратную связь
-- `feedback-updated` - обновление обратной связи
-
-## Recent Updates
-
-We have made several significant improvements to the SuperMock application:
-
-1. **TypeScript Migration**: Migrated key components and backend services from JavaScript to TypeScript for improved type safety, better code organization, and enhanced developer experience.
-
-2. **Calendar System**: Implemented a calendar functionality for scheduling and managing interview sessions, allowing users to plan and organize their mock interviews more efficiently.
-
-3. **Authentication Enhancements**: Improved the login system with more robust authentication mechanisms and better security practices.
-
-4. **Session Management**: Enhanced the session management system with more intuitive controls for creating, joining, and monitoring interview sessions.
-
-5. **Role Selection System**: Refined the role selection interface to provide a more seamless experience when choosing between interviewer, interviewee, and observer roles.
-
-6. **Feedback System**: Expanded the feedback functionality with improved data models and routing, allowing for more detailed and structured feedback after mock interviews.
-
-## Последние обновления 1.0
-
-Мы внесли несколько значительных улучшений в приложение SuperMock:
-
-## Recent Updates
-
-We have made several significant improvements to the SuperMock application:
-
-1. **TypeScript Migration**: Migrated key components and backend services from JavaScript to TypeScript for improved type safety, better code organization, and enhanced developer experience.
-
-2. **WebRTC Integration**: Implemented custom video chat functionality using WebRTC technology, allowing for peer-to-peer video communication directly in the browser without additional plugins.
-
-3. **Calendar System**: Implemented a calendar functionality for scheduling and managing interview sessions, allowing users to plan and organize their mock interviews more efficiently.
-
-4. **Authentication Enhancements**: Improved the login system with more robust authentication mechanisms and better security practices.
-
-5. **Session Management**: Enhanced the session management system with more intuitive controls for creating, joining, and monitoring interview sessions.
-
-6. **Role Selection System**: Refined the role selection interface to provide a more seamless experience when choosing between interviewer, interviewee, and observer roles.
-
-7. **Feedback System**: Expanded the feedback functionality with improved data models and routing, allowing for more detailed and structured feedback after mock interviews.
-
-## Последние обновления
-
-Мы внесли несколько значительных улучшений в приложение SuperMock:
-
-1. **Миграция на TypeScript**: Перенесли ключевые компоненты и серверные сервисы с JavaScript на TypeScript для улучшения типобезопасности, лучшей организации кода и повышения удобства разработки.
-
-2. **Интеграция WebRTC**: Реализовали собственную функциональность видеочата с использованием технологии WebRTC, обеспечивающую одноранговую видеосвязь непосредственно в браузере без дополнительных плагинов.
-
-3. **Система календаря**: Реализовали функциональность календаря для планирования и управления сессиями собеседований, позволяющую пользователям более эффективно организовывать тренировочные интервью.
-
-4. **Улучшения аутентификации**: Усовершенствовали систему входа с более надежными механизмами аутентификации и улучшенными практиками безопасности.
-
-5. **Управление сессиями**: Расширили систему управления сессиями с более интуитивными элементами управления для создания, присоединения и мониторинга сессий собеседований.
-
-6. **Система выбора ролей**: Улучшили интерфейс выбора ролей для обеспечения более удобного опыта при выборе между ролями интервьюера, отвечающего и наблюдателя.
-
-7. **Система обратной связи**: Расширили функциональность обратной связи с улучшенными моделями данных и маршрутизацией, позволяющими получать более детальную и структурированную обратную связь после тренировочных собеседований.
-
-## Дополнительная информация
-
-Подробная документация по фронтенду доступна в [react-frontend/README.md](react-frontend/README.md).
+# Копирование резервной копии на хост
+docker cp supermock-mongo:/data/db/backup ./mongo-backup
+```

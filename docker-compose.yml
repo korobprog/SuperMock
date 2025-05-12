@@ -1,0 +1,96 @@
+version: '3.8'
+services:
+  # Фронтенд контейнер
+  frontend:
+    build: ./react-frontend
+    container_name: supermock-frontend
+    ports:
+      - '9091:80' # Экспортируем порт 80 контейнера на порт 9091 хоста
+    environment:
+      - VITE_BACKEND_URL=http://217.198.6.238:9091
+      - VITE_API_URL=http://217.198.6.238:9092/api
+      - VITE_WS_URL=http://217.198.6.238:9092
+    networks:
+      - app-network
+    restart: always
+    # Добавляем логирование для отладки
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  # Бэкенд контейнер
+  backend:
+    build: ./backend
+    container_name: supermock-backend
+    ports:
+      - '9092:9092' # Экспортируем порт 9092 контейнера на порт 9092 хоста
+    environment:
+      - MONGO_URI=mongodb://admin:krishna1284radha@mongo:27017/mock_interviews?authSource=admin
+      - JWT_SECRET=9b6ecece4b5db27805f484e5b68f039f4eab9bb9f492d3ca97b11dc682818ac2
+      - USE_MONGODB=true
+      - FRONTEND_URL=https://supermock.ru
+      - USE_REDIS=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=krishna1284radha
+      - PORT=9092
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - app-network
+    restart: always
+    # Добавляем логирование для отладки
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  # MongoDB контейнер
+  mongo:
+    image: mongo:5
+    container_name: supermock-mongo
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=krishna1284radha
+    networks:
+      - app-network
+    restart: always
+    # Добавляем логирование для отладки
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  # Redis контейнер
+  redis:
+    image: redis:7-alpine
+    container_name: supermock-redis
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    restart: always
+    command: redis-server --appendonly yes --requirepass krishna1284radha
+    # Добавляем логирование для отладки
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+volumes:
+  mongo-data:
+  redis-data:
+
+networks:
+  app-network:
+    driver: bridge

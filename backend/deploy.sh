@@ -4,9 +4,16 @@
 
 # Переменные (настроены для вашего сервера)
 DOCKER_USERNAME="makstreid"  # Имя пользователя Docker Hub
+DOCKER_PASSWORD=""           # Пароль Docker Hub (оставьте пустым для интерактивного ввода)
 SERVER_USER="root"           # Имя пользователя сервера
 SERVER_HOST="217.198.6.238"  # IP-адрес сервера
 SERVER_PATH="/root/supermock"           # Путь к приложению на сервере
+
+# Запрос пароля Docker Hub, если он не указан
+if [ -z "$DOCKER_PASSWORD" ]; then
+  read -sp "Введите пароль для Docker Hub ($DOCKER_USERNAME): " DOCKER_PASSWORD
+  echo ""
+fi
 
 # Проверка незамененных переменных
 if [ "$DOCKER_USERNAME" = "username" ]; then
@@ -50,15 +57,52 @@ if ! command -v docker &> /dev/null; then
   error "Docker не установлен. Установите Docker и повторите попытку."
 fi
 
+# Проверка статуса Docker
+log "Проверка статуса Docker..."
+docker info &> /dev/null
+if [ $? -ne 0 ]; then
+  error "Docker не запущен или не настроен правильно. Убедитесь, что Docker Desktop запущен."
+fi
+
+# Проверка Docker Engine
+log "Проверка Docker Engine..."
+docker version --format '{{.Server.Os}}-{{.Server.Arch}}' &> /dev/null
+if [ $? -ne 0 ]; then
+  error "Не удалось подключиться к Docker Engine. Убедитесь, что Docker Desktop запущен и правильно настроен."
+fi
+
+# Проверка WSL2 (для Windows)
+if [[ "$(uname -s)" == *"MINGW"* ]] || [[ "$(uname -s)" == *"MSYS"* ]] || [[ "$(uname -s)" == *"CYGWIN"* ]]; then
+  log "Обнаружена Windows. Проверка WSL2..."
+  wsl --status &> /dev/null
+  if [ $? -ne 0 ]; then
+    warn "WSL2 не настроен или не запущен. Это может вызывать проблемы с Docker на Windows."
+  fi
+fi
+
 # Сборка Docker образа
 log "Сборка Docker образа..."
 log "Используем Docker username: $DOCKER_USERNAME"
+log "Текущая директория: $(pwd)"
+log "Проверка наличия Dockerfile: $(ls -la | grep Dockerfile || echo 'Dockerfile не найден')"
 # Используем флаг --no-cache, чтобы гарантировать полную пересборку образа
 docker build -t $DOCKER_USERNAME/mock-interviews-backend ./ --no-cache
 
 # Проверка успешности сборки
 if [ $? -ne 0 ]; then
   error "Ошибка при сборке Docker образа."
+fi
+
+# Проверка аутентификации в Docker Hub
+log "Проверка аутентификации в Docker Hub..."
+docker info | grep "Username" > /dev/null
+if [ $? -ne 0 ]; then
+  log "Аутентификация в Docker Hub не обнаружена. Выполняется вход..."
+  echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
+  if [ $? -ne 0 ]; then
+    error "Ошибка аутентификации в Docker Hub. Проверьте учетные данные."
+  fi
+  log "Аутентификация в Docker Hub успешна"
 fi
 
 # Отправка образа в Docker Hub
@@ -99,14 +143,60 @@ fi
 
 # Подключение к серверу и запуск контейнеров
 log "Запуск контейнеров на сервере ($SERVER_USER@$SERVER_HOST)..."
-ssh -v $SERVER_USER@$SERVER_HOST "cd $SERVER_PATH && \
+ssh -v $SERVER_USER@$SERVER_HOST "export DOCKER_USERNAME=\"$DOCKER_USERNAME\" && export DOCKER_PASSWORD=\"$DOCKER_PASSWORD\" && cd $SERVER_PATH && \
   echo 'Текущая директория: \$(pwd)' && \
   mv .env.production .env && \
   echo 'Файл .env создан' && \
-  docker pull $DOCKER_USERNAME/mock-interviews-backend && \
-  echo 'Образ успешно загружен' && \
+  echo '=== Проверка процессов, использующих порт 80 (метод 1) ===' && \
+  ss -tulpn | grep ':80' || echo 'Команда ss не найдена' && \
+  echo '=== Проверка процессов, использующих порт 80 (метод 2) ===' && \
+  lsof -i :80 || echo 'Команда lsof не найдена' && \
+  echo '=== Проверка запущенных контейнеров ===' && \
+  docker ps -a && \
+  echo '=== Проверка запущенных сервисов ===' && \
+  systemctl list-units --type=service --state=running | grep -E 'nginx|apache|httpd' || echo 'Команда systemctl не найдена' && \
+  echo '=== Проверка, какие порты используют Docker-контейнеры ===' && \
+  docker ps --format '{{.Names}} - {{.Ports}}' && \
+  echo '=== Остановка всех контейнеров ===' && \
+  docker stop \$(docker ps -a -q) || echo 'Нет запущенных контейнеров' && \
+  echo '=== Удаление всех контейнеров ===' && \
+  docker rm \$(docker ps -a -q) || echo 'Нет контейнеров для удаления' && \
+  echo '=== Остановка контейнеров через docker-compose ===' && \
   docker-compose down && \
   echo 'Старые контейнеры остановлены' && \
+  echo '=== Повторная проверка порта 80 ===' && \
+  ss -tulpn | grep ':80' || lsof -i :80 || echo 'Команды ss и lsof не найдены' && \
+  echo '=== Проверка порта 8080 ===' && \
+  ss -tulpn | grep ':8080' || lsof -i :8080 || echo 'Команды ss и lsof не найдены' && \
+  echo '=== Проверка порта 9090 ===' && \
+  ss -tulpn | grep ':9090' || lsof -i :9090 || echo 'Команды ss и lsof не найдены' && \
+  echo '=== Проверка порта 9091 ===' && \
+  ss -tulpn | grep ':9091' || lsof -i :9091 || echo 'Команды ss и lsof не найдены' && \
+  echo '=== Проверка порта 9092 ===' && \
+  ss -tulpn | grep ':9092' || lsof -i :9092 || echo 'Команды ss и lsof не найдены' && \
+  echo '=== Изменение портов в docker-compose.yml ===' && \
+  echo '--- Содержимое docker-compose.yml до изменений ---' && \
+  cat docker-compose.yml && \
+  echo '--- Секция ports до изменений ---' && \
+  cat docker-compose.yml | grep -A 10 'ports:' && \
+  echo '--- Применение изменений портов ---' && \
+  # Более точные регулярные выражения для замены портов
+  sed -i 's/- .\?0.0.0.0:80:80.\?/- 0.0.0.0:9091:80/' docker-compose.yml && \
+  sed -i 's/- .\?0.0.0.0:8080:8080.\?/- 0.0.0.0:9092:8080/' docker-compose.yml && \
+  sed -i 's/- .\?0.0.0.0:9090:80.\?/- 0.0.0.0:9091:80/' docker-compose.yml && \
+  sed -i 's/- .\?0.0.0.0:9090:8080.\?/- 0.0.0.0:9092:8080/' docker-compose.yml && \
+  sed -i 's/- .\?0.0.0.0:443:443.\?/- 0.0.0.0:8443:443/' docker-compose.yml && \
+  echo '--- Секция ports после изменений ---' && \
+  cat docker-compose.yml | grep -A 10 'ports:' && \
+  echo '=== Аутентификация в Docker Hub ===' && \
+  echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin && \
+  if [ $? -ne 0 ]; then
+    echo 'Ошибка аутентификации в Docker Hub. Проверьте учетные данные.' && exit 1
+  fi && \
+  echo 'Аутентификация в Docker Hub успешна' && \
+  echo '=== Запуск новых контейнеров ===' && \
+  docker pull $DOCKER_USERNAME/mock-interviews-backend && \
+  echo 'Образ успешно загружен' && \
   docker-compose up -d && \
   echo 'Новые контейнеры запущены' && \
   docker image prune -af && \
