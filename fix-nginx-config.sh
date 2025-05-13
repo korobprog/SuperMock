@@ -1,8 +1,19 @@
+#!/bin/bash
+
+# Скрипт для исправления конфигурации Nginx и перезапуска контейнера
+
+# Создаем резервную копию текущей конфигурации
+echo "Создание резервной копии текущей конфигурации..."
+cp /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak
+
+# Заменяем конфигурацию на исправленную
+echo "Замена конфигурации на исправленную..."
+cat > /etc/nginx/conf.d/default.conf << 'EOL'
 # Конфигурация Nginx для сервера
 
 # HTTP сервер (перенаправление на HTTPS)
 server {
-    listen 80;
+    listen 8080;
     server_name supermock.ru;
     
     # Логирование
@@ -17,7 +28,7 @@ server {
 
 # HTTPS сервер
 server {
-    listen 443 ssl;
+    listen 8443 ssl;
     server_name supermock.ru;
     
     # Логирование
@@ -39,7 +50,7 @@ server {
     
     # Проксирование запросов к API на backend
     location /api/ {
-        proxy_pass http://backend:9095/;
+        proxy_pass http://backend:4000/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -54,7 +65,7 @@ server {
     
     # Проксирование всех остальных запросов на frontend
     location / {
-        proxy_pass http://frontend:80;
+        proxy_pass http://frontend:3000;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -62,3 +73,10 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
+EOL
+
+# Перезапускаем Nginx
+echo "Перезапуск Nginx..."
+nginx -t && nginx -s reload
+
+echo "Конфигурация Nginx успешно обновлена и перезапущена."

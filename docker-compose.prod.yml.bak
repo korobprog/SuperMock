@@ -28,7 +28,7 @@ services:
     ports:
       - '${BACKEND_PORT:-4000}:4000'
     environment:
-      - PORT=${PORT:-4000}
+      - PORT=${PORT:-9095}
       - MONGO_URI=${MONGO_URI:-mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_INITDB_ROOT_PASSWORD:-krishna1284radha}@mongo:27017/${MONGO_DB_NAME:-mock_interviews}?authSource=admin}
       - REDIS_HOST=redis
       - REDIS_PORT=6379

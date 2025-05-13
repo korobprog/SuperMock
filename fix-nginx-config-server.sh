@@ -1,8 +1,15 @@
+#!/bin/bash
+
+# Скрипт для исправления конфигурации Nginx на сервере и перезапуска контейнера
+
+# Создаем временный файл с исправленной конфигурацией
+echo "Создание временного файла с исправленной конфигурацией..."
+cat > /tmp/nginx.conf << 'EOL'
 # Конфигурация Nginx для сервера
 
 # HTTP сервер (перенаправление на HTTPS)
 server {
-    listen 80;
+    listen 8080;
     server_name supermock.ru;
     
     # Логирование
@@ -17,7 +24,7 @@ server {
 
 # HTTPS сервер
 server {
-    listen 443 ssl;
+    listen 8443 ssl;
     server_name supermock.ru;
     
     # Логирование
@@ -39,7 +46,7 @@ server {
     
     # Проксирование запросов к API на backend
     location /api/ {
-        proxy_pass http://backend:9095/;
+        proxy_pass http://backend:4000/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -54,7 +61,7 @@ server {
     
     # Проксирование всех остальных запросов на frontend
     location / {
-        proxy_pass http://frontend:80;
+        proxy_pass http://frontend:3000;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -62,3 +69,32 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
+EOL
+
+# Копируем исправленную конфигурацию в контейнер Nginx
+echo "Копирование исправленной конфигурации в контейнер Nginx..."
+docker cp /tmp/nginx.conf nginx:/etc/nginx/conf.d/default.conf
+
+# Проверяем конфигурацию Nginx внутри контейнера
+echo "Проверка конфигурации Nginx..."
+docker exec nginx nginx -t
+
+# Если проверка прошла успешно, перезапускаем Nginx
+if [ $? -eq 0 ]; then
+    echo "Перезапуск Nginx..."
+    docker exec nginx nginx -s reload
+    echo "Конфигурация Nginx успешно обновлена и перезапущена."
+else
+    echo "Ошибка в конфигурации Nginx. Пожалуйста, проверьте логи выше."
+fi
+
+# Удаляем временный файл
+rm /tmp/nginx.conf
+
+# Проверяем статус контейнера Nginx
+echo "Статус контейнера Nginx:"
+docker ps | grep nginx
+
+# Проверяем логи Nginx после перезапуска
+echo "Логи Nginx после перезапуска:"
+docker logs nginx --tail 20
