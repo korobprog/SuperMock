@@ -11,15 +11,99 @@ datasource db {
 }
 
 model User {
-  id                 String   @id @map("_id")
-  email              String   @unique
+  id                 String    @id @map("_id")
+  email              String    @unique
   password           String
   roleHistory        Json[]
-  feedbackStatus     String   @default("none")
-  createdAt          DateTime @default(now())
+  feedbackStatus     String    @default("none")
+  createdAt          DateTime  @default(now())
   googleId           String?
   googleAccessToken  String?
   googleRefreshToken String?
+  
+  // Связи с другими моделями
+  sessionsAsInterviewer Session[] @relation("interviewer")
+  sessionsAsInterviewee Session[] @relation("interviewee")
+  sessionsAsObserver   UserSession[]
+  feedbacks            Feedback[]
+  chatMessages         ChatMessage[]
 
   @@map("users")
+}
+
+model Session {
+  id              String    @id @default(cuid()) @map("_id")
+  status          String    @default("pending") // pending, active, completed, cancelled
+  date            DateTime
+  videoLink       String?
+  videoLinkStatus String?   @default("not_created") // not_created, created, active
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Связи с пользователями
+  interviewerId   String?
+  interviewer     User?     @relation("interviewer", fields: [interviewerId], references: [id])
+  intervieweeId   String?
+  interviewee     User?     @relation("interviewee", fields: [intervieweeId], references: [id])
+  // Связь с наблюдателями через промежуточную модель
+  observers       UserSession[]
+  
+  // Связь с обратной связью
+  feedbacks       Feedback[]
+  
+  // Связь с сообщениями чата
+  chatMessages    ChatMessage[]
+
+  // Дополнительные поля для WebSocket
+  socketRoomId    String?   // ID комнаты для WebSocket
+  lastActivity    DateTime? // Время последней активности в сессии
+
+  @@map("sessions")
+}
+
+// Промежуточная модель для связи many-to-many между User и Session
+model UserSession {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id])
+  role      String   @default("observer") // observer, interviewer, interviewee
+  joinedAt  DateTime @default(now())
+  lastActive DateTime? // Время последней активности пользователя в сессии
+  isOnline  Boolean  @default(false) // Статус онлайн пользователя в сессии
+
+  @@unique([userId, sessionId])
+  @@map("user_sessions")
+}
+
+model Feedback {
+  id          String   @id @default(cuid()) @map("_id")
+  content     Json
+  status      String   @default("draft") // draft, submitted, reviewed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Связи с пользователем и сессией
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  sessionId   String
+  session     Session  @relation(fields: [sessionId], references: [id])
+
+  @@map("feedbacks")
+}
+
+// Модель для хранения сообщений чата в сессиях
+model ChatMessage {
+  id          String   @id @default(cuid()) @map("_id")
+  content     String
+  createdAt   DateTime @default(now())
+  
+  // Связи с пользователем и сессией
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  sessionId   String
+  session     Session  @relation(fields: [sessionId], references: [id])
+  
+  @@map("chat_messages")
 }
