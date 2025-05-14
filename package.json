@@ -13,7 +13,7 @@
     "start:frontend": "next start",
     "dev": "npm run dev:backend & npm run dev:frontend",
     "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "next dev",
+    "dev:frontend": "npx kill-port 3000 && next dev",
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "cd backend && npm run build",
     "build:frontend": "next build",
@@ -39,6 +39,7 @@
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "simple-peer": "^9.11.1",
     "socket.io-client": "^4.8.1"
   },
   "engines": {
@@ -47,7 +48,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.6",
+    "@types/simple-peer": "^9.11.8",
     "autoprefixer": "^10.4.21",
+    "kill-port": "^2.0.1",
     "tailwindcss": "^4.1.6"
   }
 }

@@ -40,10 +40,10 @@ const AuthCallback: FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-screen bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-700">
+          <p className="mt-4 text-lg text-gray-300">
             Обработка аутентификации...
           </p>
         </div>
@@ -53,13 +53,15 @@ const AuthCallback: FC = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="bg-red-100 text-red-800 p-4 rounded-lg max-w-md">
-          <h2 className="text-xl font-bold mb-2">Ошибка аутентификации</h2>
-          <p>{error}</p>
+      <div className="flex justify-center items-center min-h-screen bg-gray-900">
+        <div className="bg-gray-800 text-white p-6 rounded-lg max-w-md shadow-lg border border-gray-700">
+          <h2 className="text-xl font-bold mb-4 text-red-400">
+            Ошибка аутентификации
+          </h2>
+          <p className="text-gray-300 mb-4">{error}</p>
           <button
             onClick={() => router.push('/')}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            className="w-full py-3 px-4 bg-gray-700 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors duration-200"
           >
             Вернуться на главную
           </button>

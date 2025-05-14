@@ -55,7 +55,7 @@ try {
 export const server = {
   // Основные настройки сервера
   env: process.env.NODE_ENV || 'development',
-  port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3002, // Изменяем порт по умолчанию с 3000 на 3002
+  port: process.env.PORT ? parseInt(process.env.PORT, 10) : 8080, // Изменяем порт по умолчанию с 3002 на 8080
   host: process.env.HOST || 'localhost',
 
   // Настройки CORS
@@ -135,7 +135,7 @@ export const googleOAuth = {
       ? `https://${
           process.env.DOMAIN || 'supermock.ru'
         }/api/auth/google/callback`
-      : `http://localhost:${server.port}/api/auth/google/callback`),
+      : `http://localhost:8080/api/auth/google/callback`),
   scope: ['profile', 'email'],
 };
 

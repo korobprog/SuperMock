@@ -10,6 +10,15 @@ const nextConfig = {
 
     return config;
   },
+  // Настройка прокси для API запросов
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8080/api/:path*',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
