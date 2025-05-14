@@ -1,27 +1,53 @@
 {
-  "name": "my-next-app",
-  "version": "0.1.0",
+  "name": "supermook",
+  "version": "1.0.0",
+  "description": "Приложение для тренировочных собеседований",
   "private": true,
+  "workspaces": [
+    "backend",
+    "src"
+  ],
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "npm run start:backend & npm run start:frontend",
+    "start:backend": "cd backend && npm run start",
+    "start:frontend": "next start",
+    "dev": "npm run dev:backend & npm run dev:frontend",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "next dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "next build",
+    "install:all": "npm install && npm run install:backend",
+    "install:backend": "cd backend && npm install",
+    "deploy:k8s:dev": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh deploy dev",
+    "deploy:k8s:prod": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh deploy prod",
+    "deploy:blue-green:dev": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh blue-green dev blue",
+    "deploy:blue-green:prod": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh blue-green prod blue",
+    "switch:blue:dev": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh switch dev blue",
+    "switch:green:dev": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh switch dev green",
+    "switch:blue:prod": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh switch prod blue",
+    "switch:green:prod": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh switch prod green",
+    "switch:canary:dev": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh switch dev green 20",
+    "switch:canary:prod": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh switch prod green 20",
+    "rollback:k8s:dev": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh rollback dev",
+    "rollback:k8s:prod": "chmod +x kubernetes/deploy.sh && ./kubernetes/deploy.sh rollback prod"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.3.2"
+    "@types/node": "^22.15.17",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "socket.io-client": "^4.8.1"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.2",
-    "@eslint/eslintrc": "^3"
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.6"
   }
 }

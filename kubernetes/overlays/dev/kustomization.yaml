@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: supermock-dev
+
+bases:
+  - ../../base
+
+patchesStrategicMerge:
+  - backend-patch.yaml
+  - hpa-patch.yaml
+
+configMapGenerator:
+  - name: supermock-config
+    behavior: merge
+    literals:
+      - NODE_ENV=development

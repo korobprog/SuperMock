@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blue-green-config
+  namespace: supermock
+  labels:
+    app: backend
+    component: blue-green
+data:
+  # Текущая активная версия (blue или green)
+  ACTIVE_VERSION: 'blue'
+
+  # Настройки для постепенного переключения трафика (canary)
+  ENABLE_CANARY: 'false'
+  CANARY_PERCENTAGE: '0'
+
+  # Таймаут для автоматического отката при ошибках
+  ROLLBACK_TIMEOUT_SECONDS: '300'
+
+  # Пороговые значения для автоматического отката
+  ERROR_THRESHOLD_PERCENTAGE: '5'
+  LATENCY_THRESHOLD_MS: '500'
+
+  # Настройки для проверки здоровья новой версии перед переключением
+  HEALTH_CHECK_PATH: '/health'
+  HEALTH_CHECK_TIMEOUT_SECONDS: '60'
+  HEALTH_CHECK_INTERVAL_SECONDS: '5'
+  REQUIRED_SUCCESS_COUNT: '3'

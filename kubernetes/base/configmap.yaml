@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: supermock-config
+  namespace: supermock
+data:
+  NODE_ENV: 'production'
+  HOST: '0.0.0.0'
+  PORT: '4000'
+  USE_MONGODB: 'true'
+  USE_REDIS: 'true'
+  REDIS_HOST: 'redis-service'
+  REDIS_PORT: '6379'
+  MONGO_DB_NAME: 'mock_interviews'

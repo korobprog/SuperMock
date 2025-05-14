@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "supermook",
+  "private_key_id": "21c2050f93f8c0cecd836202f0a051aa19193d26",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDAdS3otf3di4H7\nTKzLMnq4uvIePk+2ekHigT1IbyGm1+HJX4izepM2EuO3Gmz94JZltSMHKRCwguIG\ncrWqa1MjcKIMOWpWnLhhD3kmJML4zoicLCuvqxMSXUcgiGS0kQ7aGoozLMeDwdBJ\nmlGhruOZe3M2YrIyCXoKmOgbJsdKmBIGnT8XQTmik39Mpv+m/IIzValihCKfTFY6\nvPVhfu8F6BwDhAImhcAnrW8Ts6EO/TpHhA3HRtiUI/7MMgvwZOpFQw8D4AqF7n4v\noCW9OVjYU9mjkEFiUyAYoSWxvN8ElZRUxzTQEm0sUm+dAo2NZeLVPgAlBnN+DGvg\n/IeAsIBvAgMBAAECggEAX0mlMVLqHoa0FHgiFXkoyc3FkrPHQ9HETSEv9m0PfEvm\nvo1OYY6O1HcFx+KNlCVeUX0dmq36VWp3/jlNONNqlmFt2h+TRs7Rezzt/rS00/tu\nJ+S2vIM3LiCA1tqxAbXQZKw/QJcrMVEEj2yYfjTY+2Tj5kl3cM7AXf7W7JqGkadd\nMGnBK2RPQch2rQ/Tvf4+bW7m6VY/10U3WWxYhQkIReoDVJKLd4BRtfAcywgkRRRl\nXq9cbhYmbrVv/N4f98KH8qXRlywXrUiA9ICeX6eFYcc3LphlHA7xGycDOXyMpR/T\nebcLsqobLqJYX7JUZo5dtfb2I5fPvlFPtgKvuZbuAQKBgQDphVGmm0dnApe2Se08\nVHHUdRdlKvCjG/4HWCrLzUkFY5wdgyAyvwk1EnifoR49LkC/qHLJTiM1DBl+bGuq\n3R0Yl/aFMt0H4LUryQnJfNi/KAp9w7iwNbz0o+iEU/8ZrPwtZQEry8rdss0lS4TC\nDPjaL02/R/2m21f8RVsmRNXwkwKBgQDS+/BRH0cekaiH9QqLq8XIqjF7kXntOo5R\nrEL/yPaw9rqAR6o/a27WZPiTZix/CjLNiC6XjfJ/pJoqI5OomlRx01AKF7hqdgLt\n8W5SZzXk2ZdtH1covpsdfZ6jomnnaW0GzFhsKLcKe49VaSOBld0YRFLfM8W+Uqo6\nBwkZDtzGNQKBgCwxugEw8/NvzyyFkytOw/g0bMgNt1r3Kj1Tl03YvRATCPGg5lAU\nTXbI1yFGycVEYqajB45Hhmw8rPp7JGlCzYXhBJuyw5gBE+iEdKC4SwDqYAnrJ6HZ\nmbgm6RNaHjZKwbMJoY4bVHpeo2qCf06GS/Zm62zfAAc7DczFh3mXn3GXAoGAP2hY\nIQk1ZoqAC9wo/zDwkA4WMPzXl+QxQXpz6EuNWEHOax8em1C+TtCppCLg3I1EF2EG\nH6YZayMc8e0fQ1yeZFcNhvr6AYTV/IzCiyFZoR2D1NfGaghetc47DxKQoWudyJ1B\nNcBGwm+/8/tVIGzZtaFTBqGYnEpbvnS+1zkQQMECgYAXjZI8X2elkOt6G/nV7I/p\nfOALMYNZbgnplx78XFVWUeWgaG+0UU567Ogu61voTzmq/qkryxX50mcJGW3lePSK\nkbVscfGHYqq/c3rlzXBGIeibIilOdlSwp+zxkJOkglEr/4xl17u4QNM0LBQ1jJdx\nfWsPM2FcFgsSb6rhyUD8DQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "supermook@supermook.iam.gserviceaccount.com",
+  "client_id": "116963030484204989588",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/supermool%40supermook.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

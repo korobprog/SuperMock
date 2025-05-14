@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    volumes:
+      - ./:/scripts
+    environment:
+      - API_URL=${API_URL:-http://host.docker.internal:4000}
+      - TEST_USER_EMAIL=${TEST_USER_EMAIL:-test@example.com}
+      - TEST_USER_PASSWORD=${TEST_USER_PASSWORD:-password123}
+      - K6_PROMETHEUS_RW_SERVER_URL=${K6_PROMETHEUS_RW_SERVER_URL:-http://host.docker.internal:9090/api/v1/write}
+    command: run /scripts/api-load-test.js
+    network_mode: 'host'
+
+  k6-prometheus:
+    image: grafana/k6:latest
+    container_name: k6-prometheus
+    volumes:
+      - ./:/scripts
+    environment:
+      - API_URL=${API_URL:-http://host.docker.internal:4000}
+      - TEST_USER_EMAIL=${TEST_USER_EMAIL:-test@example.com}
+      - TEST_USER_PASSWORD=${TEST_USER_PASSWORD:-password123}
+      - K6_PROMETHEUS_RW_SERVER_URL=${K6_PROMETHEUS_RW_SERVER_URL:-http://host.docker.internal:9090/api/v1/write}
+    command: run --out prometheus-remote=${K6_PROMETHEUS_RW_SERVER_URL:-http://host.docker.internal:9090/api/v1/write} /scripts/api-load-test.js
+    network_mode: 'host'

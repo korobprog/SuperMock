@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: supermock-ingress
+  namespace: supermock
+  annotations:
+    kubernetes.io/ingress.class: 'nginx'
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/proxy-body-size: '10m'
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: '30'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '120'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '120'
+    nginx.ingress.kubernetes.io/proxy-buffer-size: '8k'
+    nginx.ingress.kubernetes.io/proxy-buffers-number: '4'
+    # Настройки кэширования
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=supermock_cache:10m max_size=100m inactive=60m;
+      proxy_cache supermock_cache;
+      proxy_cache_valid 200 302 10m;
+      proxy_cache_valid 404 1m;
+      add_header X-Cache-Status $upstream_cache_status;
+spec:
+  tls:
+    - hosts:
+        - supermock.ru
+      secretName: supermock-tls
+  rules:
+    - host: supermock.ru
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 4000

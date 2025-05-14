@@ -1,0 +1,25 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGO_URI")
+}
+
+model User {
+  id                 String   @id @map("_id")
+  email              String   @unique
+  password           String
+  roleHistory        Json[]
+  feedbackStatus     String   @default("none")
+  createdAt          DateTime @default(now())
+  googleId           String?
+  googleAccessToken  String?
+  googleRefreshToken String?
+
+  @@map("users")
+}
