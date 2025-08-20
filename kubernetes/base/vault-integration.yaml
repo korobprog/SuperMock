@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: supermock-sa
+  namespace: supermock
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-agent-config
+  namespace: supermock
+data:
+  vault-agent-config.hcl: |
+    auto_auth {
+      method "kubernetes" {
+        mount_path = "auth/kubernetes"
+        config = {
+          role = "supermock-role"
+        }
+      }
+
+      sink "file" {
+        config = {
+          path = "/vault/token"
+        }
+      }
+    }
+
+    template {
+      destination = "/vault/secrets/config.env"
+      contents = <<EOH
+        {{- with secret "secret/data/supermock" }}
+        {{- range $k, $v := .Data.data }}
+        {{ $k }}={{ $v }}
+        {{- end }}
+        {{- end }}
+      EOH
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-agent-injector
+  namespace: supermock
+  labels:
+    app: vault-agent-injector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-agent-injector
+  template:
+    metadata:
+      labels:
+        app: vault-agent-injector
+    spec:
+      serviceAccountName: supermock-sa
+      containers:
+        - name: vault-agent-injector
+          image: hashicorp/vault-k8s:latest
+          args:
+            - agent-inject
+            - -tls-auto=supermock
+            - -tls-auto-hosts=vault-agent-injector,vault-agent-injector.supermock.svc
+          env:
+            - name: AGENT_INJECT_LISTEN
+              value: ':8080'
+            - name: AGENT_INJECT_LOG_LEVEL
+              value: 'info'
+            - name: AGENT_INJECT_VAULT_ADDR
+              value: 'http://vault:8200'
+            - name: AGENT_INJECT_VAULT_AUTH_PATH
+              value: 'auth/kubernetes'
+            - name: AGENT_INJECT_VAULT_IMAGE
+              value: 'hashicorp/vault:latest'
+            - name: AGENT_INJECT_TLS_AUTO
+              value: 'supermock'
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            requests:
+              memory: '64Mi'
+              cpu: '50m'
+            limits:
+              memory: '128Mi'
+              cpu: '100m'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-agent-injector
+  namespace: supermock
+  labels:
+    app: vault-agent-injector
+spec:
+  ports:
+    - port: 443
+      targetPort: 8080
+  selector:
+    app: vault-agent-injector
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: vault-agent-injector-cfg
+  labels:
+    app: vault-agent-injector
+webhooks:
+  - name: vault.hashicorp.com
+    clientConfig:
+      service:
+        name: vault-agent-injector
+        namespace: supermock
+        path: '/mutate'
+      caBundle: ''
+    rules:
+      - operations: ['CREATE', 'UPDATE']
+        apiGroups: ['']
+        apiVersions: ['v1']
+        resources: ['pods']
+    admissionReviewVersions: ['v1', 'v1beta1']
+    sideEffects: None
+    failurePolicy: Ignore

@@ -1,0 +1,658 @@
+openapi: 3.0.0
+info:
+  title: SuperMock API
+  description: API для приложения тренировочных собеседований
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Локальный сервер разработки
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор пользователя
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+        feedbackStatus:
+          type: string
+          enum: [none, pending, completed]
+          description: Статус обратной связи пользователя
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор сессии
+        videoLink:
+          type: string
+          description: Ссылка на видеозвонок
+        startTime:
+          type: string
+          format: date-time
+          description: Время начала сессии
+        status:
+          type: string
+          enum: [pending, active, completed]
+          description: Статус сессии
+        interviewerId:
+          type: string
+          description: ID пользователя в роли интервьюера
+        intervieweeId:
+          type: string
+          description: ID пользователя в роли отвечающего
+        observerIds:
+          type: array
+          items:
+            type: string
+          description: Массив ID пользователей в роли наблюдателей
+    Feedback:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор обратной связи
+        sessionId:
+          type: string
+          description: ID сессии, к которой относится обратная связь
+        userId:
+          type: string
+          description: ID пользователя, оставившего обратную связь
+        ratings:
+          type: object
+          properties:
+            preparation:
+              type: integer
+              minimum: 1
+              maximum: 5
+              description: Оценка подготовки
+            communication:
+              type: integer
+              minimum: 1
+              maximum: 5
+              description: Оценка коммуникации
+            technicalSkills:
+              type: integer
+              minimum: 1
+              maximum: 5
+              description: Оценка технических навыков
+            problemSolving:
+              type: integer
+              minimum: 1
+              maximum: 5
+              description: Оценка решения проблем
+            overall:
+              type: integer
+              minimum: 1
+              maximum: 5
+              description: Общая оценка
+        comments:
+          type: string
+          description: Комментарии к сессии
+        recommendations:
+          type: string
+          description: Рекомендации для улучшения
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Сообщение об ошибке
+        details:
+          type: string
+          description: Детали ошибки (опционально)
+security:
+  - bearerAuth: []
+paths:
+  /register:
+    post:
+      summary: Регистрация нового пользователя
+      description: Создает нового пользователя в системе
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email пользователя
+                password:
+                  type: string
+                  format: password
+                  description: Пароль пользователя (минимум 6 символов)
+      responses:
+        '200':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT токен для аутентификации
+        '400':
+          description: Ошибка валидации или пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /login:
+    post:
+      summary: Вход пользователя
+      description: Аутентификация пользователя в системе
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email пользователя
+                password:
+                  type: string
+                  format: password
+                  description: Пароль пользователя
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT токен для аутентификации
+        '400':
+          description: Ошибка валидации или неверные учетные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /user:
+    get:
+      summary: Получение данных пользователя
+      description: Возвращает данные аутентифицированного пользователя
+      responses:
+        '200':
+          description: Успешное получение данных пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions:
+    get:
+      summary: Получение списка всех сессий
+      description: Возвращает список всех сессий в системе
+      responses:
+        '200':
+          description: Успешное получение списка сессий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Создание новой сессии
+      description: Создает новую сессию в системе
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                videoLink:
+                  type: string
+                  description: Ссылка на видеозвонок (опционально)
+                startTime:
+                  type: string
+                  format: date-time
+                  description: Время начала сессии (опционально, по умолчанию - текущее время)
+      responses:
+        '201':
+          description: Успешное создание сессии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions/{id}:
+    get:
+      summary: Получение информации о конкретной сессии
+      description: Возвращает информацию о сессии по её ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID сессии
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешное получение информации о сессии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions/{id}/roles:
+    post:
+      summary: Выбор роли в сессии
+      description: Назначает пользователю роль в сессии
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID сессии
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - role
+              properties:
+                role:
+                  type: string
+                  enum: [interviewer, interviewee, observer]
+                  description: Роль пользователя в сессии
+      responses:
+        '200':
+          description: Успешное назначение роли
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Сообщение об успешном назначении роли
+                  session:
+                    $ref: '#/components/schemas/Session'
+        '400':
+          description: Некорректная роль или роль уже занята
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Нет прав для выбора роли
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Сессия или пользователь не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions/{id}/status:
+    put:
+      summary: Изменение статуса сессии
+      description: Изменяет статус сессии (только для интервьюера)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID сессии
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, active, completed]
+                  description: Новый статус сессии
+      responses:
+        '200':
+          description: Успешное изменение статуса сессии
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Сообщение об успешном изменении статуса
+                  session:
+                    $ref: '#/components/schemas/Session'
+        '400':
+          description: Некорректный статус
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Нет прав для изменения статуса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions/{id}/video:
+    post:
+      summary: Генерация и сохранение ссылки на видеозвонок
+      description: Генерирует и сохраняет ссылку на Видео Чат для сессии (только для интервьюера)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID сессии
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customVideoLink:
+                  type: string
+                  description: Пользовательская ссылка на Видео Чат (опционально)
+      responses:
+        '200':
+          description: Успешная генерация и сохранение ссылки
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Сообщение об успешной генерации ссылки
+                  videoLink:
+                    type: string
+                    description: Сгенерированная ссылка на видеозвонок
+                  session:
+                    $ref: '#/components/schemas/Session'
+        '400':
+          description: Некорректная ссылка на Видео Чат
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Нет прав для генерации ссылки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions/{id}/feedback:
+    post:
+      summary: Отправка обратной связи для сессии
+      description: Отправляет обратную связь для сессии от участника
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID сессии
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ratings:
+                  type: object
+                  properties:
+                    preparation:
+                      type: integer
+                      minimum: 1
+                      maximum: 5
+                      description: Оценка подготовки
+                    communication:
+                      type: integer
+                      minimum: 1
+                      maximum: 5
+                      description: Оценка коммуникации
+                    technicalSkills:
+                      type: integer
+                      minimum: 1
+                      maximum: 5
+                      description: Оценка технических навыков
+                    problemSolving:
+                      type: integer
+                      minimum: 1
+                      maximum: 5
+                      description: Оценка решения проблем
+                    overall:
+                      type: integer
+                      minimum: 1
+                      maximum: 5
+                      description: Общая оценка
+                comments:
+                  type: string
+                  description: Комментарии к сессии
+                recommendations:
+                  type: string
+                  description: Рекомендации для улучшения
+      responses:
+        '201':
+          description: Успешная отправка обратной связи
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Сообщение об успешной отправке обратной связи
+                  feedback:
+                    $ref: '#/components/schemas/Feedback'
+        '400':
+          description: Пользователь уже отправил обратную связь для этой сессии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Пользователь не участвовал в сессии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Получение обратной связи для сессии
+      description: Возвращает обратную связь для сессии от всех участников
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID сессии
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешное получение обратной связи
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  feedbacks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Feedback'
+                  bothSidesSubmitted:
+                    type: boolean
+                    description: Флаг, указывающий, что обе стороны (интервьюер и отвечающий) отправили обратную связь
+                  session:
+                    $ref: '#/components/schemas/Session'
+        '403':
+          description: Пользователь не участвовал в сессии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /users/{id}/feedback:
+    get:
+      summary: Получение списка обратной связи для пользователя
+      description: Возвращает список обратной связи для конкретного пользователя
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользователя
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешное получение списка обратной связи
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feedback'
+        '403':
+          description: Нет прав для получения обратной связи другого пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

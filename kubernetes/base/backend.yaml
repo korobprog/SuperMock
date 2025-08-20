@@ -1,0 +1,152 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: supermock
+spec:
+  replicas: 3 # Начальное количество реплик для горизонтального масштабирования
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: backend
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/agent-inject-status: 'update'
+        vault.hashicorp.com/role: 'supermock-role'
+        vault.hashicorp.com/agent-inject-secret-config.env: 'secret/data/supermock'
+        vault.hashicorp.com/agent-inject-template-config.env: |
+          {{- with secret "secret/data/supermock" -}}
+          {{- range $k, $v := .Data.data -}}
+          export {{ $k }}={{ $v }}
+          {{- end -}}
+          {{- end -}}
+    spec:
+      serviceAccountName: supermock-sa
+      containers:
+        - name: backend
+          image: ${DOCKER_USERNAME}/supermock-backend:latest
+          ports:
+            - containerPort: 4000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: supermock-config
+                  key: NODE_ENV
+            - name: HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: supermock-config
+                  key: HOST
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: supermock-config
+                  key: PORT
+            - name: USE_MONGODB
+              valueFrom:
+                configMapKeyRef:
+                  name: supermock-config
+                  key: USE_MONGODB
+            - name: USE_REDIS
+              valueFrom:
+                configMapKeyRef:
+                  name: supermock-config
+                  key: USE_REDIS
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: supermock-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: supermock-config
+                  key: REDIS_PORT
+            - name: MONGO_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: supermock-config
+                  key: MONGO_DB_NAME
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: supermock-secrets
+                  key: JWT_SECRET
+            - name: MONGO_URI
+              value: 'mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@mongodb-service:27017/$(MONGO_DB_NAME)?authSource=admin'
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: supermock-secrets
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: supermock-secrets
+                  key: MONGO_INITDB_ROOT_PASSWORD
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: supermock-secrets
+                  key: REDIS_PASSWORD
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: supermock-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: supermock-secrets
+                  key: GOOGLE_CLIENT_SECRET
+            - name: GOOGLE_CALLBACK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: supermock-secrets
+                  key: GOOGLE_CALLBACK_URL
+            - name: FRONTEND_URL
+              valueFrom:
+                secretKeyRef:
+                  name: supermock-secrets
+                  key: FRONTEND_URL
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '100m'
+            limits:
+              memory: '512Mi'
+              cpu: '300m'
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: supermock
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 4000
+      targetPort: 4000
+  type: ClusterIP

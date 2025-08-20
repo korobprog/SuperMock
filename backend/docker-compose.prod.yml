@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  mongo-prod:
+    image: mongo:5
+    container_name: mongo-prod
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-prod-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PROD_PASSWORD:-prod-password}
+    networks:
+      - app-network-prod
+    restart: always
+    # Добавляем настройки безопасности для продакшена
+    command: --auth --wiredTigerCacheSizeGB 1
+
+  redis-prod:
+    image: redis:7-alpine
+    container_name: redis-prod
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-prod-data:/data
+    networks:
+      - app-network-prod
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PROD_PASSWORD:-prod-password}
+
+volumes:
+  mongo-prod-data:
+  redis-prod-data:
+
+networks:
+  app-network-prod:
+    driver: bridge
