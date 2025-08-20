@@ -1,0 +1,6 @@
+DATABASE_URL=postgresql://Super Mock:postgres@localhost:5432/Super Mock?schema=public
+DATABASE_URL_SECONDARY=postgresql://Super Mock2:postgres@localhost:5433/Super Mock_secondary?schema=public
+NODE_ENV=development
+PORT=3000
+FRONTEND_URL=http://localhost:8080
+BACKEND_URL=http://localhost:3000

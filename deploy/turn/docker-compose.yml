@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  coturn:
+    image: coturn/coturn:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - '3478:3478/udp'
+      - '3478:3478/tcp'
+      - '5349:5349/tcp' # TLS (optional)
+    command:
+      - -n
+      - --log-file=stdout
+      - --fingerprint
+      - --lt-cred-mech
+      - --use-auth-secret
+      - --realm=${TURN_REALM}
+      - --static-auth-secret=${TURN_AUTH_SECRET}
+      - --no-multicast-peers
+      - --no-cli
+      - --min-port=49160
+      - --max-port=49200
+      - --listening-ip=0.0.0.0
+      - --external-ip=217.198.6.238
+    networks:
+      - turn
+
+networks:
+  turn:
+    external: false

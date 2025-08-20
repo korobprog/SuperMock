@@ -1,0 +1,145 @@
+{
+  "navigation": {
+    "next": "Weiter",
+    "back": "Zurück",
+    "select": "Auswählen",
+    "cancel": "Abbrechen"
+  },
+  "common": {
+    "detectingLanguage": "Sprache erkennen...",
+    "loading": "Laden...",
+    "platformSubtitle": "plattform für die durchführung von mock-interviews"
+  },
+  "role": {
+    "selectRole": "Rolle Auswählen",
+    "roleSubtitle": "Welche Rolle möchten Sie im Mock-Interview übernehmen?",
+    "interviewer": "Interviewer",
+    "interviewerDesc": "Interviews führen und Kandidaten bewerten",
+    "candidate": "Kandidat",
+    "candidateDesc": "An Interviews teilnehmen und Feedback erhalten"
+  },
+  "profession": {
+    "selectProfession": "Beruf Auswählen",
+    "professionSubtitle": "Wählen Sie eine Spezialisierung für das Mock-Interview",
+    "frontend": "Frontend Developer",
+    "frontendDesc": "Entwicklung von Benutzeroberflächen",
+    "backend": "Backend Developer",
+    "backendDesc": "Server-Entwicklung und APIs",
+    "fullstack": "Fullstack Developer",
+    "fullstackDesc": "Frontend- und Backend-Entwicklung",
+    "mobile": "Mobile Developer",
+    "mobileDesc": "Entwicklung mobiler Anwendungen",
+    "devops": "DevOps Engineer",
+    "devopsDesc": "Automatisierung und Infrastruktur",
+    "qa": "QA Engineer",
+    "qaDesc": "Testing und Qualitätssicherung",
+    "designer": "UX/UI Designer",
+    "designerDesc": "User Experience Design",
+    "analyst": "Data Analyst",
+    "analystDesc": "Datenanalyse und Berichterstattung",
+    "scientist": "Data Scientist",
+    "scientistDesc": "Maschinelles Lernen und Forschung",
+    "pm": "Product Manager",
+    "pmDesc": "Produktmanagement"
+  },
+  "language": {
+    "selectLanguage": "Sprache Auswählen",
+    "languageSubtitle": "In welcher Sprache wird das Interview durchgeführt?"
+  },
+  "time": {
+    "selectTime": "Zeit Auswählen",
+    "timeSubtitle": "Wann möchten Sie das Interview durchführen?",
+    "timezone": "Zeitzone",
+    "availableSlots": "Verfügbare Zeitslots",
+    "selectedSlots": "Ausgewählte Zeitslots",
+    "analysis": {
+      "title": "Lastanalyse und Empfehlungen",
+      "online": "online",
+      "recommendedTime": "Empfohlene Zeit:",
+      "untilMatch": "Bis zum Match:",
+      "load": "Last:",
+      "expand": "Erweitern",
+      "collapse": "Reduzieren",
+      "showAnalysis": "Analyse anzeigen",
+      "interviewers": "Interviewer",
+      "candidates": "Kandidaten"
+    },
+    "slots": {
+      "availableSlotsInterviewers": "Verfügbare Zeitslots (Interviewer)",
+      "availableSlotsCandidates": "Verfügbare Zeitslots (Kandidaten)",
+      "interviewersShort": "Int.",
+      "candidatesShort": "Kand.",
+      "recommended": "Empfohlen"
+    },
+    "buttons": {
+      "back": "Zurück",
+      "continueAt": "Fortfahren um",
+      "selectTime": "Zeit auswählen"
+    },
+    "header": {
+      "title": "Zeit Auswählen",
+      "subtitle": "Finden Sie einen passenden Interview-Slot",
+      "help": "Hilfe",
+      "role": "Rolle"
+    },
+    "timeDisplay": {
+      "yourTime": "Ihre Zeit",
+      "utcTime": "UTC Zeit"
+    }
+  },
+  "interview": {
+    "interview": "Interview",
+    "chat": "Chat",
+    "questions": "Fragen",
+    "codeEditor": "Code-Editor",
+    "startVideo": "Videoanruf starten",
+    "endVideo": "Anruf beenden",
+    "endInterview": "Interview beenden",
+    "videoInactive": "Videoanruf ist nicht aktiv",
+    "waitingForMatch": "Warten auf Matching...",
+    "enterMessage": "Nachricht eingeben...",
+    "exit": "Verlassen"
+  },
+  "tags": {
+    "react": "React",
+    "vue": "Vue",
+    "angular": "Angular",
+    "typescript": "TypeScript",
+    "javascript": "JavaScript",
+    "nodejs": "Node.js",
+    "python": "Python",
+    "java": "Java",
+    "dotnet": ".NET",
+    "ios": "iOS",
+    "android": "Android",
+    "flutter": "Flutter",
+    "docker": "Docker",
+    "kubernetes": "Kubernetes",
+    "aws": "AWS",
+    "automation": "Automatisierung",
+    "testing": "Testing",
+    "figma": "Figma",
+    "research": "Forschung",
+    "sql": "SQL",
+    "ml": "ML",
+    "ai": "KI",
+    "agile": "Agil",
+    "strategy": "Strategie"
+  },
+  "home": {
+    "aiTipTitle": "🚀 Verbessern Sie Interviews mit KI",
+    "aiTipDesc": "Konfigurieren Sie OpenRouter API für einzigartige Fragen. Holen Sie sich Ihren Schlüssel unter https://openrouter.ai/keys"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "clearAll": "Alle löschen",
+    "total": "Gesamt",
+    "unread": "Ungelesen",
+    "noNotifications": "Keine Benachrichtigungen",
+    "markAsRead": "Als gelesen markieren",
+    "joinInterview": "Interview beitreten",
+    "delete": "Löschen",
+    "loading": "Benachrichtigungen werden geladen...",
+    "error": "Fehler beim Laden der Benachrichtigungen"
+  }
+}

@@ -1,0 +1,84 @@
+version: '3.9'
+
+services:
+  # Prosody (XMPP server)
+  prosody:
+    image: jitsi/prosody:stable
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - jitsi
+    volumes:
+      - prosody-config:/config
+      - prosody-prosody:/prosody
+
+  # Jicofo (conference focus)
+  jicofo:
+    image: jitsi/jicofo:stable
+    restart: unless-stopped
+    depends_on:
+      - prosody
+    env_file:
+      - .env
+    networks:
+      - jitsi
+    volumes:
+      - jicofo-config:/config
+
+  # JVB (video bridge)
+  jvb:
+    image: jitsi/jvb:stable
+    restart: unless-stopped
+    depends_on:
+      - prosody
+    env_file:
+      - .env
+    networks:
+      - jitsi
+    ports:
+      - '10000:10000/udp'
+      - '4443:4443/tcp'
+    volumes:
+      - jvb-config:/config
+
+  # Web (nginx + web UI)
+  web:
+    image: jitsi/web:stable
+    restart: unless-stopped
+    depends_on:
+      - prosody
+      - jicofo
+      - jvb
+    env_file:
+      - .env
+    networks:
+      - jitsi
+    ports:
+      # If you already use 80/443 on the host, remove these and use a reverse proxy (e.g., Traefik) instead
+      - '80:80'
+      - '443:443'
+    volumes:
+      - web-config:/config
+      - web-transcripts:/usr/share/jitsi-meet/transcripts
+      - web-letsencrypt:/etc/letsencrypt
+    # Example Traefik labels (uncomment if you route via Traefik, and remove ports section above)
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.jitsi.entrypoints=websecure"
+    #   - "traefik.http.routers.jitsi.rule=Host(`${JITSI_DOMAIN}`)"
+    #   - "traefik.http.routers.jitsi.tls.certresolver=letsencrypt"
+    #   - "traefik.http.services.jitsi.loadbalancer.server.port=80"
+
+volumes:
+  prosody-config:
+  prosody-prosody:
+  jicofo-config:
+  jvb-config:
+  web-config:
+  web-transcripts:
+  web-letsencrypt:
+
+networks:
+  jitsi:
+    external: false

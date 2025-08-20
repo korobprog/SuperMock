@@ -1,0 +1,100 @@
+# ========================================
+# Переменные окружения для Super Mock PRODUCTION
+# ========================================
+
+# ========================================
+# НАСТРОЙКИ БАЗЫ ДАННЫХ
+# ========================================
+DATABASE_URL=postgresql://Super Mock:krishna1284radha@postgres:5432/Super Mock
+POSTGRES_DB=Super Mock
+POSTGRES_USER=Super Mock
+POSTGRES_PASSWORD=krishna1284radha
+
+# ВТОРИЧНАЯ БАЗА ДАННЫХ (отключена для стабильности)
+DATABASE_URL_SECONDARY=
+POSTGRES_DB_SECONDARY=Super Mock_secondary
+POSTGRES_USER_SECONDARY=Super Mock2
+POSTGRES_PASSWORD_SECONDARY=YOUR_SECURE_PASSWORD_2
+
+# ========================================
+# НАСТРОЙКИ ПРИЛОЖЕНИЯ
+# ========================================
+NODE_ENV=production
+PORT=3000
+
+# ========================================
+# TELEGRAM BOT НАСТРОЙКИ
+# ========================================
+TELEGRAM_BOT_TOKEN=YOUR_BOT_TOKEN_HERE
+VITE_TELEGRAM_BOT_NAME=YOUR_BOT_NAME
+
+# ========================================
+# URL НАСТРОЙКИ
+# ========================================
+FRONTEND_URL=https://app.supermock.ru
+BACKEND_URL=https://app.supermock.ru
+VITE_API_URL=https://app.supermock.ru
+
+# Jitsi base URL (optional; set if using self-hosted Jitsi)
+VITE_JITSI_URL=https://jitsi.supermock.ru
+
+# WebRTC ICE
+VITE_STUN_URLS=stun:stun.l.google.com:19302
+# Optional TURN
+# VITE_TURN_URL=turn:turn.supermock.ru:3478
+# VITE_TURN_USERNAME=turn_user
+# VITE_TURN_PASSWORD=turn_pass
+
+# ========================================
+# ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ
+# ========================================
+# Логирование
+LOG_LEVEL=info
+
+# CORS настройки
+CORS_ORIGIN=https://app.supermock.ru
+
+# Prisma настройки
+PRISMA_GENERATE_DATAPROXY=false
+
+# Redis настройки
+REDIS_URL=redis://redis:6379
+
+# ========================================
+# НАСТРОЙКИ БЕЗОПАСНОСТИ
+# ========================================
+# Секретный ключ для сессий
+SESSION_SECRET=YOUR_SESSION_SECRET_HERE
+
+# JWT секрет
+JWT_SECRET=YOUR_JWT_SECRET_HERE
+
+# ========================================
+# НАСТРОЙКИ ПРОИЗВОДИТЕЛЬНОСТИ
+# ========================================
+# Количество воркеров
+WORKERS=2
+
+# Таймауты
+REQUEST_TIMEOUT=30000
+SOCKET_TIMEOUT=60000
+
+# ========================================
+# НАСТРОЙКИ SSL (для certbot)
+# ========================================
+# Email для SSL сертификатов
+SSL_EMAIL=admin@supermock.ru
+
+# Домен для SSL сертификата
+DOMAIN_NAME=app.supermock.ru
+
+# ========================================
+# НАСТРОЙКИ МОНИТОРИНГА
+# ========================================
+# Health check endpoint
+HEALTH_CHECK_PATH=/api/health
+
+# Метрики
+ENABLE_METRICS=true
+METRICS_PORT=9090
+

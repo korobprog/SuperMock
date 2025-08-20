@@ -1,0 +1,145 @@
+{
+  "navigation": {
+    "next": "Suivant",
+    "back": "Retour",
+    "select": "Sélectionner",
+    "cancel": "Annuler"
+  },
+  "common": {
+    "detectingLanguage": "Détection de langue...",
+    "loading": "Chargement...",
+    "platformSubtitle": "plateforme pour mener des entretiens simulés"
+  },
+  "role": {
+    "selectRole": "Sélectionner le Rôle",
+    "roleSubtitle": "Quel rôle voulez-vous jouer dans l'entretien simulé ?",
+    "interviewer": "Recruteur",
+    "interviewerDesc": "Mener des entretiens et évaluer les candidats",
+    "candidate": "Candidat",
+    "candidateDesc": "Passer des entretiens et recevoir des commentaires"
+  },
+  "profession": {
+    "selectProfession": "Sélectionner la Profession",
+    "professionSubtitle": "Choisissez une spécialisation pour l'entretien simulé",
+    "frontend": "Développeur Frontend",
+    "frontendDesc": "Développement d'interfaces utilisateur",
+    "backend": "Développeur Backend",
+    "backendDesc": "Développement côté serveur et APIs",
+    "fullstack": "Développeur Fullstack",
+    "fullstackDesc": "Développement frontend et backend",
+    "mobile": "Développeur Mobile",
+    "mobileDesc": "Développement d'applications mobiles",
+    "devops": "Ingénieur DevOps",
+    "devopsDesc": "Automatisation et infrastructure",
+    "qa": "Ingénieur QA",
+    "qaDesc": "Tests et assurance qualité",
+    "designer": "Designer UX/UI",
+    "designerDesc": "Design d'expérience utilisateur",
+    "analyst": "Analyste de Données",
+    "analystDesc": "Analyse de données et rapports",
+    "scientist": "Data Scientist",
+    "scientistDesc": "Apprentissage automatique et recherche",
+    "pm": "Chef de Produit",
+    "pmDesc": "Gestion de produit"
+  },
+  "language": {
+    "selectLanguage": "Sélectionner la Langue",
+    "languageSubtitle": "Dans quelle langue l'entretien sera-t-il mené ?"
+  },
+  "time": {
+    "selectTime": "Sélectionner l'Heure",
+    "timeSubtitle": "Quand souhaitez-vous mener l'entretien ?",
+    "timezone": "Fuseau Horaire",
+    "availableSlots": "Créneaux Disponibles",
+    "selectedSlots": "Créneaux Sélectionnés",
+    "analysis": {
+      "title": "Analyse de Charge et Recommandations",
+      "online": "en ligne",
+      "recommendedTime": "Heure recommandée :",
+      "untilMatch": "Jusqu'au match :",
+      "load": "Charge :",
+      "expand": "Développer",
+      "collapse": "Réduire",
+      "showAnalysis": "Afficher l'analyse",
+      "interviewers": "Recruteurs",
+      "candidates": "Candidats"
+    },
+    "slots": {
+      "availableSlotsInterviewers": "Créneaux disponibles (recruteurs)",
+      "availableSlotsCandidates": "Créneaux disponibles (candidats)",
+      "interviewersShort": "rec.",
+      "candidatesShort": "cand.",
+      "recommended": "Recommandé"
+    },
+    "buttons": {
+      "back": "Retour",
+      "continueAt": "Continuer à",
+      "selectTime": "Sélectionner l'heure"
+    },
+    "header": {
+      "title": "Sélectionner l'Heure",
+      "subtitle": "Trouvez un créneau d'entretien approprié",
+      "help": "Aide",
+      "role": "Rôle"
+    },
+    "timeDisplay": {
+      "yourTime": "Votre heure",
+      "utcTime": "Heure UTC"
+    }
+  },
+  "interview": {
+    "interview": "Entretien",
+    "chat": "Chat",
+    "questions": "Questions",
+    "codeEditor": "Éditeur de Code",
+    "startVideo": "Démarrer l'Appel Vidéo",
+    "endVideo": "Terminer l'Appel",
+    "endInterview": "Terminer l'Entretien",
+    "videoInactive": "L'appel vidéo n'est pas actif",
+    "waitingForMatch": "En attente d'appariement...",
+    "enterMessage": "Entrer un message...",
+    "exit": "Quitter"
+  },
+  "tags": {
+    "react": "React",
+    "vue": "Vue",
+    "angular": "Angular",
+    "typescript": "TypeScript",
+    "javascript": "JavaScript",
+    "nodejs": "Node.js",
+    "python": "Python",
+    "java": "Java",
+    "dotnet": ".NET",
+    "ios": "iOS",
+    "android": "Android",
+    "flutter": "Flutter",
+    "docker": "Docker",
+    "kubernetes": "Kubernetes",
+    "aws": "AWS",
+    "automation": "Automatisation",
+    "testing": "Tests",
+    "figma": "Figma",
+    "research": "Recherche",
+    "sql": "SQL",
+    "ml": "ML",
+    "ai": "IA",
+    "agile": "Agile",
+    "strategy": "Stratégie"
+  },
+  "home": {
+    "aiTipTitle": "🚀 Améliorez les entretiens avec l'IA",
+    "aiTipDesc": "Configurez l'API OpenRouter pour obtenir des questions uniques. Obtenez votre clé sur https://openrouter.ai/keys"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "clearAll": "Tout effacer",
+    "total": "Total",
+    "unread": "Non lues",
+    "noNotifications": "Aucune notification",
+    "markAsRead": "Marquer comme lu",
+    "joinInterview": "Rejoindre l'entretien",
+    "delete": "Supprimer",
+    "loading": "Chargement des notifications...",
+    "error": "Erreur lors du chargement des notifications"
+  }
+}

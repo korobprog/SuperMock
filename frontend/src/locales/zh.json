@@ -1,0 +1,145 @@
+{
+  "navigation": {
+    "next": "下一步",
+    "back": "返回",
+    "select": "选择",
+    "cancel": "取消"
+  },
+  "common": {
+    "detectingLanguage": "检测语言中...",
+    "loading": "加载中...",
+    "platformSubtitle": "模拟面试平台"
+  },
+  "role": {
+    "selectRole": "选择角色",
+    "roleSubtitle": "您想在模拟面试中扮演什么角色？",
+    "interviewer": "面试官",
+    "interviewerDesc": "进行面试并评估候选人",
+    "candidate": "求职者",
+    "candidateDesc": "参加面试并接受反馈"
+  },
+  "profession": {
+    "selectProfession": "选择职业",
+    "professionSubtitle": "为模拟面试选择专业领域",
+    "frontend": "前端开发工程师",
+    "frontendDesc": "用户界面开发",
+    "backend": "后端开发工程师",
+    "backendDesc": "服务器端开发和API",
+    "fullstack": "全栈开发工程师",
+    "fullstackDesc": "前端和后端开发",
+    "mobile": "移动开发工程师",
+    "mobileDesc": "移动应用程序开发",
+    "devops": "DevOps工程师",
+    "devopsDesc": "自动化和基础设施",
+    "qa": "QA工程师",
+    "qaDesc": "测试和质量保证",
+    "designer": "UX/UI设计师",
+    "designerDesc": "用户体验设计",
+    "analyst": "数据分析师",
+    "analystDesc": "数据分析和报告",
+    "scientist": "数据科学家",
+    "scientistDesc": "机器学习和研究",
+    "pm": "产品经理",
+    "pmDesc": "产品管理"
+  },
+  "language": {
+    "selectLanguage": "选择语言",
+    "languageSubtitle": "面试将使用哪种语言进行？"
+  },
+  "time": {
+    "selectTime": "选择时间",
+    "timeSubtitle": "您希望什么时候进行面试？",
+    "timezone": "时区",
+    "availableSlots": "可用时段",
+    "selectedSlots": "已选择时段",
+    "analysis": {
+      "title": "负载分析和推荐",
+      "online": "在线",
+      "recommendedTime": "推荐时间：",
+      "untilMatch": "距离匹配：",
+      "load": "负载：",
+      "expand": "展开",
+      "collapse": "收起",
+      "showAnalysis": "显示分析",
+      "interviewers": "面试官",
+      "candidates": "求职者"
+    },
+    "slots": {
+      "availableSlotsInterviewers": "可用时段（面试官）",
+      "availableSlotsCandidates": "可用时段（求职者）",
+      "interviewersShort": "面试",
+      "candidatesShort": "求职",
+      "recommended": "推荐"
+    },
+    "buttons": {
+      "back": "返回",
+      "continueAt": "继续在",
+      "selectTime": "选择时间"
+    },
+    "header": {
+      "title": "选择时间",
+      "subtitle": "找到合适的面试时段",
+      "help": "帮助",
+      "role": "角色"
+    },
+    "timeDisplay": {
+      "yourTime": "您的时间",
+      "utcTime": "UTC时间"
+    }
+  },
+  "interview": {
+    "interview": "面试",
+    "chat": "聊天",
+    "questions": "问题",
+    "codeEditor": "代码编辑器",
+    "startVideo": "开始视频通话",
+    "endVideo": "结束通话",
+    "endInterview": "结束面试",
+    "videoInactive": "视频通话未激活",
+    "waitingForMatch": "等待匹配中...",
+    "enterMessage": "输入消息...",
+    "exit": "退出"
+  },
+  "tags": {
+    "react": "React",
+    "vue": "Vue",
+    "angular": "Angular",
+    "typescript": "TypeScript",
+    "javascript": "JavaScript",
+    "nodejs": "Node.js",
+    "python": "Python",
+    "java": "Java",
+    "dotnet": ".NET",
+    "ios": "iOS",
+    "android": "Android",
+    "flutter": "Flutter",
+    "docker": "Docker",
+    "kubernetes": "Kubernetes",
+    "aws": "AWS",
+    "automation": "自动化",
+    "testing": "测试",
+    "figma": "Figma",
+    "research": "研究",
+    "sql": "SQL",
+    "ml": "机器学习",
+    "ai": "人工智能",
+    "agile": "敏捷",
+    "strategy": "策略"
+  },
+  "home": {
+    "aiTipTitle": "🚀 用AI增强面试",
+    "aiTipDesc": "配置OpenRouter API获取独特问题。在 https://openrouter.ai/keys 获取您的密钥"
+  },
+  "notifications": {
+    "title": "通知",
+    "clearAll": "清除全部",
+    "total": "总计",
+    "unread": "未读",
+    "noNotifications": "暂无通知",
+    "markAsRead": "标记为已读",
+    "joinInterview": "加入面试",
+    "delete": "删除",
+    "loading": "加载通知中...",
+    "error": "加载通知时出错"
+  }
+}

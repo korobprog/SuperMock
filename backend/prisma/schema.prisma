@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @map("id") // Используем Telegram ID как основной ключ (String для совместимости)
+  tgId        String?  @map("tg_id")
+  username    String?
+  firstName   String?  @map("first_name")
+  lastName    String?  @map("last_name")
+  language    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Отношения
+  preferences   Preference[]
+  userSettings  UserSettings?
+  userTools     UserTool[]
+  sessionsAsInterviewer Session[] @relation("InterviewerSessions")
+  sessionsAsCandidate   Session[] @relation("CandidateSessions")
+  feedbackGiven         Feedback[] @relation("FeedbackFrom")
+  feedbackReceived      Feedback[] @relation("FeedbackTo")
+  queues                UserQueue[]
+  matchesAsCandidate    Match[]     @relation("MatchCandidate")
+  matchesAsInterviewer  Match[]     @relation("MatchInterviewer")
+  notifications         Notification[]
+
+  @@map("users")
+}
+
+// Модель для инструментов/технологий пользователей
+model UserTool {
+  id         Int      @id @default(autoincrement())
+  userId     String   @map("user_id")
+  profession String
+  toolName   String   @map("tool_name")
+  category   String?  // frameworks, languages, tools, databases, etc.
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Отношения
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_tools")
+  @@index([userId, profession])
+  @@index([toolName, profession])
+}
+
+model Preference {
+  id         Int      @id @default(autoincrement())
+  userId     String   @map("user_id")
+  role       String   // 'interviewer' или 'candidate'
+  profession String
+  language   String
+  slotsUtc   String   @map("slots_utc")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Отношения
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("preferences")
+}
+
+model Session {
+  id                  String    @id
+  interviewerUserId  String?   @map("interviewer_user_id")
+  candidateUserId    String?   @map("candidate_user_id")
+  profession         String?
+  language           String?
+  slotUtc            String?   @map("slot_utc")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  completedAt        DateTime? @map("completed_at")
+  status             String?
+  jitsiRoom          String?   @map("jitsi_room")
+
+  // Отношения
+  interviewer User? @relation("InterviewerSessions", fields: [interviewerUserId], references: [id])
+  candidate   User? @relation("CandidateSessions", fields: [candidateUserId], references: [id])
+  feedback    Feedback[]
+
+  @@map("sessions")
+}
+
+/// Очереди пользователей на слоты
+model UserQueue {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  role      String
+  profession String?
+  language   String?
+  slotUtc   String   @map("slot_utc")
+  status    String   @default("waiting") // waiting, matched, cancelled, expired
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_queues")
+  @@index([slotUtc, role, status])
+  @@index([userId, status])
+}
+
+/// Таблица зафиксированных матчей кандидат-интервьюер (для аудита)
+model Match {
+  id            Int      @id @default(autoincrement())
+  candidateId   String   @map("candidate_id")
+  interviewerId String   @map("interviewer_id")
+  slotUtc       String   @map("slot_utc")
+  status        String   @default("scheduled") // scheduled, completed, cancelled
+  sessionId     String?  @map("session_id")
+  meetingLink   String?  @map("meeting_link")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  candidate   User @relation("MatchCandidate", fields: [candidateId], references: [id])
+  interviewer User @relation("MatchInterviewer", fields: [interviewerId], references: [id])
+
+  @@map("matches")
+  @@index([slotUtc, status])
+}
+
+/// Уведомления для пользователей (включая дубликаты в Telegram)
+model Notification {
+  id         Int       @id @default(autoincrement())
+  userId     String    @map("user_id")
+  type       String
+  title      String
+  message    String
+  status     String    @default("active") // active, info, critical, read
+  priority   Int       @default(0)
+  actionData String?   @map("action_data")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  readAt     DateTime? @map("read_at")
+  expiresAt  DateTime? @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+  @@index([userId, status, createdAt])
+}
+
+model Feedback {
+  id         Int      @id @default(autoincrement())
+  sessionId  String   @map("session_id")
+  fromUserId String   @map("from_user_id")
+  toUserId   String   @map("to_user_id")
+  rating     Int
+  comments   String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Отношения
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  fromUser User   @relation("FeedbackFrom", fields: [fromUserId], references: [id])
+  toUser   User   @relation("FeedbackTo", fields: [toUserId], references: [id])
+
+  @@map("feedback")
+}
+
+model UserSettings {
+  id                 Int      @id @default(autoincrement())
+  userId             String   @unique @map("user_id")
+  openrouterApiKey   String?  @map("openrouter_api_key")
+  stackblitzApiKey   String?  @map("stackblitz_api_key")
+  preferredModel     String   @default("meta-llama/llama-3.1-8b-instruct") @map("preferred_model")
+  questionsLevel     String   @default("middle") @map("questions_level") // 'junior', 'middle', 'senior'
+  useAiGeneration    Boolean  @default(false) @map("use_ai_generation")
+  questionsCount     Int      @default(10) @map("questions_count")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  // Отношения
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}

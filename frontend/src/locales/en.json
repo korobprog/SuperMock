@@ -1,0 +1,145 @@
+{
+  "navigation": {
+    "next": "Next",
+    "back": "Back",
+    "select": "Select",
+    "cancel": "Cancel"
+  },
+  "common": {
+    "detectingLanguage": "Detecting language...",
+    "loading": "Loading...",
+    "platformSubtitle": "platform for conducting mock interviews"
+  },
+  "role": {
+    "selectRole": "Select Role",
+    "roleSubtitle": "What role do you want to take in the mock interview?",
+    "interviewer": "Interviewer",
+    "interviewerDesc": "Conduct interviews and evaluate candidates",
+    "candidate": "Candidate",
+    "candidateDesc": "Take interviews and receive feedback"
+  },
+  "profession": {
+    "selectProfession": "Select Profession",
+    "professionSubtitle": "Choose a specialization for the mock interview",
+    "frontend": "Frontend Developer",
+    "frontendDesc": "User interface development",
+    "backend": "Backend Developer",
+    "backendDesc": "Server-side development and APIs",
+    "fullstack": "Fullstack Developer",
+    "fullstackDesc": "Frontend and backend development",
+    "mobile": "Mobile Developer",
+    "mobileDesc": "Mobile application development",
+    "devops": "DevOps Engineer",
+    "devopsDesc": "Automation and infrastructure",
+    "qa": "QA Engineer",
+    "qaDesc": "Testing and quality assurance",
+    "designer": "UX/UI Designer",
+    "designerDesc": "User experience design",
+    "analyst": "Data Analyst",
+    "analystDesc": "Data analysis and reporting",
+    "scientist": "Data Scientist",
+    "scientistDesc": "Machine learning and research",
+    "pm": "Product Manager",
+    "pmDesc": "Product management"
+  },
+  "language": {
+    "selectLanguage": "Select Language",
+    "languageSubtitle": "What language will the interview be conducted in?"
+  },
+  "time": {
+    "selectTime": "Select Time",
+    "timeSubtitle": "When would you like to conduct the interview?",
+    "timezone": "Timezone",
+    "availableSlots": "Available Slots",
+    "selectedSlots": "Selected Slots",
+    "analysis": {
+      "title": "Load Analysis and Recommendations",
+      "online": "online",
+      "recommendedTime": "Recommended time:",
+      "untilMatch": "Until match:",
+      "load": "Load:",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "showAnalysis": "Show Analysis",
+      "interviewers": "Interviewers",
+      "candidates": "Candidates"
+    },
+    "slots": {
+      "availableSlotsInterviewers": "Available slots (interviewers)",
+      "availableSlotsCandidates": "Available slots (candidates)",
+      "interviewersShort": "int.",
+      "candidatesShort": "cand.",
+      "recommended": "Recommended"
+    },
+    "buttons": {
+      "back": "Back",
+      "continueAt": "Continue at",
+      "selectTime": "Select time"
+    },
+    "header": {
+      "title": "Select Time",
+      "subtitle": "Find a suitable interview slot",
+      "help": "Help",
+      "role": "Role"
+    },
+    "timeDisplay": {
+      "yourTime": "Your time",
+      "utcTime": "UTC time"
+    }
+  },
+  "interview": {
+    "interview": "Interview",
+    "chat": "Chat",
+    "questions": "Questions",
+    "codeEditor": "Code Editor",
+    "startVideo": "Start Video Call",
+    "endVideo": "End Call",
+    "endInterview": "End Interview",
+    "videoInactive": "Video call is not active",
+    "waitingForMatch": "Waiting for match...",
+    "enterMessage": "Enter message...",
+    "exit": "Exit"
+  },
+  "tags": {
+    "react": "React",
+    "vue": "Vue",
+    "angular": "Angular",
+    "typescript": "TypeScript",
+    "javascript": "JavaScript",
+    "nodejs": "Node.js",
+    "python": "Python",
+    "java": "Java",
+    "dotnet": ".NET",
+    "ios": "iOS",
+    "android": "Android",
+    "flutter": "Flutter",
+    "docker": "Docker",
+    "kubernetes": "Kubernetes",
+    "aws": "AWS",
+    "automation": "Automation",
+    "testing": "Testing",
+    "figma": "Figma",
+    "research": "Research",
+    "sql": "SQL",
+    "ml": "ML",
+    "ai": "AI",
+    "agile": "Agile",
+    "strategy": "Strategy"
+  },
+  "home": {
+    "aiTipTitle": "🚀 Enhance interviews with AI",
+    "aiTipDesc": "Configure OpenRouter API to get unique questions. Get your key at https://openrouter.ai/keys"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "clearAll": "Clear all",
+    "total": "Total",
+    "unread": "Unread",
+    "noNotifications": "No notifications",
+    "markAsRead": "Mark as read",
+    "joinInterview": "Join interview",
+    "delete": "Delete",
+    "loading": "Loading notifications...",
+    "error": "Error loading notifications"
+  }
+}

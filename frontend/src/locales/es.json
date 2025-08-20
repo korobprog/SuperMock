@@ -1,0 +1,145 @@
+{
+  "navigation": {
+    "next": "Siguiente",
+    "back": "Atrás",
+    "select": "Seleccionar",
+    "cancel": "Cancelar"
+  },
+  "common": {
+    "detectingLanguage": "Detectando idioma...",
+    "loading": "Cargando...",
+    "platformSubtitle": "plataforma para realizar entrevistas simuladas"
+  },
+  "role": {
+    "selectRole": "Seleccionar Rol",
+    "roleSubtitle": "¿Qué rol quieres tomar en la entrevista simulada?",
+    "interviewer": "Entrevistador",
+    "interviewerDesc": "Realizar entrevistas y evaluar candidatos",
+    "candidate": "Candidato",
+    "candidateDesc": "Participar en entrevistas y recibir comentarios"
+  },
+  "profession": {
+    "selectProfession": "Seleccionar Profesión",
+    "professionSubtitle": "Elige una especialización para la entrevista simulada",
+    "frontend": "Frontend Developer",
+    "frontendDesc": "Desarrollo de interfaces de usuario",
+    "backend": "Backend Developer",
+    "backendDesc": "Desarrollo del servidor y APIs",
+    "fullstack": "Fullstack Developer",
+    "fullstackDesc": "Desarrollo frontend y backend",
+    "mobile": "Mobile Developer",
+    "mobileDesc": "Desarrollo de aplicaciones móviles",
+    "devops": "DevOps Engineer",
+    "devopsDesc": "Automatización e infraestructura",
+    "qa": "QA Engineer",
+    "qaDesc": "Pruebas y control de calidad",
+    "designer": "UX/UI Designer",
+    "designerDesc": "Diseño de experiencia de usuario",
+    "analyst": "Data Analyst",
+    "analystDesc": "Análisis de datos e informes",
+    "scientist": "Data Scientist",
+    "scientistDesc": "Aprendizaje automático e investigación",
+    "pm": "Product Manager",
+    "pmDesc": "Gestión de productos"
+  },
+  "language": {
+    "selectLanguage": "Seleccionar Idioma",
+    "languageSubtitle": "¿En qué idioma se realizará la entrevista?"
+  },
+  "time": {
+    "selectTime": "Seleccionar Hora",
+    "timeSubtitle": "¿Cuándo te gustaría realizar la entrevista?",
+    "timezone": "Zona Horaria",
+    "availableSlots": "Horarios Disponibles",
+    "selectedSlots": "Horarios Seleccionados",
+    "analysis": {
+      "title": "Análisis de Carga y Recomendaciones",
+      "online": "en línea",
+      "recommendedTime": "Hora recomendada:",
+      "untilMatch": "Hasta el match:",
+      "load": "Carga:",
+      "expand": "Expandir",
+      "collapse": "Contraer",
+      "showAnalysis": "Mostrar análisis",
+      "interviewers": "Entrevistadores",
+      "candidates": "Candidatos"
+    },
+    "slots": {
+      "availableSlotsInterviewers": "Horarios disponibles (entrevistadores)",
+      "availableSlotsCandidates": "Horarios disponibles (candidatos)",
+      "interviewersShort": "ent.",
+      "candidatesShort": "cand.",
+      "recommended": "Recomendado"
+    },
+    "buttons": {
+      "back": "Atrás",
+      "continueAt": "Continuar a las",
+      "selectTime": "Seleccionar hora"
+    },
+    "header": {
+      "title": "Seleccionar Hora",
+      "subtitle": "Encuentra un horario adecuado para la entrevista",
+      "help": "Ayuda",
+      "role": "Rol"
+    },
+    "timeDisplay": {
+      "yourTime": "Tu hora",
+      "utcTime": "Hora UTC"
+    }
+  },
+  "interview": {
+    "interview": "Entrevista",
+    "chat": "Chat",
+    "questions": "Preguntas",
+    "codeEditor": "Editor de Código",
+    "startVideo": "Iniciar Videollamada",
+    "endVideo": "Finalizar Llamada",
+    "endInterview": "Finalizar Entrevista",
+    "videoInactive": "La videollamada no está activa",
+    "waitingForMatch": "Esperando emparejamiento...",
+    "enterMessage": "Escribir mensaje...",
+    "exit": "Salir"
+  },
+  "tags": {
+    "react": "React",
+    "vue": "Vue",
+    "angular": "Angular",
+    "typescript": "TypeScript",
+    "javascript": "JavaScript",
+    "nodejs": "Node.js",
+    "python": "Python",
+    "java": "Java",
+    "dotnet": ".NET",
+    "ios": "iOS",
+    "android": "Android",
+    "flutter": "Flutter",
+    "docker": "Docker",
+    "kubernetes": "Kubernetes",
+    "aws": "AWS",
+    "automation": "Automatización",
+    "testing": "Pruebas",
+    "figma": "Figma",
+    "research": "Investigación",
+    "sql": "SQL",
+    "ml": "ML",
+    "ai": "IA",
+    "agile": "Ágil",
+    "strategy": "Estrategia"
+  },
+  "home": {
+    "aiTipTitle": "🚀 Mejora las entrevistas con IA",
+    "aiTipDesc": "Configura la API de OpenRouter para obtener preguntas únicas. Obtén tu clave en https://openrouter.ai/keys"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "clearAll": "Limpiar todo",
+    "total": "Total",
+    "unread": "No leídas",
+    "noNotifications": "No hay notificaciones",
+    "markAsRead": "Marcar como leída",
+    "joinInterview": "Unirse a la entrevista",
+    "delete": "Eliminar",
+    "loading": "Cargando notificaciones...",
+    "error": "Error al cargar notificaciones"
+  }
+}

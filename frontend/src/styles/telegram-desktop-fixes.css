@@ -1,0 +1,304 @@
+/* Исправления для Telegram Mini Apps на десктопе */
+
+/* Основные исправления для кликабельности */
+.telegram-desktop-fix {
+  /* Принудительно включаем pointer events */
+  pointer-events: auto !important;
+
+  /* Увеличиваем область клика */
+  min-height: 44px;
+  min-width: 44px;
+
+  /* Убираем возможные конфликты с z-index */
+  position: relative;
+  z-index: 1;
+}
+
+/* Исправления для кнопок */
+button,
+[role='button'],
+.btn,
+.button {
+  /* Принудительно включаем pointer events */
+  pointer-events: auto !important;
+
+  /* Увеличиваем область клика для кнопок */
+  min-height: 44px;
+  min-width: 44px;
+
+  /* Убираем возможные конфликты */
+  position: relative;
+  z-index: 1;
+
+  /* Исправляем проблемы с touch events */
+  touch-action: manipulation;
+
+  /* Убираем возможные блокировки */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Исправления для интерактивных элементов */
+[onClick],
+[onclick],
+.clickable,
+.interactive {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Исправления для карточек с кликами */
+.card[onClick],
+.card[onclick],
+.card.clickable {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Исправления для иконок в кнопках */
+button svg,
+.btn svg,
+.button svg {
+  pointer-events: none;
+}
+
+/* Исправления для текста в кнопках */
+button span,
+.btn span,
+.button span {
+  pointer-events: none;
+}
+
+/* Исправления для навигации */
+nav a,
+.nav-link,
+[data-navigate] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Исправления для модальных окон */
+.modal,
+.dialog,
+.popup {
+  pointer-events: auto !important;
+  z-index: 1000;
+}
+
+/* Исправления для оверлеев */
+.overlay,
+.backdrop {
+  pointer-events: auto !important;
+}
+
+/* Исправления для форм */
+form input,
+form select,
+form textarea {
+  pointer-events: auto !important;
+}
+
+/* Исправления для переключателей */
+.switch,
+.toggle {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Исправления для селектов */
+.select,
+.dropdown {
+  pointer-events: auto !important;
+}
+
+/* Исправления для уведомлений */
+.notification-item,
+.notification {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Исправления для меню */
+.menu-item,
+.menu-option {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* Исправления для профиля */
+.profile-option,
+.settings-option {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* Исправления для главного меню */
+.main-menu-item {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* Исправления для видео интерфейса */
+.video-control {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Исправления для Telegram WebApp */
+.telegram-webapp {
+  pointer-events: auto !important;
+}
+
+/* Исправления для React Router ссылок */
+a[href],
+Link {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Исправления для кнопок с иконками */
+.icon-button {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Исправления для кнопок в хедере */
+.header-button {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Исправления для кнопок уведомлений */
+.notification-button {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Исправления для кнопок настроек */
+.settings-button {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Исправления для мобильных устройств */
+@media (max-width: 768px) {
+  button,
+  [role='button'],
+  .btn,
+  .button {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  .menu-item,
+  .menu-option,
+  .profile-option,
+  .settings-option,
+  .main-menu-item {
+    min-height: 48px;
+  }
+}
+
+/* Исправления для десктопной версии Telegram */
+@media (min-width: 769px) {
+  /* Увеличиваем область клика для десктопа */
+  button,
+  [role='button'],
+  .btn,
+  .button {
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  /* Добавляем hover эффекты для десктопа */
+  button:hover,
+  [role='button']:hover,
+  .btn:hover,
+  .button:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+}
+
+/* Исправления для темной темы */
+.dark button,
+.dark [role='button'],
+.dark .btn,
+.dark .button {
+  pointer-events: auto !important;
+}
+
+/* Исправления для анимаций */
+@keyframes buttonPress {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+button:active,
+[role='button']:active,
+.btn:active,
+.button:active {
+  animation: buttonPress 0.1s ease;
+}
+
+/* Исправления для фокуса */
+button:focus,
+[role='button']:focus,
+.btn:focus,
+.button:focus {
+  outline: 2px solid #0088cc;
+  outline-offset: 2px;
+}
+
+/* Исправления для disabled состояний */
+button:disabled,
+[role='button']:disabled,
+.btn:disabled,
+.button:disabled {
+  pointer-events: none !important;
+  opacity: 0.5;
+  cursor: not-allowed;
+}

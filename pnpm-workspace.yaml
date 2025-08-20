@@ -1,0 +1,7 @@
+packages:
+  - '.'
+
+ignoredBuiltDependencies:
+  - '@swc/core'
+  - better-sqlite3
+  - esbuild

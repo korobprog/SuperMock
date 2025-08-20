@@ -1,0 +1,106 @@
+# Динамическая конфигурация Traefik для SuperMock
+
+http:
+  routers:
+    # Frontend роутер
+    supermock-frontend:
+      rule: "Host(`supermock.localhost`)"
+      service: supermock-frontend-service
+      entryPoints:
+        - web
+      middlewares:
+        - security-headers
+        - proxy-headers
+      tls:
+        certResolver: letsencrypt
+    
+    # Backend API роутер
+    supermock-backend:
+      rule: "Host(`localhost`) && PathPrefix(`/api`)"
+      service: supermock-backend-service
+      entryPoints:
+        - web
+      middlewares:
+        - security-headers
+        - proxy-headers
+      tls:
+        certResolver: letsencrypt
+    
+    # WebSocket роутер для Socket.IO
+    supermock-backend-ws:
+      rule: "Host(`localhost`) && PathPrefix(`/socket.io`)"
+      service: supermock-backend-service
+      entryPoints:
+        - web
+      middlewares:
+        - websocket-headers
+        - proxy-headers
+      tls:
+        certResolver: letsencrypt
+    
+    # Traefik Dashboard
+    traefik-dashboard:
+      rule: "Host(`traefik.localhost`)"
+      service: api@internal
+      entryPoints:
+        - web
+      middlewares:
+        - security-headers
+
+  services:
+    # Frontend сервис
+    supermock-frontend-service:
+      loadBalancer:
+        servers:
+          - url: "http://frontend:8080"
+        healthCheck:
+          path: "/"
+          interval: "30s"
+          timeout: "10s"
+    
+    # Backend сервис
+    supermock-backend-service:
+      loadBalancer:
+        servers:
+          - url: "http://backend:3000"
+        healthCheck:
+          path: "/api/health"
+          interval: "30s"
+          timeout: "10s"
+
+  middlewares:
+    # Редирект на HTTPS
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    
+    # Заголовки безопасности
+    security-headers:
+      headers:
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+        customResponseHeaders:
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex"
+          Server: ""
+    
+    # Заголовки для прокси
+    proxy-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+          X-Real-IP: "${remote_addr}"
+          X-Forwarded-For: "${proxy_add_x_forwarded_for}"
+          X-Forwarded-Host: "${http_host}"
+    
+    # WebSocket поддержка
+    websocket-headers:
+      headers:
+        customRequestHeaders:
+          Upgrade: "websocket"
+          Connection: "upgrade"

@@ -1,0 +1,188 @@
+services:
+  # База данных PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: supermock-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-supermock}
+      POSTGRES_USER: ${POSTGRES_USER:-supermock}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - supermock-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-supermock}']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ВТОРИЧНАЯ база данных PostgreSQL (упрощенная конфигурация)
+  postgres_secondary:
+    image: postgres:16-alpine
+    container_name: supermock-postgres-secondary
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_SECONDARY:-supermock_secondary}
+      POSTGRES_USER: ${POSTGRES_USER_SECONDARY:-supermock2}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_SECONDARY}
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_secondary_data:/var/lib/postgresql/data
+    networks:
+      - supermock-network
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER_SECONDARY:-supermock2}']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis для кэширования и сессий
+  redis:
+    image: redis:7-alpine
+    container_name: supermock-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - supermock-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: Super Mock-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_SECONDARY: ${DATABASE_URL_SECONDARY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      FRONTEND_URL: ${FRONTEND_URL}
+      BACKEND_URL: ${BACKEND_URL}
+      REDIS_URL: redis://redis:6379
+      SESSION_SECRET: ${SESSION_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      WORKERS: ${WORKERS:-2}
+      REQUEST_TIMEOUT: ${REQUEST_TIMEOUT:-30000}
+      SOCKET_TIMEOUT: ${SOCKET_TIMEOUT:-60000}
+    volumes:
+      - ./backend/prisma:/app/prisma
+    networks:
+      - supermock-network
+      - traefik-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://localhost:3000/api/health',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.Super Mock-backend.rule=Host(`api.supermock.ru`) && (PathPrefix(`/api`) || PathPrefix(`/socket.io`))
+      - traefik.http.routers.Super Mock-backend.entrypoints=websecure
+      - traefik.http.routers.Super Mock-backend.tls.certresolver=letsencrypt
+      - traefik.http.services.Super Mock-backend.loadbalancer.server.port=3000
+      - traefik.http.routers.Super Mock-backend-http.rule=Host(`api.supermock.ru`) && (PathPrefix(`/api`) || PathPrefix(`/socket.io`))
+      - traefik.http.routers.Super Mock-backend-http.entrypoints=web
+      - traefik.http.routers.Super Mock-backend-http.middlewares=redirect-to-https
+
+  # Frontend (React/Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_JITSI_URL: ${VITE_JITSI_URL}
+        VITE_TELEGRAM_BOT_NAME: ${VITE_TELEGRAM_BOT_NAME}
+        VITE_TELEGRAM_BOT_ID: ${VITE_TELEGRAM_BOT_ID}
+        VITE_STUN_URLS: ${VITE_STUN_URLS}
+        VITE_TURN_URL: ${VITE_TURN_URL}
+        VITE_TURN_USERNAME: ${VITE_TURN_USERNAME}
+        VITE_TURN_PASSWORD: ${VITE_TURN_PASSWORD}
+    container_name: Super Mock-frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_TELEGRAM_BOT_NAME: ${VITE_TELEGRAM_BOT_NAME}
+      VITE_TELEGRAM_BOT_ID: ${VITE_TELEGRAM_BOT_ID}
+      VITE_JITSI_URL: ${VITE_JITSI_URL}
+      VITE_STUN_URLS: ${VITE_STUN_URLS}
+      VITE_TURN_URL: ${VITE_TURN_URL}
+      VITE_TURN_USERNAME: ${VITE_TURN_USERNAME}
+      VITE_TURN_PASSWORD: ${VITE_TURN_PASSWORD}
+    networks:
+      - supermock-network
+      - traefik-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.Super Mock-frontend.rule=Host(`supermock.ru`)
+      - traefik.http.routers.Super Mock-frontend.entrypoints=websecure
+      - traefik.http.routers.Super Mock-frontend.tls.certresolver=letsencrypt
+      - traefik.http.services.Super Mock-frontend.loadbalancer.server.port=8080
+      - traefik.http.routers.Super Mock-frontend-http.rule=Host(`supermock.ru`)
+      - traefik.http.routers.Super Mock-frontend-http.entrypoints=web
+      - traefik.http.routers.Super Mock-frontend-http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
+
+volumes:
+  postgres_data:
+    driver: local
+  postgres_secondary_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  supermock-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+  traefik-network:
+    external: true

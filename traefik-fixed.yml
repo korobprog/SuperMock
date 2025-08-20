@@ -1,0 +1,206 @@
+# Исправленная конфигурация Traefik для SuperMock
+# Решает проблемы с подключением и заголовками
+
+http:
+  routers:
+    # Основной роутер для Dokploy
+    dokploy-router-app:
+      rule: Host(`dokploy.docker.localhost`) && PathPrefix(`/`)
+      service: dokploy-service-app
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+    
+    # Frontend роутеры
+    supermock-frontend:
+      rule: Host(`supermock.ru`)
+      service: supermock-frontend-service
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+        - frontend-headers
+    
+    supermock-frontend-secure:
+      rule: Host(`supermock.ru`)
+      service: supermock-frontend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - frontend-headers
+    
+    # Backend роутеры
+    supermock-backend:
+      rule: Host(`api.supermock.ru`)
+      service: supermock-backend-service
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+        - backend-headers
+    
+    supermock-backend-secure:
+      rule: Host(`api.supermock.ru`)
+      service: supermock-backend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - backend-headers
+    
+    # WebSocket роутер для Socket.IO
+    supermock-backend-ws:
+      rule: Host(`api.supermock.ru`) && PathPrefix(`/socket.io`)
+      service: supermock-backend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - backend-headers
+        - websocket-headers
+    
+    # Тестовые роутеры (если нужны)
+    supermock-frontend-test:
+      rule: Host(`test.supermock.ru`)
+      service: supermock-frontend-test-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - frontend-headers
+      priority: 100
+    
+    supermock-backend-test:
+      rule: Host(`test-api.supermock.ru`)
+      service: supermock-backend-test-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - backend-headers
+      priority: 100
+
+  services:
+    # Основной сервис Dokploy
+    dokploy-service-app:
+      loadBalancer:
+        servers:
+          - url: http://dokploy:3000
+        passHostHeader: true
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 10s
+    
+    # Продакшн сервисы
+    supermock-frontend-service:
+      loadBalancer:
+        servers:
+          - url: http://supermock-supermock-full-stack-yrvopu-frontend-1:8080
+        passHostHeader: true
+        healthCheck:
+          path: /
+          interval: 30s
+          timeout: 10s
+    
+    supermock-backend-service:
+      loadBalancer:
+        servers:
+          - url: http://supermock-supermock-full-stack-yrvopu-backend-1:3000
+        passHostHeader: true
+        healthCheck:
+          path: /api/health
+          interval: 30s
+          timeout: 10s
+    
+    # Тестовые сервисы (если нужны)
+    supermock-frontend-test-service:
+      loadBalancer:
+        servers:
+          - url: http://supermock-supermock-full-stack-yrvopu-frontend-1:8080
+        passHostHeader: true
+    
+    supermock-backend-test-service:
+      loadBalancer:
+        servers:
+          - url: http://supermock-supermock-full-stack-yrvopu-backend-1:3000
+        passHostHeader: true
+
+  middlewares:
+    # Редирект на HTTPS
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    
+    # Заголовки для frontend
+    frontend-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+          X-Real-IP: "${remote_addr}"
+          X-Forwarded-For: "${proxy_add_x_forwarded_for}"
+          X-Forwarded-Host: "${http_host}"
+        customResponseHeaders:
+          X-Frame-Options: "SAMEORIGIN"
+          X-Content-Type-Options: "nosniff"
+          X-XSS-Protection: "1; mode=block"
+          Referrer-Policy: "strict-origin-when-cross-origin"
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+    
+    # Заголовки для backend
+    backend-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+          X-Real-IP: "${remote_addr}"
+          X-Forwarded-For: "${proxy_add_x_forwarded_for}"
+          X-Forwarded-Host: "${http_host}"
+        customResponseHeaders:
+          X-Frame-Options: "DENY"
+          X-Content-Type-Options: "nosniff"
+          X-XSS-Protection: "1; mode=block"
+          Referrer-Policy: "strict-origin-when-cross-origin"
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+    
+    # Заголовки для WebSocket
+    websocket-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+          X-Real-IP: "${remote_addr}"
+          X-Forwarded-For: "${proxy_add_x_forwarded_for}"
+          X-Forwarded-Host: "${http_host}"
+        customResponseHeaders:
+          Upgrade: "websocket"
+          Connection: "upgrade"
+
+# Настройки TLS
+tls:
+  options:
+    default:
+      minVersion: "VersionTLS12"
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
