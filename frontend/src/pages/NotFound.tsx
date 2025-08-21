@@ -17,7 +17,7 @@ const NotFound = () => {
       <div className="text-center">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size="lg" />
+          <Logo size="lg" clickable={true} />
         </div>
 
         <h1 className="text-4xl font-bold mb-4">404</h1>

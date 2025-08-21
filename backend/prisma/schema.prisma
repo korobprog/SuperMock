@@ -135,6 +135,9 @@ model Notification {
   status     String    @default("active") // active, info, critical, read
   priority   Int       @default(0)
   actionData String?   @map("action_data")
+  titleKey   String?   @map("title_key") // Ключ для перевода заголовка
+  messageKey String?   @map("message_key") // Ключ для перевода сообщения
+  messageData String?  @map("message_data") // JSON данные для интерполяции
   createdAt  DateTime  @default(now()) @map("created_at")
   readAt     DateTime? @map("read_at")
   expiresAt  DateTime? @map("expires_at")

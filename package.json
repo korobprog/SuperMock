@@ -28,7 +28,7 @@
     "telegram:setup": "node scripts/setup-telegram-webhook.js",
     "telegram:test": "node scripts/test-telegram-bot.js",
     "telegram:status": "curl -s https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getMe | jq .",
-    "deploy-interactive": "powershell -ExecutionPolicy Bypass -File scripts/deploy/deploy-interactive.ps1",
+    "deploy-interactive": "sh scripts/deploy/deploy-interactive.sh",
     "deploy-frontend": "sh scripts/deploy/deploy-frontend.sh",
     "deploy-backend": "sh scripts/deploy/deploy-backend.sh"
   },

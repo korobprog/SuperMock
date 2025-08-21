@@ -134,7 +134,7 @@ export function ToolSelection() {
       <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Загрузка...</p>
+          <p className="text-muted-foreground">{t('tools.loading')}</p>
         </div>
       </div>
     );
@@ -148,7 +148,7 @@ export function ToolSelection() {
       <div className="max-w-md mx-auto pt-16 sm:pt-20">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size="lg" />
+          <Logo size="lg" clickable={true} />
         </div>
 
         {/* Header */}
@@ -163,7 +163,7 @@ export function ToolSelection() {
           </Button>
           <div className="flex-1 text-center">
             <h1 className="text-xl font-bold text-foreground">
-              Выберите инструменты
+              {t('tools.selectTools')}
             </h1>
           </div>
           {selectedTools.length > 0 && (
@@ -173,7 +173,7 @@ export function ToolSelection() {
               onClick={() => setSelectedTools([])}
               className="ml-2 p-2 text-muted-foreground hover:text-foreground"
             >
-              Сбросить
+              {t('tools.reset')}
             </Button>
           )}
         </div>
@@ -181,15 +181,15 @@ export function ToolSelection() {
         {/* Profession Info */}
         <div className="mb-6 p-4 bg-muted/50 rounded-lg">
           <h2 className="font-semibold text-foreground mb-1">
-            {professionData.title}
+            {t(professionData.titleKey)}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {professionData.description}
+            {t(professionData.descriptionKey)}
           </p>
         </div>
 
         <p className="text-center text-muted-foreground mb-6">
-          Выберите минимум 2 инструмента, которые вы используете в работе
+          {t('tools.subtitle')}
         </p>
 
         {/* Popular Combinations */}
@@ -213,7 +213,7 @@ export function ToolSelection() {
               onClick={() => setSelectedTools([])}
               className="text-muted-foreground hover:text-foreground"
             >
-              Сбросить выбор ({selectedTools.length})
+              {t('tools.resetSelection')} ({selectedTools.length})
             </Button>
           </div>
         )}
@@ -235,13 +235,13 @@ export function ToolSelection() {
         {!isSelectionValid && selectedTools.length > 0 && (
           <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
             <p className="text-sm text-destructive">
-              Выберите минимум 2 инструмента для продолжения
+              {t('tools.minSelection')}
             </p>
           </div>
         )}
 
         {/* Next Button */}
-        <div className="sticky bottom-4">
+        <div className="sticky bottom-4 z-[60]">
           <Button
             onClick={handleNext}
             disabled={!isSelectionValid || isSaving}
@@ -250,7 +250,7 @@ export function ToolSelection() {
             {isSaving ? (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Сохранение...
+                {t('tools.saving')}
               </div>
             ) : (
               <div className="flex items-center gap-2">

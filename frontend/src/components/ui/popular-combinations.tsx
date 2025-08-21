@@ -3,6 +3,7 @@ import { Badge } from './badge';
 import { Button } from './button';
 import { Sparkles } from 'lucide-react';
 import { getToolById } from '@/lib/professions-data';
+import { useAppTranslation } from '@/lib/i18n';
 
 interface PopularCombinationsProps {
   combinations: string[][];
@@ -19,6 +20,7 @@ export function PopularCombinations({
   maxSelection = 7,
   className = '',
 }: PopularCombinationsProps) {
+  const { t } = useAppTranslation();
   if (combinations.length === 0) {
     return null;
   }
@@ -41,7 +43,7 @@ export function PopularCombinations({
     <div className={`space-y-4 ${className}`}>
       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
         <Sparkles className="h-4 w-4" />
-        Популярные комбинации
+        {t('tools.popularCombinations')}
       </div>
 
       <div className="space-y-3">
@@ -92,7 +94,7 @@ export function PopularCombinations({
                 <div className="flex items-center gap-2">
                   {overlap > 0 && (
                     <span className="text-xs text-muted-foreground">
-                      {overlap}/{combination.length} выбрано
+                      {t('tools.selectedOverlap', { overlap, total: combination.length })}
                     </span>
                   )}
 
@@ -103,14 +105,14 @@ export function PopularCombinations({
                     disabled={!canAdd || isFullySelected}
                     className="text-xs h-7 px-2"
                   >
-                    {isFullySelected ? 'Выбрано' : 'Выбрать'}
+                    {isFullySelected ? t('tools.selected') : t('tools.select')}
                   </Button>
                 </div>
               </div>
 
               {!canAdd && !isFullySelected && (
                 <p className="text-xs text-destructive">
-                  Достигнут лимит выбора инструментов
+                  {t('tools.limitReached')}
                 </p>
               )}
             </div>

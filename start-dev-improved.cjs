@@ -153,7 +153,7 @@ function startClient() {
       env: {
         ...process.env,
         NODE_ENV: 'development',
-        VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:3000',
+        VITE_API_URL: 'http://localhost:3000',
         VITE_TELEGRAM_BOT_NAME:
           process.env.VITE_TELEGRAM_BOT_NAME || 'SuperMock_bot',
         VITE_TELEGRAM_BOT_ID: process.env.VITE_TELEGRAM_BOT_ID || '8464088869',

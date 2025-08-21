@@ -51,18 +51,56 @@ const server = http.createServer(app);
 
 // Configure CORS for production
 const corsOptions = {
-  origin: [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173', // Добавляем поддержку 127.0.0.1
-    'http://localhost:8081',
-    'http://localhost:3000',
-    'http://localhost:3001',
+  origin: function (origin, callback) {
+    // Разрешаем запросы без origin (например, от мобильных приложений)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'http://localhost:8081',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://supermock.ru',
+      'https://www.supermock.ru',
+      'http://supermock.ru',
+      'http://www.supermock.ru',
+    ];
+    
     // Добавляем production URLs если они есть
-    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
-    'https://supermock.ru',
-  ],
+    if (process.env.FRONTEND_URL) {
+      allowedOrigins.push(process.env.FRONTEND_URL);
+    }
+    
+    // Временно разрешаем все источники для отладки
+    if (process.env.NODE_ENV === 'development' || process.env.ENABLE_DEV_ENDPOINTS === '1') {
+      allowedOrigins.push('*');
+    }
+    
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('🚫 CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'X-Forwarded-For',
+    'X-Real-IP',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
+  exposedHeaders: ['Content-Length', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 console.log('🔧 CORS Debug:', {
@@ -73,10 +111,37 @@ console.log('🔧 CORS Debug:', {
 });
 
 const io = new SocketIOServer(server, {
-  cors: corsOptions,
+  cors: {
+    ...corsOptions,
+    origin: '*', // Временно разрешаем все источники для отладки WebSocket
+  },
+  transports: ['polling', 'websocket'],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 app.use(cors(corsOptions));
+
+// Дополнительный middleware для CORS preflight запросов
+app.use((req, res, next) => {
+  // Обработка preflight запросов
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Forwarded-For, X-Real-IP, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // 24 часа
+    res.status(204).end();
+    return;
+  }
+  
+  // Добавляем CORS заголовки для всех ответов
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  next();
+});
 
 // Добавляем middleware для логирования CORS запросов
 app.use((req, res, next) => {
@@ -333,7 +398,16 @@ async function attemptQueueMatch({ slotUtc, profession, language }) {
       userId: candidate.userId,
       type: 'matching',
       title,
+      titleKey: 'notifications.matchFoundTitle',
       message: `Время: ${formattedSlotTime}\nВаша роль: Кандидат\nКомната: ${jitsiRoom}\nСсылка: ${waitingRoomUrl}${candidateToolsText}`,
+      messageKey: 'notifications.messages.matchFound',
+      messageData: JSON.stringify({
+        slotTime: formattedSlotTime,
+        role: 'Кандидат',
+        roomName: jitsiRoom,
+        link: waitingRoomUrl,
+        tools: candidateTools.map((t) => t.toolName).join(', ')
+      }),
       status: 'active',
       priority: 1,
       actionData,
@@ -342,7 +416,16 @@ async function attemptQueueMatch({ slotUtc, profession, language }) {
       userId: interviewer.userId,
       type: 'matching',
       title,
+      titleKey: 'notifications.matchFoundTitle',
       message: `Время: ${formattedSlotTime}\nВаша роль: Интервьюер\nКомната: ${jitsiRoom}\nСсылка: ${waitingRoomUrl}${interviewerToolsText}`,
+      messageKey: 'notifications.messages.matchFound',
+      messageData: JSON.stringify({
+        slotTime: formattedSlotTime,
+        role: 'Интервьюер',
+        roomName: jitsiRoom,
+        link: waitingRoomUrl,
+        tools: interviewerTools.map((t) => t.toolName).join(', ')
+      }),
       status: 'active',
       priority: 1,
       actionData,
@@ -1262,7 +1345,14 @@ app.post('/api/slots/join', async (req, res) => {
         userId: String(userId),
         type: 'queue',
         title: 'Добавлены в очередь ожидания',
+        titleKey: 'notifications.addedToQueueTitle',
         message: `Слот: ${formattedSlotTime}\nРоль: ${role}${toolsMessage}`,
+        messageKey: 'notifications.messages.addedToQueue',
+        messageData: JSON.stringify({
+          slotTime: formattedSlotTime,
+          role: role,
+          tools: userTools.join(', ')
+        }),
         status: 'info',
         priority: 0,
       },
@@ -1622,7 +1712,13 @@ async function expireOldQueues() {
           userId: q.userId,
           type: 'matching',
           title: 'Время истекло',
+          titleKey: 'notifications.slotExpiredTitle',
           message: `Не удалось найти пару для слота ${formattedSlotTime}. Выберите другое время.${toolsText}`,
+          messageKey: 'notifications.messages.slotExpired',
+          messageData: JSON.stringify({
+            slotTime: formattedSlotTime,
+            tools: userTools.map((t) => t.toolName).join(', ')
+          }),
           status: 'active',
           priority: 0,
         },
@@ -2267,6 +2363,43 @@ app.get('/api/debug/user/:userId', async (req, res) => {
   }
 });
 
+// User data check endpoint
+app.get('/api/user-data-check/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: String(userId) },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if user has profession preferences
+    const preferences = await prisma.preference.findFirst({
+      where: { userId: String(userId) },
+    });
+
+    // Check if user has tools
+    const tools = await prisma.userTool.findMany({
+      where: { userId: String(userId) },
+      select: { toolName: true },
+    });
+
+    res.json({
+      hasProfession: !!preferences?.profession,
+      hasTools: tools.length > 0,
+      profession: preferences?.profession || null,
+      tools: tools.map(t => t.toolName) || [],
+    });
+  } catch (error) {
+    console.error('Error checking user data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Endpoint для получения данных пользователя
 app.get('/api/user/:userId', async (req, res) => {
   const { userId } = req.params;
@@ -2292,6 +2425,44 @@ app.get('/api/user/:userId', async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error('Error getting user data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// TURN server credentials endpoint
+app.get('/api/turn-credentials', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    const username = String(userId);
+    const secret = process.env.TURN_AUTH_SECRET || 'supermock_turn_secret_2024_very_long_and_secure_key_for_webrtc';
+    const realm = process.env.TURN_REALM || 'supermock.ru';
+    
+    // Generate temporary credentials (valid for 24 hours)
+    const timestamp = Math.floor(Date.now() / 1000) + 24 * 3600; // 24 hours from now
+    const usernameWithTimestamp = `${timestamp}:${username}`;
+    
+    // Create HMAC for password
+    const crypto = require('crypto');
+    const password = crypto
+      .createHmac('sha1', secret)
+      .update(usernameWithTimestamp)
+      .digest('base64');
+
+    res.json({
+      username: usernameWithTimestamp,
+      password: password,
+      urls: [
+        `turn:${process.env.TURN_SERVER_HOST || '217.198.6.238'}:3478`,
+        `turns:${process.env.TURN_SERVER_HOST || '217.198.6.238'}:5349`
+      ],
+      ttl: 86400 // 24 hours in seconds
+    });
+  } catch (error) {
+    console.error('Error generating TURN credentials:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

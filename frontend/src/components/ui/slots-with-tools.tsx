@@ -12,6 +12,7 @@ import {
 import { Filter, Target, Clock, Users, Star } from 'lucide-react';
 import { apiGetSlotsWithTools } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
+import { useAppTranslation } from '@/lib/i18n';
 import { getToolById } from '@/lib/professions-data';
 import { useAppTranslation } from '@/lib/i18n';
 import { useHapticFeedback } from '@/lib/haptic-feedback';
@@ -46,6 +47,7 @@ export function SlotsWithTools({
   defaultMatchStrictness = 'any',
   showFilterControls = true,
 }: SlotsWithToolsProps) {
+  const { t } = useAppTranslation();
   const [slots, setSlots] = useState<SlotWithTools[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -168,7 +170,7 @@ export function SlotsWithTools({
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                Ваши инструменты: {selectedTools.length}
+                {t('tools.yourTools')}: {selectedTools.length}
               </span>
             </div>
           )}
@@ -184,7 +186,7 @@ export function SlotsWithTools({
           </h3>
           <p className="text-sm text-muted-foreground">
             {selectedTools.length > 0
-              ? 'Попробуйте изменить фильтр совпадений или выбранные инструменты'
+              ? t('tools.tryChangeFilter')
               : 'Попробуйте выбрать другие параметры поиска'}
           </p>
         </div>
@@ -225,7 +227,7 @@ export function SlotsWithTools({
                 {slot.matchedTools && slot.matchedTools.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">
-                      Совпадающие инструменты:
+                      {t('tools.matchingTools')}:
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {slot.matchedTools.map((toolId) => {

@@ -19,6 +19,7 @@ import {
   Briefcase,
   Globe,
 } from 'lucide-react';
+import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
 
 interface Session {
   id: string;
@@ -67,7 +68,7 @@ export function History() {
   useEffect(() => {
     const fetchHistory = async () => {
       if (!userId) {
-        setError('User ID not found');
+        setError(t('history.userIdNotFound'));
         setIsLoading(false);
         return;
       }
@@ -76,7 +77,7 @@ export function History() {
         const data = await apiHistory(userId);
         setHistoryData(data);
       } catch (err) {
-        setError('Failed to load history');
+        setError(t('history.failedToLoadHistory'));
         console.error('Error fetching history:', err);
       } finally {
         setIsLoading(false);
@@ -90,9 +91,13 @@ export function History() {
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) {
-        return 'Неизвестная дата';
+        return t('history.unknownDate');
       }
-      return date.toLocaleDateString('ru-RU', {
+      
+      // Get locale from current language setting
+      const locale = t('notifications.dateLocale') || 'ru-RU';
+      
+      return date.toLocaleDateString(locale, {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -101,7 +106,7 @@ export function History() {
       });
     } catch (error) {
       console.error('Error formatting date:', dateStr, error);
-      return 'Неизвестная дата';
+      return t('history.unknownDate');
     }
   };
 
@@ -160,7 +165,7 @@ export function History() {
     setSelectedSession(session);
     setTargetUser({
       id: targetUserId,
-      name: isInterviewer ? 'Кандидат' : 'Интервьюер',
+      name: isInterviewer ? t('history.candidateShort') : t('history.interviewerShort'),
     });
     setShowFeedbackModal(true);
   };
@@ -223,11 +228,11 @@ export function History() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4 pb-24 md:pb-4">
       <div className="max-w-4xl mx-auto pt-16 sm:pt-20">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size="lg" />
+          <Logo size="lg" clickable={true} />
         </div>
 
         {/* Header */}
@@ -289,14 +294,14 @@ export function History() {
                             {session.language.toUpperCase()}
                           </div>
                         </div>
-                        {/* Инструменты пользователя */}
+                        {/* {t('tools.userTools')} */}
                         {(() => {
                           const userTools = getUserTools(session);
                           if (userTools.length > 0) {
                             return (
                               <div className="flex items-center gap-2 mt-2">
                                 <span className="text-xs text-muted-foreground">
-                                  Ваши инструменты:
+                                  {t('tools.yourTools')}:
                                 </span>
                                 <div className="flex flex-wrap gap-1">
                                   {userTools.map((tool, index) => (
@@ -320,7 +325,7 @@ export function History() {
                           variant="secondary"
                           className={getStatusColor(session.status)}
                         >
-                          {session.status}
+                          {t(`history.status.${session.status}`) || session.status}
                         </Badge>
                         <Badge variant="outline">
                           <User className="h-3 w-3 mr-1" />
@@ -420,6 +425,9 @@ export function History() {
         targetUser={targetUser || undefined}
         isLoading={isSubmittingFeedback}
       />
+
+      {/* Mobile Bottom Menu */}
+      <MobileBottomMenu />
     </div>
   );
 }

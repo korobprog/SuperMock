@@ -3,7 +3,8 @@ import { Badge } from './badge';
 import { Button } from './button';
 import { Input } from './input';
 import { Search, X, Check } from 'lucide-react';
-import { Tool, TOOL_CATEGORIES } from '@/lib/professions-data';
+import { Tool } from '@/lib/professions-data';
+import { useAppTranslation } from '@/lib/i18n';
 
 interface ToolSelectorProps {
   tools: Tool[];
@@ -26,6 +27,7 @@ export function ToolSelector({
   showCategories = true,
   className = '',
 }: ToolSelectorProps) {
+  const { t } = useAppTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -88,7 +90,7 @@ export function ToolSelector({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Поиск инструментов..."
+            placeholder={t('tools.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -114,16 +116,16 @@ export function ToolSelector({
             size="sm"
             onClick={() => setSelectedCategory(null)}
           >
-            Все
+            {t('tools.allCategories')}
           </Button>
-          {Object.entries(TOOL_CATEGORIES).map(([key, label]) => (
+          {['frameworks', 'languages', 'databases', 'tools', 'platforms', 'design', 'testing', 'devops'].map((key) => (
             <Button
               key={key}
               variant={selectedCategory === key ? 'default' : 'outline'}
               size="sm"
               onClick={() => setSelectedCategory(key)}
             >
-              {label}
+              {t(`tools.categories.${key}`)}
             </Button>
           ))}
         </div>
@@ -132,11 +134,11 @@ export function ToolSelector({
       {/* Счетчик выбранных */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-muted-foreground">
-          Выбрано: {selectedTools.length} из {maxSelection}
+          {t('tools.selectedCount', { count: selectedTools.length, max: maxSelection })}
         </span>
         {!isSelectionValid && (
           <span className="text-destructive">
-            Минимум {minSelection} инструмента
+            {t('tools.minimumTools', { count: minSelection })}
           </span>
         )}
       </div>
@@ -148,7 +150,7 @@ export function ToolSelector({
           {Object.entries(toolsByCategory).map(([category, categoryTools]) => (
             <div key={category} className="space-y-3">
               <h3 className="text-sm font-medium text-muted-foreground">
-                {TOOL_CATEGORIES[category as keyof typeof TOOL_CATEGORIES]}
+                {t(`tools.categories.${category}`)}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {categoryTools.map((tool) => (
@@ -183,8 +185,8 @@ export function ToolSelector({
       {filteredTools.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
           {searchQuery
-            ? 'Инструменты не найдены'
-            : 'Нет доступных инструментов'}
+            ? t('tools.noToolsFound')
+            : t('tools.noToolsAvailable')}
         </div>
       )}
     </div>

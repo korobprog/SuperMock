@@ -300,7 +300,7 @@ const VideoLinkManager: FC<VideoLinkManagerProps> = ({
     <div className="bg-white rounded-lg shadow-md p-4 mb-4">
       <h3 className="text-lg font-semibold mb-3">Видеосвязь</h3>
 
-      {/* Форма для ввода ссылки (только для интервьюера) */}
+      {/* Форма для ввода ссылки (только для int.) */}
       {isInterviewer && (
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">

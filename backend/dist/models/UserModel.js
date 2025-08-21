@@ -3,64 +3,101 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MongoUser = exports.InMemoryUser = exports.User = void 0;
+exports.PrismaUser = exports.InMemoryUser = exports.User = void 0;
 const InMemoryUser_1 = require("./InMemoryUser");
 Object.defineProperty(exports, "InMemoryUser", { enumerable: true, get: function () { return InMemoryUser_1.InMemoryUser; } });
-const mongoose_1 = __importDefault(require("mongoose"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-// Схема пользователя для MongoDB
-const userSchema = new mongoose_1.default.Schema({
-    id: { type: String, required: true, unique: true, index: true },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        lowercase: true,
-    },
-    password: {
-        type: String,
-        required: true,
-    },
-    roleHistory: {
-        type: Array,
-        default: [],
-    },
-    feedbackStatus: {
-        type: String,
-        enum: ['none', 'pending', 'completed'],
-        default: 'none',
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
-    googleId: String,
-    googleAccessToken: String,
-    googleRefreshToken: String,
-});
-// Метод для хеширования пароля перед сохранением
-userSchema.pre('save', async function (next) {
-    // Хешируем пароль только если он был изменен или это новый пользователь
-    if (!this.isModified('password'))
-        return next();
-    try {
-        // Генерируем соль и хешируем пароль
-        const salt = await bcryptjs_1.default.genSalt(10);
-        this.password = await bcryptjs_1.default.hash(this.password, salt);
-        next();
+const client_1 = require("@prisma/client");
+// Создаем экземпляр Prisma Client
+const prisma = new client_1.PrismaClient();
+// Класс PrismaUser для работы с Prisma
+class PrismaUser {
+    constructor(userData) {
+        this.id = userData.id;
+        this.email = userData.email;
+        this.password = userData.password;
+        this.roleHistory = userData.roleHistory || [];
+        this.feedbackStatus = userData.feedbackStatus || 'none';
+        this.createdAt = userData.createdAt || new Date();
+        this.googleId = userData.googleId;
+        this.googleAccessToken = userData.googleAccessToken;
+        this.googleRefreshToken = userData.googleRefreshToken;
     }
-    catch (error) {
-        next(error);
+    // Метод для сравнения паролей
+    async comparePassword(candidatePassword) {
+        return bcryptjs_1.default.compare(candidatePassword, this.password);
     }
-});
-// Метод для сравнения паролей
-userSchema.methods.comparePassword = async function (candidatePassword) {
-    return bcryptjs_1.default.compare(candidatePassword, this.password);
-};
-// Создаем модель MongoDB
-const MongoUser = mongoose_1.default.model('User', userSchema);
-exports.MongoUser = MongoUser;
+    // Метод для сохранения пользователя
+    async save() {
+        // Хешируем пароль, если он был изменен
+        const existingUser = await prisma.user.findUnique({
+            where: { id: this.id },
+        });
+        // Если пользователь новый или пароль изменился, хешируем его
+        if (!existingUser || existingUser.password !== this.password) {
+            const salt = await bcryptjs_1.default.genSalt(10);
+            this.password = await bcryptjs_1.default.hash(this.password, salt);
+        }
+        // Сохраняем пользователя в базу данных
+        const savedUser = await prisma.user.upsert({
+            where: { id: this.id },
+            update: {
+                email: this.email,
+                password: this.password,
+                roleHistory: this.roleHistory,
+                feedbackStatus: this.feedbackStatus,
+                googleId: this.googleId,
+                googleAccessToken: this.googleAccessToken,
+                googleRefreshToken: this.googleRefreshToken,
+            },
+            create: {
+                id: this.id,
+                email: this.email,
+                password: this.password,
+                roleHistory: this.roleHistory,
+                feedbackStatus: this.feedbackStatus,
+                createdAt: this.createdAt,
+                googleId: this.googleId,
+                googleAccessToken: this.googleAccessToken,
+                googleRefreshToken: this.googleRefreshToken,
+            },
+        });
+        return new PrismaUser(savedUser);
+    }
+    // Статические методы для работы с моделью
+    // Поиск пользователя по ID
+    static async findById(id) {
+        const user = await prisma.user.findUnique({
+            where: { id },
+        });
+        return user ? new PrismaUser(user) : null;
+    }
+    // Поиск пользователя по email
+    static async findOne(filter) {
+        const user = await prisma.user.findUnique({
+            where: { email: filter.email },
+        });
+        return user ? new PrismaUser(user) : null;
+    }
+    // Поиск пользователя по googleId
+    static async findByGoogleId(googleId) {
+        const user = await prisma.user.findFirst({
+            where: { googleId },
+        });
+        return user ? new PrismaUser(user) : null;
+    }
+    // Создание нового пользователя
+    static async create(userData) {
+        // Генерируем ID, если он не предоставлен
+        if (!userData.id) {
+            const { v4: uuidv4 } = require('uuid');
+            userData.id = uuidv4();
+        }
+        const newUser = new PrismaUser(userData);
+        return await newUser.save();
+    }
+}
+exports.PrismaUser = PrismaUser;
 // Функция для определения, какую модель использовать
 function getUserModel() {
     console.log('=== ВЫБОР МОДЕЛИ ПОЛЬЗОВАТЕЛЯ ===');
@@ -70,53 +107,21 @@ function getUserModel() {
     // Добавляем отладку для проверки импортов
     console.log('=== ОТЛАДКА ИМПОРТОВ В USERMODEL ===');
     console.log(`Тип InMemoryUser: ${typeof InMemoryUser_1.InMemoryUser}`);
-    console.log(`Тип MongoUser: ${typeof MongoUser}`);
+    console.log(`Тип PrismaUser: ${typeof PrismaUser}`);
     if (useMongoDb) {
-        console.log('Выбрана модель: MongoDB User');
-        // Проверяем, есть ли соединение с MongoDB
-        console.log(`Состояние соединения MongoDB: ${mongoose_1.default.connection.readyState}`);
-        if (mongoose_1.default.connection.readyState === 0) {
-            console.log('Соединение с MongoDB не установлено, пытаемся подключиться...');
-            const mongoUri = process.env.MONGO_URI;
-            if (!mongoUri) {
-                console.error('MONGO_URI не определен, но USE_MONGODB=true');
-                console.warn('Переключаемся на InMemoryUser из-за отсутствия MONGO_URI');
-                return InMemoryUser_1.InMemoryUser;
-            }
-            // Добавляем отладочную информацию о MongoDB
-            console.log('=== ОТЛАДКА MONGODB ===');
-            console.log('Текущие настройки MongoDB:');
-            console.log(`- MONGO_URI: ${mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`);
-            console.log('Ожидаемые настройки MongoDB на хостинге:');
-            console.log('- MongoDB хост: c641b068463c.vps.myjino.ru');
-            console.log('- MongoDB порт: 49305');
-            // Подключаемся к MongoDB
-            try {
-                // Синхронная проверка подключения
-                console.log('Попытка синхронного подключения к MongoDB...');
-                mongoose_1.default
-                    .connect(mongoUri)
-                    .then(() => {
-                    console.log('Соединение с MongoDB установлено успешно');
-                    console.log(`Новое состояние соединения: ${mongoose_1.default.connection.readyState}`);
-                })
-                    .catch((err) => {
-                    console.error('Ошибка подключения к MongoDB:', err);
-                    console.warn('Переключаемся на InMemoryUser из-за ошибки подключения к MongoDB');
-                    // Здесь нет возврата InMemoryUser, что может быть проблемой
-                });
-            }
-            catch (error) {
-                console.error('Исключение при подключении к MongoDB:', error);
-                console.warn('Переключаемся на InMemoryUser из-за исключения');
-                return InMemoryUser_1.InMemoryUser;
-            }
+        console.log('Выбрана модель: Prisma User');
+        // Проверяем, есть ли соединение с MongoDB через Prisma
+        try {
+            // Проверяем соединение с базой данных
+            prisma.$connect();
+            console.log('Соединение с MongoDB через Prisma установлено успешно');
+            return PrismaUser;
         }
-        else {
-            console.log(`MongoDB уже подключена, состояние: ${mongoose_1.default.connection.readyState}`);
+        catch (error) {
+            console.error('Ошибка при подключении к MongoDB через Prisma:', error);
+            console.warn('Переключаемся на InMemoryUser из-за ошибки подключения');
+            return InMemoryUser_1.InMemoryUser;
         }
-        console.log('Возвращаем MongoUser из getUserModel()');
-        return MongoUser;
     }
     else {
         console.log('Выбрана модель: InMemoryUser (USE_MONGODB не true)');

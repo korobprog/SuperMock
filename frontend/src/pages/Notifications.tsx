@@ -29,7 +29,10 @@ import {
   Calendar,
   Users,
   Info,
+  Copy,
+  ExternalLink,
 } from 'lucide-react';
+import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
 
 type NotificationItem = {
   id: number;
@@ -41,6 +44,236 @@ type NotificationItem = {
   createdAt: string;
   readAt?: string | null;
   actionData?: string | null;
+  titleKey?: string | null;
+  messageKey?: string | null;
+  messageData?: string | null;
+};
+
+// Утилиты для форматирования текста
+const truncateText = (text: string, maxLength: number = 50) => {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
+const truncateRoomName = (roomName: string, maxLength: number = 30) => {
+  if (roomName.length <= maxLength) return roomName;
+  return roomName.substring(0, maxLength) + '...';
+};
+
+const extractAndFormatLinks = (text: string) => {
+  // Регулярное выражение для поиска URL
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  
+  return parts.map((part, index) => {
+    if (urlRegex.test(part)) {
+      // Это URL - создаем сокращенную версию с возможностью копирования
+      const shortUrl = truncateText(part, 40);
+      return { type: 'link', text: shortUrl, fullUrl: part, key: index };
+    }
+    return { type: 'text', text: part, key: index };
+  });
+};
+
+const formatNotificationMessage = (message: string, onSuccess: () => void, t: any) => {
+  const lines = message.split('\n');
+  
+  return lines.map((line, lineIndex) => {
+    // Проверяем, содержит ли строка информацию об инструментах
+    if (line.includes(t('notifications.tools')) || line.includes(t('notifications.yourTools'))) {
+      const [label, tools] = line.split(':');
+      const toolList = tools?.trim().split(', ') || [];
+      return (
+        <div key={lineIndex} className="mt-2">
+          <span className="text-gray-700 font-medium">{label}:</span>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {toolList.map((tool, toolIndex) => (
+              <Badge key={toolIndex} variant="outline" className="text-xs">
+                {tool}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    
+    // Проверяем, содержит ли строка ссылку
+    if (line.includes('http')) {
+      const parts = extractAndFormatLinks(line);
+      return (
+        <div key={lineIndex} className={lineIndex === 0 ? 'mb-1' : ''}>
+          {parts.map((part) => {
+            if (part.type === 'link') {
+              return (
+                <span key={part.key} className="inline-flex items-center gap-1">
+                  <span className="text-blue-600 font-medium">{part.text}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0 text-blue-600 hover:text-blue-700"
+                    onClick={() => {
+                      navigator.clipboard.writeText(part.fullUrl);
+                      onSuccess();
+                    }}
+                    title={t('notifications.copyLink')}
+                  >
+                    <Copy size={12} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0 text-blue-600 hover:text-blue-700"
+                    onClick={() => window.open(part.fullUrl, '_blank')}
+                    title={t('notifications.openLink')}
+                  >
+                    <ExternalLink size={12} />
+                  </Button>
+                </span>
+              );
+            }
+            return <span key={part.key}>{part.text}</span>;
+          })}
+        </div>
+      );
+    }
+    
+    // Проверяем, содержит ли строка название комнаты
+    if (line.includes(t('notifications.room'))) {
+      const [label, roomName] = line.split(':');
+      const truncatedRoomName = truncateRoomName(roomName?.trim() || '');
+      return (
+        <div key={lineIndex} className={lineIndex === 0 ? 'mb-1' : ''}>
+          <span className="text-gray-700 font-medium">{label}:</span>{' '}
+          <span className="text-gray-600">{truncatedRoomName}</span>
+          {roomName && roomName.length > 30 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-4 w-4 p-0 ml-1 text-gray-500 hover:text-gray-700"
+              onClick={() => {
+                navigator.clipboard.writeText(roomName.trim());
+                onSuccess();
+              }}
+              title={t('notifications.copyRoomName')}
+            >
+              <Copy size={12} />
+            </Button>
+          )}
+        </div>
+      );
+    }
+    
+    return (
+      <div key={lineIndex} className={lineIndex === 0 ? 'mb-1' : ''}>
+        {line}
+      </div>
+    );
+  });
+};
+
+const formatTranslatedMessage = (messageKey: string, messageData: string | null, onSuccess: () => void, t: any) => {
+  try {
+    const data = messageData ? JSON.parse(messageData) : {};
+    const translatedMessage = t(messageKey, data);
+    
+    // Разбиваем переведенное сообщение на строки
+    const lines = translatedMessage.split('\n');
+    
+    return lines.map((line: string, lineIndex: number) => {
+      // Проверяем, содержит ли строка информацию об инструментах
+      if (line.includes(t('notifications.tools')) || line.includes(t('notifications.yourTools'))) {
+        const [label, tools] = line.split(':');
+        const toolList = tools?.trim().split(', ') || [];
+        return (
+          <div key={lineIndex} className="mt-2">
+            <span className="text-gray-700 font-medium">{label}:</span>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {toolList.map((tool: string, toolIndex: number) => (
+                <Badge key={toolIndex} variant="outline" className="text-xs">
+                  {tool}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      
+      // Проверяем, содержит ли строка ссылку
+      if (line.includes('http')) {
+        const parts = extractAndFormatLinks(line);
+        return (
+          <div key={lineIndex} className={lineIndex === 0 ? 'mb-1' : ''}>
+            {parts.map((part) => {
+              if (part.type === 'link') {
+                return (
+                  <span key={part.key} className="inline-flex items-center gap-1">
+                    <span className="text-blue-600 font-medium">{part.text}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 text-blue-600 hover:text-blue-700"
+                      onClick={() => {
+                        navigator.clipboard.writeText(part.fullUrl);
+                        onSuccess();
+                      }}
+                      title={t('notifications.copyLink')}
+                    >
+                      <Copy size={12} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-4 w-4 p-0 text-blue-600 hover:text-blue-700"
+                      onClick={() => window.open(part.fullUrl, '_blank')}
+                      title={t('notifications.openLink')}
+                    >
+                      <ExternalLink size={12} />
+                    </Button>
+                  </span>
+                );
+              }
+              return <span key={part.key}>{part.text}</span>;
+            })}
+          </div>
+        );
+      }
+      
+      // Проверяем, содержит ли строка название комнаты
+      if (line.includes(t('notifications.room'))) {
+        const [label, roomName] = line.split(':');
+        const truncatedRoomName = truncateRoomName(roomName?.trim() || '');
+        return (
+          <div key={lineIndex} className={lineIndex === 0 ? 'mb-1' : ''}>
+            <span className="text-gray-700 font-medium">{label}:</span>{' '}
+            <span className="text-gray-600">{truncatedRoomName}</span>
+            {roomName && roomName.length > 30 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-4 w-4 p-0 ml-1 text-gray-500 hover:text-gray-700"
+                onClick={() => {
+                  navigator.clipboard.writeText(roomName.trim());
+                  onSuccess();
+                }}
+                title={t('notifications.copyRoomName')}
+              >
+                <Copy size={12} />
+              </Button>
+            )}
+          </div>
+        );
+      }
+      
+      return (
+        <div key={lineIndex} className={lineIndex === 0 ? 'mb-1' : ''}>
+          {line}
+        </div>
+      );
+    });
+  } catch (error) {
+    console.error('Error formatting translated message:', error);
+    return <div className="text-sm text-gray-600">{t(messageKey)}</div>;
+  }
 };
 
 export function Notifications() {
@@ -67,12 +300,12 @@ export function Notifications() {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMinutes < 1) return 'Только что';
-    if (diffMinutes < 60) return `${diffMinutes}м назад`;
-    if (diffHours < 24) return `${diffHours}ч назад`;
-    if (diffDays < 7) return `${diffDays}д назад`;
+    if (diffMinutes < 1) return t('notifications.justNow');
+    if (diffMinutes < 60) return t('notifications.minutesAgo', { count: diffMinutes });
+    if (diffHours < 24) return t('notifications.hoursAgo', { count: diffHours });
+    if (diffDays < 7) return t('notifications.daysAgo', { count: diffDays });
 
-    return date.toLocaleDateString('ru-RU', {
+    return date.toLocaleDateString(t('notifications.dateLocale', { fallback: 'ru-RU' }), {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -133,7 +366,12 @@ export function Notifications() {
   // subscribe to realtime notifications (prevent multiple connections)
   useEffect(() => {
     if (!userId) return;
-    const s = io(API_CONFIG.baseURL || undefined, {
+    // Для Socket.IO используем тот же домен, что и для API, но с правильным протоколом
+    const socketUrl = API_CONFIG.baseURL 
+      ? API_CONFIG.baseURL.replace('https://', 'wss://').replace('http://', 'ws://')
+      : undefined;
+    
+    const s = io(socketUrl || undefined, {
       withCredentials: true,
       transports: ['websocket', 'polling'],
       forceNew: true,
@@ -207,12 +445,12 @@ export function Notifications() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray">
+    <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray pb-24 md:pb-0">
       {/* Logo */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 pt-16 sm:pt-20">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex justify-center mb-4">
-            <Logo size="lg" />
+            <Logo size="lg" clickable={true} />
           </div>
         </div>
       </div>
@@ -337,48 +575,13 @@ export function Notifications() {
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">
-                            {notification.title}
+                            {notification.titleKey ? t(notification.titleKey) : notification.title}
                           </h3>
                           <div className="text-sm text-gray-600">
-                            {notification.message
-                              .split('\n')
-                              .map((line, index) => {
-                                // Проверяем, содержит ли строка информацию об инструментах
-                                if (
-                                  line.includes('Инструменты:') ||
-                                  line.includes('Ваши инструменты:')
-                                ) {
-                                  const [label, tools] = line.split(':');
-                                  const toolList =
-                                    tools?.trim().split(', ') || [];
-                                  return (
-                                    <div key={index} className="mt-2">
-                                      <span className="text-gray-700 font-medium">
-                                        {label}:
-                                      </span>
-                                      <div className="flex flex-wrap gap-1 mt-1">
-                                        {toolList.map((tool, toolIndex) => (
-                                          <Badge
-                                            key={toolIndex}
-                                            variant="outline"
-                                            className="text-xs"
-                                          >
-                                            {tool}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  );
-                                }
-                                return (
-                                  <div
-                                    key={index}
-                                    className={index === 0 ? 'mb-1' : ''}
-                                  >
-                                    {line}
-                                  </div>
-                                );
-                              })}
+                            {notification.messageKey 
+                              ? formatTranslatedMessage(notification.messageKey, notification.messageData, success, t)
+                              : formatNotificationMessage(notification.message, success, t)
+                            }
                           </div>
                         </div>
 
@@ -391,10 +594,10 @@ export function Notifications() {
                             )}`}
                           >
                             {notification.priority === 1
-                              ? 'Высокий'
+                              ? t('notifications.priority.high')
                               : notification.priority === 2
-                              ? 'Средний'
-                              : 'Низкий'}
+                              ? t('notifications.priority.medium')
+                              : t('notifications.priority.low')}
                           </Badge>
                         )}
                       </div>
@@ -423,7 +626,7 @@ export function Notifications() {
                                 }
                               >
                                 <Video size={14} className="mr-2" />
-                                Перейти в комнату ожидания
+                                {t('notifications.joinWaitingRoom')}
                               </Button>
                             );
                           }
@@ -471,7 +674,7 @@ export function Notifications() {
                     {t('notifications.noNotifications')}
                   </h3>
                   <p className="text-gray-500">
-                    Здесь будут появляться уведомления о матчингах и интервью
+                    {t('notifications.emptyStateDescription')}
                   </p>
                 </CardContent>
               </Card>
@@ -479,6 +682,9 @@ export function Notifications() {
           </div>
         )}
       </div>
+
+      {/* Mobile Bottom Menu */}
+      <MobileBottomMenu />
     </div>
   );
 }

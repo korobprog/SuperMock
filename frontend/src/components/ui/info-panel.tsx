@@ -209,14 +209,14 @@ export function InfoPanel({
             <div className="text-xs text-blue-700 bg-white p-2 rounded border">
               <TrendingUp size={12} className="inline mr-1" />
               {mode === 'candidate'
-                ? `${t('time.analysis.interviewers')}: ${
+                ? `${t('time.analysis.interviewersShort')}: ${
                     recommendedSlot.interviewerCount
                   }, ${t('time.analysis.candidates')}: ${
                     recommendedSlot.candidateCount
                   }`
                 : `${t('time.analysis.candidates')}: ${
                     recommendedSlot.candidateCount
-                  }, ${t('time.analysis.interviewers')}: ${
+                  }, ${t('time.analysis.interviewersShort')}: ${
                     recommendedSlot.interviewerCount
                   }`}
               <br />

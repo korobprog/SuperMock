@@ -176,6 +176,30 @@ else
     echo "⚠️  Бэкенд может быть еще не готов"
 fi
 
+# Автоматическое исправление базы данных
+echo "🔧 Автоматическое исправление базы данных..."
+echo "📊 Проверка статуса миграций..."
+docker exec supermock-backend npx prisma migrate status || true
+
+echo "🔄 Синхронизация схемы базы данных..."
+docker exec supermock-backend npx prisma db push --accept-data-loss || true
+
+echo "🔧 Генерация Prisma Client..."
+docker exec supermock-backend npx prisma generate --schema backend/prisma/schema.prisma || true
+
+# Перезапуск бэкенда для применения изменений
+echo "🔄 Перезапуск бэкенда для применения изменений..."
+docker restart supermock-backend
+sleep 15
+
+# Проверка WebSocket
+echo "🔧 Проверка WebSocket..."
+if curl -f -s "https://api.supermock.ru/socket.io/?EIO=4&transport=polling" > /dev/null 2>&1; then
+    echo "✅ WebSocket endpoint работает"
+else
+    echo "⚠️  WebSocket endpoint может быть еще не готов"
+fi
+
 # Проверка внешних URL
 echo "🔍 Проверка внешних URL..."
 sleep 5

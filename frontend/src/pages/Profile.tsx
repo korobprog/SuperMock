@@ -9,6 +9,7 @@ import {
   TestTube,
   Eye,
   EyeOff,
+  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,11 +40,13 @@ import {
   validateApiKey,
   formatModelPrice,
 } from '@/lib/openrouter-api';
+import { StackBlitzInfoModal } from '@/components/ui/stackblitz-info-modal';
+import { OpenRouterInfoModal } from '@/components/ui/openrouter-info-modal';
+import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
 import {
-  apiGetUserSettings,
   apiSaveUserSettings,
   apiGetProfile,
-  apiSaveProfile,
+
 } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -55,8 +58,6 @@ export function Profile() {
     setUserSettings,
     userId,
     telegramUser,
-    setLanguage,
-    setProfession,
   } = useAppStore();
 
   const [apiKey, setApiKey] = useState(userSettings.openRouterApiKey || '');
@@ -83,6 +84,8 @@ export function Profile() {
   >('idle');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showStackBlitzInfo, setShowStackBlitzInfo] = useState(false);
+  const [showOpenRouterInfo, setShowOpenRouterInfo] = useState(false);
 
   // Обновляем отображение API ключа при переключении глазка
   useEffect(() => {
@@ -199,10 +202,10 @@ export function Profile() {
         questionsCount,
       });
 
-      toast.success('Настройки сохранены!');
+      toast.success(t('profile.settingsSaved'));
     } catch (error) {
       console.error('Error saving settings:', error);
-      toast.error('Ошибка сохранения настроек');
+      toast.error(t('profile.saveError'));
     } finally {
       setIsSaving(false);
     }
@@ -216,12 +219,12 @@ export function Profile() {
         : apiKey; // Используем введенный ключ
 
     if (!realApiKey) {
-      toast.error('Введите API ключ для тестирования');
+      toast.error(t('profile.enterApiKey'));
       return;
     }
 
     if (!validateApiKey(realApiKey)) {
-      toast.error('Неверный формат API ключа');
+      toast.error(t('profile.invalidApiKey'));
       return;
     }
 
@@ -234,14 +237,14 @@ export function Profile() {
 
       if (success) {
         setConnectionStatus('success');
-        toast.success('Подключение успешно!');
+        toast.success(t('profile.connectionSuccess'));
       } else {
         setConnectionStatus('error');
-        toast.error('Ошибка подключения');
+        toast.error(t('profile.connectionError'));
       }
     } catch (error) {
       setConnectionStatus('error');
-      toast.error('Ошибка при тестировании подключения');
+      toast.error(t('profile.connectionTestError'));
     }
 
     setIsTestingConnection(false);
@@ -257,18 +260,18 @@ export function Profile() {
       <div className="min-h-screen bg-background text-foreground p-4 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Загрузка настроек...</p>
+          <p className="text-muted-foreground">{t('profile.loadingSettings')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4">
+    <div className="min-h-screen bg-background text-foreground p-4 pb-24 md:pb-4">
       <div className="max-w-2xl mx-auto pt-16 sm:pt-20">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size="lg" />
+          <Logo size="lg" clickable={true} />
         </div>
 
         {/* Header */}
@@ -299,149 +302,71 @@ export function Profile() {
           {!telegramUser && (
             <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
               <CardContent className="pt-4">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    Проектный режим - настройки сохраняются локально и в базе
-                    данных
-                  </p>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                      {t('profile.projectMode')}
+                    </p>
+                    <p className="text-xs text-blue-600 dark:text-blue-300">
+                      {t('profile.projectModeDesc')}
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* OpenRouter API Configuration */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Key className="mr-2" size={20} />
-                {t('profile.apiSettings')}
-              </CardTitle>
-              <CardDescription>{t('profile.apiDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="api-key">{t('profile.apiKey')}</Label>
-                <div className="flex space-x-2">
-                  <div className="relative flex-1">
-                    <Input
-                      id="api-key"
-                      type={showApiKey ? 'text' : 'password'}
-                      placeholder="sk-or-..."
-                      value={apiKey}
-                      onChange={(e) => {
-                        setApiKey(e.target.value);
-                        // Если пользователь начинает вводить, снимаем маскировку
-                        if (isApiKeyMasked) {
-                          setIsApiKeyMasked(false);
-                        }
-                      }}
-                      onFocus={() => {
-                        // При фокусе на замаскированном поле очищаем его для ввода нового ключа
-                        if (isApiKeyMasked) {
-                          setApiKey('');
-                          setIsApiKeyMasked(false);
-                        }
-                      }}
-                      className="pr-10"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-0 top-0 h-full px-3"
-                      onClick={() => setShowApiKey((v) => !v)}
-                    >
-                      {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </Button>
-                  </div>
-                  <Button
-                    onClick={handleTestConnection}
-                    disabled={!apiKey || isTestingConnection}
-                    variant="outline"
-                    className="flex items-center"
-                  >
-                    <TestTube size={16} className="mr-2" />
-                    {isTestingConnection
-                      ? t('profile.testing')
-                      : t('profile.test')}
-                  </Button>
-                </div>
-                {connectionStatus === 'success' && (
-                  <p className="text-green-600 text-sm flex items-center">
-                    ✓ {t('profile.connectionSuccess')}
-                  </p>
-                )}
-                {connectionStatus === 'error' && (
-                  <p className="text-red-600 text-sm flex items-center">
-                    ✗ {t('profile.connectionError')}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  {t('profile.getApiKey')}{' '}
-                  <a
-                    href="https://openrouter.ai/keys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    openrouter.ai
-                  </a>
-                </p>
-              </div>
-
-              {/* StackBlitz API Key */}
-              <div className="space-y-2">
-                <Label htmlFor="stackblitz-key">StackBlitz API Key</Label>
-                <Input
-                  id="stackblitz-key"
-                  type="password"
-                  placeholder="sbk_..."
-                  value={stackblitzKey}
-                  onChange={(e) => setStackblitzKey(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Ключ используется для запуска и коллаборативного
-                  редактирования кода в редакторе интервью.
-                </p>
-              </div>
-
-              {/* AI Generation Toggle */}
-              <div className="flex items-center justify-between p-4 border rounded-lg">
+          {/* Профиль пользователя Telegram */}
+          {telegramUser && (
+            <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+              <CardContent className="pt-4">
                 <div className="flex items-center space-x-3">
-                  <Zap className="text-yellow-500" size={20} />
-                  <div>
-                    <Label
-                      htmlFor="ai-generation"
-                      className="text-base font-medium"
-                    >
-                      {t('profile.aiGeneration')}
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      {t('profile.aiGenerationDesc')}
-                    </p>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="flex items-center space-x-3 flex-1">
+                    {telegramUser.photo_url ? (
+                      <img
+                        src={telegramUser.photo_url}
+                        alt="Profile"
+                        className="w-8 h-8 rounded-full border-2 border-green-200"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center">
+                        <span className="text-green-700 text-sm font-medium">
+                          {telegramUser.first_name?.[0]?.toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                        {telegramUser.first_name}
+                        {telegramUser.last_name && ` ${telegramUser.last_name}`}
+                      </p>
+                      {telegramUser.username && (
+                        <p className="text-xs text-green-600 dark:text-green-300">
+                          @{telegramUser.username}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-xs text-green-600 dark:text-green-300">
+                    {t('profile.online')}
                   </div>
                 </div>
-                <Switch
-                  id="ai-generation"
-                  checked={useAIGeneration && hasValidApiKey}
-                  onCheckedChange={setUseAIGeneration}
-                  disabled={!hasValidApiKey}
-                />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Профиль: язык и профессия */}
           <Card>
             <CardHeader>
               <CardTitle>{t('language.selectLanguage')}</CardTitle>
-              <CardDescription>Настройки профиля</CardDescription>
+              <CardDescription>{t('profile.profileSettings')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Язык собеседования</Label>
+                  <Label>{t('profile.interviewLanguage')}</Label>
                   <Select
                     value={profileLanguage}
                     onValueChange={setProfileLanguage}
@@ -461,7 +386,7 @@ export function Profile() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Профессия</Label>
+                  <Label>{t('profile.profession')}</Label>
                   <Select
                     value={profileProfession}
                     onValueChange={setProfileProfession}
@@ -488,7 +413,7 @@ export function Profile() {
                   variant="secondary"
                   className="w-full"
                 >
-                  Перейти к записи на собеседование
+                  {t('profile.goToInterview')}
                 </Button>
               )}
             </CardContent>
@@ -593,6 +518,176 @@ export function Profile() {
             </Card>
           )}
 
+
+          {/* API Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Key className="mr-2" size={20} />
+                {t('profile.apiSettings')}
+              </CardTitle>
+              <CardDescription>
+                {t('profile.apiDescription')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="api-key">{t('profile.apiKey')}</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowOpenRouterInfo(true)}
+                      className="h-6 w-6 shrink-0"
+                      title={t('profile.learnMoreOpenRouter')}
+                    >
+                      <Info size={14} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <div className="relative flex-1">
+                    <Input
+                      id="api-key"
+                      type={showApiKey ? 'text' : 'password'}
+                      placeholder="sk-or-..."
+                      value={apiKey}
+                      onChange={(e) => {
+                        setApiKey(e.target.value);
+                        // Если пользователь начинает вводить, снимаем маскировку
+                        if (isApiKeyMasked) {
+                          setIsApiKeyMasked(false);
+                        }
+                      }}
+                      onFocus={() => {
+                        // При фокусе на замаскированном поле очищаем его для ввода нового ключа
+                        if (isApiKeyMasked) {
+                          setApiKey('');
+                          setIsApiKeyMasked(false);
+                        }
+                      }}
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowApiKey((v) => !v)}
+                    >
+                      {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </Button>
+                  </div>
+                  <Button
+                    onClick={handleTestConnection}
+                    disabled={!apiKey || isTestingConnection}
+                    variant="outline"
+                    className="flex items-center"
+                  >
+                    <TestTube size={16} className="mr-2" />
+                    {isTestingConnection
+                      ? t('profile.testing')
+                      : t('profile.test')}
+                  </Button>
+                </div>
+                {connectionStatus === 'success' && (
+                  <p className="text-green-600 text-sm flex items-center">
+                    ✓ {t('profile.connectionSuccess')}
+                  </p>
+                )}
+                {connectionStatus === 'error' && (
+                  <p className="text-red-600 text-sm flex items-center">
+                    ✗ {t('profile.connectionError')}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  <a
+                    href="https://openrouter.ai/keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    {t('profile.getFreeKey')}
+                  </a>{' '}
+                  {t('profile.getFreeKeyDesc')}
+                </p>
+              </div>
+{
+  hasValidApiKey && (
+    <>
+        {/* AI Generation Toggle */}
+    <div className="flex items-center justify-between p-4 border rounded-lg">
+    <div className="flex items-center space-x-3">
+      <Zap className="text-yellow-500" size={20} />
+      <div>
+        <Label
+          htmlFor="ai-generation"
+          className="text-base font-medium"
+        >
+          {t('profile.aiGeneration')}
+        </Label>
+        <p className="text-sm text-muted-foreground">
+          {t('profile.aiGenerationDesc')}
+        </p>
+      </div>
+    </div>
+    <Switch
+      id="ai-generation"
+      checked={useAIGeneration && hasValidApiKey}
+      onCheckedChange={setUseAIGeneration}
+      disabled={!hasValidApiKey}
+    />
+  </div>
+    </>
+  )
+}
+
+
+
+              {/* StackBlitz API Key */}
+              <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Label htmlFor="stackblitz-key">{t('profile.stackblitzApiKey')}</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowStackBlitzInfo(true)}
+                        className="h-6 w-6 shrink-0"
+                        title={t('profile.learnMoreStackBlitz')}
+                      >
+                      <Info size={14} />
+                    </Button>
+                  </div>
+                </div>
+                <Input
+                  id="stackblitz-key"
+                  type="password"
+                  placeholder="sbk_..."
+                  value={stackblitzKey}
+                  onChange={(e) => setStackblitzKey(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  <a
+                    href="https://stackblitz.com/docs/guides/api-keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    {t('profile.getStackBlitzKey')}
+                  </a>{' '}
+                  {t('profile.getStackBlitzKeyDesc')}
+                </p>
+              </div>
+
+              
+            </CardContent>
+          </Card>
+
+          
           {/* Benefits */}
           {!hasValidApiKey && (
             <Card className="border-dashed border-2 border-primary/20">
@@ -634,10 +729,25 @@ export function Profile() {
             size="lg"
           >
             <Save className="mr-2" size={20} />
-            {isSaving ? 'Сохранение...' : t('profile.save')}
+            {isSaving ? t('profile.saving') : t('profile.save')}
           </Button>
         </div>
       </div>
+
+      {/* StackBlitz Info Modal */}
+      <StackBlitzInfoModal
+        isOpen={showStackBlitzInfo}
+        onClose={() => setShowStackBlitzInfo(false)}
+      />
+
+      {/* OpenRouter Info Modal */}
+      <OpenRouterInfoModal
+        isOpen={showOpenRouterInfo}
+        onClose={() => setShowOpenRouterInfo(false)}
+      />
+
+      {/* Mobile Bottom Menu */}
+      <MobileBottomMenu />
     </div>
   );
 }

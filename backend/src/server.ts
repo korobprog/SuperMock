@@ -30,6 +30,10 @@ import authRoutes from './routes/auth';
 import sessionRoutes from './routes/sessions';
 import feedbackRoutes from './routes/feedback';
 import calendarRoutes from './routes/calendar';
+import userDataCheckRoutes from './routes/user-data-check';
+import userRoutes from './routes/user';
+import profileRoutes from './routes/profile';
+import notificationRoutes from './routes/notifications';
 
 // Инициализация приложения Express
 const app = express();
@@ -112,6 +116,10 @@ app.use('/api', authRoutes); // Этот маршрут также обраба�
 app.use('/api/sessions', sessionRoutes);
 app.use('/api', feedbackRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/user-data-check', userDataCheckRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Маршруты для health-check
 app.get('/health', healthCheck);

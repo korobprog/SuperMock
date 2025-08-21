@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ProfileHeader } from '@/components/ui/profile-header';
 import { MainMenu } from '@/components/ui/main-menu';
+import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/lib/store';
@@ -125,12 +126,12 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-5">
+    <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-3 sm:p-5 pb-24 md:pb-5">
       <div className="max-w-4xl mx-auto pt-16 sm:pt-20">
         {/* Header */}
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
-            <Logo size="lg" className="mb-1" />
+            <Logo size="lg" className="mb-1" clickable={true} />
           </div>
           <StyledSubtitle variant="tech" size="sm">
             {t('common.platformSubtitle')}
@@ -159,6 +160,9 @@ const Index = () => {
         {/* Auth Dialog */}
         {/* Удалено */}
       </div>
+
+      {/* Mobile Bottom Menu */}
+      <MobileBottomMenu />
     </div>
   );
 };

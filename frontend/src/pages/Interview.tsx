@@ -33,7 +33,7 @@ import { getQuestionsForProfession } from '@/lib/questions';
 import { OpenRouterAPI } from '@/lib/openrouter-api';
 import { getPromptForProfession } from '@/lib/ai-prompts';
 import { io, Socket } from 'socket.io-client';
-import { API_CONFIG, ICE_CONFIG } from '@/lib/config';
+import { API_CONFIG, ICE_CONFIG, getIceConfig } from '@/lib/config';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
@@ -303,7 +303,12 @@ export function Interview() {
   }, [sessionId]);
 
   useEffect(() => {
-    const s = io(API_CONFIG.baseURL || undefined, {
+    // Для Socket.IO используем тот же домен, что и для API, но с правильным протоколом
+    const socketUrl = API_CONFIG.baseURL 
+      ? API_CONFIG.baseURL.replace('https://', 'wss://').replace('http://', 'ws://')
+      : undefined;
+    
+    const s = io(socketUrl || undefined, {
       withCredentials: true,
       transports: ['websocket', 'polling'],
       forceNew: true,
@@ -427,7 +432,9 @@ export function Interview() {
       if (videoProvider !== 'webrtc' || !isVideoActive) return;
       if (pcRef.current) return; // already started
 
-      const pc = new RTCPeerConnection(ICE_CONFIG);
+      // Get dynamic ICE configuration with TURN credentials
+      const iceConfig = await getIceConfig(userId?.toString());
+      const pc = new RTCPeerConnection(iceConfig);
       pcRef.current = pc;
 
       pc.onicecandidate = (ev) => {
@@ -717,7 +724,7 @@ export function Interview() {
       {/* Logo */}
       <div className="bg-card border-b border-border p-4 pt-16 sm:pt-20">
         <div className="flex justify-center mb-4">
-          <Logo size="md" />
+          <Logo size="md" clickable={true} />
         </div>
       </div>
 

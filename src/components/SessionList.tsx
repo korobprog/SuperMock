@@ -117,7 +117,7 @@ const SessionList: FC<SessionListProps> = ({
   // Функция для определения роли пользователя в сессии
   const getUserRole = (session: Session): string => {
     if (!userId) return 'неизвестно';
-    if (session.interviewerId === userId) return 'интервьюер';
+    if (session.interviewerId === userId) return 'int.';
     if (session.intervieweeId === userId) return 'соискатель';
     if (session.observerIds?.includes(userId)) return 'наблюдатель';
     return 'не участвует';

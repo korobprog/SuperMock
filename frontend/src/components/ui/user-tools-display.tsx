@@ -7,6 +7,7 @@ import { Edit, Save, X, Tool } from 'lucide-react';
 import { apiGetUserTools, apiSaveUserTools } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
 import { getProfessionTools, PROFESSIONS_DATA } from '@/lib/professions-data';
+import { useAppTranslation } from '@/lib/i18n';
 
 interface UserToolsDisplayProps {
   userId: number;
@@ -19,6 +20,7 @@ export function UserToolsDisplay({
   profession,
   className = '',
 }: UserToolsDisplayProps) {
+  const { t } = useAppTranslation();
   const [userTools, setUserTools] = useState<string[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
@@ -49,7 +51,7 @@ export function UserToolsDisplay({
       setSelectedTools(tools);
     } catch (err) {
       console.error('Failed to load user tools:', err);
-      setError('Не удалось загрузить инструменты');
+      setError(t('tools.failedToLoadTools'));
     } finally {
       setLoading(false);
     }
@@ -72,7 +74,7 @@ export function UserToolsDisplay({
       setIsEditing(false);
     } catch (err) {
       console.error('Failed to save user tools:', err);
-      setError('Не удалось сохранить инструменты');
+      setError(t('tools.failedToSaveTools'));
     } finally {
       setSaving(false);
     }
@@ -95,7 +97,7 @@ export function UserToolsDisplay({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Tool className="h-5 w-5" />
-            Инструменты
+            {t('tools.selectTools')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -114,10 +116,10 @@ export function UserToolsDisplay({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Tool className="h-5 w-5" />
-            Инструменты
+            {t('tools.selectTools')}
             {professionData && (
               <span className="text-sm font-normal text-muted-foreground">
-                ({professionData.title})
+                ({t(professionData.titleKey)})
               </span>
             )}
           </CardTitle>
@@ -164,12 +166,12 @@ export function UserToolsDisplay({
                 {saving ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                    Сохранение...
+                    {t('tools.saving')}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Save className="h-4 w-4" />
-                    Сохранить
+                    {t('common.save')}
                   </div>
                 )}
               </Button>
@@ -189,8 +191,8 @@ export function UserToolsDisplay({
             {userTools.length === 0 ? (
               <p className="text-muted-foreground text-sm">
                 {isOwnProfile
-                  ? 'Вы еще не выбрали инструменты. Нажмите "Редактировать" чтобы добавить.'
-                  : 'Пользователь еще не выбрал инструменты.'}
+                  ? t('tools.toolsNotSelected')
+                  : t('tools.userToolsNotSelected')}
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">

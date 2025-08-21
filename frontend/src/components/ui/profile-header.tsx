@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/lib/store';
+import { useAppTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { TelegramHeaderButton } from '@/components/ui/telegram-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,6 +10,7 @@ import { TelegramAuthButton } from './telegram-login';
 import { TelegramUser } from '@/lib/telegram-auth';
 import { env } from '@/lib/env';
 import { createApiUrl } from '@/lib/config';
+import { LanguageSelector } from './language-selector';
 
 interface RealUser {
   id: string;
@@ -20,6 +22,7 @@ interface RealUser {
 
 export function ProfileHeader() {
   const navigate = useNavigate();
+  const { t } = useAppTranslation();
   const { telegramUser, setTelegramUser, userId, setUserId } = useAppStore();
   const [realUser, setRealUser] = useState<RealUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +50,7 @@ export function ProfileHeader() {
           // Пользователь может быть в локальном состоянии
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
+        console.log('Network error loading user data, using local data');
         // При ошибке сети/БД не очищаем realUser
         // Возможно, у нас есть локальные данные
       } finally {
@@ -78,10 +81,10 @@ export function ProfileHeader() {
       ? realUser.lastName
         ? `${realUser.firstName} ${realUser.lastName}`
         : realUser.firstName
-      : 'Пользователь'
+      : t('common.user')
     : userId
-    ? `Пользователь #${userId}`
-    : 'Пользователь';
+    ? `${t('common.user')} #${userId}`
+    : t('common.user');
 
   const displayUsername = displayUser
     ? telegramUser
@@ -113,42 +116,57 @@ export function ProfileHeader() {
               <span className="text-sm text-gray-500">
                 {displayUsername
                   ? `@${displayUsername}`
-                  : `ID: ${userId || 'Неизвестен'}`}
+                  : `ID: ${userId || t('common.unknown')}`}
               </span>
               <span className="text-xs text-gray-400">
                 {isLoading
-                  ? 'Загрузка...'
+                  ? t('common.loading')
                   : telegramUser
-                  ? 'Telegram'
+                  ? t('common.telegram')
                   : userId
-                  ? 'Локальный пользователь'
-                  : 'Не авторизован'}
+                  ? t('common.localUser')
+                  : t('common.notAuthorized')}
               </span>
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <TelegramHeaderButton
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/notifications')}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <Bell className="h-5 w-5" />
-            </TelegramHeaderButton>
-            <TelegramHeaderButton
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/profile')}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <Settings className="h-5 w-5" />
-            </TelegramHeaderButton>
+            {/* Кнопки для веб-версии - скрыты на мобильных */}
+            <div className="hidden md:flex items-center space-x-2">
+              {(telegramUser || userId) && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/notifications')}
+                    className="text-gray-500 hover:text-gray-700"
+                    title={t('common.notifications')}
+                  >
+                    <Bell className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/profile')}
+                    className="text-gray-500 hover:text-gray-700"
+                    title={t('common.settings')}
+                  >
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </>
+              )}
+            </div>
+            
+            {/* Языковое меню - показывается везде */}
+            <LanguageSelector />
+            
+            {/* Кнопка выхода - показывается везде */}
             {(telegramUser || userId) && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
                 className="text-gray-500 hover:text-gray-700"
+                title={t('common.logout')}
               >
                 <LogOut className="h-5 w-5" />
               </Button>

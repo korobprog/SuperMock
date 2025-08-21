@@ -139,14 +139,14 @@ export function TimeSelection() {
       let recommendation: 'high' | 'medium' | 'low' = 'medium';
 
       if (mode === 'candidate') {
-        // Для кандидатов ищем слоты с большим количеством интервьюеров
+        // Для кандидатов ищем слоты с большим количеством int.
         if (interviewerCount >= 2 && candidateCount <= 1) {
           recommendation = 'high';
         } else if (interviewerCount === 0 || candidateCount >= 3) {
           recommendation = 'low';
         }
       } else {
-        // Для интервьюеров ищем слоты с большим количеством кандидатов
+        // Для int. ищем слоты с большим количеством кандидатов
         if (candidateCount >= 2 && interviewerCount <= 1) {
           recommendation = 'high';
         } else if (candidateCount === 0 || interviewerCount >= 3) {
@@ -181,7 +181,7 @@ export function TimeSelection() {
           { start: 18, end: 21, weight: 1.0 }, // Вечер - обычный приоритет
         ];
       } else {
-        // Интервьюеры более гибкие, но предпочитают рабочие часы
+        // int. более гибкие, но предпочитают рабочие часы
         return [
           { start: 10, end: 16, weight: 1.3 }, // Рабочие часы - высокий приоритет
           { start: 9, end: 10, weight: 1.1 }, // Раннее утро
@@ -346,7 +346,7 @@ export function TimeSelection() {
         date: localDate,
       });
 
-      // Загружаем данные для интервьюеров
+      // Загружаем данные для int.
       const interviewerRes = await apiGetSlots({
         role: 'interviewer',
         profession: profession || undefined,
@@ -531,7 +531,7 @@ export function TimeSelection() {
       <div className="max-w-md mx-auto pt-16 sm:pt-20">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size="lg" />
+          <Logo size="lg" clickable={true} />
         </div>
 
         {/* Header */}
@@ -586,7 +586,7 @@ export function TimeSelection() {
               }`}
               onClick={() => handleRoleToggle('candidate')}
             >
-              {t('role.candidate')}
+              {t('role.candidateShort')}
             </button>
             <button
               className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
@@ -596,7 +596,7 @@ export function TimeSelection() {
               }`}
               onClick={() => handleRoleToggle('interviewer')}
             >
-              {t('role.interviewer')}
+              {t('role.interviewerShort')}
             </button>
           </div>
         </div>
@@ -720,7 +720,7 @@ export function TimeSelection() {
               <div className="text-center py-8 text-muted-foreground">
                 <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">
-                  Выберите инструменты для активации
+                  {t('tools.selectToolsToActivate')}
                 </h3>
                 <p className="text-sm">
                   Эта вкладка работает только при выбранных инструментах.
@@ -731,7 +731,7 @@ export function TimeSelection() {
                   className="mt-4"
                   variant="outline"
                 >
-                  Выбрать инструменты
+                  {t('tools.selectTools')}
                 </Button>
               </div>
             )}
@@ -745,11 +745,11 @@ export function TimeSelection() {
                   <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-blue-800">
                     <p className="font-medium mb-2">
-                      Все слоты (инструменты будут сохранены)
+                      {t('tools.allSlotsToolsSaved')}
                     </p>
                     <p>
                       Показываются все доступные слоты времени. При создании
-                      слота автоматически сохранятся ваши инструменты.
+                      {t('tools.toolsWillBeSaved')}
                     </p>
                   </div>
                 </div>

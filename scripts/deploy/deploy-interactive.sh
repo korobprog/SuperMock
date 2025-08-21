@@ -33,7 +33,11 @@ show_menu() {
     echo "5) 📋 Показать логи контейнеров"
     echo "6) 🧹 Очистить старые контейнеры/образы"
     echo "7) 🔍 Проверить доступность сайта"
-    echo "8) 📖 Показать документацию"
+    echo "8) 🔧 Исправить базу данных"
+    echo "9) 🔧 Исправить WebSocket"
+    echo "10) 🔧 Исправить CORS"
+    echo "11) 🏥 Комплексная проверка здоровья"
+    echo "12) 📖 Показать документацию"
     echo "0) ❌ Выход"
     echo ""
 }
@@ -174,6 +178,46 @@ check_site_availability() {
     fi
 }
 
+# Функция для исправления базы данных
+fix_database() {
+    print_color $BLUE "🔧 Исправление базы данных..."
+    if ! check_server_connection; then
+        return 1
+    fi
+    
+    bash scripts/deploy/fix-database.sh
+}
+
+# Функция для исправления WebSocket
+fix_websocket() {
+    print_color $BLUE "🔧 Исправление WebSocket..."
+    if ! check_server_connection; then
+        return 1
+    fi
+    
+    bash scripts/deploy/fix-websocket.sh
+}
+
+# Функция для исправления CORS
+fix_cors() {
+    print_color $BLUE "🔧 Исправление CORS..."
+    if ! check_server_connection; then
+        return 1
+    fi
+    
+    bash scripts/deploy/fix-cors.sh
+}
+
+# Функция для комплексной проверки здоровья
+health_check() {
+    print_color $BLUE "🏥 Комплексная проверка здоровья..."
+    if ! check_server_connection; then
+        return 1
+    fi
+    
+    bash scripts/deploy/health-check.sh
+}
+
 # Функция для показа документации
 show_documentation() {
     print_color $BLUE "📖 Документация по деплою:"
@@ -184,7 +228,7 @@ show_documentation() {
 # Основной цикл меню
 while true; do
     show_menu
-    read -p "Выберите действие (0-8): " choice
+    read -p "Выберите действие (0-12): " choice
     
     case $choice in
         1)
@@ -209,6 +253,18 @@ while true; do
             check_site_availability
             ;;
         8)
+            fix_database
+            ;;
+        9)
+            fix_websocket
+            ;;
+        10)
+            fix_cors
+            ;;
+        11)
+            health_check
+            ;;
+        12)
             show_documentation
             ;;
         0)

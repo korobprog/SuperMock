@@ -25,9 +25,9 @@ const candidateSlides: InfoSlide[] = [
   },
   {
     icon: <Users size={24} />,
-    title: 'Найдите интервьюера',
+    title: 'Найдите int.',
     description:
-      'Видите количество доступных интервьюеров в каждом временном слоте.',
+      'Видите количество доступных int. в каждом временном слоте.',
     color: 'text-green-600',
   },
   {
@@ -126,7 +126,7 @@ export function InfoCarousel({ isOpen, onClose, mode }: InfoCarouselProps) {
             <div className="flex items-center">
               <Info size={20} className="mr-2" />
               <h2 className="text-lg font-semibold">
-                {mode === 'candidate' ? 'Кандидатам' : 'Интервьюерам'}
+                {mode === 'candidate' ? 'Кандидатам' : 'int.'}
               </h2>
             </div>
             <button

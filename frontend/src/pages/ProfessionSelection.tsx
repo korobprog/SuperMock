@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAppTranslation } from '@/lib/i18n';
 import { apiSaveProfile } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
+import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
 import {
   detectUserLanguage,
   saveAndApplyLanguage,
@@ -196,11 +197,11 @@ export function ProfessionSelection() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4 pb-24 md:pb-4">
       <div className="max-w-md mx-auto pt-16 sm:pt-20">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size="lg" />
+          <Logo size="lg" clickable={true} />
         </div>
 
         {/* Header */}
@@ -251,6 +252,9 @@ export function ProfessionSelection() {
           ))}
         </div>
       </div>
+
+      {/* Mobile Bottom Menu */}
+      <MobileBottomMenu />
     </div>
   );
 }

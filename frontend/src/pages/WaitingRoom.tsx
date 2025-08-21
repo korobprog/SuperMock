@@ -185,14 +185,14 @@ export function WaitingRoom() {
   }
 
   const isInterviewer = session.interviewerUserId === userId?.toString();
-  const role = isInterviewer ? 'Интервьюер' : 'Кандидат';
+  const role = isInterviewer ? 'int.' : 'Кандидат';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4">
       <div className="max-w-2xl mx-auto pt-16 sm:pt-20">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size="lg" />
+          <Logo size="lg" clickable={true} />
         </div>
 
         <Card className="w-full">

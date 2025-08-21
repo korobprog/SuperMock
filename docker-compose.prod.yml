@@ -109,7 +109,6 @@ services:
       - -n
       - --log-file=stdout
       - --fingerprint
-      - --lt-cred-mech
       - --use-auth-secret
       - --realm=${TURN_REALM:-supermock.ru}
       - --static-auth-secret=${TURN_AUTH_SECRET:-supermock_turn_secret_2024_very_long_and_secure_key_for_webrtc}
@@ -119,6 +118,8 @@ services:
       - --max-port=49200
       - --listening-ip=0.0.0.0
       - --external-ip=217.198.6.238
+      - --no-tls
+      - --no-dtls
     networks:
       - supermock-network
 

@@ -5,7 +5,7 @@ export const API_CONFIG = {
   baseURL:
     import.meta.env.PROD && !import.meta.env.VITE_API_URL?.includes('127.0.0.1')
       ? import.meta.env.VITE_API_URL || 'https://api.supermock.ru'
-      : '', // В dev режиме или при локальной разработке используем относительные пути
+      : '', // В dev режиме используем относительные пути для proxy
 
   // Полные пути к API endpoints
   endpoints: {
@@ -27,7 +27,48 @@ export const API_CONFIG = {
 
 // ICE servers for WebRTC (P2P)
 // VITE_STUN_URLS can be a comma-separated list like: "stun:stun.l.google.com:19302,stun:global.stun.twilio.com:3478"
-// VITE_TURN_URL, VITE_TURN_USERNAME, VITE_TURN_PASSWORD are optional
+// TURN credentials are now fetched dynamically from the server
+export const getIceConfig = async (userId?: string): Promise<RTCConfiguration> => {
+  const stunServers = (import.meta.env.VITE_STUN_URLS
+    ? String(import.meta.env.VITE_STUN_URLS)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((url) => ({ urls: url }))
+    : [{ urls: 'stun:stun.l.google.com:19302' }]) as RTCIceServer[];
+
+  // Try to get TURN credentials from server
+  let turnServers: RTCIceServer[] = [];
+  if (userId && import.meta.env.VITE_TURN_URL) {
+    try {
+      const response = await fetch(`${API_CONFIG.baseURL}/api/turn-credentials?userId=${userId}`);
+      if (response.ok) {
+        const credentials = await response.json();
+        turnServers = credentials.urls.map((url: string) => ({
+          urls: url,
+          username: credentials.username,
+          credential: credentials.password,
+        }));
+      }
+    } catch (error) {
+      console.warn('Failed to get TURN credentials, using fallback:', error);
+      // Fallback to static credentials if available
+      if (import.meta.env.VITE_TURN_USERNAME && import.meta.env.VITE_TURN_PASSWORD) {
+        turnServers = [{
+          urls: String(import.meta.env.VITE_TURN_URL),
+          username: String(import.meta.env.VITE_TURN_USERNAME),
+          credential: String(import.meta.env.VITE_TURN_PASSWORD),
+        }];
+      }
+    }
+  }
+
+  return {
+    iceServers: [...stunServers, ...turnServers],
+  };
+};
+
+// Legacy ICE_CONFIG for backward compatibility
 export const ICE_CONFIG: RTCConfiguration = {
   iceServers: [
     ...((import.meta.env.VITE_STUN_URLS
@@ -53,6 +94,13 @@ export const ICE_CONFIG: RTCConfiguration = {
 
 // Хелпер для создания полного URL к API
 export function createApiUrl(endpoint: string): string {
+  // В development режиме всегда используем относительные пути для proxy
+  if (import.meta.env.DEV) {
+    const path = endpoint.trim().startsWith('/') ? endpoint.trim() : `/${endpoint.trim()}`;
+    console.log('🔧 createApiUrl (DEV):', { endpoint, result: path });
+    return path;
+  }
+
   const rawBase = API_CONFIG.baseURL || '';
   const rawEndpoint = endpoint || '';
 
@@ -62,8 +110,9 @@ export function createApiUrl(endpoint: string): string {
     ? rawEndpoint.trim()
     : `/${rawEndpoint.trim()}`;
 
-  if (base && !path.startsWith('http')) {
-    return `${base}${path}`;
-  }
-  return path;
+  const result = base && !path.startsWith('http') ? `${base}${path}` : path;
+  
+  console.log('🔧 createApiUrl (PROD):', { endpoint, base, path, result });
+  
+  return result;
 }

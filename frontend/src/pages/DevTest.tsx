@@ -101,7 +101,7 @@ export default function DevTest() {
       <div className="max-w-4xl mx-auto pt-16 sm:pt-20 space-y-4">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size="lg" />
+          <Logo size="lg" clickable={true} />
         </div>
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Dev тестирование</h1>
@@ -138,7 +138,7 @@ export default function DevTest() {
                 size="sm"
                 variant="secondary"
               >
-                Сид: только интервьюер
+                Сид: только int.
               </Button>
               <Button
                 onClick={cleanup}

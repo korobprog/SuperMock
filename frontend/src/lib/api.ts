@@ -421,3 +421,28 @@ export async function apiValidateTelegramAuth(
   const result = await res.json();
   return result;
 }
+
+// Проверка заполненных данных пользователя
+export async function apiCheckUserData(userId: number) {
+  const res = await fetch(createApiUrl(`/api/user-data-check/${userId}`), {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    if (res.status === 404) {
+      // User not found - return default values
+      return {
+        hasProfession: false,
+        hasTools: false,
+        profession: null,
+        tools: [],
+      };
+    }
+    throw new Error('Failed to check user data');
+  }
+  return res.json() as Promise<{
+    hasProfession: boolean;
+    hasTools: boolean;
+    profession?: string;
+    tools?: string[];
+  }>;
+}

@@ -179,7 +179,7 @@ function FeedbackResults({ token, sessionId, onBack }: FeedbackResultsProps) {
 
   // Функция для получения названия роли
   const getRoleName = (userId: string, session: Session): string => {
-    if (userId === session.interviewerId) return 'Интервьюер';
+    if (userId === session.interviewerId) return 'int.';
     if (userId === session.intervieweeId) return 'Интервьюируемый';
     if (session.observerIds && session.observerIds.includes(userId))
       return 'Наблюдатель';
@@ -246,11 +246,11 @@ function FeedbackResults({ token, sessionId, onBack }: FeedbackResultsProps) {
         <h2 className="text-xl font-bold mb-4">Результаты пока недоступны</h2>
         <p className="mb-4">
           Результаты обратной связи будут доступны после того, как обе стороны
-          (интервьюер и интервьюируемый) заполнят формы обратной связи.
+          (int. и интервьюируемый) заполнят формы обратной связи.
         </p>
         <div className="flex flex-col space-y-2 mb-4">
           <div className="flex items-center">
-            <span className="font-medium mr-2">Интервьюер:</span>
+            <span className="font-medium mr-2">int.:</span>
             {feedbacks.some((f) => f.userId === session.interviewerId) ? (
               <span className="text-green-600">✓ Заполнено</span>
             ) : (
