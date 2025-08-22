@@ -24,6 +24,7 @@ import {
   apiGetSlots,
   apiSaveUserTools,
 } from '@/lib/api';
+import { DateTime } from 'luxon';
 
 // Генерируем слоты для 24 часов (00:00 - 23:00)
 const generateTimeSlots = () => {
@@ -89,36 +90,60 @@ export function TimeSelection() {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   }, []);
 
-  // Функции конвертации локального времени в UTC
+  // Функции конвертации локального времени в UTC с использованием luxon
   const convertLocalToUTC = (localTime: string) => {
     const [hours, minutes] = localTime.split(':').map(Number);
-    const localDate = new Date();
-    localDate.setHours(hours, minutes, 0, 0);
-
-    // Получаем смещение часового пояса в минутах
-    const timezoneOffset = localDate.getTimezoneOffset();
-
+    
+    // Создаем дату в локальном времени пользователя
+    const localDate = DateTime.now().setZone(timezone);
+    const slotDate = localDate.set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+    
     // Конвертируем в UTC
-    const utcDate = new Date(localDate.getTime() + timezoneOffset * 60000);
-
-    return utcDate.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
+    const utcDate = slotDate.toUTC();
+    
+    return utcDate.toFormat('HH:mm');
   };
 
   const getUTCTimeForSlot = (localTime: string) => {
     return convertLocalToUTC(localTime);
   };
 
+  // Функция для конвертации UTC времени обратно в локальное для отображения
+  const convertUTCToLocal = (utcTime: string) => {
+    const [hours, minutes] = utcTime.split(':').map(Number);
+    
+    // Создаем дату в UTC
+    const utcDate = DateTime.utc().set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+    
+    // Конвертируем в локальное время пользователя
+    const localDate = utcDate.setZone(timezone);
+    
+    return localDate.toFormat('HH:mm');
+  };
+
+  // Функция для создания правильного UTC слота из локального времени
+  const createUTCSlotFromLocal = (localTime: string) => {
+    const [hours, minutes] = localTime.split(':').map(Number);
+    
+    // Создаем дату в локальном времени пользователя
+    const localDate = DateTime.now().setZone(timezone);
+    const slotDate = localDate.set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+    
+    // Конвертируем в UTC и возвращаем ISO строку
+    const utcDate = slotDate.toUTC();
+    
+    return utcDate.toISO();
+  };
+
   // Генерируем слоты и фильтруем прошедшее время
   const timeSlots = useMemo(() => {
     const allSlots = generateTimeSlots();
     const now = new Date();
+    
+    // Используем локальное время для фильтрации, чтобы пользователи видели актуальные слоты
     const currentHour = now.getHours();
-
-    // Фильтруем слоты, которые еще не прошли
+    
+    // Фильтруем слоты, которые еще не прошли по локальному времени
     return allSlots.filter((slot) => {
       const slotHour = parseInt(slot.time.split(':')[0]);
       return slotHour > currentHour;
@@ -169,7 +194,7 @@ export function TimeSelection() {
     if (slotAnalysis.length === 0) return null;
 
     const now = new Date();
-    const currentHour = now.getHours();
+    const currentHour = now.getHours(); // Используем локальное время
 
     // Определяем оптимальные временные окна для разных ролей
     const getOptimalTimeWindows = () => {
@@ -331,10 +356,8 @@ export function TimeSelection() {
 
   // Load slot counts by role
   const loadCounts = useCallback(async () => {
-    const now = new Date();
-    const localDate = `${now.getFullYear()}-${String(
-      now.getMonth() + 1
-    ).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    // Создаем дату в локальном времени пользователя для правильного определения дня
+    const localDate = DateTime.now().setZone(timezone).toFormat('yyyy-MM-dd');
 
     try {
       // Загружаем данные для кандидатов
@@ -358,8 +381,16 @@ export function TimeSelection() {
       const candidateMap: Record<string, number> = {};
       const interviewerMap: Record<string, number> = {};
 
-      for (const s of candidateRes.slots) candidateMap[s.time] = s.count;
-      for (const s of interviewerRes.slots) interviewerMap[s.time] = s.count;
+      // Конвертируем UTC времена обратно в локальное время для отображения
+      for (const s of candidateRes.slots) {
+        const localTime = convertUTCToLocal(s.time);
+        candidateMap[localTime] = s.count;
+      }
+      
+      for (const s of interviewerRes.slots) {
+        const localTime = convertUTCToLocal(s.time);
+        interviewerMap[localTime] = s.count;
+      }
 
       setCandidateCounts(candidateMap);
       setInterviewerCounts(interviewerMap);
@@ -373,7 +404,7 @@ export function TimeSelection() {
     } catch (error) {
       console.error('Failed to load slot counts:', error);
     }
-  }, [mode, profession, language, timezone]);
+  }, [mode, profession, language, timezone, convertUTCToLocal]);
 
   // reload on mode/profession/language/timezone changes
   useEffect(() => {
@@ -395,13 +426,9 @@ export function TimeSelection() {
       return;
     }
 
-    const today = new Date();
     const slotsUtc = selectedSlots.map((s) => {
-      const [hh, mm] = s.split(':');
-      const local = new Date(today);
-      local.setHours(Number(hh), Number(mm), 0, 0);
-      // Use toISOString to correctly convert local time to UTC ISO string
-      return local.toISOString();
+      // Используем правильную функцию конвертации локального времени в UTC
+      return createUTCSlotFromLocal(s);
     });
 
     try {
@@ -488,6 +515,26 @@ export function TimeSelection() {
     setShowInfoCarousel(true);
   };
 
+  // Функция для отладки конвертации времени
+  const debugTimeConversion = () => {
+    if (selectedSlots.length === 0) return;
+    
+    const localTime = selectedSlots[0];
+    const utcTime = getUTCTimeForSlot(localTime);
+    const utcSlot = createUTCSlotFromLocal(localTime);
+    const backToLocal = convertUTCToLocal(utcTime);
+    
+    console.log('🔍 Time Conversion Debug:');
+    console.log('Local time:', localTime);
+    console.log('UTC time:', utcTime);
+    console.log('UTC slot ISO:', utcSlot);
+    console.log('Back to local:', backToLocal);
+    console.log('Timezone:', timezone);
+    console.log('Current timezone offset:', DateTime.now().setZone(timezone).offset / 60, 'hours');
+    console.log('Current local time:', DateTime.now().setZone(timezone).toFormat('HH:mm'));
+    console.log('Current UTC time:', DateTime.now().toUTC().toFormat('HH:mm'));
+  };
+
   // Функция для расчета времени до выбранного матчинга
   const getTimeUntilMatch = () => {
     if (selectedSlots.length === 0) return null;
@@ -560,6 +607,17 @@ export function TimeSelection() {
           >
             <HelpCircle size={22} />
           </Button>
+          {process.env.NODE_ENV === 'development' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={debugTimeConversion}
+              className="ml-2 p-2"
+              title="Debug time conversion"
+            >
+              <Info size={22} />
+            </Button>
+          )}
         </div>
 
         <p className="text-center text-muted-foreground mb-6">
@@ -572,6 +630,11 @@ export function TimeSelection() {
           <span className="text-sm text-telegram-gray">
             {t('time.timezone')}: {timezone}
           </span>
+          {selectedSlots.length > 0 && (
+            <div className="ml-4 text-xs text-telegram-gray">
+              UTC: {getUTCTimeForSlot(selectedSlots[0])}
+            </div>
+          )}
         </div>
 
         {/* Role Toggle */}
@@ -642,11 +705,11 @@ export function TimeSelection() {
         >
           <TabsList className="grid w-full grid-cols-2 p-1 mb-6">
             <TabsTrigger value="smart" className="flex items-center gap-2 py-3">
-              <Target className="h-5 w-5" />С инструментами
+              <Target className="h-5 w-5" />{t('time.tabs.withTools')}
             </TabsTrigger>
             <TabsTrigger value="all" className="flex items-center gap-2 py-3">
               <Users className="h-5 w-5" />
-              Все слоты
+              {t('time.tabs.allSlots')}
             </TabsTrigger>
           </TabsList>
 
@@ -706,7 +769,7 @@ export function TimeSelection() {
                                 <span className="hidden sm:inline">
                                   {t('time.slots.recommended')}
                                 </span>
-                                <span className="sm:hidden">Рек</span>
+                                <span className="sm:hidden">{t('time.slots.recommendedShort')}</span>
                               </div>
                             </div>
                           )}
@@ -720,18 +783,17 @@ export function TimeSelection() {
               <div className="text-center py-8 text-muted-foreground">
                 <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">
-                  {t('tools.selectToolsToActivate')}
+                  {t('time.toolsRequired.title')}
                 </h3>
                 <p className="text-sm">
-                  Эта вкладка работает только при выбранных инструментах.
-                  Перейдите на страницу выбора инструментов.
+                  {t('time.toolsRequired.description')}
                 </p>
                 <Button
                   onClick={() => navigate('/tools')}
                   className="mt-4"
                   variant="outline"
                 >
-                  {t('tools.selectTools')}
+                  {t('time.toolsRequired.selectTools')}
                 </Button>
               </div>
             )}
@@ -748,8 +810,7 @@ export function TimeSelection() {
                       {t('tools.allSlotsToolsSaved')}
                     </p>
                     <p>
-                      Показываются все доступные слоты времени. При создании
-                      {t('tools.toolsWillBeSaved')}
+                      {t('time.allSlotsDescription')}
                     </p>
                   </div>
                 </div>
@@ -808,10 +869,10 @@ export function TimeSelection() {
                           <div className="mt-1 sm:mt-2 flex justify-center">
                             <div className="flex items-center gap-1 text-xs bg-green-100 text-green-800 border border-green-300 rounded-lg px-2 py-1">
                               <Star size={10} className="fill-green-600" />
-                              <span className="hidden sm:inline">
-                                {t('time.slots.recommended')}
-                              </span>
-                              <span className="sm:hidden">Рек</span>
+                                                              <span className="hidden sm:inline">
+                                  {t('time.slots.recommended')}
+                                </span>
+                                <span className="sm:hidden">{t('time.slots.recommendedShort')}</span>
                             </div>
                           </div>
                         )}
@@ -849,7 +910,7 @@ export function TimeSelection() {
                     {t('time.buttons.continueAt')} {selectedSlots[0]}
                   </span>
                   <span className="sm:hidden">
-                    Продолжить {selectedSlots[0]}
+                    {t('time.buttons.continue')} {selectedSlots[0]}
                   </span>
                   <AlarmClock size={18} className="ml-2" />
                 </>
@@ -858,7 +919,7 @@ export function TimeSelection() {
                   <span className="hidden sm:inline">
                     {t('time.buttons.selectTime')}
                   </span>
-                  <span className="sm:hidden">Выбрать время</span>
+                  <span className="sm:hidden">{t('time.buttons.selectTime')}</span>
                   <Clock size={18} className="ml-2" />
                 </>
               )}
