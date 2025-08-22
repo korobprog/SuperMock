@@ -138,15 +138,15 @@ export function TimeSelection() {
   // Генерируем слоты и фильтруем прошедшее время
   const timeSlots = useMemo(() => {
     const allSlots = generateTimeSlots();
-    const now = new Date();
     
-    // Используем локальное время для фильтрации, чтобы пользователи видели актуальные слоты
-    const currentHour = now.getHours();
+    // Используем UTC время для фильтрации, чтобы все пользователи видели одинаковые слоты
+    const now = DateTime.now().toUTC();
+    const currentUTCHour = now.hour;
     
-    // Фильтруем слоты, которые еще не прошли по локальному времени
+    // Фильтруем слоты, которые еще не прошли по UTC времени
     return allSlots.filter((slot) => {
       const slotHour = parseInt(slot.time.split(':')[0]);
-      return slotHour > currentHour;
+      return slotHour > currentUTCHour;
     });
   }, []);
 
@@ -193,8 +193,9 @@ export function TimeSelection() {
   const recommendedSlot = useMemo(() => {
     if (slotAnalysis.length === 0) return null;
 
-    const now = new Date();
-    const currentHour = now.getHours(); // Используем локальное время
+    // Используем UTC время для консистентности между пользователями
+    const now = DateTime.now().toUTC();
+    const currentHour = now.hour;
 
     // Определяем оптимальные временные окна для разных ролей
     const getOptimalTimeWindows = () => {
