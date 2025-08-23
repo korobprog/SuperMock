@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест локального API</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { margin: 5px; padding: 10px; }
+        #logs { background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест локального API</h1>
+    
+    <div>
+        <h3>🔄 Тестирование API:</h3>
+        <button onclick="testAPI()">Тест API</button>
+        <button onclick="clearLogs()">Очистить логи</button>
+        <button onclick="testInfiniteLoop()">Тест бесконечного цикла</button>
+        <div id="results"></div>
+    </div>
+
+    <div>
+        <h3>📋 Логи:</h3>
+        <div id="logs"></div>
+    </div>
+
+    <script>
+        let requestCount = 0;
+        
+        function log(message) {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        async function testAPI() {
+            log('🔄 Тестирование API...');
+            requestCount++;
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/slots/enhanced?role=candidate&profession=frontend&language=ru&timezone=Asia/Vladivostok');
+                const data = await response.json();
+                
+                log(`✅ API ответ получен (запрос #${requestCount}):`);
+                log(`   Статус: ${response.status}`);
+                log(`   Слотов: ${data.slots?.length || 0}`);
+                
+                if (data.slots && data.slots.length > 0) {
+                    data.slots.forEach(slot => {
+                        if (slot.count > 0) {
+                            log(`   📅 Слот: ${slot.time} (UTC: ${slot.utcTime}) - ${slot.count} чел.`);
+                        }
+                    });
+                }
+                
+                document.getElementById('results').innerHTML = 
+                    `<div class="success"><h4>✅ API работает!</h4><p>Получено ${data.slots?.length || 0} слотов</p></div>`;
+                    
+            } catch (error) {
+                log(`❌ Ошибка API (запрос #${requestCount}): ${error.message}`);
+                document.getElementById('results').innerHTML = 
+                    `<div class="error"><h4>❌ Ошибка API</h4><p>${error.message}</p></div>`;
+            }
+        }
+
+        async function testInfiniteLoop() {
+            log('🔄 Тест бесконечного цикла...');
+            log('⚠️ Будет выполнено 5 запросов с интервалом 2 секунды');
+            
+            for (let i = 1; i <= 5; i++) {
+                log(`📡 Запрос ${i}/5...`);
+                await testAPI();
+                if (i < 5) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+            
+            log('✅ Тест бесконечного цикла завершен');
+        }
+
+        // Автоматически тестируем API при загрузке страницы
+        window.onload = function() {
+            log('🚀 Страница загружена, начинаем тестирование...');
+            testAPI();
+        };
+    </script>
+</body>
+</html>

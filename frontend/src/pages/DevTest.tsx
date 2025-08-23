@@ -150,6 +150,34 @@ export default function DevTest() {
               </Button>
             </div>
 
+            {/* Кнопки для тестирования страниц */}
+            <div className="flex gap-2 flex-wrap pt-2 border-t">
+              <Button
+                onClick={() => navigate('/dev-waiting')}
+                size="sm"
+                variant="outline"
+                className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+              >
+                🕐 Редактировать страницу ожидания
+              </Button>
+              <Button
+                onClick={() => navigate('/notifications')}
+                size="sm"
+                variant="outline"
+                className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+              >
+                🔔 Тестировать уведомления
+              </Button>
+              <Button
+                onClick={() => navigate('/time')}
+                size="sm"
+                variant="outline"
+                className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700"
+              >
+                ⏰ Тестировать выбор времени
+              </Button>
+            </div>
+
             {error && (
               <div className="text-sm text-red-600">Ошибка: {error}</div>
             )}

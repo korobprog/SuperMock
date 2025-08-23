@@ -21,7 +21,7 @@
     "notAuthorized": "Not authorized",
     "configureApi": "Configure API",
     "quickActions": "Quick actions",
-    "interviewer": "int.",
+    "interviewer": "Interviewer",
     "candidate": "Candidate",
     "lastInterview": "Last interview",
     "comingSoon": "Coming soon",
@@ -30,12 +30,14 @@
   "role": {
     "selectRole": "Select Role",
     "roleSubtitle": "What role do you want to take in the mock interview?",
-    "interviewer": "int.",
+    "interviewer": "Interviewer",
     "interviewerDesc": "Conduct interviews and evaluate candidates",
     "candidate": "Candidate",
     "candidateDesc": "Take interviews and receive feedback",
-    "interviewerShort": "int.",
-    "candidateShort": "Can."
+    "interviewerShort": "Int.",
+    "candidateShort": "Can.",
+    "interviewerAction": "Conduct interviews",
+    "candidateAction": "Take interviews"
   },
   "profession": {
     "selectProfession": "Select Profession",
@@ -81,30 +83,61 @@
       "collapse": "Collapse",
       "showAnalysis": "Show Analysis",
       "interviewers": "Interviewers",
-      "interviewersShort": "int.",
+      "interviewersShort": "Interviewer",
       "candidates": "Candidates"
     },
     "slots": {
       "availableSlotsInterviewers": "Available slots (interviewers)",
       "availableSlotsCandidates": "Available slots (candidates)",
-      "interviewersShort": "int.",
+      "interviewersShort": "Interviewer",
       "candidatesShort": "Can.",
-      "recommended": "Recommended"
+      "recommended": "Recommended",
+      "recommendedShort": "Rec"
     },
     "buttons": {
       "back": "Back",
       "continueAt": "Continue at",
-      "selectTime": "Select time"
+      "selectTime": "Select time",
+      "continue": "Continue"
     },
     "header": {
       "title": "Select Time",
       "subtitle": "Find a suitable interview slot",
       "help": "Help",
-      "role": "Role"
+      "role": "Select Role"
+    },
+    "sessionInfo": {
+      "title": "Session Information"
+    },
+    "roleSelection": {
+      "subtitle": "What role do you want to take in the mock interview?"
+    },
+    "sessionInfo": {
+      "title": "Session Information",
+      "toolsNotSelected": "Not selected",
+      "toolsCount": "{{count}} tools",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "showAllTools": "Show all tools",
+      "collapseTools": "Collapse list"
     },
     "timeDisplay": {
       "yourTime": "Your time",
       "utcTime": "UTC time"
+    },
+    "tabs": {
+      "withTools": "With Tools",
+      "allSlots": "All Slots"
+    },
+    "toolsRequired": {
+      "title": "Select tools to activate",
+      "description": "This tab works only with selected tools. Go to the tools selection page.",
+      "selectTools": "Select Tools"
+    },
+    "allSlotsDescription": "All available time slots are shown. When creating a slot, your tools will be automatically saved.",
+    "searching": {
+      "title": "Searching for Candidate",
+      "subtitle": "Looking for a suitable candidate for the interview..."
     }
   },
   "interview": {
@@ -164,7 +197,7 @@
     "backToMain": "Back to Main",
     "noInterviews": "You haven't conducted any interviews yet",
     "startNewInterview": "Start New Interview",
-    "interviewer": "int.",
+    "interviewer": "Interviewer",
     "candidate": "Candidate",
     "receivedFeedback": "Received Feedback",
     "givenFeedback": "Your Feedback",
@@ -172,8 +205,8 @@
     "userIdNotFound": "User ID not found",
     "failedToLoadHistory": "Failed to load history",
     "unknownDate": "Unknown date",
-    "candidateShort": "Can.",
-    "interviewerShort": "int.",
+          "candidateShort": "Can.",
+      "interviewerShort": "Int.",
     "status": {
       "completed": "Completed",
       "active": "Active",
@@ -215,9 +248,12 @@
     "matchFoundTitle": "Match found!",
     "addedToQueueTitle": "Added to waiting queue",
     "messages": {
-      "slotExpired": "Could not find a match for slot {{slotTime}}. Please choose another time.{{#if tools}}\nYour tools: {{tools}}{{/if}}",
-      "matchFound": "Time: {{slotTime}}\nYour role: {{role}}\nRoom: {{roomName}}\nLink: {{link}}{{#if tools}}\nYour tools: {{tools}}{{/if}}",
-      "addedToQueue": "Slot: {{slotTime}}\nRole: {{role}}{{#if tools}}\nTools: {{tools}}{{/if}}",
+      "slotExpired": "Could not find a match for slot {{slotTime}}. Please choose another time.",
+      "slotExpiredWithTools": "Could not find a match for slot {{slotTime}}. Please choose another time.\nYour tools: {{tools}}",
+      "matchFound": "Time: {{slotTime}}\nYour role: {{role}}\nRoom: {{roomName}}\nLink: {{link}}",
+      "matchFoundWithTools": "Time: {{slotTime}}\nYour role: {{role}}\nRoom: {{roomName}}\nLink: {{link}}\nYour tools: {{tools}}",
+      "addedToQueue": "Slot: {{slotTime}}\nRole: {{role}}",
+      "addedToQueueWithTools": "Slot: {{slotTime}}\nRole: {{role}}\nTools: {{tools}}",
       "reminder": "Reminder: interview in {{timeLeft}}"
     }
   },
@@ -243,11 +279,11 @@
     "junior": "Junior",
     "middle": "Middle",
     "senior": "Senior",
-    "benefitsTitle": "AI Generation Benefits",
-    "benefitsDesc": "Configure OpenRouter API to get additional features",
-    "benefit1": "Unique questions for each profession",
-    "benefit2": "Adaptation to difficulty level",
-    "benefit3": "Unlimited number of questions",
+
+    "aiBenefitsTitle": "AI Generation Benefits",
+    "aiBenefit1": "Unique questions for each profession",
+    "aiBenefit2": "Adaptation to difficulty level",
+    "aiBenefit3": "Unlimited number of questions",
     "save": "Save Settings",
     "loadingSettings": "Loading settings...",
     "projectMode": "Project mode",
@@ -256,6 +292,8 @@
     "profileSettings": "Profile settings",
     "interviewLanguage": "Interview language",
     "profession": "Profession",
+    "interfaceLanguage": "Interface Language",
+    "interfaceLanguageDesc": "Choose the language for displaying the application interface",
     "goToInterview": "Go to interview booking",
     "getFreeKey": "Get free key",
     "getFreeKeyDesc": "for AI generation of interview questions.",
@@ -311,6 +349,242 @@
       "design": "Design",
       "testing": "Testing",
       "devops": "DevOps"
+    }
+  },
+  "infoCarousel": {
+    "candidateTitle": "For Candidates",
+    "interviewerTitle": "Interviewer",
+    "back": "Back",
+    "next": "Next",
+    "candidateSlides": {
+      "slide1": {
+        "title": "Choose convenient time",
+        "description": "Slots available 24 hours a day. The system automatically hides past time."
+      },
+      "slide2": {
+        "title": "Find interviewers",
+        "description": "See the number of available interviewers in each time slot."
+      },
+      "slide3": {
+        "title": "Smart recommendations",
+        "description": "The system recommends optimal time for quick matching."
+      },
+      "slide4": {
+        "title": "Quick start",
+        "description": "One click - and you're in the interview queue. Automatic matching!"
+      }
+    },
+    "interviewerSlides": {
+      "slide1": {
+        "title": "Flexible schedule",
+        "description": "Choose when it's convenient for you to conduct interviews."
+      },
+      "slide2": {
+        "title": "Candidates are waiting",
+        "description": "See the number of candidates ready for interviews in each slot."
+      },
+      "slide3": {
+        "title": "Optimal time",
+        "description": "The system shows when there are the most candidates."
+      },
+      "slide4": {
+        "title": "Efficiency",
+        "description": "Maximum load and minimum waiting time."
+      }
+    }
+  },
+  "stackBlitzModal": {
+    "title": "StackBlitz API Key",
+    "subtitle": "Learn more about collaborative code editing capabilities",
+    "back": "Back",
+    "next": "Next",
+    "gotIt": "Got it",
+    "getApiKey": "Get API Key",
+    "slides": {
+      "slide1": {
+        "title": "What is StackBlitz API?",
+        "description": "StackBlitz API allows you to run and edit code in the browser without installing additional software."
+      },
+      "slide2": {
+        "title": "Collaborative editing",
+        "description": "During the interview, you can write code together with the interviewer in real time."
+      },
+      "slide3": {
+        "title": "Collaboration",
+        "description": "The interviewer sees your code and can comment, suggest changes and evaluate solutions."
+      },
+      "slide4": {
+        "title": "How to get an API key?",
+        "description": "Go to stackblitz.com, sign in to your account and create an API key in your profile settings."
+      }
+    }
+  },
+  "openRouterModal": {
+    "title": "OpenRouter API Key",
+    "subtitle": "Learn more about AI question generation capabilities for interviews",
+    "back": "Back",
+    "next": "Next",
+    "gotIt": "Got it",
+    "getApiKey": "Get API Key",
+    "slides": {
+      "slide1": {
+        "title": "What is OpenRouter?",
+        "description": "OpenRouter is a platform that provides access to various AI models through a unified API interface."
+      },
+      "slide2": {
+        "title": "AI question generation",
+        "description": "Using OpenRouter API, the system automatically generates personalized interview questions based on your profession and level."
+      },
+      "slide3": {
+        "title": "Security and privacy",
+        "description": "Your API key is stored locally and used only for question generation. We don't have access to your data."
+      },
+      "slide4": {
+        "title": "How to get an API key?",
+        "description": "Go to openrouter.ai, create an account and get an API key in the \"Keys\" section. First $5 credits free!"
+      }
+    }
+  },
+  "waiting": {
+    "rules": {
+      "title": "Rules of Mutual Respect",
+      "important": "Important",
+      "bePolite": "Be polite and patient",
+      "dontInterrupt": "Don't interrupt the interlocutor",
+      "askQuestions": "Ask clarifying questions",
+      "giveFeedback": "Give constructive feedback",
+      "goal": "Remember: the goal is to help each other develop professionally",
+      "interviewerTips": "Tips for interviewer:",
+      "candidateTips": "Tips for candidate:",
+      "interviewerAdvice": "Be friendly, ask open questions, give the candidate time to think",
+      "candidateAdvice": "Be confident, give specific examples, don't be afraid to ask questions"
+    },
+    "devMode": "DEV MODE - Mock Data",
+    "waitingRoom": "Waiting Room (DEV)",
+    "waitingForMock": "Waiting for mock interview to start",
+    "sessionInfo": {
+      "startTime": "Start time",
+      "yourRole": "Your role",
+      "profession": "Profession",
+      "language": "Language",
+      "notSpecified": "Not specified",
+      "notSpecifiedLang": "Not specified"
+    },
+    "participants": {
+      "title": "Session Participants",
+      "waiting": "Waiting:",
+      "interviews": "interviews",
+      "interviewer": "Interviewer",
+      "candidate": "Candidate"
+    },
+    "timer": {
+      "untilStart": "Until start:",
+      "late": "Late:",
+      "canEnter": "Can enter!",
+      "progress": "Progress until entry is possible",
+      "lateWarning": "⚠️ You are late for the interview. Try to join as soon as possible."
+    },
+    "actions": {
+      "mediaSettings": "Camera and sound settings",
+      "hideSettings": "Hide settings",
+      "joinInterview": "Join interview",
+      "joinLate": "Join (late)",
+      "enterEarly": "Enter early (test)",
+      "earlyInfo": "Usually entry is possible 5 minutes before start",
+      "lateInfo": "Interview start time has already passed",
+      "backToDevTest": "← Back to dev-test"
+    },
+    "status": {
+      "active": "Session is active and ready to start (DEV)"
+    },
+    "errors": {
+      "title": "Error",
+      "insufficientData": "Insufficient data to load session",
+      "loadError": "Error loading session data",
+      "sessionNotFound": "Session not found",
+      "loadFailed": "Failed to load session data"
+    },
+    "loading": {
+      "mockData": "Loading mock data...",
+      "sessionData": "Loading session data..."
+    }
+  },
+  "chat": {
+    "title": "Participants Chat",
+    "typing": "Typing...",
+    "quickMessages": "Quick Messages",
+    "inputPlaceholder": "Write a message...",
+    "enterToSend": "Enter to send",
+    "system": "System",
+    "participantsConnected": "Participants connected to chat ({{count}}/2)",
+    "you": "You",
+    "messages": {
+      "greeting": {
+        "hello": "Hello!",
+        "goodDay": "Good day!",
+        "greetings": "Greetings!",
+        "niceToMeet": "Nice to meet you!"
+      },
+      "status": {
+        "ready": "Ready for interview",
+        "nervous": "A bit nervous",
+        "great": "Everything is great!",
+        "needMinute": "Need a minute",
+        "checkingSound": "Checking sound"
+      },
+      "question": {
+        "howAreYou": "How are you?",
+        "readyToStart": "Ready to start?",
+        "anyQuestions": "Any questions?",
+        "everythingClear": "Everything clear?",
+        "shallWeStart": "Shall we start?",
+        "readyToAnswer": "Ready to answer"
+      },
+      "reaction": {
+        "excellent": "Excellent!",
+        "agree": "Agree",
+        "interesting": "Interesting",
+        "gotIt": "Got it",
+        "thankYou": "Thank you!",
+        "greatQuestion": "Great question"
+      }
+    }
+  },
+  "media": {
+    "title": "Camera and Sound Settings",
+    "subtitle": "Check and configure your devices before the interview",
+    "refresh": "Refresh",
+    "camera": {
+      "title": "Camera",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "enable": "Enable camera",
+      "selectDevice": "Select camera:"
+    },
+    "microphone": {
+      "title": "Microphone",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "enable": "Enable microphone",
+      "selectDevice": "Select microphone:",
+      "level": "Sound level"
+    },
+    "volume": {
+      "title": "Volume"
+    },
+    "actions": {
+      "saveSettings": "Save settings",
+      "testAudio": "Test audio",
+      "stopTest": "Stop test"
+    },
+    "status": {
+      "saved": "✅ Settings saved and will be used during the interview"
+    },
+    "errors": {
+      "noDevices": "No available camera or microphone devices found",
+      "loadFailed": "Failed to load device list. Check browser permissions.",
+      "deviceUnavailable": "Device unavailable: {{constraint}}. Try selecting another device.",
+      "streamFailed": "Failed to start media stream. Check browser permissions."
     }
   }
 }

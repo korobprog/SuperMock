@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ToolSelector } from '@/components/ui/tool-selector';
 import { PopularCombinations } from '@/components/ui/popular-combinations';
 import { Logo } from '@/components/ui/logo';
 import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
+import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
 import { useAppTranslation } from '@/lib/i18n';
 import { apiSaveUserTools } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
@@ -22,6 +23,7 @@ export function ToolSelection() {
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
   const [isLanguageDetected, setIsLanguageDetected] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchParams] = useSearchParams();
 
   const setSelectedToolsStore = useAppStore((s) => s.setSelectedTools);
   const setProfession = useAppStore((s) => s.setProfession);
@@ -33,6 +35,9 @@ export function ToolSelection() {
 
   const navigate = useNavigate();
   const { t } = useAppTranslation();
+
+  // Определяем, откуда пришёл пользователь
+  const isFromProfile = searchParams.get('from') === 'profile';
 
   // Проверяем и обновляем язык при загрузке страницы
   useEffect(() => {
@@ -56,6 +61,14 @@ export function ToolSelection() {
     ensureLanguageIsSet();
   }, [setLanguage, currentLanguage]);
 
+  // Обрабатываем профессию из URL параметров
+  useEffect(() => {
+    const professionFromUrl = searchParams.get('profession');
+    if (professionFromUrl && professionFromUrl !== profession) {
+      setProfession(professionFromUrl);
+    }
+  }, [searchParams, profession, setProfession]);
+
   // Если профессия не выбрана, перенаправляем на выбор профессии
   useEffect(() => {
     if (isLanguageDetected && !profession) {
@@ -68,6 +81,46 @@ export function ToolSelection() {
   const popularCombinations = professionData
     ? getPopularCombinations(profession)
     : [];
+
+  const handleSave = async () => {
+    if (selectedTools.length < 2) return;
+
+    setIsSaving(true);
+
+    try {
+      // Сохраняем в store
+      setSelectedToolsStore(selectedTools);
+
+      // В dev режиме создаем локальный userId если его нет
+      let currentUserId = userId;
+      if (!currentUserId && import.meta.env.DEV) {
+        const localId = Math.floor(Math.random() * 1000000) + 1000000;
+        setUserId(localId);
+        currentUserId = localId;
+        console.log('🎭 Generated local userId for dev mode:', localId);
+      }
+
+      // Сохраняем в базу данных
+      if (currentUserId && profession) {
+        try {
+          await apiSaveUserTools({
+            userId: currentUserId,
+            profession,
+            tools: selectedTools,
+          });
+        } catch (e) {
+          console.warn('Failed to save tools to database:', e);
+        }
+      }
+
+      // Возвращаемся в профиль
+      navigate('/profile');
+    } catch (error) {
+      console.error('Failed to save tools:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleNext = async () => {
     if (selectedTools.length < 2) return;
@@ -100,6 +153,7 @@ export function ToolSelection() {
         }
       }
 
+      // Перенаправляем на страницу времени
       navigate('/time');
     } catch (error) {
       console.error('Failed to save tools:', error);
@@ -166,16 +220,19 @@ export function ToolSelection() {
               {t('tools.selectTools')}
             </h1>
           </div>
-          {selectedTools.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedTools([])}
-              className="ml-2 p-2 text-muted-foreground hover:text-foreground"
-            >
-              {t('tools.reset')}
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            <CompactLanguageSelector />
+            {selectedTools.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedTools([])}
+                className="p-2 text-muted-foreground hover:text-foreground"
+              >
+                {t('tools.reset')}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Profession Info */}
@@ -240,10 +297,10 @@ export function ToolSelection() {
           </div>
         )}
 
-        {/* Next Button */}
+        {/* Action Button */}
         <div className="sticky bottom-4 z-[60]">
           <Button
-            onClick={handleNext}
+            onClick={isFromProfile ? handleSave : handleNext}
             disabled={!isSelectionValid || isSaving}
             className="w-full h-12 text-base font-medium bg-gradient-to-r from-primary to-primary hover:shadow-[0_4px_20px_hsl(var(--primary)/30%)] transition-all duration-300"
           >
@@ -255,8 +312,8 @@ export function ToolSelection() {
             ) : (
               <div className="flex items-center gap-2">
                 {isSelectionValid && <CheckCircle className="h-4 w-4" />}
-                {t('navigation.next')}
-                <ArrowRight className="h-4 w-4" />
+                {isFromProfile ? t('common.save') : t('navigation.next')}
+                {!isFromProfile && <ArrowRight className="h-4 w-4" />}
               </div>
             )}
           </Button>

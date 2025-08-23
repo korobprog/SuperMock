@@ -400,7 +400,7 @@ async function attemptQueueMatch({ slotUtc, profession, language }) {
       title,
       titleKey: 'notifications.matchFoundTitle',
       message: `Время: ${formattedSlotTime}\nВаша роль: Кандидат\nКомната: ${jitsiRoom}\nСсылка: ${waitingRoomUrl}${candidateToolsText}`,
-      messageKey: 'notifications.messages.matchFound',
+      messageKey: candidateTools.length > 0 ? 'notifications.messages.matchFoundWithTools' : 'notifications.messages.matchFound',
       messageData: JSON.stringify({
         slotTime: formattedSlotTime,
         role: 'Кандидат',
@@ -418,7 +418,7 @@ async function attemptQueueMatch({ slotUtc, profession, language }) {
       title,
       titleKey: 'notifications.matchFoundTitle',
       message: `Время: ${formattedSlotTime}\nВаша роль: Интервьюер\nКомната: ${jitsiRoom}\nСсылка: ${waitingRoomUrl}${interviewerToolsText}`,
-      messageKey: 'notifications.messages.matchFound',
+      messageKey: interviewerTools.length > 0 ? 'notifications.messages.matchFoundWithTools' : 'notifications.messages.matchFound',
       messageData: JSON.stringify({
         slotTime: formattedSlotTime,
         role: 'Интервьюер',
@@ -858,16 +858,11 @@ app.get('/api/slots/with-tools', async (req, res) => {
       select: { slotUtc: true },
     });
 
-    // Group by local HH:mm in provided timezone
+    // Group by UTC HH:mm (одинаково для всех пользователей)
     const counts = {};
     for (const q of queues) {
       const d = new Date(q.slotUtc);
-      const parts = d.toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: targetTimezone,
-      });
+      const parts = d.toISOString().slice(11, 16); // HH:mm в UTC
       counts[parts] = (counts[parts] || 0) + 1;
     }
 
@@ -883,11 +878,8 @@ app.get('/api/slots/with-tools', async (req, res) => {
     // Получаем пользователей с их инструментами для каждого слота
     const slotsWithTools = await Promise.all(
       baseSlots.map(async (slot) => {
-        // Конвертируем время обратно в UTC для поиска
-        const slotDate = DateTime.fromISO(`${targetDate}T${slot.time}`, {
-          zone: targetTimezone,
-        });
-        const slotUtc = slotDate.toUTC().toISO();
+        // Время уже в UTC, просто добавляем дату
+        const slotUtc = `${targetDate}T${slot.time}:00.000Z`;
 
         const usersInSlot = await prisma.userQueue.findMany({
           where: {
@@ -1178,16 +1170,11 @@ app.get('/api/slots', async (req, res) => {
       select: { slotUtc: true },
     });
 
-    // Group by local HH:mm in provided timezone
+    // Group by UTC HH:mm (одинаково для всех пользователей)
     const counts = {};
     for (const q of queues) {
       const d = new Date(q.slotUtc);
-      const parts = d.toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: timezone,
-      });
+      const parts = d.toISOString().slice(11, 16); // HH:mm в UTC
       counts[parts] = (counts[parts] || 0) + 1;
     }
 
@@ -1202,11 +1189,119 @@ app.get('/api/slots', async (req, res) => {
   }
 });
 
+// Enhanced slots endpoint with timezone information
+app.get('/api/slots/enhanced', async (req, res) => {
+  try {
+    const role = String(req.query.role || 'candidate');
+    const profession = req.query.profession
+      ? String(req.query.profession)
+      : undefined;
+    const language = req.query.language
+      ? String(req.query.language)
+      : undefined;
+    const date = String(
+      req.query.date || new Date().toISOString().slice(0, 10)
+    );
+    const timezone = String(req.query.timezone || 'UTC');
+    const oppositeRole = role === 'interviewer' ? 'candidate' : 'interviewer';
+
+    // Compute day window in requested timezone
+    const startZ = DateTime.fromISO(date, { zone: timezone }).startOf('day');
+    const endZ = DateTime.fromISO(date, { zone: timezone }).endOf('day');
+    const start = startZ.toUTC().toISO();
+    const end = endZ.toUTC().toISO();
+
+    console.log(`🔍 API /api/slots/enhanced:`, {
+      role,
+      oppositeRole,
+      profession,
+      language,
+      date,
+      timezone,
+      start,
+      end
+    });
+
+    const queues = await prisma.userQueue.findMany({
+      where: {
+        role: role,
+        status: 'waiting',
+        slotUtc: { gte: start, lte: end },
+        ...(profession && { profession }),
+        ...(language && { language }),
+      },
+      select: { slotUtc: true },
+    });
+
+    console.log(`📊 Найдено записей в базе: ${queues.length}`);
+    console.log(`📋 Записи:`, queues.map(q => q.slotUtc));
+    
+    // Дополнительная проверка всех записей в базе
+    const allRecords = await prisma.userQueue.findMany({
+      where: {
+        status: 'waiting',
+        slotUtc: { gte: start, lte: end },
+      },
+      select: { id: true, userId: true, role: true, slotUtc: true, profession: true, language: true },
+    });
+    console.log(`🔍 Все записи в базе для периода ${start} - ${end}:`, allRecords);
+
+    // Group by UTC HH:mm and add timezone information
+    const counts = {};
+    for (const q of queues) {
+      const d = new Date(q.slotUtc);
+      const parts = d.toISOString().slice(11, 16); // HH:mm в UTC
+      counts[parts] = (counts[parts] || 0) + 1;
+    }
+
+    const slots = Object.entries(counts)
+      .map(([utcTime, count]) => {
+        // Convert UTC time to user's local timezone
+        const [hours, minutes] = utcTime.split(':').map(Number);
+        const utcDate = DateTime.utc().set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
+        const localDate = utcDate.setZone(timezone);
+        const localTime = localDate.toFormat('HH:mm');
+        
+        return { 
+          time: localTime, // Return local time for display
+          utcTime: utcTime, // Keep UTC time for reference
+          count,
+          timezone: timezone,
+          offset: localDate.offset / 60 // Offset in hours
+        };
+      })
+      .sort((a, b) => (a.time < b.time ? -1 : 1));
+
+    res.json({ 
+      slots,
+      timezone: {
+        name: timezone,
+        offset: slots.length > 0 ? slots[0].offset : 0,
+        currentTime: DateTime.now().setZone(timezone).toFormat('HH:mm'),
+        utcTime: DateTime.now().toUTC().toFormat('HH:mm')
+      }
+    });
+  } catch (err) {
+    console.error('Error in GET /api/slots/enhanced:', err);
+    res.status(500).json({ error: 'Failed to load enhanced slots' });
+  }
+});
+
 // Slots: join queue for a specific slot
 app.post('/api/slots/join', async (req, res) => {
   try {
     const { userId, role, profession, language, slotUtc, tools } =
       req.body || {};
+    
+    console.log('🔄 API /api/slots/join request:', {
+      userId,
+      role,
+      profession,
+      language,
+      slotUtc,
+      tools: tools ? `[${tools.length} tools]` : undefined
+    });
+    
     if (!userId || !role || !slotUtc) {
       return res
         .status(400)
@@ -1225,11 +1320,21 @@ app.post('/api/slots/join', async (req, res) => {
     });
 
     // Insert into queue if not already waiting for same slot/role
+    console.log('🔍 Проверяем существующую запись:', {
+      userId: String(userId),
+      role,
+      slotUtc,
+      status: 'waiting'
+    });
+    
     const existing = await prisma.userQueue.findFirst({
       where: { userId: String(userId), role, slotUtc, status: 'waiting' },
     });
+    
+    console.log('🔍 Существующая запись:', existing ? 'найдена' : 'не найдена');
+    
     if (!existing) {
-      await prisma.userQueue.create({
+      const newRecord = await prisma.userQueue.create({
         data: {
           userId: String(userId),
           role,
@@ -1238,6 +1343,14 @@ app.post('/api/slots/join', async (req, res) => {
           slotUtc,
           status: 'waiting',
         },
+      });
+      
+      console.log('✅ Запись создана в базе:', {
+        id: newRecord.id,
+        userId: newRecord.userId,
+        role: newRecord.role,
+        slotUtc: newRecord.slotUtc,
+        status: newRecord.status
       });
 
       // Save user tools if provided
@@ -1347,7 +1460,7 @@ app.post('/api/slots/join', async (req, res) => {
         title: 'Добавлены в очередь ожидания',
         titleKey: 'notifications.addedToQueueTitle',
         message: `Слот: ${formattedSlotTime}\nРоль: ${role}${toolsMessage}`,
-        messageKey: 'notifications.messages.addedToQueue',
+        messageKey: userTools.length > 0 ? 'notifications.messages.addedToQueueWithTools' : 'notifications.messages.addedToQueue',
         messageData: JSON.stringify({
           slotTime: formattedSlotTime,
           role: role,
@@ -1469,18 +1582,25 @@ app.get('/api/notifications/unread-count', async (req, res) => {
 // Simple schedulers
 async function createMatchesFromQueues() {
   try {
+    console.log('🔄 Starting createMatchesFromQueues...');
     // Find distinct combinations where both roles are waiting
     const waiting = await prisma.userQueue.findMany({
       where: { status: 'waiting' },
       select: { slotUtc: true, profession: true, language: true, role: true },
     });
+    console.log(`📊 Found ${waiting.length} waiting users`);
+    
     const keySet = new Set(
       waiting.map(
         (w) => `${w.slotUtc}::${w.profession || ''}::${w.language || ''}`
       )
     );
+    console.log(`🔑 Processing ${keySet.size} unique slot combinations`);
+    
     for (const key of keySet) {
       const [slotUtc, profession, language] = key.split('::');
+      console.log(`⏰ Checking slot: ${slotUtc}, profession: ${profession}, language: ${language}`);
+      
       // check if both roles exist
       const hasCandidate = waiting.some(
         (w) =>
@@ -1496,9 +1616,18 @@ async function createMatchesFromQueues() {
           (w.language || '') === language &&
           w.role === 'interviewer'
       );
-      if (!hasCandidate || !hasInterviewer) continue;
+      
+      console.log(`👥 Slot ${slotUtc}: candidates=${hasCandidate}, interviewers=${hasInterviewer}`);
+      
+      if (!hasCandidate || !hasInterviewer) {
+        console.log(`❌ Skipping slot ${slotUtc} - no matching pairs`);
+        continue;
+      }
+      
+      console.log(`✅ Attempting to match for slot ${slotUtc}`);
       // keep matching until no more pairs can be formed
       // looping until attemptQueueMatch returns null
+      let matchCount = 0;
       while (true) {
         const session = await attemptQueueMatch({
           slotUtc,
@@ -1506,10 +1635,14 @@ async function createMatchesFromQueues() {
           language: language || undefined,
         });
         if (!session) break;
+        matchCount++;
+        console.log(`🎯 Created match #${matchCount} for slot ${slotUtc}`);
       }
+      console.log(`🏁 Completed matching for slot ${slotUtc}, created ${matchCount} matches`);
     }
+    console.log('✅ createMatchesFromQueues completed');
   } catch (e) {
-    console.error('Scheduler createMatchesFromQueues error:', e);
+    console.error('❌ Scheduler createMatchesFromQueues error:', e);
   }
 }
 
@@ -1624,10 +1757,14 @@ async function sendReminders() {
                 userId: s.candidateUserId,
                 type: 'reminder',
                 title: 'Напоминание о собеседовании',
-                message: `Через 15 минут начнется ваше собеседование. Ссылка: ${s.jitsiRoom}${candidateToolsText}`,
+                message: `Через 15 минут начнется ваше собеседование.${candidateToolsText}`,
                 status: 'info',
                 priority: 1,
-                actionData: marker,
+                actionData: JSON.stringify({ 
+                  type: 'reminder', 
+                  sessionId: s.id,
+                  jitsiRoom: s.jitsiRoom 
+                }),
               },
             });
           }
@@ -1646,10 +1783,14 @@ async function sendReminders() {
                 userId: s.interviewerUserId,
                 type: 'reminder',
                 title: 'Напоминание о собеседовании',
-                message: `Через 15 минут начнется ваше собеседование. Ссылка: ${s.jitsiRoom}${interviewerToolsText}`,
+                message: `Через 15 минут начнется ваше собеседование.${interviewerToolsText}`,
                 status: 'info',
                 priority: 1,
-                actionData: marker,
+                actionData: JSON.stringify({ 
+                  type: 'reminder', 
+                  sessionId: s.id,
+                  jitsiRoom: s.jitsiRoom 
+                }),
               },
             });
           }
@@ -1714,7 +1855,7 @@ async function expireOldQueues() {
           title: 'Время истекло',
           titleKey: 'notifications.slotExpiredTitle',
           message: `Не удалось найти пару для слота ${formattedSlotTime}. Выберите другое время.${toolsText}`,
-          messageKey: 'notifications.messages.slotExpired',
+          messageKey: userTools.length > 0 ? 'notifications.messages.slotExpiredWithTools' : 'notifications.messages.slotExpired',
           messageData: JSON.stringify({
             slotTime: formattedSlotTime,
             tools: userTools.map((t) => t.toolName).join(', ')
@@ -2511,8 +2652,8 @@ if (
         join = 'both', // both | candidate | interviewer | none
       } = req.body || {};
 
-      const candidateId = 600001;
-      const interviewerId = 600002;
+      const candidateId = '600001';
+      const interviewerId = '600002';
 
       const today = new Date();
       const [hh, mm] = String(time).split(':');
@@ -2606,8 +2747,8 @@ if (
 
   app.post('/api/dev/cleanup', async (req, res) => {
     try {
-      const candidateId = 600001;
-      const interviewerId = 600002;
+      const candidateId = '600001';
+      const interviewerId = '600002';
 
       const sessions = await prisma.session.findMany({
         where: {
@@ -2649,8 +2790,8 @@ if (
 
   app.get('/api/dev/status', async (req, res) => {
     try {
-      const candidateId = 600001;
-      const interviewerId = 600002;
+      const candidateId = '600001';
+      const interviewerId = '600002';
 
       const candidateQueues = await prisma.userQueue.findMany({
         where: { userId: candidateId },
@@ -2754,6 +2895,7 @@ io.on('connection', (socket) => {
           userId,
           members: members.size,
         });
+        console.log('[WebRTC] Пользователь', userId, 'присоединился к сессии', sessionId, 'всего участников:', members.size);
       } catch {}
       socket.emit('joined', { sessionId });
       io.to(sessionId).emit('presence_update', {
@@ -2806,16 +2948,51 @@ io.on('connection', (socket) => {
 
   // --- Simple WebRTC signaling via Socket.IO ---
   socket.on('webrtc_offer', ({ sessionId, sdp, from }) => {
-    if (!sessionId || !sdp) return;
-    socket.to(sessionId).emit('webrtc_offer', { sdp, from });
+    console.log('[WebRTC] Получен offer от', from, 'в сессии', sessionId);
+    if (!sessionId || !sdp) {
+      console.log('[WebRTC] Отклонен offer: отсутствует sessionId или sdp');
+      return;
+    }
+    try {
+      const members = io.in(sessionId).allSockets();
+      console.log('[WebRTC] Отправляем offer в сессию', sessionId, 'участникам:', members.size);
+      socket.to(sessionId).emit('webrtc_offer', { sdp, from });
+      console.log('[WebRTC] Offer отправлен успешно');
+    } catch (error) {
+      console.error('[WebRTC] Ошибка отправки offer:', error);
+    }
   });
+  
   socket.on('webrtc_answer', ({ sessionId, sdp, from }) => {
-    if (!sessionId || !sdp) return;
-    socket.to(sessionId).emit('webrtc_answer', { sdp, from });
+    console.log('[WebRTC] Получен answer от', from, 'в сессии', sessionId);
+    if (!sessionId || !sdp) {
+      console.log('[WebRTC] Отклонен answer: отсутствует sessionId или sdp');
+      return;
+    }
+    try {
+      const members = io.in(sessionId).allSockets();
+      console.log('[WebRTC] Отправляем answer в сессию', sessionId, 'участникам:', members.size);
+      socket.to(sessionId).emit('webrtc_answer', { sdp, from });
+      console.log('[WebRTC] Answer отправлен успешно');
+    } catch (error) {
+      console.error('[WebRTC] Ошибка отправки answer:', error);
+    }
   });
+  
   socket.on('webrtc_ice', ({ sessionId, candidate, from }) => {
-    if (!sessionId || !candidate) return;
-    socket.to(sessionId).emit('webrtc_ice', { candidate, from });
+    console.log('[WebRTC] Получен ICE candidate от', from, 'в сессии', sessionId, 'тип:', candidate?.type);
+    if (!sessionId || !candidate) {
+      console.log('[WebRTC] Отклонен ICE candidate: отсутствует sessionId или candidate');
+      return;
+    }
+    try {
+      const members = io.in(sessionId).allSockets();
+      console.log('[WebRTC] Отправляем ICE candidate в сессию', sessionId, 'участникам:', members.size);
+      socket.to(sessionId).emit('webrtc_ice', { candidate, from });
+      console.log('[WebRTC] ICE candidate отправлен успешно');
+    } catch (error) {
+      console.error('[WebRTC] Ошибка отправки ICE candidate:', error);
+    }
   });
 
   socket.on('cursor', ({ sessionId, cursor }) => {

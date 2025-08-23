@@ -5,8 +5,12 @@ import { InfoPanel } from '@/components/ui/info-panel';
 import { InfoCarousel } from '@/components/ui/info-carousel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Logo } from '@/components/ui/logo';
+import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
+
 import {
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
   Clock,
   AlarmClock,
   HelpCircle,
@@ -14,14 +18,38 @@ import {
   Star,
   Target,
   Users,
+  MapPin,
 } from 'lucide-react';
 import { useAppTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/lib/store';
+
+// Функция для сокращения названий ролей в карточках слотов
+const getShortRoleName = (role: string, t: any) => {
+  switch (role) {
+    case 'interviewer':
+      return t('role.interviewerShort');
+    case 'candidate':
+      return t('role.candidateShort');
+    default:
+      return role;
+  }
+};
+
+// Функция для получения оптимального названия роли в зависимости от доступного места
+const getOptimalRoleName = (role: string, t: any, isMobile: boolean = false) => {
+  if (isMobile) {
+    // На мобильных устройствах всегда используем короткие версии
+    return getShortRoleName(role, t);
+  }
+  
+  // На десктопе используем короткие версии для экономии места в карточках
+  return getShortRoleName(role, t);
+};
 import { useHapticFeedback } from '@/lib/haptic-feedback';
 import {
   apiSavePreferences,
   apiJoinSlot,
-  apiGetSlots,
+  apiGetEnhancedSlots,
   apiSaveUserTools,
 } from '@/lib/api';
 import { DateTime } from 'luxon';
@@ -47,15 +75,34 @@ interface SlotAnalysis {
   interviewerCount: number;
   load: number;
   recommendation: 'high' | 'medium' | 'low';
+  localTime?: string; // Локальное время для отображения
+  utcTime?: string; // UTC время для отображения
+}
+
+// Интерфейс для информации о часовом поясе
+interface TimezoneInfo {
+  name: string;
+  offset: string;
+  currentTime: string;
+  utcTime: string;
 }
 
 export function TimeSelection() {
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const userId = useAppStore((s) => s.userId);
   const role = useAppStore((s) => s.role);
-  const [mode, setMode] = useState<'candidate' | 'interviewer'>(
-    (role || 'candidate') as 'candidate' | 'interviewer'
-  );
+  const lastRole = useAppStore((s) => s.lastRole);
+  const telegramUser = useAppStore((s) => s.telegramUser);
+  
+  // Отладочная информация для lastRole
+  useEffect(() => {
+    console.log('TimeSelection - Current role:', role);
+    console.log('TimeSelection - Last role:', lastRole);
+  }, [role, lastRole]);
+  const setRole = useAppStore((s) => s.setRole);
+  // Используем role из store напрямую, а не локальное состояние
+  const mode = (role || 'candidate') as 'candidate' | 'interviewer';
   const profession = useAppStore((s) => s.profession);
   const language = useAppStore((s) => s.language);
   const selectedTools = useAppStore((s) => s.selectedTools);
@@ -85,10 +132,40 @@ export function TimeSelection() {
   const [timeUpdateTrigger, setTimeUpdateTrigger] = useState(0);
   const [hasSeenIntro, setHasSeenIntro] = useState(false);
 
+  const [showAllTools, setShowAllTools] = useState(false);
+  const [isSessionInfoCollapsed, setIsSessionInfoCollapsed] = useState(() => {
+    // По умолчанию свернуто
+    return localStorage.getItem('timeSelectionSessionInfoCollapsed') !== 'false';
+  });
+
+  // Сбрасываем состояние показа всех инструментов при изменении списка инструментов
+  useEffect(() => {
+    setShowAllTools(false);
+  }, [selectedTools]);
+
   // Memoize timezone to prevent re-renders
   const timezone = useMemo(() => {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   }, []);
+
+  // Информация о часовом поясе пользователя
+  const timezoneInfo = useMemo((): TimezoneInfo => {
+    const now = DateTime.now();
+    const localTime = now.setZone(timezone);
+    const utcTime = now.toUTC();
+    
+    const offsetHours = localTime.offset / 60;
+    const offsetString = offsetHours >= 0 
+      ? `+${offsetHours.toString().padStart(2, '0')}:00`
+      : `${offsetHours.toString().padStart(3, '0')}:00`;
+
+    return {
+      name: timezone,
+      offset: offsetString,
+      currentTime: localTime.toFormat('HH:mm'),
+      utcTime: utcTime.toFormat('HH:mm'),
+    };
+  }, [timezone]);
 
   // Функции конвертации локального времени в UTC с использованием luxon
   const convertLocalToUTC = (localTime: string) => {
@@ -106,6 +183,46 @@ export function TimeSelection() {
 
   const getUTCTimeForSlot = (localTime: string) => {
     return convertLocalToUTC(localTime);
+  };
+
+  // Функция для отображения инструментов с многоточием
+  const renderToolsWithEllipsis = () => {
+    if (selectedTools.length === 0) {
+      return t('tools.toolsNotSelected');
+    }
+    
+    if (selectedTools.length <= 3) {
+      return selectedTools.join(', ');
+    }
+    
+    if (showAllTools) {
+      return (
+        <span>
+          {selectedTools.join(', ')}
+          <button
+            onClick={() => setShowAllTools(false)}
+            className="text-blue-600 hover:text-blue-800 ml-1 cursor-pointer"
+            title={t('time.sessionInfo.collapseTools')}
+          >
+            ({t('time.sessionInfo.collapse')})
+          </button>
+        </span>
+      );
+    }
+    
+    const firstThree = selectedTools.slice(0, 3).join(', ');
+    return (
+      <span>
+        {firstThree}
+        <button
+          onClick={() => setShowAllTools(true)}
+          className="text-blue-600 hover:text-blue-800 ml-1 cursor-pointer"
+                      title={t('time.sessionInfo.showAllTools')}
+        >
+          ...
+        </button>
+      </span>
+    );
   };
 
   // Функция для конвертации UTC времени обратно в локальное для отображения
@@ -139,18 +256,18 @@ export function TimeSelection() {
   const timeSlots = useMemo(() => {
     const allSlots = generateTimeSlots();
     
-    // Используем UTC время для фильтрации, чтобы все пользователи видели одинаковые слоты
-    const now = DateTime.now().toUTC();
-    const currentUTCHour = now.hour;
+    // Используем локальное время для фильтрации, чтобы пользователь видел актуальные слоты
+    const now = DateTime.now().setZone(timezone);
+    const currentLocalHour = now.hour;
     
-    // Фильтруем слоты, которые еще не прошли по UTC времени
+    // Фильтруем слоты, которые еще не прошли по локальному времени пользователя
     return allSlots.filter((slot) => {
       const slotHour = parseInt(slot.time.split(':')[0]);
-      return slotHour > currentUTCHour;
+      return slotHour > currentLocalHour;
     });
-  }, []);
+  }, [timezone]);
 
-  // Анализ слотов и рекомендации
+  // Анализ слотов и рекомендации с добавлением информации о времени
   const slotAnalysis = useMemo((): SlotAnalysis[] => {
     return timeSlots.map((slot) => {
       const candidateCount = candidateCounts[slot.time] || 0;
@@ -179,22 +296,28 @@ export function TimeSelection() {
         }
       }
 
+      // Добавляем информацию о времени
+      const localTime = slot.time;
+      const utcTime = convertLocalToUTC(slot.time);
+
       return {
         time: slot.time,
         candidateCount,
         interviewerCount,
         load,
         recommendation,
+        localTime,
+        utcTime,
       };
     });
-  }, [timeSlots, candidateCounts, interviewerCounts, mode]);
+  }, [timeSlots, candidateCounts, interviewerCounts, mode, convertLocalToUTC]);
 
   // Улучшенная логика выбора рекомендуемого слота
   const recommendedSlot = useMemo(() => {
     if (slotAnalysis.length === 0) return null;
 
-    // Используем UTC время для консистентности между пользователями
-    const now = DateTime.now().toUTC();
+    // Используем локальное время для консистентности
+    const now = DateTime.now().setZone(timezone);
     const currentHour = now.hour;
 
     // Определяем оптимальные временные окна для разных ролей
@@ -316,7 +439,7 @@ export function TimeSelection() {
     }
 
     return slotAnalysis[0]; // Возвращаем первый доступный слот
-  }, [slotAnalysis, mode]);
+  }, [slotAnalysis, mode, timezone]);
 
   // Автоматически показываем информационное окно при первом посещении для конкретного пользователя
   useEffect(() => {
@@ -357,12 +480,25 @@ export function TimeSelection() {
 
   // Load slot counts by role
   const loadCounts = useCallback(async () => {
+    console.log(`🔄 Загрузка данных для режима: ${mode}`);
+    console.log(`🌍 Текущий часовой пояс: ${timezone}`);
+    console.log(`🕐 Текущее время в ${timezone}: ${DateTime.now().setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss')}`);
+    console.log(`🕐 Текущее время UTC: ${DateTime.now().toUTC().toFormat('yyyy-MM-dd HH:mm:ss')}`);
+    
     // Создаем дату в локальном времени пользователя для правильного определения дня
     const localDate = DateTime.now().setZone(timezone).toFormat('yyyy-MM-dd');
 
     try {
       // Загружаем данные для кандидатов
-      const candidateRes = await apiGetSlots({
+      console.log(`🔍 Запрос для кандидатов:`, {
+        role: 'candidate',
+        profession: profession || undefined,
+        language: language || undefined,
+        timezone,
+        date: localDate,
+      });
+      
+      const candidateRes = await apiGetEnhancedSlots({
         role: 'candidate',
         profession: profession || undefined,
         language: language || undefined,
@@ -370,8 +506,16 @@ export function TimeSelection() {
         date: localDate,
       });
 
-      // Загружаем данные для int.
-      const interviewerRes = await apiGetSlots({
+      console.log(`🔍 Запрос для интервьюеров:`, {
+        role: 'interviewer',
+        profession: profession || undefined,
+        language: language || undefined,
+        timezone,
+        date: localDate,
+      });
+      
+      // Загружаем данные для интервьюеров
+      const interviewerRes = await apiGetEnhancedSlots({
         role: 'interviewer',
         profession: profession || undefined,
         language: language || undefined,
@@ -382,35 +526,47 @@ export function TimeSelection() {
       const candidateMap: Record<string, number> = {};
       const interviewerMap: Record<string, number> = {};
 
-      // Конвертируем UTC времена обратно в локальное время для отображения
+      // Enhanced API уже возвращает локальное время
+      console.log(`📡 API ответ для кандидатов:`, candidateRes.slots);
+      console.log(`📡 API ответ для интервьюеров:`, interviewerRes.slots);
+      console.log(`📊 Количество слотов кандидатов:`, candidateRes.slots.length);
+      console.log(`📊 Количество слотов интервьюеров:`, interviewerRes.slots.length);
+      
       for (const s of candidateRes.slots) {
-        const localTime = convertUTCToLocal(s.time);
-        candidateMap[localTime] = s.count;
+        candidateMap[s.time] = s.count;
+        console.log(`📊 Кандидат слот ${s.time}: ${s.count}`);
       }
       
       for (const s of interviewerRes.slots) {
-        const localTime = convertUTCToLocal(s.time);
-        interviewerMap[localTime] = s.count;
+        interviewerMap[s.time] = s.count;
+        console.log(`📊 Интервьюер слот ${s.time}: ${s.count}`);
       }
+      
+      console.log(`📋 Итоговый candidateMap:`, candidateMap);
+      console.log(`📋 Итоговый interviewerMap:`, interviewerMap);
 
       setCandidateCounts(candidateMap);
       setInterviewerCounts(interviewerMap);
 
       // Устанавливаем данные для текущего режима
       if (mode === 'candidate') {
+        console.log(`📊 Устанавливаем данные для кандидата: показываем ${Object.keys(interviewerMap).length} слотов с интервьюерами`);
+        console.log(`📋 Детали слотов для кандидата:`, interviewerMap);
         setSlotCounts(interviewerMap);
       } else {
+        console.log(`📊 Устанавливаем данные для интервьюера: показываем ${Object.keys(candidateMap).length} слотов с кандидатами`);
+        console.log(`📋 Детали слотов для интервьюера:`, candidateMap);
         setSlotCounts(candidateMap);
       }
     } catch (error) {
       console.error('Failed to load slot counts:', error);
     }
-  }, [mode, profession, language, timezone, convertUTCToLocal]);
+  }, [mode, profession, language, timezone]);
 
   // reload on mode/profession/language/timezone changes
   useEffect(() => {
     loadCounts().catch(() => {});
-  }, [loadCounts]);
+  }, [mode, profession, language, timezone]);
 
   const handleSlotToggle = (slotId: string) => {
     light(); // Легкая вибрация при выборе слота
@@ -437,6 +593,11 @@ export function TimeSelection() {
         | 'interviewer'
         | 'candidate';
       const effectiveProfession = profession || 'frontend';
+
+      // Показываем плейсхолдер поиска только для интервьюеров
+      if (effectiveRole === 'interviewer') {
+        setIsSearching(true);
+      }
 
       // Сохраняем предпочтения
       await apiSavePreferences({
@@ -470,19 +631,27 @@ export function TimeSelection() {
         slotUtc: slotsUtc[0],
         tools: selectedTools.length > 0 ? selectedTools : undefined,
       });
-      if (join.matched && join.session) {
-        success(); // Вибрация успеха при успешном матчинге
+      
+      // Всегда сохраняем информацию о сессии, если она есть
+      if (join.session) {
         setSession({
           sessionId: join.session.id,
           jitsiRoom: join.session.jitsiRoom,
         });
-        navigate('/interview');
-      } else {
-        light(); // Легкая вибрация при переходе в очередь
-        // Stay in queue and show notifications page so user can see status
-        navigate('/notifications');
       }
+      
+      // Ждём 3 секунды только для интервьюеров, чтобы показать красивый плейсхолдер
+      if (effectiveRole === 'interviewer') {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        setIsSearching(false);
+      }
+      
+      // Перенаправляем на страницу уведомлений
+      light(); // Легкая вибрация при переходе в очередь
+      navigate('/notifications');
     } catch (err) {
+      // Скрываем плейсхолдер в случае ошибки
+      setIsSearching(false);
       error(); // Вибрация ошибки при проблемах
       console.error('Failed to proceed from time selection:', err);
       alert(t('common.error') || 'Произошла ошибка. Попробуйте еще раз.');
@@ -501,7 +670,8 @@ export function TimeSelection() {
 
   const handleRoleToggle = (newMode: 'candidate' | 'interviewer') => {
     light(); // Легкая вибрация при переключении роли
-    setMode(newMode);
+    console.log(`🔄 Переключение роли: ${mode} -> ${newMode}`);
+    setRole(newMode); // Обновляем глобальное состояние
   };
 
   // Функция для сброса состояния введения (для тестирования)
@@ -518,22 +688,37 @@ export function TimeSelection() {
 
   // Функция для отладки конвертации времени
   const debugTimeConversion = () => {
-    if (selectedSlots.length === 0) return;
+    if (selectedSlots.length === 0) {
+      alert('Выберите слот времени для отладки конвертации');
+      return;
+    }
     
     const localTime = selectedSlots[0];
     const utcTime = getUTCTimeForSlot(localTime);
     const utcSlot = createUTCSlotFromLocal(localTime);
     const backToLocal = convertUTCToLocal(utcTime);
     
-    console.log('🔍 Time Conversion Debug:');
-    console.log('Local time:', localTime);
-    console.log('UTC time:', utcTime);
-    console.log('UTC slot ISO:', utcSlot);
-    console.log('Back to local:', backToLocal);
-    console.log('Timezone:', timezone);
-    console.log('Current timezone offset:', DateTime.now().setZone(timezone).offset / 60, 'hours');
-    console.log('Current local time:', DateTime.now().setZone(timezone).toFormat('HH:mm'));
-    console.log('Current UTC time:', DateTime.now().toUTC().toFormat('HH:mm'));
+    const debugInfo = `
+🔍 Отладка конвертации времени:
+
+📍 Ваш часовой пояс: ${timezoneInfo.name} (${timezoneInfo.offset})
+🕐 Текущее время: ${timezoneInfo.currentTime} (локальное) / ${timezoneInfo.utcTime} (UTC)
+
+🎯 Выбранный слот:
+   • Локальное время: ${localTime}
+   • UTC время: ${utcTime}
+   • UTC слот (ISO): ${utcSlot}
+   • Обратная конвертация: ${backToLocal}
+
+🌍 Примеры для других часовых поясов:
+   • Москва (UTC+3): ${convertUTCToLocal(utcTime)}
+   • Владивосток (UTC+10): ${DateTime.utc().set({ hour: parseInt(utcTime.split(':')[0]), minute: parseInt(utcTime.split(':')[1]) }).setZone('Asia/Vladivostok').toFormat('HH:mm')}
+   • Нью-Йорк (UTC-5): ${DateTime.utc().set({ hour: parseInt(utcTime.split(':')[0]), minute: parseInt(utcTime.split(':')[1]) }).setZone('America/New_York').toFormat('HH:mm')}
+   • Лондон (UTC+0): ${utcTime}
+    `;
+    
+    console.log(debugInfo);
+    alert(debugInfo);
   };
 
   // Функция для расчета времени до выбранного матчинга
@@ -574,8 +759,51 @@ export function TimeSelection() {
 
   const currentDate = new Date().toISOString().slice(0, 10);
 
+  // Компонент поиска участника
+  const SearchParticipantOverlay = () => (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl">
+        <div className="text-center space-y-6">
+          {/* Анимированные точки */}
+          <div className="flex justify-center space-x-2">
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+          
+          {/* Иконка поиска */}
+          <div className="relative">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <Users className="w-8 h-8 text-white" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-ping">
+              <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+            </div>
+          </div>
+          
+          {/* Текст */}
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+              {t('time.searching.title')}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              {t('time.searching.subtitle')}
+            </p>
+          </div>
+          
+          {/* Прогресс бар */}
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4 pb-32">
+      {/* Показываем оверлей поиска, если isSearching = true */}
+      {isSearching && <SearchParticipantOverlay />}
       <div className="max-w-md mx-auto pt-16 sm:pt-20">
         {/* Logo */}
         <div className="flex justify-center mb-8">
@@ -584,14 +812,17 @@ export function TimeSelection() {
 
         {/* Header */}
         <div className="flex items-center mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="mr-3 p-2"
-          >
-            <ArrowLeft size={22} />
-          </Button>
+          {/* Показываем кнопку "Назад" только если нет сохранённых инструментов */}
+          {selectedTools.length === 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="mr-3 p-2"
+            >
+              <ArrowLeft size={22} />
+            </Button>
+          )}
           <div className="flex-1 text-center">
             <h1 className="text-2xl font-bold text-foreground">
               {t('time.header.title')}
@@ -600,14 +831,17 @@ export function TimeSelection() {
               {t('time.header.subtitle')}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowInfoCarousel(true)}
-            className="ml-3 p-2"
-          >
-            <HelpCircle size={22} />
-          </Button>
+          <div className="flex items-center gap-1">
+            <CompactLanguageSelector />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowInfoCarousel(true)}
+              className="p-2"
+            >
+              <HelpCircle size={22} />
+            </Button>
+          </div>
           {process.env.NODE_ENV === 'development' && (
             <Button
               variant="ghost"
@@ -619,51 +853,140 @@ export function TimeSelection() {
               <Info size={22} />
             </Button>
           )}
+
         </div>
 
-        <p className="text-center text-muted-foreground mb-6">
-          {t('time.timeSubtitle')}
-        </p>
 
-        {/* Timezone Info */}
-        <div className="flex items-center justify-center mb-6 p-3 bg-telegram-light-gray rounded-lg">
-          <Clock size={16} className="mr-2 text-telegram-gray" />
-          <span className="text-sm text-telegram-gray">
-            {t('time.timezone')}: {timezone}
-          </span>
-          {selectedSlots.length > 0 && (
-            <div className="ml-4 text-xs text-telegram-gray">
-              UTC: {getUTCTimeForSlot(selectedSlots[0])}
+
+        {/* Session Info */}
+        <div className="mb-6">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200">
+            {/* Header with collapse button */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Clock size={14} className="text-blue-600" />
+                </div>
+                <h3 className="text-sm font-semibold text-blue-700">{t('time.sessionInfo.title')}</h3>
+              </div>
+              <button
+                onClick={() => {
+                  const newCollapsedState = !isSessionInfoCollapsed;
+                  setIsSessionInfoCollapsed(newCollapsedState);
+                  localStorage.setItem('timeSelectionSessionInfoCollapsed', newCollapsedState.toString());
+                }}
+                className="text-blue-600 hover:text-blue-800 transition-colors p-1"
+                title={isSessionInfoCollapsed ? t('time.sessionInfo.expand') : t('time.sessionInfo.collapse')}
+              >
+                {isSessionInfoCollapsed ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronUp size={16} />
+                )}
+              </button>
             </div>
-          )}
-        </div>
 
-        {/* Role Toggle */}
-        <div className="mb-8 flex items-center justify-between">
-          <div className="text-sm font-medium">{t('time.header.role')}</div>
-          <div className="flex gap-3">
-            <button
-              className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
-                mode === 'candidate'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card border-border hover:bg-accent'
-              }`}
-              onClick={() => handleRoleToggle('candidate')}
-            >
-              {t('role.candidateShort')}
-            </button>
-            <button
-              className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
-                mode === 'interviewer'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card border-border hover:bg-accent'
-              }`}
-              onClick={() => handleRoleToggle('interviewer')}
-            >
-              {t('role.interviewerShort')}
-            </button>
+            {/* Collapsed state - minimal info */}
+            {isSessionInfoCollapsed ? (
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1">
+                    <div className="w-4 h-4 bg-blue-100 rounded flex items-center justify-center">
+                      <Clock size={10} className="text-blue-600" />
+                    </div>
+                    <span className="text-blue-800">
+                      {language === 'ru' ? 'Русский' : language === 'en' ? 'English' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'es' ? 'Español' : language === 'zh' ? '中文' : language}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-4 h-4 bg-green-100 rounded flex items-center justify-center">
+                      <Target size={10} className="text-green-600" />
+                    </div>
+                    <span className="text-green-800">
+                      {selectedTools.length > 0 
+                        ? t('time.sessionInfo.toolsCount', { count: selectedTools.length })
+                        : t('time.sessionInfo.toolsNotSelected')
+                      }
+                    </span>
+                  </div>
+                  {lastRole && (
+                    <div className="flex items-center gap-1">
+                      <div className="w-4 h-4 bg-purple-100 rounded flex items-center justify-center">
+                        <Users size={10} className="text-purple-600" />
+                      </div>
+                      <span className="text-purple-800">
+                        {lastRole === 'candidate' ? t('role.candidateShort') : t('role.interviewerShort')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Expanded state - full info */
+              <div className="grid grid-cols-1 gap-3">
+                {/* Language */}
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center hover:bg-blue-200 transition-colors duration-200">
+                    <Clock size={16} className="text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-blue-600 font-medium">Язык собеседования</div>
+                    <div className="text-sm font-semibold text-gray-800">
+                      {language === 'ru' ? 'Русский' : language === 'en' ? 'English' : language === 'de' ? 'Deutsch' : language === 'fr' ? 'Français' : language === 'es' ? 'Español' : language === 'zh' ? '中文' : language}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tools */}
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center hover:bg-green-200 transition-colors duration-200">
+                    <Target size={16} className="text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-green-600 font-medium">Ваши инструменты</div>
+                    <div className="text-sm font-semibold text-gray-800">
+                      {renderToolsWithEllipsis()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Role */}
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center hover:bg-purple-200 transition-colors duration-200">
+                    <Users size={16} className="text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    {lastRole ? (
+                      <>
+                        <div className="text-xs text-purple-600 font-medium">Прошлая роль</div>
+                        <div className="text-sm font-semibold text-gray-800">
+                          {lastRole === 'candidate' ? t('role.candidateShort') : t('role.interviewerShort')}
+                        </div>
+                        <div className="mt-1">
+                          <div className="text-xs text-blue-600 font-medium">Рекомендация</div>
+                          <div className="text-sm font-semibold text-blue-700">
+                            {lastRole === 'candidate' ? t('role.interviewerShort') : t('role.candidateShort')}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-xs text-purple-600 font-medium">Выберите роль</div>
+                        <div className="text-sm font-semibold text-gray-800">
+                          {mode === 'candidate' ? t('role.candidateShort') : t('role.interviewerShort')}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
+
+
+
+
 
         {/* Информационное окно */}
         {showInfo && (
@@ -698,6 +1021,123 @@ export function TimeSelection() {
             />
           </div>
         )}
+
+        {/* Time Selection Question */}
+        <div className="mb-8">
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              {t('time.timeSubtitle')}
+            </h2>
+            <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
+          </div>
+        </div>
+
+        {/* Role Toggle */}
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4 shadow-sm">
+            <div className="mb-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Users size={14} className="text-purple-600" />
+                </div>
+                <h3 className="text-sm font-semibold text-purple-700">{t('time.header.role')}</h3>
+              </div>
+              <p className="text-xs text-purple-600">{t('time.roleSelection.subtitle')}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                className={`relative p-4 rounded-xl border-2 transition-all duration-200 group hover:scale-105 active:scale-95 ${
+                  mode === 'candidate'
+                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white border-blue-500 shadow-lg'
+                    : 'bg-white border-purple-200 hover:border-purple-300 hover:bg-purple-50 shadow-sm'
+                }`}
+                onClick={() => handleRoleToggle('candidate')}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden ${
+                    mode === 'candidate' ? 'bg-blue-400' : 'bg-blue-100'
+                  }`}>
+                    {telegramUser?.photo_url ? (
+                      <img 
+                        src={telegramUser.photo_url} 
+                        alt="User avatar" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Если изображение не загрузилось, показываем иконку по умолчанию
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <Users 
+                      size={18} 
+                      className={`${mode === 'candidate' ? 'text-white' : 'text-blue-600'} ${
+                        telegramUser?.photo_url ? 'hidden' : ''
+                      }`} 
+                    />
+                  </div>
+                  <div className="text-center">
+                    <div className={`font-semibold text-sm ${
+                      mode === 'candidate' ? 'text-white' : 'text-gray-800'
+                    }`}>
+                      {t('role.candidate')}
+                    </div>
+                    <div className={`text-xs mt-1 ${
+                      mode === 'candidate' ? 'text-blue-100' : 'text-gray-500'
+                    }`}>
+                      {t('role.candidateAction')}
+                    </div>
+                  </div>
+                </div>
+                {mode === 'candidate' && (
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+              
+              <button
+                className={`relative p-4 rounded-xl border-2 transition-all duration-200 group hover:scale-105 active:scale-95 ${
+                  mode === 'interviewer'
+                    ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white border-purple-500 shadow-lg'
+                    : 'bg-white border-purple-200 hover:border-purple-300 hover:bg-purple-50 shadow-sm'
+                }`}
+                onClick={() => handleRoleToggle('interviewer')}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    mode === 'interviewer' ? 'bg-purple-400' : 'bg-purple-100'
+                  }`}>
+                    <Users size={18} className={mode === 'interviewer' ? 'text-white' : 'text-purple-600'} />
+                  </div>
+                  <div className="text-center">
+                    <div className={`font-semibold text-sm ${
+                      mode === 'interviewer' ? 'text-white' : 'text-gray-800'
+                    }`}>
+                      {t('role.interviewer')}
+                    </div>
+                    <div className={`text-xs mt-1 ${
+                      mode === 'interviewer' ? 'text-purple-100' : 'text-gray-500'
+                    }`}>
+                      {t('role.interviewerAction')}
+                    </div>
+                  </div>
+                </div>
+                {mode === 'interviewer' && (
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Tabs for different views */}
         <Tabs
@@ -744,6 +1184,7 @@ export function TimeSelection() {
                           <div className="text-sm sm:text-base lg:text-lg xl:text-xl font-semibold group-hover:text-black">
                             {slot.time}
                           </div>
+
                           <div
                             className={`text-xs sm:text-sm lg:text-base ${
                               isSelected
@@ -754,8 +1195,8 @@ export function TimeSelection() {
                             {count}{' '}
                             <span className="hidden sm:inline">
                               {mode === 'candidate'
-                                ? t('role.interviewer')
-                                : t('role.candidate')}
+                                ? getOptimalRoleName('interviewer', t)
+                                : getOptimalRoleName('candidate', t)}
                             </span>
                             <span className="sm:hidden">
                               {mode === 'candidate'
@@ -830,6 +1271,19 @@ export function TimeSelection() {
                   const count = slotCounts[slot.time] || 0;
                   const isSelected = selectedSlots.includes(slot.time);
                   const isRecommended = recommendedSlot?.time === slot.time;
+                  
+                  // Отладочная информация для всех слотов
+                  console.log(`🔍 Отладка слота ${slot.time}:`, {
+                    slotTime: slot.time,
+                    slotCounts: slotCounts,
+                    count: count,
+                    mode: mode,
+                    interviewerCounts: interviewerCounts,
+                    candidateCounts: candidateCounts,
+                    allSlotTimes: Object.keys(slotCounts),
+                    interviewerSlotTimes: Object.keys(interviewerCounts),
+                    candidateSlotTimes: Object.keys(candidateCounts)
+                  });
 
                   return (
                     <button
@@ -843,29 +1297,30 @@ export function TimeSelection() {
                           : 'bg-card border-border hover:bg-accent shadow-sm'
                       } ${isRecommended ? 'ring-2 ring-green-200' : ''}`}
                     >
-                      <div className="text-center flex flex-col justify-center h-full space-y-1 sm:space-y-2">
-                        <div className="text-sm sm:text-base lg:text-lg xl:text-xl font-semibold group-hover:text-black">
-                          {slot.time}
-                        </div>
-                        <div
-                          className={`text-xs sm:text-sm lg:text-base ${
-                            isSelected
-                              ? 'text-black'
-                              : 'text-muted-foreground group-hover:text-black'
-                          }`}
-                        >
-                          {count}{' '}
-                          <span className="hidden sm:inline">
-                            {mode === 'candidate'
-                              ? t('role.interviewer')
-                              : t('role.candidate')}
-                          </span>
-                          <span className="sm:hidden">
-                            {mode === 'candidate'
-                              ? t('time.slots.interviewersShort')
-                              : t('time.slots.candidatesShort')}
-                          </span>
-                        </div>
+                                          <div className="text-center flex flex-col justify-center h-full space-y-1 sm:space-y-2">
+                      <div className="text-sm sm:text-base lg:text-lg xl:text-xl font-semibold group-hover:text-black">
+                        {slot.time}
+                      </div>
+
+                      <div
+                        className={`text-xs sm:text-sm lg:text-base ${
+                          isSelected
+                            ? 'text-black'
+                            : 'text-muted-foreground group-hover:text-black'
+                        }`}
+                      >
+                        {count}{' '}
+                        <span className="hidden sm:inline">
+                          {mode === 'candidate'
+                            ? getOptimalRoleName('interviewer', t)
+                            : getOptimalRoleName('candidate', t)}
+                        </span>
+                        <span className="sm:hidden">
+                          {mode === 'candidate'
+                            ? t('time.slots.interviewersShort')
+                            : t('time.slots.candidatesShort')}
+                        </span>
+                      </div>
                         {isRecommended && (
                           <div className="mt-1 sm:mt-2 flex justify-center">
                             <div className="flex items-center gap-1 text-xs bg-green-100 text-green-800 border border-green-300 rounded-lg px-2 py-1">
@@ -890,20 +1345,23 @@ export function TimeSelection() {
         {/* The selectedSlotWithTools state and its related UI are removed as per the edit hint. */}
 
         {/* Next Button - Fixed at bottom */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 z-50">
-          <div className="flex flex-col sm:flex-row gap-4 max-w-4xl mx-auto">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              className="flex-1 py-3"
-            >
-              <ArrowLeft size={18} className="mr-2" />
-              {t('time.buttons.back')}
-            </Button>
+        <div className="fixed bottom-0 left-0 right-0 bg-background/30 backdrop-blur-sm border-t border-border p-4 z-50">
+          <div className={`flex flex-col sm:flex-row gap-4 max-w-4xl mx-auto ${selectedTools.length > 0 ? 'justify-center' : ''}`}>
+            {/* Показываем кнопку "Назад" только если нет сохранённых инструментов */}
+            {selectedTools.length === 0 && (
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                className="flex-1 py-3"
+              >
+                <ArrowLeft size={18} className="mr-2" />
+                {t('time.buttons.back')}
+              </Button>
+            )}
             <Button
               onClick={handleNext}
               disabled={selectedSlots.length === 0}
-              className="flex-1 py-3"
+              className={`py-3 ${selectedTools.length > 0 ? 'flex-1' : 'flex-1'}`}
             >
               {selectedSlots.length > 0 ? (
                 <>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ProfessionCard } from '@/components/ui/profession-card';
 import { Logo } from '@/components/ui/logo';
 import { ArrowLeft } from 'lucide-react';
+import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
 import { useAppTranslation } from '@/lib/i18n';
 import { apiSaveProfile } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
@@ -219,6 +220,7 @@ export function ProfessionSelection() {
               {t('profession.selectProfession')}
             </h1>
           </div>
+          <CompactLanguageSelector />
         </div>
 
         <p className="text-center text-muted-foreground mb-6">

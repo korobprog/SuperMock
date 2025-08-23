@@ -206,17 +206,7 @@ export function VideoControls({
         {isVideoActive ? <Video size={16} /> : <VideoOff size={16} />}
       </Button>
 
-      {/* Кнопка мута камеры */}
-      <Button
-        variant={isVideoMuted ? 'destructive' : 'outline'}
-        size="sm"
-        onClick={handleToggleVideoMute}
-        className="h-10 w-10 p-0"
-        title={isVideoMuted ? 'Включить видео' : 'Выключить видео'}
-        disabled={!isVideoActive}
-      >
-        {isVideoMuted ? <CameraOff size={16} /> : <Camera size={16} />}
-      </Button>
+
 
       {/* Кнопка показа экрана */}
       <Button

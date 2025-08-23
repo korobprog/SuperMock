@@ -56,34 +56,24 @@ class PrismaUser implements IUser {
       where: { id: this.id },
     });
 
-    // Если пользователь новый или пароль изменился, хешируем его
-    if (!existingUser || existingUser.password !== this.password) {
-      const salt = await bcrypt.genSalt(10);
-      this.password = await bcrypt.hash(this.password, salt);
-    }
-
     // Сохраняем пользователя в базу данных
     const savedUser = await prisma.user.upsert({
       where: { id: this.id },
       update: {
-        email: this.email,
-        password: this.password,
-        roleHistory: this.roleHistory as any,
-        feedbackStatus: this.feedbackStatus,
-        googleId: this.googleId,
-        googleAccessToken: this.googleAccessToken,
-        googleRefreshToken: this.googleRefreshToken,
+        tgId: this.tgId,
+        username: this.username,
+        firstName: this.firstName,
+        lastName: this.lastName,
+        language: this.language,
       },
       create: {
         id: this.id,
-        email: this.email,
-        password: this.password,
-        roleHistory: this.roleHistory as any,
-        feedbackStatus: this.feedbackStatus,
+        tgId: this.tgId,
+        username: this.username,
+        firstName: this.firstName,
+        lastName: this.lastName,
+        language: this.language,
         createdAt: this.createdAt,
-        googleId: this.googleId,
-        googleAccessToken: this.googleAccessToken,
-        googleRefreshToken: this.googleRefreshToken,
       },
     });
 
@@ -101,19 +91,19 @@ class PrismaUser implements IUser {
     return user ? new PrismaUser(user) : null;
   }
 
-  // Поиск пользователя по email
-  static async findOne(filter: { email: string }): Promise<PrismaUser | null> {
-    const user = await prisma.user.findUnique({
-      where: { email: filter.email },
+  // Поиск пользователя по tgId
+  static async findOne(filter: { tgId: string }): Promise<PrismaUser | null> {
+    const user = await prisma.user.findFirst({
+      where: { tgId: filter.tgId },
     });
 
     return user ? new PrismaUser(user) : null;
   }
 
-  // Поиск пользователя по googleId
-  static async findByGoogleId(googleId: string): Promise<PrismaUser | null> {
+  // Поиск пользователя по username
+  static async findByUsername(username: string): Promise<PrismaUser | null> {
     const user = await prisma.user.findFirst({
-      where: { googleId },
+      where: { username },
     });
 
     return user ? new PrismaUser(user) : null;

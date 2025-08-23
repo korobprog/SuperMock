@@ -33,6 +33,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
+import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
 
 type NotificationItem = {
   id: number;
@@ -55,7 +56,7 @@ const truncateText = (text: string, maxLength: number = 50) => {
   return text.substring(0, maxLength) + '...';
 };
 
-const truncateRoomName = (roomName: string, maxLength: number = 30) => {
+const truncateRoomName = (roomName: string, maxLength: number = 20) => {
   if (roomName.length <= maxLength) return roomName;
   return roomName.substring(0, maxLength) + '...';
 };
@@ -68,7 +69,7 @@ const extractAndFormatLinks = (text: string) => {
   return parts.map((part, index) => {
     if (urlRegex.test(part)) {
       // Это URL - создаем сокращенную версию с возможностью копирования
-      const shortUrl = truncateText(part, 40);
+      const shortUrl = truncateText(part, 25);
       return { type: 'link', text: shortUrl, fullUrl: part, key: index };
     }
     return { type: 'text', text: part, key: index };
@@ -105,8 +106,8 @@ const formatNotificationMessage = (message: string, onSuccess: () => void, t: an
           {parts.map((part) => {
             if (part.type === 'link') {
               return (
-                <span key={part.key} className="inline-flex items-center gap-1">
-                  <span className="text-blue-600 font-medium">{part.text}</span>
+                <span key={part.key} className="inline-flex items-center gap-1 break-all">
+                  <span className="text-blue-600 font-medium break-all">{part.text}</span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -145,7 +146,7 @@ const formatNotificationMessage = (message: string, onSuccess: () => void, t: an
         <div key={lineIndex} className={lineIndex === 0 ? 'mb-1' : ''}>
           <span className="text-gray-700 font-medium">{label}:</span>{' '}
           <span className="text-gray-600">{truncatedRoomName}</span>
-          {roomName && roomName.length > 30 && (
+          {roomName && roomName.length > 20 && (
             <Button
               variant="ghost"
               size="sm"
@@ -206,8 +207,8 @@ const formatTranslatedMessage = (messageKey: string, messageData: string | null,
             {parts.map((part) => {
               if (part.type === 'link') {
                 return (
-                  <span key={part.key} className="inline-flex items-center gap-1">
-                    <span className="text-blue-600 font-medium">{part.text}</span>
+                  <span key={part.key} className="inline-flex items-center gap-1 break-all">
+                    <span className="text-blue-600 font-medium break-all">{part.text}</span>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -432,6 +433,10 @@ export function Notifications() {
         // Переходим прямо в интервью
         navigate(`/interview?sessionId=${data.sessionId}`);
         success();
+      } else if (data.type === 'reminder' && data.sessionId) {
+        // Переходим прямо в интервью для напоминания
+        navigate(`/interview?sessionId=${data.sessionId}`);
+        success();
       }
     } catch (err) {
       console.error('Error parsing action data:', err);
@@ -476,18 +481,21 @@ export function Notifications() {
               </div>
             </div>
 
-            {stats.total > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAll}
-                disabled={loading}
-                className="hidden sm:flex items-center gap-2 telegram-desktop-fix"
-              >
-                <Trash2 size={14} />
-                {t('notifications.clearAll')}
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              <CompactLanguageSelector />
+              {stats.total > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearAll}
+                  disabled={loading}
+                  className="hidden sm:flex items-center gap-2 telegram-desktop-fix"
+                >
+                  <Trash2 size={14} />
+                  {t('notifications.clearAll')}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -577,7 +585,7 @@ export function Notifications() {
                           <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">
                             {notification.titleKey ? t(notification.titleKey) : notification.title}
                           </h3>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-gray-600 break-words">
                             {notification.messageKey 
                               ? formatTranslatedMessage(notification.messageKey, notification.messageData, success, t)
                               : formatNotificationMessage(notification.message, success, t)
@@ -627,6 +635,23 @@ export function Notifications() {
                               >
                                 <Video size={14} className="mr-2" />
                                 {t('notifications.joinWaitingRoom')}
+                              </Button>
+                            );
+                          }
+                          if (data?.type === 'reminder' && data?.sessionId) {
+                            return (
+                              <Button
+                                variant="default"
+                                size="sm"
+                                className="mb-3 telegram-desktop-fix"
+                                onClick={() =>
+                                  handleNotificationAction(
+                                    notification.actionData!
+                                  )
+                                }
+                              >
+                                <Video size={14} className="mr-2" />
+                                {t('notifications.joinInterview')}
                               </Button>
                             );
                           }

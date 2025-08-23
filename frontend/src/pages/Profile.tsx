@@ -43,10 +43,12 @@ import {
 import { StackBlitzInfoModal } from '@/components/ui/stackblitz-info-modal';
 import { OpenRouterInfoModal } from '@/components/ui/openrouter-info-modal';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
+import { LanguageSelector } from '@/components/ui/language-selector';
+import { MediaTest } from '@/components/ui/media-test';
 import {
   apiSaveUserSettings,
   apiGetProfile,
-
+  apiSaveProfile,
 } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -86,6 +88,7 @@ export function Profile() {
   const [isSaving, setIsSaving] = useState(false);
   const [showStackBlitzInfo, setShowStackBlitzInfo] = useState(false);
   const [showOpenRouterInfo, setShowOpenRouterInfo] = useState(false);
+  const [showMediaSettings, setShowMediaSettings] = useState(false);
 
   // Обновляем отображение API ключа при переключении глазка
   useEffect(() => {
@@ -208,6 +211,25 @@ export function Profile() {
       toast.error(t('profile.saveError'));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleProfessionChange = async (newProfession: string) => {
+    setProfileProfession(newProfession);
+    
+    // Сохраняем профессию в профиль пользователя
+    try {
+      await apiSaveProfile({
+        userId: userId || 0,
+        profession: newProfession,
+      });
+      
+      // Перенаправляем на страницу инструментов с выбранной профессией
+      navigate(`/tools?profession=${newProfession}&from=profile`);
+    } catch (error) {
+      console.error('Error saving profession:', error);
+      // Даже если сохранение не удалось, перенаправляем на инструменты
+      navigate(`/tools?profession=${newProfession}&from=profile`);
     }
   };
 
@@ -364,6 +386,16 @@ export function Profile() {
               <CardDescription>{t('profile.profileSettings')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+                       {/* Язык интерфейса */}
+                       <div className="space-y-2">
+                <Label>{t('profile.interfaceLanguage')}</Label>
+                <div className="flex items-center space-x-2">
+                  <LanguageSelector />
+                  <span className="text-xs text-muted-foreground">
+                    {t('profile.interfaceLanguageDesc')}
+                  </span>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>{t('profile.interviewLanguage')}</Label>
@@ -389,7 +421,7 @@ export function Profile() {
                   <Label>{t('profile.profession')}</Label>
                   <Select
                     value={profileProfession}
-                    onValueChange={setProfileProfession}
+                    onValueChange={handleProfessionChange}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -531,6 +563,31 @@ export function Profile() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* AI Benefits - компактная версия */}
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <Zap className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" size={16} />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
+                      {t('profile.aiBenefitsTitle')}
+                    </h4>
+                    <div className="space-y-1">
+                      <div className="flex items-center text-xs text-blue-700 dark:text-blue-300">
+                        <span className="text-blue-600 dark:text-blue-400 mr-1">✓</span>
+                        {t('profile.aiBenefit1')}
+                      </div>
+                      <div className="flex items-center text-xs text-blue-700 dark:text-blue-300">
+                        <span className="text-blue-600 dark:text-blue-400 mr-1">✓</span>
+                        {t('profile.aiBenefit2')}
+                      </div>
+                      <div className="flex items-center text-xs text-blue-700 dark:text-blue-300">
+                        <span className="text-blue-600 dark:text-blue-400 mr-1">✓</span>
+                        {t('profile.aiBenefit3')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                            </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -687,39 +744,36 @@ export function Profile() {
             </CardContent>
           </Card>
 
-          
-          {/* Benefits */}
-          {!hasValidApiKey && (
-            <Card className="border-dashed border-2 border-primary/20">
-              <CardContent className="pt-6">
-                <div className="text-center space-y-4">
-                  <Zap className="mx-auto text-yellow-500" size={48} />
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      {t('profile.benefitsTitle')}
-                    </h3>
-                    <p className="text-muted-foreground">
-                      {t('profile.benefitsDesc')}
-                    </p>
-                  </div>
-                  <ul className="text-sm text-left space-y-2 max-w-sm mx-auto">
-                    <li className="flex items-center">
-                      <span className="text-green-500 mr-2">✓</span>
-                      {t('profile.benefit1')}
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-green-500 mr-2">✓</span>
-                      {t('profile.benefit2')}
-                    </li>
-                    <li className="flex items-center">
-                      <span className="text-green-500 mr-2">✓</span>
-                      {t('profile.benefit3')}
-                    </li>
-                  </ul>
+          {/* Media Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Settings className="mr-2" size={20} />
+                Настройки камеры и звука
+              </CardTitle>
+              <CardDescription>
+                Проверьте и настройте ваши устройства перед собеседованием
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={() => setShowMediaSettings(!showMediaSettings)}
+                variant="outline"
+                className="w-full"
+              >
+                <Settings size={16} className="mr-2" />
+                {showMediaSettings ? 'Скрыть настройки' : 'Открыть настройки камеры и звука'}
+              </Button>
+              
+              {showMediaSettings && (
+                <div className="mt-4">
+                  <MediaTest />
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </CardContent>
+          </Card>
+
+          
 
           {/* Save Button */}
           <Button

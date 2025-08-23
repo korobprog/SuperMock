@@ -21,7 +21,7 @@
     "notAuthorized": "Nicht autorisiert",
     "configureApi": "API konfigurieren",
     "quickActions": "Schnellaktionen",
-    "interviewer": "int.",
+    "interviewer": "Interviewer",
     "candidate": "Kandidat",
     "lastInterview": "Letztes Interview",
     "comingSoon": "Demnächst",
@@ -30,12 +30,14 @@
   "role": {
     "selectRole": "Rolle Auswählen",
     "roleSubtitle": "Welche Rolle möchten Sie im Mock-Interview übernehmen?",
-    "interviewer": "int.",
+    "interviewer": "Interviewer",
     "interviewerDesc": "Interviews führen und Kandidaten bewerten",
     "candidate": "Kandidat",
     "candidateDesc": "An Interviews teilnehmen und Feedback erhalten",
-    "interviewerShort": "int.",
-    "candidateShort": "Kan."
+    "interviewerShort": "Int.",
+    "candidateShort": "Kan.",
+    "interviewerAction": "Interviews führen",
+    "candidateAction": "An Interviews teilnehmen"
   },
   "profession": {
     "selectProfession": "Beruf Auswählen",
@@ -81,30 +83,61 @@
       "collapse": "Reduzieren",
       "showAnalysis": "Analyse anzeigen",
       "interviewers": "Interviewer",
-      "interviewersShort": "int.",
+      "interviewersShort": "Interviewer",
       "candidates": "Kandidaten"
     },
     "slots": {
       "availableSlotsInterviewers": "Verfügbare Zeitslots (Interviewer)",
       "availableSlotsCandidates": "Verfügbare Zeitslots (Kandidaten)",
-      "interviewersShort": "int.",
+      "interviewersShort": "Interviewer",
       "candidatesShort": "Kan.",
-      "recommended": "Empfohlen"
+      "recommended": "Empfohlen",
+      "recommendedShort": "Empf"
     },
     "buttons": {
       "back": "Zurück",
       "continueAt": "Fortfahren um",
-      "selectTime": "Zeit auswählen"
+      "selectTime": "Zeit auswählen",
+      "continue": "Fortfahren"
     },
     "header": {
       "title": "Zeit Auswählen",
       "subtitle": "Finden Sie einen passenden Interview-Slot",
       "help": "Hilfe",
-      "role": "Rolle"
+      "role": "Rolle auswählen"
+    },
+    "sessionInfo": {
+      "title": "Sitzungsinformationen"
+    },
+    "roleSelection": {
+      "subtitle": "Welche Rolle möchten Sie im Mock-Interview übernehmen?"
+    },
+    "sessionInfo": {
+      "title": "Sitzungsinformationen",
+      "toolsNotSelected": "Nicht ausgewählt",
+      "toolsCount": "{{count}} Tools",
+      "expand": "Erweitern",
+      "collapse": "Reduzieren",
+      "showAllTools": "Alle Tools anzeigen",
+      "collapseTools": "Liste reduzieren"
     },
     "timeDisplay": {
       "yourTime": "Ihre Zeit",
       "utcTime": "UTC Zeit"
+    },
+    "tabs": {
+      "withTools": "Mit Tools",
+      "allSlots": "Alle Zeitslots"
+    },
+    "toolsRequired": {
+      "title": "Tools auswählen zur Aktivierung",
+      "description": "Dieser Tab funktioniert nur mit ausgewählten Tools. Gehen Sie zur Tool-Auswahlseite.",
+      "selectTools": "Tools auswählen"
+    },
+    "allSlotsDescription": "Alle verfügbaren Zeitslots werden angezeigt. Beim Erstellen eines Slots werden Ihre Tools automatisch gespeichert.",
+    "searching": {
+      "title": "Suche nach Kandidat",
+      "subtitle": "Suche nach einem passenden Kandidaten für das Interview..."
     }
   },
   "interview": {
@@ -164,7 +197,7 @@
     "backToMain": "Zurück zur Hauptseite",
     "noInterviews": "Sie haben noch keine Interviews durchgeführt",
     "startNewInterview": "Neues Interview starten",
-    "interviewer": "int.",
+    "interviewer": "Interviewer",
     "candidate": "Kandidat",
     "receivedFeedback": "Erhaltenes Feedback",
     "givenFeedback": "Ihr Feedback",
@@ -172,8 +205,8 @@
     "userIdNotFound": "Benutzer-ID nicht gefunden",
     "failedToLoadHistory": "Verlauf konnte nicht geladen werden",
     "unknownDate": "Unbekanntes Datum",
-    "candidateShort": "Kan.",
-    "interviewerShort": "int.",
+          "candidateShort": "Kan.",
+      "interviewerShort": "Int.",
     "status": {
       "completed": "Abgeschlossen",
       "active": "Aktiv",
@@ -215,9 +248,12 @@
     "matchFoundTitle": "Match gefunden!",
     "addedToQueueTitle": "Zur Warteschlange hinzugefügt",
     "messages": {
-      "slotExpired": "Konnte keinen Partner für Slot {{slotTime}} finden. Bitte wählen Sie eine andere Zeit.{{#if tools}}\nIhre Werkzeuge: {{tools}}{{/if}}",
-      "matchFound": "Zeit: {{slotTime}}\nIhre Rolle: {{role}}\nRaum: {{roomName}}\nLink: {{link}}{{#if tools}}\nIhre Werkzeuge: {{tools}}{{/if}}",
-      "addedToQueue": "Slot: {{slotTime}}\nRolle: {{role}}{{#if tools}}\nWerkzeuge: {{tools}}{{/if}}",
+      "slotExpired": "Konnte keinen Partner für Slot {{slotTime}} finden. Bitte wählen Sie eine andere Zeit.",
+      "slotExpiredWithTools": "Konnte keinen Partner für Slot {{slotTime}} finden. Bitte wählen Sie eine andere Zeit.\nIhre Werkzeuge: {{tools}}",
+      "matchFound": "Zeit: {{slotTime}}\nIhre Rolle: {{role}}\nRaum: {{roomName}}\nLink: {{link}}",
+      "matchFoundWithTools": "Zeit: {{slotTime}}\nIhre Rolle: {{role}}\nRaum: {{roomName}}\nLink: {{link}}\nIhre Werkzeuge: {{tools}}",
+      "addedToQueue": "Slot: {{slotTime}}\nRolle: {{role}}",
+      "addedToQueueWithTools": "Slot: {{slotTime}}\nRolle: {{role}}\nWerkzeuge: {{tools}}",
       "reminder": "Erinnerung: Interview in {{timeLeft}}"
     }
   },
@@ -243,11 +279,11 @@
     "junior": "Junior",
     "middle": "Middle",
     "senior": "Senior",
-    "benefitsTitle": "Vorteile der KI-Generierung",
-    "benefitsDesc": "Konfigurieren Sie OpenRouter API, um zusätzliche Funktionen zu erhalten",
-    "benefit1": "Einzigartige Fragen für jeden Beruf",
-    "benefit2": "Anpassung an das Schwierigkeitsniveau",
-    "benefit3": "Unbegrenzte Anzahl von Fragen",
+
+    "aiBenefitsTitle": "KI-Generierungsvorteile",
+    "aiBenefit1": "Einzigartige Fragen für jeden Beruf",
+    "aiBenefit2": "Anpassung an das Schwierigkeitsniveau",
+    "aiBenefit3": "Unbegrenzte Anzahl von Fragen",
     "save": "Einstellungen speichern",
     "loadingSettings": "Einstellungen werden geladen...",
     "projectMode": "Projektmodus",
@@ -256,6 +292,8 @@
     "profileSettings": "Profileinstellungen",
     "interviewLanguage": "Interviewsprache",
     "profession": "Beruf",
+    "interfaceLanguage": "Oberflächensprache",
+    "interfaceLanguageDesc": "Wählen Sie die Sprache für die Anzeige der Anwendungsoberfläche",
     "goToInterview": "Zur Interviewbuchung",
     "getFreeKey": "Kostenlosen Schlüssel erhalten",
     "getFreeKeyDesc": "für KI-Generierung von Interviewfragen.",
@@ -311,6 +349,242 @@
       "design": "Design",
       "testing": "Tests",
       "devops": "DevOps"
+    }
+  },
+  "infoCarousel": {
+    "candidateTitle": "Für Kandidaten",
+    "interviewerTitle": "Interviewer",
+    "back": "Zurück",
+    "next": "Weiter",
+    "candidateSlides": {
+      "slide1": {
+        "title": "Wählen Sie eine günstige Zeit",
+        "description": "Zeitslots 24 Stunden am Tag verfügbar. Das System versteckt automatisch vergangene Zeit."
+      },
+      "slide2": {
+        "title": "Finden Sie Interviewer",
+        "description": "Sehen Sie die Anzahl verfügbarer Interviewer in jedem Zeitslot."
+      },
+      "slide3": {
+        "title": "Intelligente Empfehlungen",
+        "description": "Das System empfiehlt die optimale Zeit für schnelles Matching."
+      },
+      "slide4": {
+        "title": "Schneller Start",
+        "description": "Ein Klick - und Sie sind in der Interview-Warteschlange. Automatisches Matching!"
+      }
+    },
+    "interviewerSlides": {
+      "slide1": {
+        "title": "Flexibler Zeitplan",
+        "description": "Wählen Sie, wann es Ihnen passt, Interviews zu führen."
+      },
+      "slide2": {
+        "title": "Kandidaten warten",
+        "description": "Sehen Sie die Anzahl der Kandidaten, die in jedem Slot bereit für Interviews sind."
+      },
+      "slide3": {
+        "title": "Optimale Zeit",
+        "description": "Das System zeigt, wann es die meisten Kandidaten gibt."
+      },
+      "slide4": {
+        "title": "Effizienz",
+        "description": "Maximale Auslastung und minimale Wartezeit."
+      }
+    }
+  },
+  "stackBlitzModal": {
+    "title": "StackBlitz API-Schlüssel",
+    "subtitle": "Erfahren Sie mehr über kollaborative Code-Bearbeitung",
+    "back": "Zurück",
+    "next": "Weiter",
+    "gotIt": "Verstanden",
+    "getApiKey": "API-Schlüssel erhalten",
+    "slides": {
+      "slide1": {
+        "title": "Was ist StackBlitz API?",
+        "description": "StackBlitz API ermöglicht es Ihnen, Code im Browser auszuführen und zu bearbeiten, ohne zusätzliche Software zu installieren."
+      },
+      "slide2": {
+        "title": "Kollaborative Bearbeitung",
+        "description": "Während des Interviews können Sie Code zusammen mit dem Interviewer in Echtzeit schreiben."
+      },
+      "slide3": {
+        "title": "Zusammenarbeit",
+        "description": "Der Interviewer sieht Ihren Code und kann kommentieren, Änderungen vorschlagen und Lösungen bewerten."
+      },
+      "slide4": {
+        "title": "Wie erhalte ich einen API-Schlüssel?",
+        "description": "Gehen Sie zu stackblitz.com, melden Sie sich in Ihrem Konto an und erstellen Sie einen API-Schlüssel in Ihren Profileinstellungen."
+      }
+    }
+  },
+  "openRouterModal": {
+    "title": "OpenRouter API-Schlüssel",
+    "subtitle": "Erfahren Sie mehr über KI-Fragengenerierung für Interviews",
+    "back": "Zurück",
+    "next": "Weiter",
+    "gotIt": "Verstanden",
+    "getApiKey": "API-Schlüssel erhalten",
+    "slides": {
+      "slide1": {
+        "title": "Was ist OpenRouter?",
+        "description": "OpenRouter ist eine Plattform, die Zugang zu verschiedenen KI-Modellen über eine einheitliche API-Schnittstelle bietet."
+      },
+      "slide2": {
+        "title": "KI-Fragengenerierung",
+        "description": "Mit der OpenRouter API generiert das System automatisch personalisierte Interviewfragen basierend auf Ihrer Berufung und Ihrem Niveau."
+      },
+      "slide3": {
+        "title": "Sicherheit und Datenschutz",
+        "description": "Ihr API-Schlüssel wird lokal gespeichert und nur für die Fragengenerierung verwendet. Wir haben keinen Zugriff auf Ihre Daten."
+      },
+      "slide4": {
+        "title": "Wie erhalte ich einen API-Schlüssel?",
+        "description": "Gehen Sie zu openrouter.ai, erstellen Sie ein Konto und erhalten Sie einen API-Schlüssel im \"Keys\"-Bereich. Erste $5 Guthaben kostenlos!"
+      }
+    }
+  },
+  "waiting": {
+    "rules": {
+      "title": "Regeln des gegenseitigen Respekts",
+      "important": "Wichtig",
+      "bePolite": "Seien Sie höflich und geduldig",
+      "dontInterrupt": "Unterbrechen Sie den Gesprächspartner nicht",
+      "askQuestions": "Stellen Sie klärende Fragen",
+      "giveFeedback": "Geben Sie konstruktives Feedback",
+      "goal": "Denken Sie daran: Das Ziel ist es, sich gegenseitig professionell weiterzuentwickeln",
+      "interviewerTips": "Tipps für Interviewer:",
+      "candidateTips": "Tipps für Kandidaten:",
+      "interviewerAdvice": "Seien Sie freundlich, stellen Sie offene Fragen, geben Sie dem Kandidaten Zeit zum Nachdenken",
+      "candidateAdvice": "Seien Sie selbstbewusst, geben Sie konkrete Beispiele, haben Sie keine Angst, Fragen zu stellen"
+    },
+    "devMode": "DEV MODE - Mock-Daten",
+    "waitingRoom": "Warteraum (DEV)",
+    "waitingForMock": "Warten auf den Start des Mock-Interviews",
+    "sessionInfo": {
+      "startTime": "Startzeit",
+      "yourRole": "Ihre Rolle",
+      "profession": "Beruf",
+      "language": "Sprache",
+      "notSpecified": "Nicht angegeben",
+      "notSpecifiedLang": "Nicht angegeben"
+    },
+    "participants": {
+      "title": "Sitzungsteilnehmer",
+      "waiting": "Wartet:",
+      "interviews": "Interviews",
+      "interviewer": "Interviewer",
+      "candidate": "Kandidat"
+    },
+    "timer": {
+      "untilStart": "Bis zum Start:",
+      "late": "Verspätung:",
+      "canEnter": "Kann eintreten!",
+      "progress": "Fortschritt bis zum Eintritt möglich",
+      "lateWarning": "⚠️ Sie sind zu spät zum Interview. Versuchen Sie, sich so schnell wie möglich anzuschließen."
+    },
+    "actions": {
+      "mediaSettings": "Kamera- und Toneinstellungen",
+      "hideSettings": "Einstellungen ausblenden",
+      "joinInterview": "Interview beitreten",
+      "joinLate": "Beitreten (verspätet)",
+      "enterEarly": "Früh eintreten (Test)",
+      "earlyInfo": "Eintritt normalerweise 5 Minuten vor Start möglich",
+      "lateInfo": "Interview-Startzeit ist bereits vergangen",
+      "backToDevTest": "← Zurück zu dev-test"
+    },
+    "status": {
+      "active": "Sitzung ist aktiv und bereit zum Start (DEV)"
+    },
+    "errors": {
+      "title": "Fehler",
+      "insufficientData": "Unzureichende Daten zum Laden der Sitzung",
+      "loadError": "Fehler beim Laden der Sitzungsdaten",
+      "sessionNotFound": "Sitzung nicht gefunden",
+      "loadFailed": "Sitzungsdaten konnten nicht geladen werden"
+    },
+    "loading": {
+      "mockData": "Mock-Daten werden geladen...",
+      "sessionData": "Sitzungsdaten werden geladen..."
+    }
+  },
+  "chat": {
+    "title": "Teilnehmer-Chat",
+    "typing": "Tippt...",
+    "quickMessages": "Schnelle Nachrichten",
+    "inputPlaceholder": "Nachricht schreiben...",
+    "enterToSend": "Enter zum Senden",
+    "system": "System",
+    "participantsConnected": "Teilnehmer haben sich dem Chat angeschlossen ({{count}}/2)",
+    "you": "Sie",
+    "messages": {
+      "greeting": {
+        "hello": "Hallo!",
+        "goodDay": "Guten Tag!",
+        "greetings": "Grüße!",
+        "niceToMeet": "Schön, Sie kennenzulernen!"
+      },
+      "status": {
+        "ready": "Bereit für Interview",
+        "nervous": "Etwas nervös",
+        "great": "Alles ist großartig!",
+        "needMinute": "Brauche eine Minute",
+        "checkingSound": "Prüfe Ton"
+      },
+      "question": {
+        "howAreYou": "Wie geht es Ihnen?",
+        "readyToStart": "Bereit zum Start?",
+        "anyQuestions": "Fragen?",
+        "everythingClear": "Alles klar?",
+        "shallWeStart": "Sollen wir anfangen?",
+        "readyToAnswer": "Bereit zu antworten"
+      },
+      "reaction": {
+        "excellent": "Ausgezeichnet!",
+        "agree": "Zustimmen",
+        "interesting": "Interessant",
+        "gotIt": "Verstanden",
+        "thankYou": "Danke!",
+        "greatQuestion": "Großartige Frage"
+      }
+    }
+  },
+  "media": {
+    "title": "Kamera- und Toneinstellungen",
+    "subtitle": "Überprüfen und konfigurieren Sie Ihre Geräte vor dem Interview",
+    "refresh": "Aktualisieren",
+    "camera": {
+      "title": "Kamera",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "enable": "Kamera aktivieren",
+      "selectDevice": "Kamera auswählen:"
+    },
+    "microphone": {
+      "title": "Mikrofon",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "enable": "Mikrofon aktivieren",
+      "selectDevice": "Mikrofon auswählen:",
+      "level": "Lautstärke"
+    },
+    "volume": {
+      "title": "Lautstärke"
+    },
+    "actions": {
+      "saveSettings": "Einstellungen speichern",
+      "testAudio": "Audio testen",
+      "stopTest": "Test stoppen"
+    },
+    "status": {
+      "saved": "✅ Einstellungen gespeichert und werden während des Interviews verwendet"
+    },
+    "errors": {
+      "noDevices": "Keine verfügbaren Kamera- oder Mikrofon-Geräte gefunden",
+      "loadFailed": "Fehler beim Laden der Geräteliste. Überprüfen Sie die Browser-Berechtigungen.",
+      "deviceUnavailable": "Gerät nicht verfügbar: {{constraint}}. Versuchen Sie, ein anderes Gerät auszuwählen.",
+      "streamFailed": "Fehler beim Starten des Medienstreams. Überprüfen Sie die Browser-Berechtigungen."
     }
   }
 }

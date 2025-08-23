@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './dialog';
+import { useAppTranslation } from '@/lib/i18n';
 
 interface InfoSlide {
   icon: React.ReactNode;
@@ -21,36 +22,40 @@ interface OpenRouterInfoModalProps {
   onClose: () => void;
 }
 
-const slides: InfoSlide[] = [
-  {
-    icon: <Brain size={24} />,
-    title: 'Что такое OpenRouter?',
-    description: 'OpenRouter - это платформа, которая предоставляет доступ к различным AI моделям через единый API интерфейс.',
-    color: 'text-blue-600',
-  },
-  {
-    icon: <Zap size={24} />,
-    title: 'AI генерация вопросов',
-    description: 'С помощью OpenRouter API система автоматически генерирует персонализированные вопросы для интервью на основе вашей профессии и уровня.',
-    color: 'text-green-600',
-  },
-  {
-    icon: <Key size={24} />,
-    title: 'Безопасность и конфиденциальность',
-    description: 'Ваш API ключ хранится локально и используется только для генерации вопросов. Мы не имеем доступа к вашим данным.',
-    color: 'text-purple-600',
-  },
-  {
-    icon: <Globe size={24} />,
-    title: 'Как получить API ключ?',
-    description: 'Перейдите на openrouter.ai, создайте аккаунт и получите API ключ в разделе "Keys". Первые $5 кредитов бесплатно!',
-    color: 'text-orange-600',
-  },
-];
+
 
 export function OpenRouterInfoModal({ isOpen, onClose }: OpenRouterInfoModalProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [textVisible, setTextVisible] = useState(false);
+  const { t } = useAppTranslation();
+
+  // Создаем слайды с переводами
+  const slides: InfoSlide[] = [
+    {
+      icon: <Brain size={24} />,
+      title: t('openRouterModal.slides.slide1.title'),
+      description: t('openRouterModal.slides.slide1.description'),
+      color: 'text-blue-600',
+    },
+    {
+      icon: <Zap size={24} />,
+      title: t('openRouterModal.slides.slide2.title'),
+      description: t('openRouterModal.slides.slide2.description'),
+      color: 'text-green-600',
+    },
+    {
+      icon: <Key size={24} />,
+      title: t('openRouterModal.slides.slide3.title'),
+      description: t('openRouterModal.slides.slide3.description'),
+      color: 'text-purple-600',
+    },
+    {
+      icon: <Globe size={24} />,
+      title: t('openRouterModal.slides.slide4.title'),
+      description: t('openRouterModal.slides.slide4.description'),
+      color: 'text-orange-600',
+    },
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -119,7 +124,7 @@ export function OpenRouterInfoModal({ isOpen, onClose }: OpenRouterInfoModalProp
               <div className="flex items-center">
                 <Info size={20} className="mr-2" />
                 <DialogTitle className="text-lg font-semibold">
-                  OpenRouter API Ключ
+                  {t('openRouterModal.title')}
                 </DialogTitle>
               </div>
               <button
@@ -131,7 +136,7 @@ export function OpenRouterInfoModal({ isOpen, onClose }: OpenRouterInfoModalProp
               </button>
             </div>
             <DialogDescription className="text-white/90">
-              Узнайте больше о возможностях AI генерации вопросов для интервью
+              {t('openRouterModal.subtitle')}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -183,13 +188,13 @@ export function OpenRouterInfoModal({ isOpen, onClose }: OpenRouterInfoModalProp
               className="flex-1"
             >
               <ArrowLeft size={16} className="mr-2" />
-              Назад
+              {t('openRouterModal.back')}
             </Button>
             <Button
               onClick={handleNext}
               className="flex-1"
             >
-              Далее
+              {t('openRouterModal.next')}
               <ArrowRight size={16} className="ml-2" />
             </Button>
           </div>
@@ -202,7 +207,7 @@ export function OpenRouterInfoModal({ isOpen, onClose }: OpenRouterInfoModalProp
                 onClick={onClose}
                 className="flex-1"
               >
-                Понятно
+                {t('openRouterModal.gotIt')}
               </Button>
               <Button
                 onClick={() => {
@@ -211,7 +216,7 @@ export function OpenRouterInfoModal({ isOpen, onClose }: OpenRouterInfoModalProp
                 }}
                 className="flex-1"
               >
-                Получить API ключ
+                {t('openRouterModal.getApiKey')}
               </Button>
             </div>
           </div>

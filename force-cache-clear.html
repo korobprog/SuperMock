@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Очистка кэша</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🧹 Принудительная очистка кэша</h1>
+    
+    <div>
+        <h3>🔄 Очистка кэша браузера:</h3>
+        <button onclick="clearCache()">Очистить кэш</button>
+        <button onclick="goToMainApp()">Перейти в основное приложение</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function clearCache() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>🔄 Очистка кэша...</p>';
+            
+            // Очищаем кэш
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                        console.log('🗑️ Удален кэш:', name);
+                    });
+                });
+            }
+
+            // Очищаем localStorage
+            localStorage.clear();
+            console.log('🗑️ Очищен localStorage');
+
+            // Очищаем sessionStorage
+            sessionStorage.clear();
+            console.log('🗑️ Очищен sessionStorage');
+
+            resultsDiv.innerHTML = '<div class="success"><h4>✅ Кэш очищен!</h4><p>Теперь перейдите в основное приложение</p></div>';
+        }
+
+        function goToMainApp() {
+            // Принудительно перезагружаем страницу с очисткой кэша
+            window.location.href = '/time?v=' + Date.now();
+        }
+
+        // Автоматически очищаем кэш при загрузке страницы
+        window.onload = function() {
+            clearCache();
+        };
+    </script>
+</body>
+</html>

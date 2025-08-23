@@ -5,8 +5,8 @@ import {
   BookOpen,
   Calendar,
   Bell,
-  Zap,
   ArrowRight,
+  Target,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -55,6 +55,13 @@ export function MainMenu() {
       gradient: 'from-green-500 to-blue-500',
     },
     {
+      title: t('tools.selectTools'),
+      description: t('tools.subtitle'),
+      icon: Target,
+      onClick: () => navigate('/tools'),
+      gradient: 'from-emerald-500 to-teal-500',
+    },
+    {
       title: t('home.materials'),
       description: t('home.materialsDesc'),
       icon: BookOpen,
@@ -78,91 +85,7 @@ export function MainMenu() {
 
   return (
     <div className="space-y-4">
-      {/* AI Tip Card - мобильная версия */}
-      {!hasApiKey && (
-        <Card
-          className="md:hidden border-2 border-dashed border-yellow-300 bg-yellow-50/50 dark:bg-yellow-950/20 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.01] group telegram-desktop-fix"
-          onClick={() => navigate('/profile')}
-        >
-          <CardContent className="pt-3">
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <Zap className="text-yellow-500" size={18} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                  {t('home.aiTipTitle')}
-                </h3>
-                <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-0.5">
-                  {t('home.aiTipDesc')}
-                </p>
-                <div className="mt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs bg-yellow-100 hover:bg-yellow-200 border-yellow-300 text-yellow-800 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 dark:border-yellow-700 dark:text-yellow-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate('/profile');
-                    }}
-                  >
-                    {t('common.configureApi')}
-                  </Button>
-                </div>
-              </div>
-              <div className="flex-shrink-0">
-                <ArrowRight
-                  className="text-yellow-600 dark:text-yellow-400 group-hover:translate-x-1 transition-transform duration-200"
-                  size={14}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
-      {/* AI Tip Card - десктопная версия */}
-      {!hasApiKey && (
-        <Card
-          className="hidden md:block border-2 border-dashed border-yellow-300 bg-yellow-50/50 dark:bg-yellow-950/20 cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] group telegram-desktop-fix"
-          onClick={() => navigate('/profile')}
-        >
-          <CardContent className="pt-4">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                <Zap className="text-yellow-500 mt-0.5" size={20} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                  {t('home.aiTipTitle')}
-                </h3>
-                <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                  {t('home.aiTipDesc')}
-                </p>
-                <div className="mt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs bg-yellow-100 hover:bg-yellow-200 border-yellow-300 text-yellow-800 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 dark:border-yellow-700 dark:text-yellow-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate('/profile');
-                    }}
-                  >
-                    {t('common.configureApi')}
-                  </Button>
-                </div>
-              </div>
-              <div className="flex-shrink-0">
-                <ArrowRight
-                  className="text-yellow-600 dark:text-yellow-400 group-hover:translate-x-1 transition-transform duration-200"
-                  size={16}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Main Menu Grid - мобильная версия */}
       <div className="grid grid-cols-1 gap-3 sm:gap-4 md:hidden">

@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './dialog';
+import { useAppTranslation } from '@/lib/i18n';
 
 interface InfoSlide {
   icon: React.ReactNode;
@@ -21,36 +22,40 @@ interface StackBlitzInfoModalProps {
   onClose: () => void;
 }
 
-const slides: InfoSlide[] = [
-  {
-    icon: <Key size={24} />,
-    title: 'Что такое StackBlitz API?',
-    description: 'StackBlitz API позволяет запускать и редактировать код в браузере без установки дополнительного ПО.',
-    color: 'text-blue-600',
-  },
-  {
-    icon: <Code size={24} />,
-    title: 'Коллаборативное редактирование',
-    description: 'Во время интервью вы сможете писать код вместе с int. в реальном времени.',
-    color: 'text-green-600',
-  },
-  {
-    icon: <Users size={24} />,
-    title: 'Совместная работа',
-    description: 'int. видит ваш код и может комментировать, предлагать изменения и оценивать решения.',
-    color: 'text-purple-600',
-  },
-  {
-    icon: <Globe size={24} />,
-    title: 'Как получить API ключ?',
-    description: 'Перейдите на stackblitz.com, войдите в аккаунт и создайте API ключ в настройках профиля.',
-    color: 'text-orange-600',
-  },
-];
+
 
 export function StackBlitzInfoModal({ isOpen, onClose }: StackBlitzInfoModalProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [textVisible, setTextVisible] = useState(false);
+  const { t } = useAppTranslation();
+
+  // Создаем слайды с переводами
+  const slides: InfoSlide[] = [
+    {
+      icon: <Key size={24} />,
+      title: t('stackBlitzModal.slides.slide1.title'),
+      description: t('stackBlitzModal.slides.slide1.description'),
+      color: 'text-blue-600',
+    },
+    {
+      icon: <Code size={24} />,
+      title: t('stackBlitzModal.slides.slide2.title'),
+      description: t('stackBlitzModal.slides.slide2.description'),
+      color: 'text-green-600',
+    },
+    {
+      icon: <Users size={24} />,
+      title: t('stackBlitzModal.slides.slide3.title'),
+      description: t('stackBlitzModal.slides.slide3.description'),
+      color: 'text-purple-600',
+    },
+    {
+      icon: <Globe size={24} />,
+      title: t('stackBlitzModal.slides.slide4.title'),
+      description: t('stackBlitzModal.slides.slide4.description'),
+      color: 'text-orange-600',
+    },
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -119,7 +124,7 @@ export function StackBlitzInfoModal({ isOpen, onClose }: StackBlitzInfoModalProp
               <div className="flex items-center">
                 <Info size={20} className="mr-2" />
                 <DialogTitle className="text-lg font-semibold">
-                  StackBlitz API Ключ
+                  {t('stackBlitzModal.title')}
                 </DialogTitle>
               </div>
               <button
@@ -131,7 +136,7 @@ export function StackBlitzInfoModal({ isOpen, onClose }: StackBlitzInfoModalProp
               </button>
             </div>
             <DialogDescription className="text-white/90">
-              Узнайте больше о возможностях коллаборативного редактирования кода
+              {t('stackBlitzModal.subtitle')}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -183,13 +188,13 @@ export function StackBlitzInfoModal({ isOpen, onClose }: StackBlitzInfoModalProp
               className="flex-1"
             >
               <ArrowLeft size={16} className="mr-2" />
-              Назад
+              {t('stackBlitzModal.back')}
             </Button>
             <Button
               onClick={handleNext}
               className="flex-1"
             >
-              Далее
+              {t('stackBlitzModal.next')}
               <ArrowRight size={16} className="ml-2" />
             </Button>
           </div>
@@ -202,7 +207,7 @@ export function StackBlitzInfoModal({ isOpen, onClose }: StackBlitzInfoModalProp
                 onClick={onClose}
                 className="flex-1"
               >
-                Понятно
+                {t('stackBlitzModal.gotIt')}
               </Button>
               <Button
                 onClick={() => {
@@ -211,7 +216,7 @@ export function StackBlitzInfoModal({ isOpen, onClose }: StackBlitzInfoModalProp
                 }}
                 className="flex-1"
               >
-                Получить API ключ
+                {t('stackBlitzModal.getApiKey')}
               </Button>
             </div>
           </div>

@@ -154,6 +154,38 @@ export async function apiGetSlots(params: {
   return res.json() as Promise<{ slots: { time: string; count: number }[] }>;
 }
 
+export async function apiGetEnhancedSlots(params: {
+  role: 'candidate' | 'interviewer';
+  profession?: string;
+  language?: string;
+  date?: string; // YYYY-MM-DD local date
+  timezone?: string;
+}) {
+  const url = new URL(createApiUrl('/api/slots/enhanced'), window.location.origin);
+  url.searchParams.set('role', params.role);
+  if (params.profession) url.searchParams.set('profession', params.profession);
+  if (params.language) url.searchParams.set('language', params.language);
+  if (params.date) url.searchParams.set('date', params.date);
+  if (params.timezone) url.searchParams.set('timezone', params.timezone);
+  const res = await fetch(url.toString(), { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to load enhanced slots');
+  return res.json() as Promise<{ 
+    slots: Array<{
+      time: string;
+      utcTime: string;
+      count: number;
+      timezone: string;
+      offset: number;
+    }>;
+    timezone: {
+      name: string;
+      offset: number;
+      currentTime: string;
+      utcTime: string;
+    };
+  }>;
+}
+
 export async function apiGetSession(sessionId: string, userId?: string) {
   const url = new URL(createApiUrl(`/api/session/${sessionId}`));
   if (userId) {

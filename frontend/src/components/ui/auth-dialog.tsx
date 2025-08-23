@@ -165,7 +165,26 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         const result = await apiValidateTelegramAuth(user);
         console.log('Server validation result:', result);
 
-        if (!result.success) {
+        if (result.success) {
+          // После успешной валидации инициализируем пользователя в базе данных
+          console.log('Initializing user in database...');
+          const initResponse = await fetch(createApiUrl('/api/init'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tg: user,
+              language: 'ru',
+              initData: 'telegram_auth_hash'
+            })
+          });
+          
+          if (initResponse.ok) {
+            const initData = await initResponse.json();
+            console.log('User initialized in database:', initData);
+          } else {
+            console.error('Failed to initialize user in database');
+          }
+        } else {
           console.error(
             'Server validation failed, but continuing with local auth:',
             result

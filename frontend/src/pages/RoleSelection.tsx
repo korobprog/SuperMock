@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RoleCard } from '@/components/ui/role-card';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserCheck, Users, History, Zap, ArrowRight } from 'lucide-react';
+import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
 import { useAppTranslation } from '@/lib/i18n';
 import { apiSaveProfile } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
@@ -79,7 +80,10 @@ export function RoleSelection() {
     <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4">
       <div className="max-w-md mx-auto pt-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          <div className="absolute top-0 right-0">
+            <CompactLanguageSelector />
+          </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">
             {t('role.selectRole')}
           </h1>

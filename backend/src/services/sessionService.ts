@@ -261,19 +261,14 @@ export class SessionService {
         throw new Error('Пользователь не найден');
       }
 
-      // Добавляем новую запись в историю ролей
-      const roleHistory = user.roleHistory as any[];
-      roleHistory.push({
-        sessionId,
-        role,
-        timestamp: new Date(),
-      });
-
-      // Обновляем пользователя
+      // В новой схеме нет roleHistory, поэтому просто логируем
+      console.log(`Пользователь ${userId} участвовал в сессии ${sessionId} как ${role}`);
+      
+      // Обновляем пользователя (без roleHistory)
       await adapter.client.user.update({
         where: { id: userId },
         data: {
-          roleHistory: roleHistory,
+          updatedAt: new Date(),
         },
       });
     } catch (error) {

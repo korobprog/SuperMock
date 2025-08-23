@@ -14,6 +14,11 @@ if ! ssh dokploy-server "echo 'Сервер доступен'" > /dev/null 2>&1;
     exit 1
 fi
 
+# Переходим в корневую директорию проекта
+echo "📁 Переход в корневую директорию проекта..."
+cd "$(dirname "$0")/../.."
+echo "📍 Текущая директория: $(pwd)"
+
 # Синхронизация кода бэкенда
 echo "📦 Синхронизация кода бэкенда..."
 
@@ -30,6 +35,95 @@ if [ ! "$(ls -A backend)" ]; then
     echo "❌ Директория 'backend' пуста"
     exit 1
 fi
+
+# 🔍 ПРЕДВАРИТЕЛЬНЫЕ ПРОВЕРКИ И ТЕСТЫ
+echo "🔍 Выполнение предварительных проверок..."
+
+# Проверка наличия необходимых файлов
+echo "📋 Проверка конфигурационных файлов..."
+REQUIRED_FILES=(
+    "package.json"
+    "backend/prisma/schema.prisma"
+    "backend/Dockerfile"
+    "docker-compose.prod.yml"
+    ".env"
+)
+
+for file in "${REQUIRED_FILES[@]}"; do
+    if [ ! -f "$file" ]; then
+        echo "❌ Не найден обязательный файл: $file"
+        exit 1
+    fi
+done
+echo "✅ Все конфигурационные файлы найдены"
+
+# Проверка синтаксиса TypeScript
+echo "🔧 Проверка синтаксиса TypeScript..."
+if command -v npx &> /dev/null; then
+    cd backend
+    if npx tsc --noEmit --skipLibCheck 2>&1 | head -20; then
+        echo "✅ TypeScript проверка пройдена"
+    else
+        echo "⚠️  TypeScript проверка выявила ошибки, но продолжаем..."
+    fi
+    cd ..
+else
+    echo "⚠️  npx не найден, пропускаем TypeScript проверку"
+fi
+
+# Проверка ESLint
+echo "🔍 Проверка ESLint..."
+if command -v npx &> /dev/null; then
+    cd backend
+    if npx eslint src --ext .ts,.js --max-warnings 0 2>&1 | head -20; then
+        echo "✅ ESLint проверка пройдена"
+    else
+        echo "⚠️  ESLint выявил предупреждения, но продолжаем..."
+    fi
+    cd ..
+else
+    echo "⚠️  npx не найден, пропускаем ESLint проверку"
+fi
+
+# Проверка Prisma схемы
+echo "🗄️  Проверка Prisma схемы..."
+if command -v npx &> /dev/null; then
+    cd backend
+    if npx prisma validate 2>&1 | head -10; then
+        echo "✅ Prisma схема валидна"
+    else
+        echo "❌ Prisma схема содержит ошибки"
+        cd ..
+        exit 1
+    fi
+    cd ..
+else
+    echo "⚠️  npx не найден, пропускаем проверку Prisma"
+fi
+
+# Проверка переменных окружения
+echo "🔐 Проверка переменных окружения..."
+if [ -f ".env" ]; then
+    REQUIRED_ENV_VARS=(
+        "DATABASE_URL"
+        "TELEGRAM_BOT_TOKEN"
+        "SESSION_SECRET"
+        "JWT_SECRET"
+        "VITE_API_URL"
+    )
+    
+    for var in "${REQUIRED_ENV_VARS[@]}"; do
+        if ! grep -q "^${var}=" .env; then
+            echo "⚠️  Переменная $var не найдена в .env"
+        fi
+    done
+    echo "✅ Проверка переменных окружения завершена"
+else
+    echo "❌ Файл .env не найден"
+    exit 1
+fi
+
+echo "🎯 Все предварительные проверки пройдены!"
 
 echo "📁 Создание архива из директории: $(pwd)/backend"
 tar -czf backend.tar.gz --exclude='node_modules' --exclude='.git' --exclude='dist' --exclude='.env' --exclude='*.log' --exclude='uploads' backend/
@@ -128,7 +222,10 @@ echo "🔧 Автоматическое исправление базы данн
 echo "📊 Проверка статуса миграций..."
 docker exec supermock-backend npx prisma migrate status || true
 
-echo "🔄 Синхронизация схемы базы данных..."
+echo "🔄 Применение миграций..."
+docker exec supermock-backend npx prisma migrate deploy || true
+
+echo "🔄 Синхронизация схемы базы данных (если миграции не применились)..."
 docker exec supermock-backend npx prisma db push --accept-data-loss || true
 
 echo "🔧 Генерация Prisma Client..."

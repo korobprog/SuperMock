@@ -43,6 +43,7 @@ import { useSearchParams } from 'react-router-dom';
 import StackblitzEditor from '@/components/StackblitzEditor';
 import { apiCompleteSession, apiFeedback, apiGetSession } from '@/lib/api';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
 
 // Убираем захардкоженные вопросы, теперь они будут подгружаться по профессии
 
@@ -81,6 +82,10 @@ export function Interview() {
     online: boolean;
     role?: 'interviewer' | 'candidate' | null;
   }>({ online: false, role: null });
+  const [partnerData, setPartnerData] = useState<{
+    name?: string;
+    avatar?: string;
+  }>({});
   const sessionId = useAppStore((s) => s.sessionId);
   const jitsiRoom = useAppStore((s) => s.jitsiRoom);
   const profession = useAppStore((s) => s.profession);
@@ -382,35 +387,45 @@ export function Interview() {
       });
 
       // WebRTC signaling handlers
-      s.on('webrtc_offer', async ({ sdp }) => {
+      s.on('webrtc_offer', async ({ sdp, from }) => {
         try {
-          if (!pcRef.current) return;
+          if (!pcRef.current) {
+            return;
+          }
           await pcRef.current.setRemoteDescription(
             new RTCSessionDescription(sdp)
           );
+          
           const answer = await pcRef.current.createAnswer();
           await pcRef.current.setLocalDescription(answer);
+          
           s.emit('webrtc_answer', { sessionId, sdp: answer, from: userId });
         } catch (e) {
-          console.error('Error setting remote description:', e);
+          console.error('❌ Error setting remote description:', e);
         }
       });
-      s.on('webrtc_answer', async ({ sdp }) => {
+      
+      s.on('webrtc_answer', async ({ sdp, from }) => {
         try {
-          if (!pcRef.current) return;
+          if (!pcRef.current) {
+            return;
+          }
           await pcRef.current.setRemoteDescription(
             new RTCSessionDescription(sdp)
           );
         } catch (e) {
-          console.error('Error applying answer SDP', e);
+          console.error('❌ Error applying answer SDP', e);
         }
       });
-      s.on('webrtc_ice', async ({ candidate }) => {
+      
+      s.on('webrtc_ice', async ({ candidate, from }) => {
         try {
-          if (!pcRef.current || !candidate) return;
+          if (!pcRef.current || !candidate) {
+            return;
+          }
           await pcRef.current.addIceCandidate(candidate);
         } catch (e) {
-          console.error('Error adding remote ICE candidate', e);
+          console.error('❌ Error adding remote ICE candidate', e);
         }
       });
     }
@@ -423,6 +438,10 @@ export function Interview() {
       }
       s.disconnect();
       socketRef.current = null;
+      // Сохраняем текущую роль как lastRole при размонтировании компонента
+      if (role) {
+        useAppStore.getState().saveCurrentRoleAsLast();
+      }
     };
   }, [sessionId, userId, role, navigate]);
 
@@ -447,12 +466,33 @@ export function Interview() {
         }
       };
 
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === 'connected') {
+          setPartnerOnline(prev => ({
+            ...prev,
+            online: true
+          }));
+        } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+          setPartnerOnline(prev => ({
+            ...prev,
+            online: false
+          }));
+        }
+      };
+
       pc.ontrack = (ev) => {
         const [stream] = ev.streams;
         if (remoteVideoRef.current && stream) {
           remoteVideoRef.current.srcObject = stream;
+          // Устанавливаем партнера как онлайн когда получаем его поток
+          setPartnerOnline(prev => ({
+            ...prev,
+            online: true
+          }));
         }
       };
+      
+
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -460,12 +500,18 @@ export function Interview() {
           video: isVideoActive,
         });
         localStreamRef.current = stream;
-        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
         stream.getTracks().forEach((t) => pc.addTrack(t, stream));
       } catch (err) {
         console.error('getUserMedia failed', err);
+        // Не отключаем соединение полностью, только видео
         setIsVideoActive(false);
-        setIsAudioActive(false);
+        // Оставляем аудио активным если возможно
+        if (!isAudioActive) {
+          setIsAudioActive(false);
+        }
         return;
       }
 
@@ -475,7 +521,9 @@ export function Interview() {
           offerToReceiveAudio: true,
           offerToReceiveVideo: true,
         });
+        
         await pc.setLocalDescription(offer);
+        
         if (socketRef.current && sessionId) {
           socketRef.current.emit('webrtc_offer', {
             sessionId,
@@ -484,7 +532,7 @@ export function Interview() {
           });
         }
       } catch (e) {
-        console.error('createOffer failed', e);
+        console.error('❌ createOffer failed', e);
       }
     }
 
@@ -503,11 +551,16 @@ export function Interview() {
       }
       if (localVideoRef.current) localVideoRef.current.srcObject = null;
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      // Сбрасываем статус партнера когда закрываем соединение
+      setPartnerOnline(prev => ({
+        ...prev,
+        online: false
+      }));
     }
 
-    if (videoProvider === 'webrtc' && isVideoActive) {
+    if (videoProvider === 'webrtc' && (isVideoActive || isAudioActive)) {
       startWebRTC();
-    } else {
+    } else if (videoProvider === 'webrtc' && !isVideoActive && !isAudioActive) {
       stopWebRTC();
     }
 
@@ -540,11 +593,81 @@ export function Interview() {
 
   // Функции управления видео
   const handleToggleVideo = () => {
-    setIsVideoActive(!isVideoActive);
+    const newVideoState = !isVideoActive;
+    setIsVideoActive(newVideoState);
+    
+    // Обновляем WebRTC соединение
+    if (pcRef.current && localStreamRef.current) {
+      const videoTracks = localStreamRef.current.getVideoTracks();
+      videoTracks.forEach(track => {
+        track.enabled = newVideoState;
+      });
+      
+      // Если включаем видео и его не было, добавляем трек
+      if (newVideoState && videoTracks.length === 0) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => {
+            const videoTrack = stream.getVideoTracks()[0];
+            if (videoTrack && pcRef.current) {
+              pcRef.current.addTrack(videoTrack, localStreamRef.current!);
+              // Добавляем трек к локальному стриму
+              localStreamRef.current!.addTrack(videoTrack);
+            }
+          })
+          .catch(err => {
+            console.error('Error getting video stream:', err);
+            setIsVideoActive(false);
+          });
+      }
+    }
+    
+    // Также обновляем состояние в WebRTC соединении
+    if (pcRef.current) {
+      const senders = pcRef.current.getSenders();
+      const videoSender = senders.find(sender => sender.track?.kind === 'video');
+      if (videoSender && videoSender.track) {
+        videoSender.track.enabled = newVideoState;
+      }
+    }
   };
 
   const handleToggleAudio = () => {
-    setIsAudioActive(!isAudioActive);
+    const newAudioState = !isAudioActive;
+    setIsAudioActive(newAudioState);
+    
+    // Обновляем WebRTC соединение
+    if (pcRef.current && localStreamRef.current) {
+      const audioTracks = localStreamRef.current.getAudioTracks();
+      audioTracks.forEach(track => {
+        track.enabled = newAudioState;
+      });
+      
+      // Если включаем аудио и его не было, добавляем трек
+      if (newAudioState && audioTracks.length === 0) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            const audioTrack = stream.getAudioTracks()[0];
+            if (audioTrack && pcRef.current) {
+              pcRef.current.addTrack(audioTrack, localStreamRef.current!);
+              // Добавляем трек к локальному стриму
+              localStreamRef.current!.addTrack(audioTrack);
+            }
+          })
+          .catch(err => {
+            console.error('Error getting audio stream:', err);
+            setIsAudioActive(false);
+          });
+      }
+    }
+    
+    // Также обновляем состояние в WebRTC соединении
+    if (pcRef.current) {
+      const senders = pcRef.current.getSenders();
+      const audioSender = senders.find(sender => sender.track?.kind === 'audio');
+      if (audioSender && audioSender.track) {
+        audioSender.track.enabled = newAudioState;
+      }
+    }
   };
 
   const handleToggleScreenShare = async () => {
@@ -589,9 +712,77 @@ export function Interview() {
     }
   };
 
-  const handleDeviceChange = (deviceId: string, type: 'video' | 'audio') => {
-    // Здесь можно добавить логику смены устройств
+  const handleDeviceChange = async (deviceId: string, type: 'video' | 'audio') => {
     console.log(`Changing ${type} device to:`, deviceId);
+    
+    try {
+      if (type === 'video') {
+        // Получаем новый видеопоток с выбранной камерой
+        const newVideoStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: deviceId } }
+        });
+        
+        if (localStreamRef.current && pcRef.current) {
+          // Удаляем старые видеотреки
+          const oldVideoTracks = localStreamRef.current.getVideoTracks();
+          oldVideoTracks.forEach(track => {
+            localStreamRef.current!.removeTrack(track);
+            track.stop();
+          });
+          
+          // Добавляем новый видеотрек
+          const newVideoTrack = newVideoStream.getVideoTracks()[0];
+          if (newVideoTrack) {
+            localStreamRef.current.addTrack(newVideoTrack);
+            
+            // Обновляем WebRTC соединение
+            const senders = pcRef.current.getSenders();
+            const videoSender = senders.find(sender => sender.track?.kind === 'video');
+            if (videoSender) {
+              videoSender.replaceTrack(newVideoTrack);
+            } else {
+              pcRef.current.addTrack(newVideoTrack, localStreamRef.current);
+            }
+            
+            // Обновляем локальное видео
+            if (localVideoRef.current) {
+              localVideoRef.current.srcObject = localStreamRef.current;
+            }
+          }
+        }
+      } else if (type === 'audio') {
+        // Получаем новый аудиопоток с выбранным микрофоном
+        const newAudioStream = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: { exact: deviceId } }
+        });
+        
+        if (localStreamRef.current && pcRef.current) {
+          // Удаляем старые аудиотреки
+          const oldAudioTracks = localStreamRef.current.getAudioTracks();
+          oldAudioTracks.forEach(track => {
+            localStreamRef.current!.removeTrack(track);
+            track.stop();
+          });
+          
+          // Добавляем новый аудиотрек
+          const newAudioTrack = newAudioStream.getAudioTracks()[0];
+          if (newAudioTrack) {
+            localStreamRef.current.addTrack(newAudioTrack);
+            
+            // Обновляем WebRTC соединение
+            const senders = pcRef.current.getSenders();
+            const audioSender = senders.find(sender => sender.track?.kind === 'audio');
+            if (audioSender) {
+              audioSender.replaceTrack(newAudioTrack);
+            } else {
+              pcRef.current.addTrack(newAudioTrack, localStreamRef.current);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error changing ${type} device:`, error);
+    }
   };
 
   const handleSettingsChange = (settings: {
@@ -617,6 +808,10 @@ export function Interview() {
     // Очищаем время начала сессии из localStorage
     if (sessionId) {
       localStorage.removeItem(`interview_start_${sessionId}`);
+    }
+    // Сохраняем текущую роль как lastRole при завершении сессии
+    if (role) {
+      useAppStore.getState().saveCurrentRoleAsLast();
     }
   };
 
@@ -747,23 +942,25 @@ export function Interview() {
             </div>
           </div>
           <div className="flex items-center space-x-2 ml-1">
+            <CompactLanguageSelector />
     
-            {selfOnline && (
+            {selfOnline && isMobile && (
               <Badge
                 variant="secondary"
-                className="bg-blue-50 text-blue-700 border-blue-200"
+                className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1"
               >
-                Вы онлайн
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               </Badge>
             )}
-            {partnerOnline.online && (
-              <Badge
-                variant="secondary"
-                className="bg-emerald-50 text-emerald-700 border-emerald-200"
-              >
-                Партнер онлайн
-              </Badge>
-            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleExitInterview}
+              className="h-8 px-3 text-xs"
+            >
+              Выйти
+            </Button>
+
             {/* Кнопки управления - уменьшенные */}
             <Button
               variant={isVideoActive ? 'destructive' : 'default'}
@@ -781,14 +978,7 @@ export function Interview() {
             >
               {isVideoActive ? <PhoneOff size={14} /> : <Phone size={14} />}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExitInterview}
-              className="h-8 px-2"
-            >
-              {t('interview.exit')}
-            </Button>
+
 
             {/* Кнопка бургер меню для мобильной версии */}
             {isMobile && (
@@ -1069,6 +1259,8 @@ export function Interview() {
                           partnerOnline={partnerOnline.online}
                           layout={videoLayout}
                           onLayoutChange={setVideoLayout}
+                          partnerAvatar={partnerData.avatar}
+                          partnerName={partnerData.name}
                         />
                       ) : (
                         <div className="text-center text-white">
@@ -1306,8 +1498,9 @@ export function Interview() {
             </div>
           </div>
 
-          {/* Mobile Tab Navigation - ФИКСИРОВАНО ВНИЗУ */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 flex bg-card/95 backdrop-blur-md border-t border-border/50">
+          {/* Mobile Tab Navigation - ФИКСИРОВАНО ВНИЗУ - только для мобильной версии */}
+          {isMobile && (
+            <div className="fixed bottom-0 left-0 right-0 z-50 flex bg-card/95 backdrop-blur-md border-t border-border/50">
             <button
               onClick={() => setMobileActiveTab('video')}
               className={`flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 ${
@@ -1365,6 +1558,7 @@ export function Interview() {
               )}
             </button>
           </div>
+          )}
         </div>
       ) : (
         /* Desktop Interface */
@@ -1374,9 +1568,9 @@ export function Interview() {
             {/* Video and Code Area */}
             <div className="flex-1 flex flex-col">
               {/* Video Area */}
-              <div className="h-1/2 bg-telegram-dark relative">
+              <div className="h-1/2 bg-telegram-dark relative overflow-hidden">
                 {isVideoActive ? (
-                  <div className="w-full h-full bg-black rounded-lg flex items-center justify-center">
+                  <div className="w-full h-full bg-black flex items-center justify-center">
                     {videoProvider === 'jitsi' && jitsiRoom ? (
                       <iframe
                         src={`${API_CONFIG.jitsiBaseURL}/${jitsiRoom}#config.prejoinPageEnabled=false&config.disableThirdPartyRequests=true`}
@@ -1399,6 +1593,8 @@ export function Interview() {
                         partnerOnline={partnerOnline.online}
                         layout={videoLayout}
                         onLayoutChange={setVideoLayout}
+                        partnerAvatar={partnerData.avatar}
+                        partnerName={partnerData.name}
                       />
                     ) : (
                       <div className="text-center text-white">
@@ -1411,11 +1607,14 @@ export function Interview() {
                     )}
                   </div>
                 ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <Video size={48} className="mx-auto mb-4" />
-                      <p className="text-lg">{t('interview.videoInactive')}</p>
-                      <div className="flex items-center justify-center gap-2 mt-4">
+                  <div className="w-full h-full bg-black flex items-center justify-center">
+                    <div className="text-center text-white">
+                      <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <Video size={48} className="text-white/80" />
+                      </div>
+                      <p className="text-lg font-medium">{t('interview.videoInactive')}</p>
+                      <p className="text-sm opacity-75 mb-4">Выберите провайдер видео для начала</p>
+                      <div className="flex items-center justify-center gap-2">
                         <select
                           value={videoProvider}
                           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -1423,7 +1622,7 @@ export function Interview() {
                               e.target.value as 'none' | 'webrtc' | 'jitsi'
                             )
                           }
-                          className="text-xs bg-transparent border border-border rounded px-2 py-1"
+                          className="text-xs bg-white text-black border border-gray-300 rounded px-2 py-1"
                         >
                           <option value="none">Без видео</option>
                           <option value="webrtc">WebRTC (p2p)</option>
@@ -1641,7 +1840,8 @@ export function Interview() {
           </div>
 
           {/* Desktop Tab Navigation - ВНИЗУ */}
-          <div className="flex bg-card/80 backdrop-blur-sm">
+          {isMobile && (
+            <div className="flex bg-card/80 backdrop-blur-sm">
             <button
               onClick={() => setDesktopActiveTab('video')}
               className={`flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 ${
@@ -1699,6 +1899,7 @@ export function Interview() {
               )}
             </button>
           </div>
+          )}
         </div>
       )}
 

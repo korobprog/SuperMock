@@ -5,7 +5,7 @@ import { useAppTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { TelegramHeaderButton } from '@/components/ui/telegram-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, Settings, LogOut, User } from 'lucide-react';
+import { Bell, Settings, LogOut, User, Target } from 'lucide-react';
 import { TelegramAuthButton } from './telegram-login';
 import { TelegramUser } from '@/lib/telegram-auth';
 import { env } from '@/lib/env';
@@ -67,8 +67,32 @@ export function ProfileHeader() {
     setRealUser(null);
   };
 
-  const handleTelegramAuth = (user: TelegramUser) => {
+  const handleTelegramAuth = async (user: TelegramUser) => {
     console.log('ProfileHeader: Received Telegram auth:', user);
+    
+    try {
+      // Инициализируем пользователя в базе данных
+      const initResponse = await fetch(createApiUrl('/api/init'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tg: user,
+          language: 'ru',
+          initData: 'telegram_auth_hash'
+        })
+      });
+      
+      if (initResponse.ok) {
+        const initData = await initResponse.json();
+        console.log('ProfileHeader: User initialized in database:', initData);
+      } else {
+        console.error('ProfileHeader: Failed to initialize user in database');
+      }
+    } catch (error) {
+      console.error('ProfileHeader: Error initializing user:', error);
+    }
+    
+    // Устанавливаем пользователя в store (это также установит userId)
     setTelegramUser(user);
   };
 
@@ -142,6 +166,15 @@ export function ProfileHeader() {
                     title={t('common.notifications')}
                   >
                     <Bell className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/tools')}
+                    className="text-gray-500 hover:text-gray-700"
+                    title={t('tools.selectTools')}
+                  >
+                    <Target className="h-5 w-5" />
                   </Button>
                   <Button
                     variant="ghost"

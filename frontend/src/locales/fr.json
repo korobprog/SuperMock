@@ -21,7 +21,7 @@
     "notAuthorized": "Non autorisé",
     "configureApi": "Configurer l'API",
     "quickActions": "Actions rapides",
-    "interviewer": "int.",
+    "interviewer": "Recruteur",
     "candidate": "Candidat",
     "lastInterview": "Dernier entretien",
     "comingSoon": "Bientôt",
@@ -30,12 +30,14 @@
   "role": {
     "selectRole": "Sélectionner le Rôle",
     "roleSubtitle": "Quel rôle voulez-vous jouer dans l'entretien simulé ?",
-    "interviewer": "int.",
+    "interviewer": "Recruteur",
     "interviewerDesc": "Mener des entretiens et évaluer les candidats",
     "candidate": "Candidat",
     "candidateDesc": "Passer des entretiens et recevoir des commentaires",
-    "interviewerShort": "int.",
-    "candidateShort": "Cand."
+    "interviewerShort": "Rec.",
+    "candidateShort": "Cand.",
+    "interviewerAction": "Mener des entretiens",
+    "candidateAction": "Passer des entretiens"
   },
   "profession": {
     "selectProfession": "Sélectionner la Profession",
@@ -81,30 +83,61 @@
       "collapse": "Réduire",
       "showAnalysis": "Afficher l'analyse",
       "interviewers": "Recruteurs",
-      "interviewersShort": "int.",
+      "interviewersShort": "Recruteur",
       "candidates": "Candidats"
     },
     "slots": {
       "availableSlotsInterviewers": "Créneaux disponibles (recruteurs)",
       "availableSlotsCandidates": "Créneaux disponibles (candidats)",
-      "interviewersShort": "int.",
+      "interviewersShort": "Recruteur",
       "candidatesShort": "Cand.",
-      "recommended": "Recommandé"
+      "recommended": "Recommandé",
+      "recommendedShort": "Rec"
     },
     "buttons": {
       "back": "Retour",
       "continueAt": "Continuer à",
-      "selectTime": "Sélectionner l'heure"
+      "selectTime": "Sélectionner l'heure",
+      "continue": "Continuer"
     },
     "header": {
       "title": "Sélectionner l'Heure",
       "subtitle": "Trouvez un créneau d'entretien approprié",
       "help": "Aide",
-      "role": "Rôle"
+      "role": "Sélectionner le rôle"
+    },
+    "sessionInfo": {
+      "title": "Informations de session"
+    },
+    "roleSelection": {
+      "subtitle": "Quel rôle voulez-vous jouer dans l'entretien simulé ?"
+    },
+    "sessionInfo": {
+      "title": "Informations de session",
+      "toolsNotSelected": "Non sélectionné",
+      "toolsCount": "{{count}} outils",
+      "expand": "Développer",
+      "collapse": "Réduire",
+      "showAllTools": "Afficher tous les outils",
+      "collapseTools": "Réduire la liste"
     },
     "timeDisplay": {
       "yourTime": "Votre heure",
       "utcTime": "Heure UTC"
+    },
+    "tabs": {
+      "withTools": "Avec Outils",
+      "allSlots": "Tous les Créneaux"
+    },
+    "toolsRequired": {
+      "title": "Sélectionner les outils pour activer",
+      "description": "Cet onglet fonctionne uniquement avec les outils sélectionnés. Allez à la page de sélection d'outils.",
+      "selectTools": "Sélectionner les Outils"
+    },
+    "allSlotsDescription": "Tous les créneaux horaires disponibles sont affichés. Lors de la création d'un créneau, vos outils seront automatiquement sauvegardés.",
+    "searching": {
+      "title": "Recherche de Candidat",
+      "subtitle": "Recherche d'un candidat approprié pour l'entretien..."
     }
   },
   "interview": {
@@ -164,7 +197,7 @@
     "backToMain": "Retour à l'accueil",
     "noInterviews": "Vous n'avez pas encore mené d'entretiens",
     "startNewInterview": "Commencer un nouvel entretien",
-    "interviewer": "int.",
+    "interviewer": "Recruteur",
     "candidate": "Candidat",
     "receivedFeedback": "Commentaire reçu",
     "givenFeedback": "Votre commentaire",
@@ -172,8 +205,8 @@
     "userIdNotFound": "ID utilisateur non trouvé",
     "failedToLoadHistory": "Impossible de charger l'historique",
     "unknownDate": "Date inconnue",
-    "candidateShort": "Cand.",
-    "interviewerShort": "int.",
+          "candidateShort": "Cand.",
+      "interviewerShort": "Rec.",
     "status": {
       "completed": "Terminé",
       "active": "Actif",
@@ -215,9 +248,12 @@
     "matchFoundTitle": "Match trouvé !",
     "addedToQueueTitle": "Ajouté à la file d'attente",
     "messages": {
-      "slotExpired": "Impossible de trouver un partenaire pour le créneau {{slotTime}}. Veuillez choisir une autre heure.{{#if tools}}\nVos outils: {{tools}}{{/if}}",
-      "matchFound": "Heure: {{slotTime}}\nVotre rôle: {{role}}\nSalle: {{roomName}}\nLien: {{link}}{{#if tools}}\nVos outils: {{tools}}{{/if}}",
-      "addedToQueue": "Créneau: {{slotTime}}\nRôle: {{role}}{{#if tools}}\nOutils: {{tools}}{{/if}}",
+      "slotExpired": "Impossible de trouver un partenaire pour le créneau {{slotTime}}. Veuillez choisir une autre heure.",
+      "slotExpiredWithTools": "Impossible de trouver un partenaire pour le créneau {{slotTime}}. Veuillez choisir une autre heure.\nVos outils: {{tools}}",
+      "matchFound": "Heure: {{slotTime}}\nVotre rôle: {{role}}\nSalle: {{roomName}}\nLien: {{link}}",
+      "matchFoundWithTools": "Heure: {{slotTime}}\nVotre rôle: {{role}}\nSalle: {{roomName}}\nLien: {{link}}\nVos outils: {{tools}}",
+      "addedToQueue": "Créneau: {{slotTime}}\nRôle: {{role}}",
+      "addedToQueueWithTools": "Créneau: {{slotTime}}\nRôle: {{role}}\nOutils: {{tools}}",
       "reminder": "Rappel: entretien dans {{timeLeft}}"
     }
   },
@@ -243,11 +279,11 @@
     "junior": "Junior",
     "middle": "Middle",
     "senior": "Senior",
-    "benefitsTitle": "Avantages de la Génération IA",
-    "benefitsDesc": "Configurez OpenRouter API pour obtenir des fonctionnalités supplémentaires",
-    "benefit1": "Questions uniques pour chaque profession",
-    "benefit2": "Adaptation au niveau de difficulté",
-    "benefit3": "Nombre illimité de questions",
+
+    "aiBenefitsTitle": "Avantages de la génération IA",
+    "aiBenefit1": "Questions uniques pour chaque profession",
+    "aiBenefit2": "Adaptation au niveau de difficulté",
+    "aiBenefit3": "Nombre illimité de questions",
     "save": "Enregistrer les Paramètres",
     "loadingSettings": "Chargement des paramètres...",
     "projectMode": "Mode projet",
@@ -256,6 +292,8 @@
     "profileSettings": "Paramètres du profil",
     "interviewLanguage": "Langue de l'entretien",
     "profession": "Profession",
+    "interfaceLanguage": "Langue de l'interface",
+    "interfaceLanguageDesc": "Choisissez la langue pour afficher l'interface de l'application",
     "goToInterview": "Aller à la réservation d'entretien",
     "getFreeKey": "Obtenir une clé gratuite",
     "getFreeKeyDesc": "pour la génération IA de questions d'entretien.",
@@ -311,6 +349,242 @@
       "design": "Design",
       "testing": "Tests",
       "devops": "DevOps"
+    }
+  },
+  "infoCarousel": {
+    "candidateTitle": "Pour les Candidats",
+    "interviewerTitle": "Recruteur",
+    "back": "Retour",
+    "next": "Suivant",
+    "candidateSlides": {
+      "slide1": {
+        "title": "Choisissez un moment pratique",
+        "description": "Créneaux disponibles 24h/24. Le système masque automatiquement l'heure passée."
+      },
+      "slide2": {
+        "title": "Trouvez des recruteurs",
+        "description": "Voyez le nombre de recruteurs disponibles dans chaque créneau horaire."
+      },
+      "slide3": {
+        "title": "Recommandations intelligentes",
+        "description": "Le système recommande l'heure optimale pour un appariement rapide."
+      },
+      "slide4": {
+        "title": "Démarrage rapide",
+        "description": "Un clic - et vous êtes dans la file d'attente d'entretien. Appariement automatique !"
+      }
+    },
+    "interviewerSlides": {
+      "slide1": {
+        "title": "Planning flexible",
+        "description": "Choisissez quand il vous convient de mener des entretiens."
+      },
+      "slide2": {
+        "title": "Les candidats attendent",
+        "description": "Voyez le nombre de candidats prêts pour les entretiens dans chaque créneau."
+      },
+      "slide3": {
+        "title": "Heure optimale",
+        "description": "Le système montre quand il y a le plus de candidats."
+      },
+      "slide4": {
+        "title": "Efficacité",
+        "description": "Charge maximale et temps d'attente minimal."
+      }
+    }
+  },
+  "stackBlitzModal": {
+    "title": "Clé API StackBlitz",
+    "subtitle": "En savoir plus sur les capacités d'édition collaborative de code",
+    "back": "Retour",
+    "next": "Suivant",
+    "gotIt": "Compris",
+    "getApiKey": "Obtenir la clé API",
+    "slides": {
+      "slide1": {
+        "title": "Qu'est-ce que StackBlitz API ?",
+        "description": "StackBlitz API vous permet d'exécuter et d'éditer du code dans le navigateur sans installer de logiciel supplémentaire."
+      },
+      "slide2": {
+        "title": "Édition collaborative",
+        "description": "Pendant l'entretien, vous pouvez écrire du code avec le recruteur en temps réel."
+      },
+      "slide3": {
+        "title": "Collaboration",
+        "description": "Le recruteur voit votre code et peut commenter, suggérer des modifications et évaluer les solutions."
+      },
+      "slide4": {
+        "title": "Comment obtenir une clé API ?",
+        "description": "Allez sur stackblitz.com, connectez-vous à votre compte et créez une clé API dans les paramètres de votre profil."
+      }
+    }
+  },
+  "openRouterModal": {
+    "title": "Clé API OpenRouter",
+    "subtitle": "En savoir plus sur les capacités de génération de questions IA pour les entretiens",
+    "back": "Retour",
+    "next": "Suivant",
+    "gotIt": "Compris",
+    "getApiKey": "Obtenir la clé API",
+    "slides": {
+      "slide1": {
+        "title": "Qu'est-ce qu'OpenRouter ?",
+        "description": "OpenRouter est une plateforme qui fournit l'accès à divers modèles d'IA via une interface API unifiée."
+      },
+      "slide2": {
+        "title": "Génération de questions IA",
+        "description": "En utilisant l'API OpenRouter, le système génère automatiquement des questions d'entretien personnalisées basées sur votre profession et votre niveau."
+      },
+      "slide3": {
+        "title": "Sécurité et confidentialité",
+        "description": "Votre clé API est stockée localement et utilisée uniquement pour la génération de questions. Nous n'avons pas accès à vos données."
+      },
+      "slide4": {
+        "title": "Comment obtenir une clé API ?",
+        "description": "Allez sur openrouter.ai, créez un compte et obtenez une clé API dans la section \"Keys\". Premiers $5 de crédits gratuits !"
+      }
+    }
+  },
+  "waiting": {
+    "rules": {
+      "title": "Règles de respect mutuel",
+      "important": "Important",
+      "bePolite": "Soyez poli et patient",
+      "dontInterrupt": "N'interrompez pas l'interlocuteur",
+      "askQuestions": "Posez des questions de clarification",
+      "giveFeedback": "Donnez un retour constructif",
+      "goal": "Rappelez-vous : l'objectif est de s'aider mutuellement à se développer professionnellement",
+      "interviewerTips": "Conseils pour le recruteur :",
+      "candidateTips": "Conseils pour le candidat :",
+      "interviewerAdvice": "Soyez bienveillant, posez des questions ouvertes, donnez au candidat le temps de réfléchir",
+      "candidateAdvice": "Soyez confiant, donnez des exemples concrets, n'ayez pas peur de poser des questions"
+    },
+    "devMode": "MODE DEV - Données simulées",
+    "waitingRoom": "Salle d'attente (DEV)",
+    "waitingForMock": "En attente du début de l'entretien simulé",
+    "sessionInfo": {
+      "startTime": "Heure de début",
+      "yourRole": "Votre rôle",
+      "profession": "Profession",
+      "language": "Langue",
+      "notSpecified": "Non spécifié",
+      "notSpecifiedLang": "Non spécifié"
+    },
+    "participants": {
+      "title": "Participants de la session",
+      "waiting": "En attente :",
+      "interviews": "entretiens",
+      "interviewer": "Recruteur",
+      "candidate": "Candidat"
+    },
+    "timer": {
+      "untilStart": "Jusqu'au début :",
+      "late": "En retard :",
+      "canEnter": "Peut entrer !",
+      "progress": "Progrès jusqu'à l'entrée possible",
+      "lateWarning": "⚠️ Vous êtes en retard pour l'entretien. Essayez de rejoindre dès que possible."
+    },
+    "actions": {
+      "mediaSettings": "Paramètres caméra et son",
+      "hideSettings": "Masquer les paramètres",
+      "joinInterview": "Rejoindre l'entretien",
+      "joinLate": "Rejoindre (en retard)",
+      "enterEarly": "Entrer tôt (test)",
+      "earlyInfo": "L'entrée est généralement possible 5 minutes avant le début",
+      "lateInfo": "L'heure de début de l'entretien est déjà passée",
+      "backToDevTest": "← Retour à dev-test"
+    },
+    "status": {
+      "active": "La session est active et prête à commencer (DEV)"
+    },
+    "errors": {
+      "title": "Erreur",
+      "insufficientData": "Données insuffisantes pour charger la session",
+      "loadError": "Erreur lors du chargement des données de session",
+      "sessionNotFound": "Session non trouvée",
+      "loadFailed": "Impossible de charger les données de session"
+    },
+    "loading": {
+      "mockData": "Chargement des données simulées...",
+      "sessionData": "Chargement des données de session..."
+    }
+  },
+  "chat": {
+    "title": "Chat des participants",
+    "typing": "Tape...",
+    "quickMessages": "Messages rapides",
+    "inputPlaceholder": "Écrire un message...",
+    "enterToSend": "Entrée pour envoyer",
+    "system": "Système",
+    "participantsConnected": "Les participants ont rejoint le chat ({{count}}/2)",
+    "you": "Vous",
+    "messages": {
+      "greeting": {
+        "hello": "Bonjour !",
+        "goodDay": "Bonne journée !",
+        "greetings": "Salutations !",
+        "niceToMeet": "Ravi de vous rencontrer !"
+      },
+      "status": {
+        "ready": "Prêt pour l'entretien",
+        "nervous": "Un peu nerveux",
+        "great": "Tout va bien !",
+        "needMinute": "Besoin d'une minute",
+        "checkingSound": "Vérification du son"
+      },
+      "question": {
+        "howAreYou": "Comment allez-vous ?",
+        "readyToStart": "Prêt à commencer ?",
+        "anyQuestions": "Des questions ?",
+        "everythingClear": "Tout est clair ?",
+        "shallWeStart": "On commence ?",
+        "readyToAnswer": "Prêt à répondre"
+      },
+      "reaction": {
+        "excellent": "Excellent !",
+        "agree": "D'accord",
+        "interesting": "Intéressant",
+        "gotIt": "Compris",
+        "thankYou": "Merci !",
+        "greatQuestion": "Excellente question"
+      }
+    }
+  },
+  "media": {
+    "title": "Paramètres caméra et son",
+    "subtitle": "Vérifiez et configurez vos appareils avant l'entretien",
+    "refresh": "Actualiser",
+    "camera": {
+      "title": "Caméra",
+      "enabled": "Activée",
+      "disabled": "Désactivée",
+      "enable": "Activer la caméra",
+      "selectDevice": "Sélectionner la caméra :"
+    },
+    "microphone": {
+      "title": "Microphone",
+      "enabled": "Activé",
+      "disabled": "Désactivé",
+      "enable": "Activer le microphone",
+      "selectDevice": "Sélectionner le microphone :",
+      "level": "Niveau sonore"
+    },
+    "volume": {
+      "title": "Volume"
+    },
+    "actions": {
+      "saveSettings": "Enregistrer les paramètres",
+      "testAudio": "Tester l'audio",
+      "stopTest": "Arrêter le test"
+    },
+    "status": {
+      "saved": "✅ Paramètres enregistrés et seront utilisés pendant l'entretien"
+    },
+    "errors": {
+      "noDevices": "Aucun appareil caméra ou microphone disponible trouvé",
+      "loadFailed": "Échec du chargement de la liste des appareils. Vérifiez les permissions du navigateur.",
+      "deviceUnavailable": "Appareil indisponible : {{constraint}}. Essayez de sélectionner un autre appareil.",
+      "streamFailed": "Échec du démarrage du flux média. Vérifiez les permissions du navigateur."
     }
   }
 }

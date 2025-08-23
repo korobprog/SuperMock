@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Отладка отображения слотов</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .slot-card { 
+            display: inline-block; 
+            padding: 15px; 
+            margin: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .slot-time { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .slot-utc { font-size: 12px; color: #666; margin-bottom: 5px; }
+        .slot-count { font-size: 14px; color: #333; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Отладка отображения слотов</h1>
+    
+    <div class="debug-section info">
+        <h3>📋 Информация о часовом поясе</h3>
+        <div id="timezone-info"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🎯 Тест API для кандидата</h3>
+        <button onclick="testCandidateAPI()">Проверить API для кандидата</button>
+        <div id="candidate-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🎯 Симуляция отображения слотов</h3>
+        <button onclick="simulateSlotDisplay()">Симулировать отображение</button>
+        <div id="slot-display"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🎯 Проверка данных в реальном времени</h3>
+        <button onclick="checkRealTime()">Проверить сейчас</button>
+        <div id="realtime-result"></div>
+    </div>
+
+    <script>
+        // Показываем информацию о часовом поясе
+        function showTimezoneInfo() {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const now = new Date();
+            const offset = now.getTimezoneOffset();
+            const offsetHours = Math.abs(offset) / 60;
+            const offsetSign = offset <= 0 ? '+' : '-';
+            
+            const infoDiv = document.getElementById('timezone-info');
+            infoDiv.innerHTML = `
+                <p><strong>Автоматически определенный часовой пояс:</strong> ${timezone}</p>
+                <p><strong>Смещение от UTC:</strong> ${offsetSign}${offsetHours}:00</p>
+                <p><strong>Текущее время:</strong> ${now.toLocaleString()}</p>
+                <p><strong>UTC время:</strong> ${now.toUTCString()}</p>
+            `;
+        }
+
+        async function testCandidateAPI() {
+            const resultDiv = document.getElementById('candidate-result');
+            resultDiv.innerHTML = '<p>🔄 Загрузка...</p>';
+            
+            try {
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const response = await fetch(`http://localhost:3000/api/slots/enhanced?role=candidate&profession=frontend&language=ru&timezone=${encodeURIComponent(timezone)}`);
+                const data = await response.json();
+                
+                let html = '<div class="success">';
+                html += '<h4>✅ Результат API:</h4>';
+                html += `<p><strong>Часовой пояс:</strong> ${data.timezone?.name}</p>`;
+                html += `<p><strong>Всего слотов:</strong> ${data.slots?.length || 0}</p>`;
+                
+                if (data.slots && data.slots.length > 0) {
+                    html += '<h5>Слоты с интервьюерами:</h5>';
+                    data.slots.forEach(slot => {
+                        const status = slot.count > 0 ? '✅' : '❌';
+                        html += `<p>${status} ${slot.time} (UTC: ${slot.utcTime}) - ${slot.count} интервьюер(ов)</p>`;
+                    });
+                } else {
+                    html += '<p><strong>Нет доступных слотов!</strong></p>';
+                }
+                
+                html += '<h5>Полный ответ API:</h5>';
+                html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                html += '</div>';
+                
+                resultDiv.innerHTML = html;
+                
+                // Сохраняем данные для симуляции
+                window.lastApiData = data;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Ошибка:</h4><p>${error.message}</p></div>`;
+            }
+        }
+
+        function simulateSlotDisplay() {
+            const displayDiv = document.getElementById('slot-display');
+            
+            if (!window.lastApiData) {
+                displayDiv.innerHTML = '<div class="error"><p>❌ Сначала получите данные API</p></div>';
+                return;
+            }
+            
+            const data = window.lastApiData;
+            let html = '<div class="info">';
+            html += '<h4>🎨 Симуляция отображения слотов:</h4>';
+            
+            if (data.slots && data.slots.length > 0) {
+                data.slots.forEach(slot => {
+                    html += `
+                        <div class="slot-card">
+                            <div class="slot-time">${slot.time}</div>
+                            <div class="slot-utc">UTC: ${slot.utcTime}</div>
+                            <div class="slot-count">${slot.count} Инт.</div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p><strong>Нет слотов для отображения</strong></p>';
+            }
+            
+            html += '</div>';
+            displayDiv.innerHTML = html;
+        }
+
+        async function checkRealTime() {
+            const resultDiv = document.getElementById('realtime-result');
+            resultDiv.innerHTML = '<p>🔄 Проверка в реальном времени...</p>';
+            
+            try {
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const response = await fetch(`http://localhost:3000/api/slots/enhanced?role=candidate&profession=frontend&language=ru&timezone=${encodeURIComponent(timezone)}`);
+                const data = await response.json();
+                
+                let html = '<div class="success">';
+                html += '<h4>✅ Данные в реальном времени:</h4>';
+                html += `<p><strong>Время запроса:</strong> ${new Date().toLocaleString()}</p>`;
+                html += `<p><strong>Часовой пояс:</strong> ${data.timezone?.name}</p>`;
+                
+                // Ищем слот 23:00
+                const slot23 = data.slots?.find(slot => slot.time === '23:00');
+                if (slot23) {
+                    html += `<p><strong>🎯 Слот 23:00 найден:</strong> ${slot23.count} интервьюер(ов)</p>`;
+                } else {
+                    html += '<p><strong>❌ Слот 23:00 не найден!</strong></p>';
+                }
+                
+                html += '<h5>Все слоты:</h5>';
+                if (data.slots && data.slots.length > 0) {
+                    data.slots.forEach(slot => {
+                        html += `<p>• ${slot.time} (UTC: ${slot.utcTime}) - ${slot.count} интервьюер(ов)</p>`;
+                    });
+                } else {
+                    html += '<p>Нет слотов</p>';
+                }
+                
+                html += '</div>';
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Ошибка:</h4><p>${error.message}</p></div>`;
+            }
+        }
+
+        // Показываем информацию при загрузке
+        showTimezoneInfo();
+    </script>
+</body>
+</html>

@@ -24,6 +24,7 @@ import { InterviewFeedback } from './pages/InterviewFeedback';
 import { Notifications } from './pages/Notifications';
 import { History } from './pages/History';
 import { WaitingRoom } from './pages/WaitingRoom';
+import { DevWaitingRoom } from './pages/DevWaitingRoom';
 import { Profile } from './pages/Profile';
 import DevTest from './pages/DevTest';
 
@@ -83,6 +84,7 @@ function AppContent() {
         {import.meta.env.DEV && (
           <Route path="/dev-test" element={<DevTest />} />
         )}
+        <Route path="/dev-waiting" element={<DevWaitingRoom />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

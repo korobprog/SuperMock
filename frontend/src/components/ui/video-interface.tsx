@@ -3,6 +3,23 @@ import { VideoControls } from './video-controls';
 import { Button } from './button';
 import { Video, VideoOff, User, Users } from 'lucide-react';
 
+// Хук для определения мобильного устройства
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
+  return isMobile;
+};
+
 interface VideoInterfaceProps {
   localVideoRef: React.RefObject<HTMLVideoElement>;
   remoteVideoRef: React.RefObject<HTMLVideoElement>;
@@ -21,6 +38,8 @@ interface VideoInterfaceProps {
   partnerOnline: boolean;
   layout: 'grid' | 'spotlight' | 'side-by-side';
   onLayoutChange: (layout: 'grid' | 'spotlight' | 'side-by-side') => void;
+  partnerAvatar?: string;
+  partnerName?: string;
 }
 
 export function VideoInterface({
@@ -38,9 +57,12 @@ export function VideoInterface({
   partnerOnline,
   layout,
   onLayoutChange,
+  partnerAvatar,
+  partnerName,
 }: VideoInterfaceProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Обработчик полноэкранного режима
   const handleFullscreen = () => {
@@ -121,31 +143,52 @@ export function VideoInterface({
   // Определяем, какие видео показывать в зависимости от layout
   const shouldShowLocalVideo = layout !== 'spotlight' || !partnerOnline;
   const shouldShowRemoteVideo = layout !== 'spotlight' || partnerOnline;
+  
+  // В режимах grid и side-by-side всегда показываем оба видео
+  const shouldShowLocalInGrid = layout === 'grid' || layout === 'side-by-side';
+  const shouldShowRemoteInGrid = layout === 'grid' || layout === 'side-by-side';
+  
+  // В режиме spotlight показываем локальное видео всегда, если нет партнера
+  // или если партнер есть, но мы хотим показать локальное видео
+  const shouldShowLocalInSpotlight = layout === 'spotlight' && (!partnerOnline || true);
+  
+  // В режиме grid всегда показываем удаленное видео, даже если партнер не онлайн
+  // (показываем placeholder)
+  const shouldShowRemoteInGridAlways = layout === 'grid' || layout === 'side-by-side';
+  
+  // Финальная логика отображения
+  const finalShowLocal = shouldShowLocalVideo || shouldShowLocalInGrid || shouldShowLocalInSpotlight;
+  const finalShowRemote = shouldShowRemoteVideo || shouldShowRemoteInGrid || shouldShowRemoteInGridAlways;
+  
+
 
   return (
-    <div ref={videoContainerRef} className="w-full h-full bg-black relative">
+    <div ref={videoContainerRef} className="w-full h-full bg-black relative overflow-hidden">
       {/* Видео контейнер */}
-      <div className={`w-full h-full ${getLayoutClasses()} p-2`}>
+      <div className={`w-full h-full ${getLayoutClasses()} p-1`}>
         {/* Локальное видео */}
-        {shouldShowLocalVideo && (
+        {finalShowLocal && (
           <div className={getVideoClasses(true)}>
             <video
               ref={localVideoRef}
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
             {/* Индикатор локального видео */}
             <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
               Вы (Локально)
             </div>
-            {/* Индикатор состояния камеры */}
+            {/* Индикатор состояния камеры с аватаркой */}
             {!isVideoActive && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-700">
                 <div className="text-center text-white">
-                  <VideoOff size={48} className="mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Камера выключена</p>
+                  <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <User size={48} className="text-white/80" />
+                  </div>
+                  <p className="text-sm font-medium">Камера выключена</p>
+                  <p className="text-xs opacity-75 mt-1">Аудио доступно</p>
                 </div>
               </div>
             )}
@@ -159,13 +202,13 @@ export function VideoInterface({
         )}
 
         {/* Удаленное видео */}
-        {shouldShowRemoteVideo && (
+        {finalShowRemote && (
           <div className={getVideoClasses(false)}>
             <video
               ref={remoteVideoRef}
               autoPlay
               playsInline
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
             />
             {/* Индикатор удаленного видео */}
             <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
@@ -180,17 +223,36 @@ export function VideoInterface({
                 Фокус на партнере
               </div>
             )}
-            {/* Индикатор ожидания партнера - показываем только в режимах grid и side-by-side */}
-            {!partnerOnline &&
-              layout !== 'spotlight' &&
-              (layout === 'grid' || layout === 'side-by-side') && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-                  <div className="text-center text-white">
-                    <Users size={48} className="mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Ожидание подключения партнера...</p>
-                  </div>
-                </div>
-              )}
+                         {/* Индикатор ожидания партнера - показываем только в режимах grid и side-by-side */}
+             {!partnerOnline &&
+               layout !== 'spotlight' &&
+               (layout === 'grid' || layout === 'side-by-side') && (
+                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900">
+                   <div className="text-center text-white">
+                     <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-4 mx-auto overflow-hidden">
+                       {partnerAvatar ? (
+                         <img 
+                           src={partnerAvatar} 
+                           alt={partnerName || 'Партнер'} 
+                           className="w-full h-full object-cover"
+                           onError={(e) => {
+                             const target = e.target as HTMLImageElement;
+                             target.style.display = 'none';
+                             target.nextElementSibling?.classList.remove('hidden');
+                           }}
+                         />
+                       ) : null}
+                       <div className={`w-full h-full flex items-center justify-center ${partnerAvatar ? 'hidden' : ''}`}>
+                         <Users size={32} className="text-white/60" />
+                       </div>
+                     </div>
+                     <p className="text-sm font-medium">
+                       {partnerName ? `Ожидание ${partnerName}...` : 'Ожидание подключения партнера...'}
+                     </p>
+                     <p className="text-xs opacity-75 mt-1">Подключение в процессе</p>
+                   </div>
+                 </div>
+               )}
           </div>
         )}
       </div>
@@ -212,7 +274,7 @@ export function VideoInterface({
         />
       </div>
 
-      {/* Кнопки переключения layout */}
+            {/* Кнопки переключения layout */}
       <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10">
         <div className="flex gap-1 bg-black/50 backdrop-blur-sm rounded-lg p-1">
           <Button

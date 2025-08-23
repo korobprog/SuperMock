@@ -14,16 +14,27 @@ export interface UserSettings {
   questionsCount: number;
 }
 
+export interface MediaSettings {
+  videoDeviceId: string;
+  audioDeviceId: string;
+  audioOutputDeviceId: string;
+  videoEnabled: boolean;
+  audioEnabled: boolean;
+  volume: number;
+}
+
 export type AppState = {
   userId: number | null;
   telegramUser: TelegramUser | null;
   role: Role;
+  lastRole: Role; // Добавляем последнюю роль
   profession: string | null;
   language: string;
   slotsLocal: string[];
   sessionId: string | null;
   jitsiRoom: string | null;
   userSettings: UserSettings;
+  mediaSettings: MediaSettings | null; // Добавляем медиа настройки
   selectedTools: string[]; // Добавляем выбранные инструменты
   setUserId: (id: number) => void;
   setTelegramUser: (user: TelegramUser | null) => void;
@@ -34,7 +45,9 @@ export type AppState = {
   setSlotsLocal: (slots: string[]) => void;
   setSession: (s: { sessionId: string; jitsiRoom: string } | null) => void;
   setUserSettings: (settings: Partial<UserSettings>) => void;
+  setMediaSettings: (settings: MediaSettings) => void; // Добавляем функцию для установки медиа настроек
   setSelectedTools: (tools: string[]) => void; // Добавляем функцию для установки инструментов
+  saveCurrentRoleAsLast: () => void; // Функция для сохранения текущей роли как последней
   reset: () => void;
   clearAll: () => void;
 };
@@ -64,11 +77,13 @@ export const useAppStore = create<AppState>()(
       userId: null,
       telegramUser: null,
       role: null,
+      lastRole: null,
       profession: null,
       language: 'ru',
       slotsLocal: [],
       sessionId: null,
       jitsiRoom: null,
+      mediaSettings: null, // Инициализируем медиа настройки как null
       selectedTools: [], // Инициализируем пустым массивом
       userSettings: {
         openRouterApiKey: null,
@@ -106,15 +121,28 @@ export const useAppStore = create<AppState>()(
           // Не показываем ошибку пользователю, просто используем дефолтные настройки
         }
       },
-      setRole: (role) => set({ role }),
+      setRole: (role) => {
+        set({ role }); // Просто устанавливаем новую роль, не меняем lastRole
+      },
       setProfession: (p) => set({ profession: p }),
       setLanguage: (lng) => set({ language: lng }),
       setSlotsLocal: (slots) => set({ slotsLocal: slots }),
-      setSession: (s) =>
-        set({
-          sessionId: s?.sessionId ?? null,
-          jitsiRoom: s?.jitsiRoom ?? null,
-        }),
+      setSession: (s) => {
+        const currentState = get();
+        // Если сессия завершается (s === null), сохраняем текущую роль как lastRole
+        if (s === null && currentState.role) {
+          set({
+            sessionId: null,
+            jitsiRoom: null,
+            lastRole: currentState.role, // Сохраняем текущую роль как последнюю
+          });
+        } else {
+          set({
+            sessionId: s?.sessionId ?? null,
+            jitsiRoom: s?.jitsiRoom ?? null,
+          });
+        }
+      },
       setUserSettings: (settings) => {
         set((state) => ({
           userSettings: { ...state.userSettings, ...settings },
@@ -139,25 +167,37 @@ export const useAppStore = create<AppState>()(
         });
       },
       setSelectedTools: (tools) => set({ selectedTools: tools }), // Добавляем функцию для установки инструментов
+      setMediaSettings: (settings) => set({ mediaSettings: settings }), // Добавляем функцию для установки медиа настроек
+      saveCurrentRoleAsLast: () => {
+        const currentState = get();
+        if (currentState.role) {
+          console.log('Saving current role as lastRole:', currentState.role);
+          set({ lastRole: currentState.role });
+        }
+      },
       reset: () =>
         set({
           role: null,
+          lastRole: null,
           profession: null,
           slotsLocal: [],
           sessionId: null,
           jitsiRoom: null,
           selectedTools: [], // Сбрасываем инструменты при reset
+          mediaSettings: null, // Сбрасываем медиа настройки при reset
         }),
       clearAll: () =>
         set({
           userId: 0,
           telegramUser: null,
           role: null,
+          lastRole: null,
           profession: null,
           slotsLocal: [],
           sessionId: null,
           jitsiRoom: null,
           selectedTools: [], // Очищаем инструменты при clearAll
+          mediaSettings: null, // Очищаем медиа настройки при clearAll
           userSettings: {
             openRouterApiKey: null,
             stackblitzApiKey: null,
@@ -178,8 +218,10 @@ export const useAppStore = create<AppState>()(
         telegramUser: state.telegramUser,
         userId: state.userId,
         role: state.role,
+        lastRole: state.lastRole, // Сохраняем последнюю роль
         profession: state.profession,
         selectedTools: state.selectedTools, // Сохраняем выбранные инструменты
+        mediaSettings: state.mediaSettings, // Сохраняем медиа настройки
       }),
       // Версия для миграции в будущем
       version: 1,
@@ -201,6 +243,8 @@ export const useAppStore = create<AppState>()(
             console.log('User recently logged out, clearing all data');
             state.userId = 0;
             state.telegramUser = null;
+            state.role = null;
+            state.lastRole = null;
             state.selectedTools = []; // Очищаем инструменты при выходе
             state.userSettings = {
               openRouterApiKey: null,

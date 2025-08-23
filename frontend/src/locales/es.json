@@ -21,7 +21,7 @@
     "notAuthorized": "No autorizado",
     "configureApi": "Configurar API",
     "quickActions": "Acciones rápidas",
-    "interviewer": "int.",
+    "interviewer": "Enterviewer.",
     "candidate": "Candidato",
     "lastInterview": "Última entrevista",
     "comingSoon": "Próximamente",
@@ -30,12 +30,14 @@
   "role": {
     "selectRole": "Seleccionar Rol",
     "roleSubtitle": "¿Qué rol quieres tomar en la entrevista simulada?",
-    "interviewer": "int.",
+    "interviewer": "Entrevistador",
     "interviewerDesc": "Realizar entrevistas y evaluar candidatos",
     "candidate": "Candidato",
     "candidateDesc": "Participar en entrevistas y recibir comentarios",
-    "interviewerShort": "int.",
-    "candidateShort": "Cand."
+    "interviewerShort": "Ent.",
+    "candidateShort": "Cand.",
+    "interviewerAction": "Realizar entrevistas",
+    "candidateAction": "Participar en entrevistas"
   },
   "profession": {
     "selectProfession": "Seleccionar Profesión",
@@ -81,30 +83,61 @@
       "collapse": "Contraer",
       "showAnalysis": "Mostrar análisis",
       "interviewers": "Entrevistadores",
-      "interviewersShort": "int.",
+      "interviewersShort": "Entrevistador",
       "candidates": "Candidatos"
     },
     "slots": {
       "availableSlotsInterviewers": "Horarios disponibles (entrevistadores)",
       "availableSlotsCandidates": "Horarios disponibles (candidatos)",
-      "interviewersShort": "int.",
+      "interviewersShort": "Entrevistador",
       "candidatesShort": "Cand.",
-      "recommended": "Recomendado"
+      "recommended": "Recomendado",
+      "recommendedShort": "Rec"
     },
     "buttons": {
       "back": "Atrás",
       "continueAt": "Continuar a las",
-      "selectTime": "Seleccionar hora"
+      "selectTime": "Seleccionar hora",
+      "continue": "Continuar"
     },
     "header": {
       "title": "Seleccionar Hora",
       "subtitle": "Encuentra un horario adecuado para la entrevista",
       "help": "Ayuda",
-      "role": "Rol"
+      "role": "Seleccionar rol"
+    },
+    "sessionInfo": {
+      "title": "Información de sesión"
+    },
+    "roleSelection": {
+      "subtitle": "¿Qué rol quieres tomar en la entrevista simulada?"
+    },
+    "sessionInfo": {
+      "title": "Información de sesión",
+      "toolsNotSelected": "No seleccionado",
+      "toolsCount": "{{count}} herramientas",
+      "expand": "Expandir",
+      "collapse": "Contraer",
+      "showAllTools": "Mostrar todas las herramientas",
+      "collapseTools": "Contraer lista"
     },
     "timeDisplay": {
       "yourTime": "Tu hora",
       "utcTime": "Hora UTC"
+    },
+    "tabs": {
+      "withTools": "Con Herramientas",
+      "allSlots": "Todos los Horarios"
+    },
+    "toolsRequired": {
+      "title": "Seleccionar herramientas para activar",
+      "description": "Esta pestaña funciona solo con herramientas seleccionadas. Ve a la página de selección de herramientas.",
+      "selectTools": "Seleccionar Herramientas"
+    },
+    "allSlotsDescription": "Se muestran todos los horarios disponibles. Al crear un horario, tus herramientas se guardarán automáticamente.",
+    "searching": {
+      "title": "Buscando Candidato",
+      "subtitle": "Buscando un candidato adecuado para la entrevista..."
     }
   },
   "interview": {
@@ -164,7 +197,7 @@
     "backToMain": "Volver al inicio",
     "noInterviews": "Aún no has realizado entrevistas",
     "startNewInterview": "Comenzar nueva entrevista",
-    "interviewer": "int.",
+    "interviewer": "Entrevistador",
     "candidate": "Candidato",
     "receivedFeedback": "Comentario recibido",
     "givenFeedback": "Tu comentario",
@@ -172,8 +205,8 @@
     "userIdNotFound": "ID de usuario no encontrado",
     "failedToLoadHistory": "Error al cargar el historial",
     "unknownDate": "Fecha desconocida",
-    "candidateShort": "Cand.",
-    "interviewerShort": "int.",
+          "candidateShort": "Cand.",
+      "interviewerShort": "Ent.",
     "status": {
       "completed": "Completado",
       "active": "Activo",
@@ -215,9 +248,12 @@
     "matchFoundTitle": "¡Match encontrado!",
     "addedToQueueTitle": "Agregado a la cola de espera",
     "messages": {
-      "slotExpired": "No se pudo encontrar un compañero para el horario {{slotTime}}. Por favor elige otra hora.{{#if tools}}\nTus herramientas: {{tools}}{{/if}}",
-      "matchFound": "Hora: {{slotTime}}\nTu rol: {{role}}\nSala: {{roomName}}\nEnlace: {{link}}{{#if tools}}\nTus herramientas: {{tools}}{{/if}}",
-      "addedToQueue": "Horario: {{slotTime}}\nRol: {{role}}{{#if tools}}\nHerramientas: {{tools}}{{/if}}",
+      "slotExpired": "No se pudo encontrar un compañero para el horario {{slotTime}}. Por favor elige otra hora.",
+      "slotExpiredWithTools": "No se pudo encontrar un compañero para el horario {{slotTime}}. Por favor elige otra hora.\nTus herramientas: {{tools}}",
+      "matchFound": "Hora: {{slotTime}}\nTu rol: {{role}}\nSala: {{roomName}}\nEnlace: {{link}}",
+      "matchFoundWithTools": "Hora: {{slotTime}}\nTu rol: {{role}}\nSala: {{roomName}}\nEnlace: {{link}}\nTus herramientas: {{tools}}",
+      "addedToQueue": "Horario: {{slotTime}}\nRol: {{role}}",
+      "addedToQueueWithTools": "Horario: {{slotTime}}\nRol: {{role}}\nHerramientas: {{tools}}",
       "reminder": "Recordatorio: entrevista en {{timeLeft}}"
     }
   },
@@ -243,11 +279,11 @@
     "junior": "Junior",
     "middle": "Middle",
     "senior": "Senior",
-    "benefitsTitle": "Beneficios de la Generación con IA",
-    "benefitsDesc": "Configura OpenRouter API para obtener funciones adicionales",
-    "benefit1": "Preguntas únicas para cada profesión",
-    "benefit2": "Adaptación al nivel de dificultad",
-    "benefit3": "Número ilimitado de preguntas",
+
+    "aiBenefitsTitle": "Beneficios de la generación IA",
+    "aiBenefit1": "Preguntas únicas para cada profesión",
+    "aiBenefit2": "Adaptación al nivel de dificultad",
+    "aiBenefit3": "Número ilimitado de preguntas",
     "save": "Guardar Configuración",
     "loadingSettings": "Cargando configuración...",
     "projectMode": "Modo proyecto",
@@ -256,6 +292,8 @@
     "profileSettings": "Configuración del perfil",
     "interviewLanguage": "Idioma de la entrevista",
     "profession": "Profesión",
+    "interfaceLanguage": "Idioma de la interfaz",
+    "interfaceLanguageDesc": "Elige el idioma para mostrar la interfaz de la aplicación",
     "goToInterview": "Ir a reserva de entrevista",
     "getFreeKey": "Obtener clave gratuita",
     "getFreeKeyDesc": "para generación IA de preguntas de entrevista.",
@@ -311,6 +349,242 @@
       "design": "Diseño",
       "testing": "Pruebas",
       "devops": "DevOps"
+    }
+  },
+  "infoCarousel": {
+    "candidateTitle": "Para Candidatos",
+    "interviewerTitle": "Entrevistador",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "candidateSlides": {
+      "slide1": {
+        "title": "Elige un tiempo conveniente",
+        "description": "Horarios disponibles 24 horas al día. El sistema oculta automáticamente el tiempo pasado."
+      },
+      "slide2": {
+        "title": "Encuentra entrevistadores",
+        "description": "Ve la cantidad de entrevistadores disponibles en cada horario."
+      },
+      "slide3": {
+        "title": "Recomendaciones inteligentes",
+        "description": "El sistema recomienda el tiempo óptimo para un emparejamiento rápido."
+      },
+      "slide4": {
+        "title": "Inicio rápido",
+        "description": "Un clic - y estás en la cola de entrevistas. ¡Emparejamiento automático!"
+      }
+    },
+    "interviewerSlides": {
+      "slide1": {
+        "title": "Horario flexible",
+        "description": "Elige cuándo te conviene realizar entrevistas."
+      },
+      "slide2": {
+        "title": "Los candidatos esperan",
+        "description": "Ve la cantidad de candidatos listos para entrevistas en cada horario."
+      },
+      "slide3": {
+        "title": "Tiempo óptimo",
+        "description": "El sistema muestra cuándo hay más candidatos."
+      },
+      "slide4": {
+        "title": "Eficiencia",
+        "description": "Carga máxima y tiempo de espera mínimo."
+      }
+    }
+  },
+  "stackBlitzModal": {
+    "title": "Clave API de StackBlitz",
+    "subtitle": "Aprende más sobre las capacidades de edición colaborativa de código",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "gotIt": "Entendido",
+    "getApiKey": "Obtener Clave API",
+    "slides": {
+      "slide1": {
+        "title": "¿Qué es StackBlitz API?",
+        "description": "StackBlitz API te permite ejecutar y editar código en el navegador sin instalar software adicional."
+      },
+      "slide2": {
+        "title": "Edición colaborativa",
+        "description": "Durante la entrevista, puedes escribir código junto con el entrevistador en tiempo real."
+      },
+      "slide3": {
+        "title": "Colaboración",
+        "description": "El entrevistador ve tu código y puede comentar, sugerir cambios y evaluar soluciones."
+      },
+      "slide4": {
+        "title": "¿Cómo obtener una clave API?",
+        "description": "Ve a stackblitz.com, inicia sesión en tu cuenta y crea una clave API en la configuración de tu perfil."
+      }
+    }
+  },
+  "openRouterModal": {
+    "title": "Clave API de OpenRouter",
+    "subtitle": "Aprende más sobre las capacidades de generación de preguntas con IA para entrevistas",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "gotIt": "Entendido",
+    "getApiKey": "Obtener Clave API",
+    "slides": {
+      "slide1": {
+        "title": "¿Qué es OpenRouter?",
+        "description": "OpenRouter es una plataforma que proporciona acceso a varios modelos de IA a través de una interfaz API unificada."
+      },
+      "slide2": {
+        "title": "Generación de preguntas con IA",
+        "description": "Usando la API de OpenRouter, el sistema genera automáticamente preguntas de entrevista personalizadas basadas en tu profesión y nivel."
+      },
+      "slide3": {
+        "title": "Seguridad y privacidad",
+        "description": "Tu clave API se almacena localmente y se usa solo para la generación de preguntas. No tenemos acceso a tus datos."
+      },
+      "slide4": {
+        "title": "¿Cómo obtener una clave API?",
+        "description": "Ve a openrouter.ai, crea una cuenta y obtén una clave API en la sección \"Keys\". ¡Primeros $5 de créditos gratis!"
+      }
+    }
+  },
+  "waiting": {
+    "rules": {
+      "title": "Reglas de respeto mutuo",
+      "important": "Importante",
+      "bePolite": "Sé cortés y paciente",
+      "dontInterrupt": "No interrumpas al interlocutor",
+      "askQuestions": "Haz preguntas aclaratorias",
+      "giveFeedback": "Da retroalimentación constructiva",
+      "goal": "Recuerda: el objetivo es ayudarse mutuamente a desarrollarse profesionalmente",
+      "interviewerTips": "Consejos para el entrevistador:",
+      "candidateTips": "Consejos para el candidato:",
+      "interviewerAdvice": "Sé amigable, haz preguntas abiertas, da tiempo al candidato para pensar",
+      "candidateAdvice": "Sé confiado, da ejemplos específicos, no tengas miedo de hacer preguntas"
+    },
+    "devMode": "MODO DEV - Datos simulados",
+    "waitingRoom": "Sala de espera (DEV)",
+    "waitingForMock": "Esperando el inicio de la entrevista simulada",
+    "sessionInfo": {
+      "startTime": "Hora de inicio",
+      "yourRole": "Tu rol",
+      "profession": "Profesión",
+      "language": "Idioma",
+      "notSpecified": "No especificado",
+      "notSpecifiedLang": "No especificado"
+    },
+    "participants": {
+      "title": "Participantes de la sesión",
+      "waiting": "Esperando:",
+      "interviews": "entrevistas",
+      "interviewer": "Entrevistador",
+      "candidate": "Candidato"
+    },
+    "timer": {
+      "untilStart": "Hasta el inicio:",
+      "late": "Tarde:",
+      "canEnter": "¡Puede entrar!",
+      "progress": "Progreso hasta que la entrada sea posible",
+      "lateWarning": "⚠️ Llegaste tarde a la entrevista. Intenta unirte lo antes posible."
+    },
+    "actions": {
+      "mediaSettings": "Configuración de cámara y sonido",
+      "hideSettings": "Ocultar configuración",
+      "joinInterview": "Unirse a la entrevista",
+      "joinLate": "Unirse (tarde)",
+      "enterEarly": "Entrar temprano (prueba)",
+      "earlyInfo": "La entrada generalmente es posible 5 minutos antes del inicio",
+      "lateInfo": "La hora de inicio de la entrevista ya pasó",
+      "backToDevTest": "← Volver a dev-test"
+    },
+    "status": {
+      "active": "La sesión está activa y lista para comenzar (DEV)"
+    },
+    "errors": {
+      "title": "Error",
+      "insufficientData": "Datos insuficientes para cargar la sesión",
+      "loadError": "Error al cargar datos de la sesión",
+      "sessionNotFound": "Sesión no encontrada",
+      "loadFailed": "No se pudieron cargar los datos de la sesión"
+    },
+    "loading": {
+      "mockData": "Cargando datos simulados...",
+      "sessionData": "Cargando datos de la sesión..."
+    }
+  },
+  "chat": {
+    "title": "Chat de participantes",
+    "typing": "Escribiendo...",
+    "quickMessages": "Mensajes rápidos",
+    "inputPlaceholder": "Escribir mensaje...",
+    "enterToSend": "Enter para enviar",
+    "system": "Sistema",
+    "participantsConnected": "Los participantes se han unido al chat ({{count}}/2)",
+    "you": "Tú",
+    "messages": {
+      "greeting": {
+        "hello": "¡Hola!",
+        "goodDay": "¡Buen día!",
+        "greetings": "¡Saludos!",
+        "niceToMeet": "¡Encantado de conocerte!"
+      },
+      "status": {
+        "ready": "Listo para la entrevista",
+        "nervous": "Un poco nervioso",
+        "great": "¡Todo está genial!",
+        "needMinute": "Necesito un minuto",
+        "checkingSound": "Verificando sonido"
+      },
+      "question": {
+        "howAreYou": "¿Cómo estás?",
+        "readyToStart": "¿Listo para empezar?",
+        "anyQuestions": "¿Alguna pregunta?",
+        "everythingClear": "¿Todo claro?",
+        "shallWeStart": "¿Empezamos?",
+        "readyToAnswer": "Listo para responder"
+      },
+      "reaction": {
+        "excellent": "¡Excelente!",
+        "agree": "De acuerdo",
+        "interesting": "Interesante",
+        "gotIt": "Entendido",
+        "thankYou": "¡Gracias!",
+        "greatQuestion": "Excelente pregunta"
+      }
+    }
+  },
+  "media": {
+    "title": "Configuración de cámara y sonido",
+    "subtitle": "Verifica y configura tus dispositivos antes de la entrevista",
+    "refresh": "Actualizar",
+    "camera": {
+      "title": "Cámara",
+      "enabled": "Habilitada",
+      "disabled": "Deshabilitada",
+      "enable": "Habilitar cámara",
+      "selectDevice": "Seleccionar cámara:"
+    },
+    "microphone": {
+      "title": "Micrófono",
+      "enabled": "Habilitado",
+      "disabled": "Deshabilitado",
+      "enable": "Habilitar micrófono",
+      "selectDevice": "Seleccionar micrófono:",
+      "level": "Nivel de sonido"
+    },
+    "volume": {
+      "title": "Volumen"
+    },
+    "actions": {
+      "saveSettings": "Guardar configuración",
+      "testAudio": "Probar audio",
+      "stopTest": "Detener prueba"
+    },
+    "status": {
+      "saved": "✅ Configuración guardada y será utilizada durante la entrevista"
+    },
+    "errors": {
+      "noDevices": "No se encontraron dispositivos de cámara o micrófono disponibles",
+      "loadFailed": "Error al cargar la lista de dispositivos. Verifica los permisos del navegador.",
+      "deviceUnavailable": "Dispositivo no disponible: {{constraint}}. Intenta seleccionar otro dispositivo.",
+      "streamFailed": "Error al iniciar el flujo de medios. Verifica los permisos del navegador."
     }
   }
 }

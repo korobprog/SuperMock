@@ -21,7 +21,7 @@
     "notAuthorized": "未授权",
     "configureApi": "配置API",
     "quickActions": "快速操作",
-    "interviewer": "int.",
+    "interviewer": "面试官",
     "candidate": "候选人",
     "lastInterview": "上次面试",
     "comingSoon": "即将推出",
@@ -30,12 +30,14 @@
   "role": {
     "selectRole": "选择角色",
     "roleSubtitle": "您想在模拟面试中扮演什么角色？",
-    "interviewer": "int.",
+    "interviewer": "面试官",
     "interviewerDesc": "进行面试并评估候选人",
     "candidate": "求职者",
     "candidateDesc": "参加面试并接受反馈",
-    "interviewerShort": "int.",
-    "candidateShort": "求职者"
+    "interviewerShort": "面试官",
+    "candidateShort": "求职",
+    "interviewerAction": "进行面试",
+    "candidateAction": "参加面试"
   },
   "profession": {
     "selectProfession": "选择职业",
@@ -81,30 +83,61 @@
       "collapse": "收起",
       "showAnalysis": "显示分析",
       "interviewers": "面试官",
-      "interviewersShort": "int.",
+      "interviewersShort": "面试官",
       "candidates": "求职者"
     },
     "slots": {
       "availableSlotsInterviewers": "可用时段（面试官）",
       "availableSlotsCandidates": "可用时段（求职者）",
-      "interviewersShort": "int.",
-      "candidatesShort": "求职者",
-      "recommended": "推荐"
+      "interviewersShort": "面试官",
+      "candidatesShort": "求职",
+      "recommended": "推荐",
+      "recommendedShort": "推荐"
     },
     "buttons": {
       "back": "返回",
       "continueAt": "继续在",
-      "selectTime": "选择时间"
+      "selectTime": "选择时间",
+      "continue": "继续"
     },
     "header": {
       "title": "选择时间",
       "subtitle": "找到合适的面试时段",
       "help": "帮助",
-      "role": "角色"
+      "role": "选择角色"
+    },
+    "sessionInfo": {
+      "title": "会话信息"
+    },
+    "roleSelection": {
+      "subtitle": "您想在模拟面试中扮演什么角色？"
+    },
+    "sessionInfo": {
+      "title": "会话信息",
+      "toolsNotSelected": "未选择",
+      "toolsCount": "{{count}} 个工具",
+      "expand": "展开",
+      "collapse": "收起",
+      "showAllTools": "显示所有工具",
+      "collapseTools": "收起列表"
     },
     "timeDisplay": {
       "yourTime": "您的时间",
       "utcTime": "UTC时间"
+    },
+    "tabs": {
+      "withTools": "使用工具",
+      "allSlots": "所有时段"
+    },
+    "toolsRequired": {
+      "title": "选择工具以激活",
+      "description": "此标签页仅在选择了工具时有效。请转到工具选择页面。",
+      "selectTools": "选择工具"
+    },
+    "allSlotsDescription": "显示所有可用时间段。创建时间段时，您的工具将自动保存。",
+    "searching": {
+      "title": "搜索求职者",
+      "subtitle": "正在寻找合适的面试求职者..."
     }
   },
   "interview": {
@@ -164,7 +197,7 @@
     "backToMain": "返回首页",
     "noInterviews": "您还没有进行过面试",
     "startNewInterview": "开始新面试",
-    "interviewer": "int.",
+    "interviewer": "面试官",
     "candidate": "候选人",
     "receivedFeedback": "收到的反馈",
     "givenFeedback": "您的反馈",
@@ -172,8 +205,8 @@
     "userIdNotFound": "未找到用户ID",
     "failedToLoadHistory": "加载历史记录失败",
     "unknownDate": "未知日期",
-    "candidateShort": "求职者",
-    "interviewerShort": "int.",
+    "candidateShort": "求职",
+    "interviewerShort": "面试官",
     "status": {
       "completed": "已完成",
       "active": "进行中",
@@ -215,9 +248,12 @@
     "matchFoundTitle": "找到匹配！",
     "addedToQueueTitle": "已添加到等待队列",
     "messages": {
-      "slotExpired": "无法为时间段 {{slotTime}} 找到匹配。请选择其他时间。{{#if tools}}\n您的工具: {{tools}}{{/if}}",
-      "matchFound": "时间: {{slotTime}}\n您的角色: {{role}}\n房间: {{roomName}}\n链接: {{link}}{{#if tools}}\n您的工具: {{tools}}{{/if}}",
-      "addedToQueue": "时间段: {{slotTime}}\n角色: {{role}}{{#if tools}}\n工具: {{tools}}{{/if}}",
+      "slotExpired": "无法为时间段 {{slotTime}} 找到匹配。请选择其他时间。",
+      "slotExpiredWithTools": "无法为时间段 {{slotTime}} 找到匹配。请选择其他时间。\n您的工具: {{tools}}",
+      "matchFound": "时间: {{slotTime}}\n您的角色: {{role}}\n房间: {{roomName}}\n链接: {{link}}",
+      "matchFoundWithTools": "时间: {{slotTime}}\n您的角色: {{role}}\n房间: {{roomName}}\n链接: {{link}}\n您的工具: {{tools}}",
+      "addedToQueue": "时间段: {{slotTime}}\n角色: {{role}}",
+      "addedToQueueWithTools": "时间段: {{slotTime}}\n角色: {{role}}\n工具: {{tools}}",
       "reminder": "提醒: {{timeLeft}} 后面试"
     }
   },
@@ -243,11 +279,11 @@
     "junior": "初级",
     "middle": "中级",
     "senior": "高级",
-    "benefitsTitle": "AI生成优势",
-    "benefitsDesc": "配置OpenRouter API以获得额外功能",
-    "benefit1": "每个职业的独特问题",
-    "benefit2": "适应难度级别",
-    "benefit3": "无限数量的问题",
+
+    "aiBenefitsTitle": "AI生成优势",
+    "aiBenefit1": "每个职业的独特问题",
+    "aiBenefit2": "适应难度级别",
+    "aiBenefit3": "无限数量的问题",
     "save": "保存设置",
     "loadingSettings": "加载设置中...",
     "projectMode": "项目模式",
@@ -256,6 +292,8 @@
     "profileSettings": "个人资料设置",
     "interviewLanguage": "面试语言",
     "profession": "职业",
+    "interfaceLanguage": "界面语言",
+    "interfaceLanguageDesc": "选择显示应用程序界面的语言",
     "goToInterview": "前往面试预约",
     "getFreeKey": "获取免费密钥",
     "getFreeKeyDesc": "用于AI生成面试问题。",
@@ -311,6 +349,242 @@
       "design": "设计",
       "testing": "测试",
       "devops": "DevOps"
+    }
+  },
+  "infoCarousel": {
+    "candidateTitle": "求职者",
+    "interviewerTitle": "面试官",
+    "back": "返回",
+    "next": "下一步",
+    "candidateSlides": {
+      "slide1": {
+        "title": "选择方便的时间",
+        "description": "24小时可用时段。系统自动隐藏过去的时间。"
+      },
+      "slide2": {
+        "title": "找到面试官",
+        "description": "查看每个时间段可用的面试官数量。"
+      },
+      "slide3": {
+        "title": "智能推荐",
+        "description": "系统推荐快速匹配的最佳时间。"
+      },
+      "slide4": {
+        "title": "快速开始",
+        "description": "一键加入面试队列。自动匹配！"
+      }
+    },
+    "interviewerSlides": {
+      "slide1": {
+        "title": "灵活安排",
+        "description": "选择您方便进行面试的时间。"
+      },
+      "slide2": {
+        "title": "求职者等待中",
+        "description": "查看每个时段准备面试的求职者数量。"
+      },
+      "slide3": {
+        "title": "最佳时间",
+        "description": "系统显示求职者最多的时间。"
+      },
+      "slide4": {
+        "title": "高效",
+        "description": "最大负载和最短等待时间。"
+      }
+    }
+  },
+  "stackBlitzModal": {
+    "title": "StackBlitz API密钥",
+    "subtitle": "了解更多关于协作代码编辑功能",
+    "back": "返回",
+    "next": "下一步",
+    "gotIt": "明白了",
+    "getApiKey": "获取API密钥",
+    "slides": {
+      "slide1": {
+        "title": "什么是StackBlitz API？",
+        "description": "StackBlitz API允许您在浏览器中运行和编辑代码，无需安装额外软件。"
+      },
+      "slide2": {
+        "title": "协作编辑",
+        "description": "在面试期间，您可以与面试官实时编写代码。"
+      },
+      "slide3": {
+        "title": "协作",
+        "description": "面试官可以看到您的代码，并可以评论、建议更改和评估解决方案。"
+      },
+      "slide4": {
+        "title": "如何获取API密钥？",
+        "description": "访问stackblitz.com，登录您的账户并在个人资料设置中创建API密钥。"
+      }
+    }
+  },
+  "openRouterModal": {
+    "title": "OpenRouter API密钥",
+    "subtitle": "了解更多关于面试AI问题生成功能",
+    "back": "返回",
+    "next": "下一步",
+    "gotIt": "明白了",
+    "getApiKey": "获取API密钥",
+    "slides": {
+      "slide1": {
+        "title": "什么是OpenRouter？",
+        "description": "OpenRouter是一个通过统一API接口提供各种AI模型访问的平台。"
+      },
+      "slide2": {
+        "title": "AI问题生成",
+        "description": "使用OpenRouter API，系统会根据您的职业和级别自动生成个性化的面试问题。"
+      },
+      "slide3": {
+        "title": "安全性和隐私",
+        "description": "您的API密钥存储在本地，仅用于问题生成。我们无法访问您的数据。"
+      },
+      "slide4": {
+        "title": "如何获取API密钥？",
+        "description": "访问openrouter.ai，创建账户并在\"Keys\"部分获取API密钥。前$5积分免费！"
+      }
+    }
+  },
+  "waiting": {
+    "rules": {
+      "title": "相互尊重规则",
+      "important": "重要",
+      "bePolite": "保持礼貌和耐心",
+      "dontInterrupt": "不要打断对方",
+      "askQuestions": "提出澄清问题",
+      "giveFeedback": "提供建设性反馈",
+      "goal": "记住：目标是互相帮助专业发展",
+      "interviewerTips": "面试官建议：",
+      "candidateTips": "求职者建议：",
+      "interviewerAdvice": "保持友好，提出开放性问题，给求职者思考时间",
+      "candidateAdvice": "保持自信，提供具体例子，不要害怕提问"
+    },
+    "devMode": "开发模式 - 模拟数据",
+    "waitingRoom": "等候室（开发）",
+    "waitingForMock": "等待模拟面试开始",
+    "sessionInfo": {
+      "startTime": "开始时间",
+      "yourRole": "您的角色",
+      "profession": "职业",
+      "language": "语言",
+      "notSpecified": "未指定",
+      "notSpecifiedLang": "未指定"
+    },
+    "participants": {
+      "title": "会话参与者",
+      "waiting": "等待中：",
+      "interviews": "面试",
+      "interviewer": "面试官",
+      "candidate": "求职者"
+    },
+    "timer": {
+      "untilStart": "距离开始：",
+      "late": "迟到：",
+      "canEnter": "可以进入！",
+      "progress": "进入进度",
+      "lateWarning": "⚠️ 您面试迟到了。请尽快加入。"
+    },
+    "actions": {
+      "mediaSettings": "摄像头和声音设置",
+      "hideSettings": "隐藏设置",
+      "joinInterview": "加入面试",
+      "joinLate": "加入（迟到）",
+      "enterEarly": "提前进入（测试）",
+      "earlyInfo": "通常可以在开始前5分钟进入",
+      "lateInfo": "面试开始时间已过",
+      "backToDevTest": "← 返回开发测试"
+    },
+    "status": {
+      "active": "会话活跃并准备开始（开发）"
+    },
+    "errors": {
+      "title": "错误",
+      "insufficientData": "加载会话的数据不足",
+      "loadError": "加载会话数据时出错",
+      "sessionNotFound": "未找到会话",
+      "loadFailed": "无法加载会话数据"
+    },
+    "loading": {
+      "mockData": "加载模拟数据...",
+      "sessionData": "加载会话数据..."
+    }
+  },
+  "chat": {
+    "title": "参与者聊天",
+    "typing": "正在输入...",
+    "quickMessages": "快速消息",
+    "inputPlaceholder": "写消息...",
+    "enterToSend": "回车发送",
+    "system": "系统",
+    "participantsConnected": "参与者已加入聊天（{{count}}/2）",
+    "you": "您",
+    "messages": {
+      "greeting": {
+        "hello": "你好！",
+        "goodDay": "美好的一天！",
+        "greetings": "问候！",
+        "niceToMeet": "很高兴见到你！"
+      },
+      "status": {
+        "ready": "准备面试",
+        "nervous": "有点紧张",
+        "great": "一切都很好！",
+        "needMinute": "需要一分钟",
+        "checkingSound": "检查声音"
+      },
+      "question": {
+        "howAreYou": "你好吗？",
+        "readyToStart": "准备开始？",
+        "anyQuestions": "有问题吗？",
+        "everythingClear": "都清楚吗？",
+        "shallWeStart": "我们开始吗？",
+        "readyToAnswer": "准备回答"
+      },
+      "reaction": {
+        "excellent": "优秀！",
+        "agree": "同意",
+        "interesting": "有趣",
+        "gotIt": "明白了",
+        "thankYou": "谢谢！",
+        "greatQuestion": "好问题"
+      }
+    }
+  },
+  "media": {
+    "title": "摄像头和声音设置",
+    "subtitle": "在面试前检查和配置您的设备",
+    "refresh": "刷新",
+    "camera": {
+      "title": "摄像头",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "enable": "启用摄像头",
+      "selectDevice": "选择摄像头："
+    },
+    "microphone": {
+      "title": "麦克风",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "enable": "启用麦克风",
+      "selectDevice": "选择麦克风：",
+      "level": "音量级别"
+    },
+    "volume": {
+      "title": "音量"
+    },
+    "actions": {
+      "saveSettings": "保存设置",
+      "testAudio": "测试音频",
+      "stopTest": "停止测试"
+    },
+    "status": {
+      "saved": "✅ 设置已保存，将在面试期间使用"
+    },
+    "errors": {
+      "noDevices": "未找到可用的摄像头或麦克风设备",
+      "loadFailed": "加载设备列表失败。请检查浏览器权限。",
+      "deviceUnavailable": "设备不可用：{{constraint}}。请尝试选择其他设备。",
+      "streamFailed": "启动媒体流失败。请检查浏览器权限。"
     }
   }
 }

@@ -33,33 +33,24 @@ class PrismaUser {
         const existingUser = await prisma.user.findUnique({
             where: { id: this.id },
         });
-        // Если пользователь новый или пароль изменился, хешируем его
-        if (!existingUser || existingUser.password !== this.password) {
-            const salt = await bcryptjs_1.default.genSalt(10);
-            this.password = await bcryptjs_1.default.hash(this.password, salt);
-        }
         // Сохраняем пользователя в базу данных
         const savedUser = await prisma.user.upsert({
             where: { id: this.id },
             update: {
-                email: this.email,
-                password: this.password,
-                roleHistory: this.roleHistory,
-                feedbackStatus: this.feedbackStatus,
-                googleId: this.googleId,
-                googleAccessToken: this.googleAccessToken,
-                googleRefreshToken: this.googleRefreshToken,
+                tgId: this.tgId,
+                username: this.username,
+                firstName: this.firstName,
+                lastName: this.lastName,
+                language: this.language,
             },
             create: {
                 id: this.id,
-                email: this.email,
-                password: this.password,
-                roleHistory: this.roleHistory,
-                feedbackStatus: this.feedbackStatus,
+                tgId: this.tgId,
+                username: this.username,
+                firstName: this.firstName,
+                lastName: this.lastName,
+                language: this.language,
                 createdAt: this.createdAt,
-                googleId: this.googleId,
-                googleAccessToken: this.googleAccessToken,
-                googleRefreshToken: this.googleRefreshToken,
             },
         });
         return new PrismaUser(savedUser);
@@ -72,17 +63,17 @@ class PrismaUser {
         });
         return user ? new PrismaUser(user) : null;
     }
-    // Поиск пользователя по email
+    // Поиск пользователя по tgId
     static async findOne(filter) {
-        const user = await prisma.user.findUnique({
-            where: { email: filter.email },
+        const user = await prisma.user.findFirst({
+            where: { tgId: filter.tgId },
         });
         return user ? new PrismaUser(user) : null;
     }
-    // Поиск пользователя по googleId
-    static async findByGoogleId(googleId) {
+    // Поиск пользователя по username
+    static async findByUsername(username) {
         const user = await prisma.user.findFirst({
-            where: { googleId },
+            where: { username },
         });
         return user ? new PrismaUser(user) : null;
     }

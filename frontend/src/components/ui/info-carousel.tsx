@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Info, Clock, Users, Lightbulb, CheckCircle } from 'lucide-react';
 import { Button } from './button';
+import { useAppTranslation } from '@/lib/i18n';
 
 interface InfoSlide {
   icon: React.ReactNode;
@@ -15,68 +16,68 @@ interface InfoCarouselProps {
   mode: 'candidate' | 'interviewer';
 }
 
-const candidateSlides: InfoSlide[] = [
-  {
-    icon: <Clock size={24} />,
-    title: 'Выберите удобное время',
-    description:
-      'Доступны слоты 24 часа в сутки. Система автоматически скрывает прошедшее время.',
-    color: 'text-blue-600',
-  },
-  {
-    icon: <Users size={24} />,
-    title: 'Найдите int.',
-    description:
-      'Видите количество доступных int. в каждом временном слоте.',
-    color: 'text-green-600',
-  },
-  {
-    icon: <Lightbulb size={24} />,
-    title: 'Умные рекомендации',
-    description: 'Система рекомендует оптимальное время для быстрого матчинга.',
-    color: 'text-yellow-600',
-  },
-  {
-    icon: <CheckCircle size={24} />,
-    title: 'Быстрый старт',
-    description:
-      'Один клик - и вы в очереди на интервью. Автоматический матчинг!',
-    color: 'text-purple-600',
-  },
-];
 
-const interviewerSlides: InfoSlide[] = [
-  {
-    icon: <Clock size={24} />,
-    title: 'Гибкий график',
-    description: 'Выбирайте время, когда вам удобно проводить интервью.',
-    color: 'text-blue-600',
-  },
-  {
-    icon: <Users size={24} />,
-    title: 'Кандидаты ждут',
-    description:
-      'Видите количество кандидатов, готовых к интервью в каждом слоте.',
-    color: 'text-green-600',
-  },
-  {
-    icon: <Lightbulb size={24} />,
-    title: 'Оптимальное время',
-    description: 'Система показывает, когда больше всего кандидатов.',
-    color: 'text-yellow-600',
-  },
-  {
-    icon: <CheckCircle size={24} />,
-    title: 'Эффективность',
-    description: 'Максимальная загрузка и минимальное время ожидания.',
-    color: 'text-purple-600',
-  },
-];
 
 export function InfoCarousel({ isOpen, onClose, mode }: InfoCarouselProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [textVisible, setTextVisible] = useState(false);
+  const { t } = useAppTranslation();
+
+  // Создаем слайды с переводами
+  const candidateSlides: InfoSlide[] = [
+    {
+      icon: <Clock size={24} />,
+      title: t('infoCarousel.candidateSlides.slide1.title'),
+      description: t('infoCarousel.candidateSlides.slide1.description'),
+      color: 'text-blue-600',
+    },
+    {
+      icon: <Users size={24} />,
+      title: t('infoCarousel.candidateSlides.slide2.title'),
+      description: t('infoCarousel.candidateSlides.slide2.description'),
+      color: 'text-green-600',
+    },
+    {
+      icon: <Lightbulb size={24} />,
+      title: t('infoCarousel.candidateSlides.slide3.title'),
+      description: t('infoCarousel.candidateSlides.slide3.description'),
+      color: 'text-yellow-600',
+    },
+    {
+      icon: <CheckCircle size={24} />,
+      title: t('infoCarousel.candidateSlides.slide4.title'),
+      description: t('infoCarousel.candidateSlides.slide4.description'),
+      color: 'text-purple-600',
+    },
+  ];
+
+  const interviewerSlides: InfoSlide[] = [
+    {
+      icon: <Clock size={24} />,
+      title: t('infoCarousel.interviewerSlides.slide1.title'),
+      description: t('infoCarousel.interviewerSlides.slide1.description'),
+      color: 'text-blue-600',
+    },
+    {
+      icon: <Users size={24} />,
+      title: t('infoCarousel.interviewerSlides.slide2.title'),
+      description: t('infoCarousel.interviewerSlides.slide2.description'),
+      color: 'text-green-600',
+    },
+    {
+      icon: <Lightbulb size={24} />,
+      title: t('infoCarousel.interviewerSlides.slide3.title'),
+      description: t('infoCarousel.interviewerSlides.slide3.description'),
+      color: 'text-yellow-600',
+    },
+    {
+      icon: <CheckCircle size={24} />,
+      title: t('infoCarousel.interviewerSlides.slide4.title'),
+      description: t('infoCarousel.interviewerSlides.slide4.description'),
+      color: 'text-purple-600',
+    },
+  ];
 
   const slides = mode === 'candidate' ? candidateSlides : interviewerSlides;
 
@@ -126,7 +127,7 @@ export function InfoCarousel({ isOpen, onClose, mode }: InfoCarouselProps) {
             <div className="flex items-center">
               <Info size={20} className="mr-2" />
               <h2 className="text-lg font-semibold">
-                {mode === 'candidate' ? 'Кандидатам' : 'int.'}
+                {mode === 'candidate' ? t('infoCarousel.candidateTitle') : t('infoCarousel.interviewerTitle')}
               </h2>
             </div>
             <button
@@ -198,7 +199,7 @@ export function InfoCarousel({ isOpen, onClose, mode }: InfoCarouselProps) {
               }}
               className="flex-1"
             >
-              Назад
+              {t('infoCarousel.back')}
             </Button>
             <Button
               onClick={() => {
@@ -210,7 +211,7 @@ export function InfoCarousel({ isOpen, onClose, mode }: InfoCarouselProps) {
               }}
               className="flex-1"
             >
-              Далее
+              {t('infoCarousel.next')}
             </Button>
           </div>
         </div>

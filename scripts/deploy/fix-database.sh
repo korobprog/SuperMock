@@ -29,7 +29,10 @@ fi
 echo "📊 Проверка статуса миграций..."
 docker exec supermock-backend npx prisma migrate status
 
-echo "🔄 Синхронизация схемы базы данных..."
+echo "🔄 Применение миграций..."
+docker exec supermock-backend npx prisma migrate deploy || true
+
+echo "🔄 Синхронизация схемы базы данных (если миграции не применились)..."
 docker exec supermock-backend npx prisma db push --accept-data-loss
 
 echo "🔧 Генерация Prisma Client..."

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест API в реальном времени</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Тест API в реальном времени</h1>
+    
+    <div>
+        <button onclick="testAPI()">Проверить API сейчас</button>
+        <button onclick="testMultiple()">Тест множественных запросов</button>
+        <button onclick="clearResults()">Очистить результаты</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        function addResult(title, content, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${content}</pre>`;
+            results.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testAPI() {
+            const timestamp = new Date().toLocaleString('ru-RU');
+            addResult(`🕐 Запрос в ${timestamp}`, 'Начинаем тест...');
+            
+            try {
+                // Получаем часовой пояс браузера
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                addResult('🌍 Часовой пояс браузера', timezone);
+                
+                        // Тестируем API для кандидатов
+        const candidateUrl = `http://localhost:3000/api/slots/enhanced?role=candidate&profession=frontend&language=ru&timezone=${encodeURIComponent(timezone)}`;
+        addResult('📡 URL запроса кандидата', candidateUrl);
+        
+        const candidateResponse = await fetch(candidateUrl);
+        const candidateData = await candidateResponse.json();
+        
+        addResult('✅ Ответ API для кандидатов', JSON.stringify(candidateData, null, 2), 'success');
+        
+        // Тестируем API для интервьюеров
+        const interviewerUrl = `http://localhost:3000/api/slots/enhanced?role=interviewer&profession=frontend&language=ru&timezone=${encodeURIComponent(timezone)}`;
+        addResult('📡 URL запроса интервьюера', interviewerUrl);
+        
+        const interviewerResponse = await fetch(interviewerUrl);
+        const interviewerData = await interviewerResponse.json();
+        
+        addResult('✅ Ответ API для интервьюеров', JSON.stringify(interviewerData, null, 2), 'success');
+                
+                // Анализируем данные
+                const slots = candidateData.slots || [];
+                addResult('📊 Анализ слотов', `Найдено слотов: ${slots.length}`);
+                
+                slots.forEach(slot => {
+                    addResult(`🎯 Слот ${slot.time}`, `Количество: ${slot.count}`, slot.count > 0 ? 'success' : 'error');
+                });
+                
+                // Проверяем слот 23:00
+                const slot23 = slots.find(s => s.time === '23:00');
+                if (slot23) {
+                    addResult('🎯 Слот 23:00 найден', `Количество: ${slot23.count}`, slot23.count > 0 ? 'success' : 'error');
+                } else {
+                    addResult('❌ Слот 23:00 не найден', 'Слот отсутствует в ответе API', 'error');
+                }
+                
+            } catch (error) {
+                addResult('❌ Ошибка', error.message, 'error');
+            }
+        }
+        
+        async function testMultiple() {
+            addResult('🔄 Тест множественных запросов', 'Выполняем 5 запросов подряд...');
+            
+            for (let i = 1; i <= 5; i++) {
+                try {
+                    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    const response = await fetch(`http://localhost:3000/api/slots/enhanced?role=candidate&profession=frontend&language=ru&timezone=${encodeURIComponent(timezone)}`);
+                    const data = await response.json();
+                    
+                    const slot23 = data.slots?.find(s => s.time === '23:00');
+                    const count = slot23 ? slot23.count : 0;
+                    
+                    addResult(`🔄 Запрос ${i}`, `Слот 23:00: ${count}`, count > 0 ? 'success' : 'error');
+                    
+                    // Небольшая задержка между запросами
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                } catch (error) {
+                    addResult(`❌ Ошибка в запросе ${i}`, error.message, 'error');
+                }
+            }
+        }
+        
+        // Автоматический тест при загрузке страницы
+        window.onload = function() {
+            addResult('🚀 Страница загружена', 'Автоматический тест через 2 секунды...');
+            setTimeout(testAPI, 2000);
+        };
+    </script>
+</body>
+</html>
