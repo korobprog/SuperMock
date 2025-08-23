@@ -2570,40 +2570,61 @@ app.get('/api/user/:userId', async (req, res) => {
   }
 });
 
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  console.log('🧪 Test endpoint called');
+  res.json({ message: 'Test endpoint works!' });
+});
+
 // TURN server credentials endpoint
 app.get('/api/turn-credentials', async (req, res) => {
   try {
+    console.log('🔑 TURN credentials request received:', req.query);
+    
     const { userId } = req.query;
     if (!userId) {
+      console.log('❌ TURN credentials: userId is required');
       return res.status(400).json({ error: 'userId is required' });
     }
 
     const username = String(userId);
     const secret = process.env.TURN_AUTH_SECRET || 'supermock_turn_secret_2024_very_long_and_secure_key_for_webrtc';
     const realm = process.env.TURN_REALM || 'supermock.ru';
+    const turnHost = process.env.TURN_SERVER_HOST || '217.198.6.238';
+    
+    console.log('🔑 TURN credentials: Generating for user:', username);
+    console.log('🔑 TURN credentials: Using host:', turnHost);
+    console.log('🔑 TURN credentials: Using realm:', realm);
     
     // Generate temporary credentials (valid for 24 hours)
     const timestamp = Math.floor(Date.now() / 1000) + 24 * 3600; // 24 hours from now
     const usernameWithTimestamp = `${timestamp}:${username}`;
     
+    console.log('🔑 TURN credentials: Username with timestamp:', usernameWithTimestamp);
+    
     // Create HMAC for password
-    const crypto = require('crypto');
-    const password = crypto
+    const crypto = await import('crypto');
+    const password = crypto.default
       .createHmac('sha1', secret)
       .update(usernameWithTimestamp)
       .digest('base64');
 
-    res.json({
+    console.log('🔑 TURN credentials: Password generated successfully');
+
+    const response = {
       username: usernameWithTimestamp,
       password: password,
       urls: [
-        `turn:${process.env.TURN_SERVER_HOST || '217.198.6.238'}:3478`,
-        `turns:${process.env.TURN_SERVER_HOST || '217.198.6.238'}:5349`
+        `turn:${turnHost}:3478`,
+        `turns:${turnHost}:5349`
       ],
       ttl: 86400 // 24 hours in seconds
-    });
+    };
+
+    console.log('🔑 TURN credentials: Sending response with real credentials');
+    res.json(response);
   } catch (error) {
-    console.error('Error generating TURN credentials:', error);
+    console.error('❌ Error generating TURN credentials:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

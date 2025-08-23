@@ -29,6 +29,8 @@ export const API_CONFIG = {
 // VITE_STUN_URLS can be a comma-separated list like: "stun:stun.l.google.com:19302,stun:global.stun.twilio.com:3478"
 // TURN credentials are now fetched dynamically from the server
 export const getIceConfig = async (userId?: string): Promise<RTCConfiguration> => {
+  console.log('🔧 Getting ICE configuration for user:', userId);
+  
   const stunServers = (import.meta.env.VITE_STUN_URLS
     ? String(import.meta.env.VITE_STUN_URLS)
         .split(',')
@@ -37,23 +39,34 @@ export const getIceConfig = async (userId?: string): Promise<RTCConfiguration> =
         .map((url) => ({ urls: url }))
     : [{ urls: 'stun:stun.l.google.com:19302' }]) as RTCIceServer[];
 
+  console.log('🧊 STUN servers:', stunServers);
+
   // Try to get TURN credentials from server
   let turnServers: RTCIceServer[] = [];
   if (userId && import.meta.env.VITE_TURN_URL) {
+    console.log('🔑 Attempting to get TURN credentials from server...');
     try {
       const response = await fetch(`${API_CONFIG.baseURL}/api/turn-credentials?userId=${userId}`);
       if (response.ok) {
         const credentials = await response.json();
+        console.log('✅ TURN credentials received:', {
+          username: credentials.username,
+          urls: credentials.urls,
+          ttl: credentials.ttl
+        });
         turnServers = credentials.urls.map((url: string) => ({
           urls: url,
           username: credentials.username,
           credential: credentials.password,
         }));
+      } else {
+        console.warn('❌ Failed to get TURN credentials, response not ok:', response.status);
       }
     } catch (error) {
-      console.warn('Failed to get TURN credentials, using fallback:', error);
+      console.warn('❌ Failed to get TURN credentials, using fallback:', error);
       // Fallback to static credentials if available
       if (import.meta.env.VITE_TURN_USERNAME && import.meta.env.VITE_TURN_PASSWORD) {
+        console.log('🔄 Using fallback TURN credentials');
         turnServers = [{
           urls: String(import.meta.env.VITE_TURN_URL),
           username: String(import.meta.env.VITE_TURN_USERNAME),
@@ -61,11 +74,25 @@ export const getIceConfig = async (userId?: string): Promise<RTCConfiguration> =
         }];
       }
     }
+  } else {
+    console.log('⚠️ No userId or VITE_TURN_URL, skipping TURN servers');
   }
 
-  return {
+  const iceConfig = {
     iceServers: [...stunServers, ...turnServers],
   };
+
+  console.log('🌐 Final ICE configuration:', {
+    totalServers: iceConfig.iceServers.length,
+    stunCount: stunServers.length,
+    turnCount: turnServers.length,
+    servers: iceConfig.iceServers.map(s => ({
+      urls: s.urls,
+      type: s.urls.includes('turn:') ? 'TURN' : 'STUN'
+    }))
+  });
+
+  return iceConfig;
 };
 
 // Legacy ICE_CONFIG for backward compatibility

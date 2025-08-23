@@ -63,6 +63,9 @@ services:
       REQUEST_TIMEOUT: ${REQUEST_TIMEOUT:-30000}
       SOCKET_TIMEOUT: ${SOCKET_TIMEOUT:-60000}
       ENABLE_DEMO_MODE: ${ENABLE_DEMO_MODE:-1}
+      TURN_REALM: ${TURN_REALM}
+      TURN_AUTH_SECRET: ${TURN_AUTH_SECRET}
+      TURN_SERVER_HOST: ${TURN_SERVER_HOST}
     volumes:
       - ./backend/prisma:/app/prisma
     networks:

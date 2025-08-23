@@ -62,6 +62,8 @@ export function Interview() {
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
+  const pendingIceCandidatesRef = useRef<RTCIceCandidate[]>([]);
+  const isRemoteDescriptionSetRef = useRef(false);
   const [newMessage, setNewMessage] = useState('');
   const [messages, setMessages] = useState<
     { user: string; message: string; at: number }[]
@@ -392,9 +394,28 @@ export function Interview() {
           if (!pcRef.current) {
             return;
           }
+          
+          // Сбрасываем флаг и буфер ICE candidates
+          isRemoteDescriptionSetRef.current = false;
+          pendingIceCandidatesRef.current = [];
+          
           await pcRef.current.setRemoteDescription(
             new RTCSessionDescription(sdp)
           );
+          
+          isRemoteDescriptionSetRef.current = true;
+          
+          // Обрабатываем накопленные ICE candidates
+          while (pendingIceCandidatesRef.current.length > 0) {
+            const candidate = pendingIceCandidatesRef.current.shift();
+            if (candidate && pcRef.current) {
+              try {
+                await pcRef.current.addIceCandidate(candidate);
+              } catch (e) {
+                console.error('❌ Error adding buffered ICE candidate:', e);
+              }
+            }
+          }
           
           const answer = await pcRef.current.createAnswer();
           await pcRef.current.setLocalDescription(answer);
@@ -410,9 +431,28 @@ export function Interview() {
           if (!pcRef.current) {
             return;
           }
+          
+          // Сбрасываем флаг и буфер ICE candidates
+          isRemoteDescriptionSetRef.current = false;
+          pendingIceCandidatesRef.current = [];
+          
           await pcRef.current.setRemoteDescription(
             new RTCSessionDescription(sdp)
           );
+          
+          isRemoteDescriptionSetRef.current = true;
+          
+          // Обрабатываем накопленные ICE candidates
+          while (pendingIceCandidatesRef.current.length > 0) {
+            const candidate = pendingIceCandidatesRef.current.shift();
+            if (candidate && pcRef.current) {
+              try {
+                await pcRef.current.addIceCandidate(candidate);
+              } catch (e) {
+                console.error('❌ Error adding buffered ICE candidate:', e);
+              }
+            }
+          }
         } catch (e) {
           console.error('❌ Error applying answer SDP', e);
         }
@@ -423,6 +463,13 @@ export function Interview() {
           if (!pcRef.current || !candidate) {
             return;
           }
+          
+          // Если remote description еще не установлен, буферизуем candidate
+          if (!isRemoteDescriptionSetRef.current) {
+            pendingIceCandidatesRef.current.push(candidate);
+            return;
+          }
+          
           await pcRef.current.addIceCandidate(candidate);
         } catch (e) {
           console.error('❌ Error adding remote ICE candidate', e);
@@ -448,31 +495,44 @@ export function Interview() {
   // Start/stop video and P2P handling
   useEffect(() => {
     async function startWebRTC() {
-      if (videoProvider !== 'webrtc' || !isVideoActive) return;
+      if (videoProvider !== 'webrtc') return;
       if (pcRef.current) return; // already started
+
+      console.log('🚀 Starting WebRTC connection...');
+      console.log('📊 Current state:', { isVideoActive, isAudioActive, sessionId, userId });
 
       // Get dynamic ICE configuration with TURN credentials
       const iceConfig = await getIceConfig(userId?.toString());
       const pc = new RTCPeerConnection(iceConfig);
       pcRef.current = pc;
+      
+      // Сбрасываем флаги
+      isRemoteDescriptionSetRef.current = false;
+      pendingIceCandidatesRef.current = [];
 
       pc.onicecandidate = (ev) => {
         if (ev.candidate && socketRef.current && sessionId) {
+          console.log('🧊 Sending ICE candidate:', ev.candidate.type);
           socketRef.current.emit('webrtc_ice', {
             sessionId,
             candidate: ev.candidate,
             from: userId,
           });
+        } else if (ev.candidate === null) {
+          console.log('🧊 ICE gathering completed');
         }
       };
 
       pc.onconnectionstatechange = () => {
+        console.log('🌐 WebRTC connection state changed:', pc.connectionState);
         if (pc.connectionState === 'connected') {
+          console.log('✅ WebRTC connection established!');
           setPartnerOnline(prev => ({
             ...prev,
             online: true
           }));
         } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+          console.log('❌ WebRTC connection lost or failed');
           setPartnerOnline(prev => ({
             ...prev,
             online: false
@@ -482,8 +542,10 @@ export function Interview() {
 
       pc.ontrack = (ev) => {
         const [stream] = ev.streams;
+        console.log('📹 Received remote stream:', stream.getTracks().map(t => t.kind));
         if (remoteVideoRef.current && stream) {
           remoteVideoRef.current.srcObject = stream;
+          console.log('✅ Remote video set successfully');
           // Устанавливаем партнера как онлайн когда получаем его поток
           setPartnerOnline(prev => ({
             ...prev,
@@ -517,19 +579,24 @@ export function Interview() {
 
       // If we are the first to create an offer
       try {
+        console.log('🔧 Creating WebRTC offer...');
         const offer = await pc.createOffer({
           offerToReceiveAudio: true,
           offerToReceiveVideo: true,
         });
         
+        console.log('✅ Offer created, setting local description...');
         await pc.setLocalDescription(offer);
+        console.log('✅ Local description set');
         
         if (socketRef.current && sessionId) {
+          console.log('📤 Sending WebRTC offer to server...');
           socketRef.current.emit('webrtc_offer', {
             sessionId,
             sdp: offer,
             from: userId,
           });
+          console.log('📤 WebRTC offer sent');
         }
       } catch (e) {
         console.error('❌ createOffer failed', e);
@@ -558,10 +625,12 @@ export function Interview() {
       }));
     }
 
-    if (videoProvider === 'webrtc' && (isVideoActive || isAudioActive)) {
-      startWebRTC();
-    } else if (videoProvider === 'webrtc' && !isVideoActive && !isAudioActive) {
-      stopWebRTC();
+    if (videoProvider === 'webrtc') {
+      if (isVideoActive || isAudioActive) {
+        startWebRTC();
+      } else {
+        stopWebRTC();
+      }
     }
 
     return () => {
