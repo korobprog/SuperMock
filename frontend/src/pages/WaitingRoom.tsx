@@ -140,10 +140,15 @@ export function WaitingRoom() {
           const realParticipants: Participant[] = [];
           
           if (sessionData.interviewerUserId && sessionData.interviewerUser) {
+            const interviewerName = sessionData.interviewerUser.first_name || 'Интервьюер';
+            const interviewerFullName = sessionData.interviewerUser.last_name 
+              ? `${interviewerName} ${sessionData.interviewerUser.last_name}`
+              : interviewerName;
+            
             realParticipants.push({
               id: sessionData.interviewerUserId,
-              name: sessionData.interviewerUser.first_name + (sessionData.interviewerUser.last_name ? ` ${sessionData.interviewerUser.last_name}` : ''),
-              photo_url: sessionData.interviewerUser.photo_url,
+              name: interviewerFullName,
+              photo_url: sessionData.interviewerUser.photo_url || undefined,
               role: 'interviewer',
               profession: sessionData.profession,
               language: sessionData.language,
@@ -154,10 +159,15 @@ export function WaitingRoom() {
           }
 
           if (sessionData.candidateUserId && sessionData.candidateUser) {
+            const candidateName = sessionData.candidateUser.first_name || 'Кандидат';
+            const candidateFullName = sessionData.candidateUser.last_name 
+              ? `${candidateName} ${sessionData.candidateUser.last_name}`
+              : candidateName;
+            
             realParticipants.push({
               id: sessionData.candidateUserId,
-              name: sessionData.candidateUser.first_name + (sessionData.candidateUser.last_name ? ` ${sessionData.candidateUser.last_name}` : ''),
-              photo_url: sessionData.candidateUser.photo_url,
+              name: candidateFullName,
+              photo_url: sessionData.candidateUser.photo_url || undefined,
               role: 'candidate',
               profession: sessionData.profession,
               language: sessionData.language,
@@ -425,10 +435,17 @@ export function WaitingRoom() {
                                   target.style.display = 'none';
                                   target.nextElementSibling?.classList.remove('hidden');
                                 }}
+                                onLoad={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.nextElementSibling?.classList.add('hidden');
+                                }}
                               />
                             ) : null}
-                            <div className={`w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-600 ${participant.photo_url ? 'hidden' : ''}`}>
-                              <User size={20} className="text-gray-500" />
+                            <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-800 dark:to-blue-900 ${participant.photo_url ? 'hidden' : ''}`}>
+                              <span className="text-lg font-semibold text-blue-600 dark:text-blue-300">
+                                {participant.name && participant.name !== 'null' ? participant.name.charAt(0).toUpperCase() : 
+                                 participant.role === 'interviewer' ? 'И' : 'К'}
+                              </span>
                             </div>
                           </div>
                           {/* Индикатор онлайн */}
@@ -440,7 +457,10 @@ export function WaitingRoom() {
                         {/* Информация о участнике */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-sm truncate">{participant.name}</h4>
+                            <h4 className="font-medium text-sm truncate">
+                              {participant.name && participant.name !== 'null' ? participant.name : 
+                               participant.role === 'interviewer' ? 'Интервьюер' : 'Кандидат'}
+                            </h4>
                             <Badge className={`text-xs px-2 py-0.5 ${getRoleColor(participant.role)}`}>
                               {getRoleLabel(participant.role)}
                             </Badge>

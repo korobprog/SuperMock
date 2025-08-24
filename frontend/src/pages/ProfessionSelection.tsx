@@ -176,8 +176,8 @@ export function ProfessionSelection() {
         }
       }
 
-      // Перенаправляем на выбор инструментов вместо языка
-      navigate('/tools');
+      // Перенаправляем на выбор языка
+      navigate('/language');
     }
   };
 

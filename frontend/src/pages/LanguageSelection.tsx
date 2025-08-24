@@ -149,8 +149,8 @@ export function LanguageSelection() {
         } catch (e) {
           console.warn('Failed to save language in profile:', e);
         }
-        // Перенаправляем на выбор инструментов
-        navigate('/tools');
+        // Перенаправляем на выбор времени
+        navigate('/time');
       } catch (error) {
         console.error('❌ Failed to initialize user:', error);
         alert(`Ошибка инициализации: ${error.message}`);

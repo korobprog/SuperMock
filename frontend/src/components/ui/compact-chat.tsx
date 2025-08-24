@@ -16,6 +16,8 @@ import {
 import { useAppStore } from '@/lib/store';
 import { ParticipantStatus } from './participant-status';
 import { CompactLanguageSelector } from './compact-language-selector';
+import { io, Socket } from 'socket.io-client';
+import { createApiUrl } from '@/lib/config';
 
 interface ChatMessage {
   id: string;
@@ -90,36 +92,71 @@ export function CompactChat({ sessionId, participants, currentUserId }: CompactC
   const [newMessage, setNewMessage] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
   const [showQuickMessages, setShowQuickMessages] = useState(false);
-  
-  // Отладка состояния быстрых сообщений
-  useEffect(() => {
-    console.log('🎯 showQuickMessages changed to:', showQuickMessages);
-  }, [showQuickMessages]);
   const [isTyping, setIsTyping] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
+  // WebSocket соединение для чата
+  useEffect(() => {
+    if (!sessionId || !currentUserId) return;
+
+    // Создаем WebSocket соединение
+    const socketUrl = createApiUrl('').replace('http://', 'ws://').replace('https://', 'wss://');
+    const newSocket = io(socketUrl, {
+      transports: ['websocket', 'polling'],
+      withCredentials: true,
+    });
+
+    newSocket.on('connect', () => {
+      console.log('🔌 WebSocket connected for chat');
+      setIsConnected(true);
+      
+      // Присоединяемся к комнате сессии
+      newSocket.emit('join_room', { sessionId, userId: currentUserId });
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('🔌 WebSocket disconnected from chat');
+      setIsConnected(false);
+    });
+
+    newSocket.on('chat_message', (payload) => {
+      console.log('📨 Received chat message:', payload);
+      if (payload && typeof payload === 'object' && payload.user && payload.message) {
+        const participant = participants.find(p => p.name === payload.user) || 
+                          participants.find(p => p.id === payload.user);
+        
+        addMessage(
+          participant?.id || payload.user,
+          participant?.name || payload.user,
+          payload.message
+        );
+      }
+    });
+
+    newSocket.on('joined', () => {
+      console.log('✅ Joined chat room');
+    });
+
+    newSocket.on('join_denied', (payload) => {
+      console.log('❌ Join denied:', payload);
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [sessionId, currentUserId, participants]);
+
   // Автоматическая прокрутка к последнему сообщению
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  // Симуляция входящих сообщений (в реальном приложении это будет WebSocket)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (Math.random() < 0.1 && participants.length > 1) { // 10% шанс каждые 5 секунд
-        const randomParticipant = participants.find(p => p.id !== currentUserId);
-        if (randomParticipant) {
-          const randomQuickMessage = QUICK_MESSAGES[Math.floor(Math.random() * QUICK_MESSAGES.length)];
-          addMessage(randomParticipant.id, randomParticipant.name, `${randomQuickMessage.emoji} ${t(randomQuickMessage.text)}`);
-        }
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [participants, currentUserId]);
 
   // Добавление системного сообщения при подключении участников
   useEffect(() => {
@@ -163,12 +200,21 @@ export function CompactChat({ sessionId, participants, currentUserId }: CompactC
     console.log('👥 participants:', participants);
     console.log('🆔 currentUserId:', currentUserId);
     
-    if (newMessage.trim()) {
+    if (newMessage.trim() && socket && isConnected) {
       const currentUser = participants.find(p => p.id === currentUserId);
       console.log('👤 currentUser found:', currentUser);
       
       if (currentUser) {
-        console.log('✅ Sending message...');
+        console.log('✅ Sending message via WebSocket...');
+        
+        // Отправляем сообщение через WebSocket
+        socket.emit('chat_message', {
+          sessionId,
+          user: currentUser.name,
+          message: newMessage.trim()
+        });
+        
+        // Добавляем сообщение локально для мгновенного отображения
         addMessage(currentUserId, currentUser.name, newMessage.trim());
         setNewMessage('');
         setIsTyping(false);
@@ -178,9 +224,27 @@ export function CompactChat({ sessionId, participants, currentUserId }: CompactC
         // Fallback: use first participant or create default user
         const fallbackUser = participants[0] || { id: 'default', name: 'Пользователь' };
         console.log('🔄 Using fallback user:', fallbackUser);
+        
+        socket.emit('chat_message', {
+          sessionId,
+          user: fallbackUser.name,
+          message: newMessage.trim()
+        });
+        
         addMessage(fallbackUser.id, fallbackUser.name, newMessage.trim());
         setNewMessage('');
         setIsTyping(false);
+      }
+    } else if (!socket || !isConnected) {
+      console.log('❌ WebSocket not connected, using local fallback');
+      // Fallback для случая, когда WebSocket не подключен
+      if (newMessage.trim()) {
+        const currentUser = participants.find(p => p.id === currentUserId);
+        if (currentUser) {
+          addMessage(currentUserId, currentUser.name, newMessage.trim());
+          setNewMessage('');
+          setIsTyping(false);
+        }
       }
     } else {
       console.log('❌ Message is empty');
@@ -196,8 +260,18 @@ export function CompactChat({ sessionId, participants, currentUserId }: CompactC
     console.log('👤 currentUser found:', currentUser);
     
     if (currentUser) {
-      console.log('✅ Sending quick message...');
-      addMessage(currentUserId, currentUser.name, `${quickMessage.emoji} ${t(quickMessage.text)}`);
+      console.log('✅ Sending quick message via WebSocket...');
+      const messageText = `${quickMessage.emoji} ${t(quickMessage.text)}`;
+      
+      if (socket && isConnected) {
+        socket.emit('chat_message', {
+          sessionId,
+          user: currentUser.name,
+          message: messageText
+        });
+      }
+      
+      addMessage(currentUserId, currentUser.name, messageText);
       setShowQuickMessages(false);
       console.log('✅ Quick message sent successfully!');
     } else {
@@ -205,7 +279,17 @@ export function CompactChat({ sessionId, participants, currentUserId }: CompactC
       // Fallback: use first participant or create default user
       const fallbackUser = participants[0] || { id: 'default', name: t('chat.you') };
       console.log('🔄 Using fallback user for quick message:', fallbackUser);
-      addMessage(fallbackUser.id, fallbackUser.name, `${quickMessage.emoji} ${t(quickMessage.text)}`);
+      const messageText = `${quickMessage.emoji} ${t(quickMessage.text)}`;
+      
+      if (socket && isConnected) {
+        socket.emit('chat_message', {
+          sessionId,
+          user: fallbackUser.name,
+          message: messageText
+        });
+      }
+      
+      addMessage(fallbackUser.id, fallbackUser.name, messageText);
       setShowQuickMessages(false);
     }
   };
@@ -256,6 +340,9 @@ export function CompactChat({ sessionId, participants, currentUserId }: CompactC
           <Badge variant="outline" className="text-xs">
             {messages.length - 1} {/* Исключаем системное сообщение */}
           </Badge>
+          {/* Индикатор состояния подключения */}
+          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} 
+               title={isConnected ? 'Подключено' : 'Не подключено'} />
         </div>
         <div className="flex items-center gap-2">
           {isTyping && (

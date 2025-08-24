@@ -44,6 +44,8 @@ import StackblitzEditor from '@/components/StackblitzEditor';
 import { apiCompleteSession, apiFeedback, apiGetSession } from '@/lib/api';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
+import { InterviewQuestions } from '@/components/ui/interview-questions';
+import { QuestionsStats } from '@/components/ui/questions-stats';
 
 // Убираем захардкоженные вопросы, теперь они будут подгружаться по профессии
 
@@ -1520,41 +1522,43 @@ export function Interview() {
                   </h3>
                 </div>
 
+                {/* Questions Stats */}
+                <div className="p-3 border-b border-border">
+                  <QuestionsStats
+                    sessionId={sessionId || ''}
+                    totalQuestions={questions.length}
+                    role={role || 'candidate'}
+                  />
+                </div>
+
                 {/* Questions List */}
                 <div className="flex-1 p-3 overflow-y-auto">
-                  <div className="space-y-3">
-                    {isLoadingQuestions ? (
-                      <div className="text-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                        <p className="text-muted-foreground">Загрузка вопросов...</p>
-                      </div>
-                    ) : questionsError ? (
-                      <div className="text-center py-8">
-                        <p className="text-destructive mb-4">{questionsError}</p>
-                        <Button onClick={loadQuestions} variant="outline">
-                          Попробовать снова
-                        </Button>
-                      </div>
-                    ) : questions.length === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-muted-foreground">
-                          Вопросы не найдены для данной профессии
-                        </p>
-                      </div>
-                    ) : (
-                      questions.map((question, index) => (
-                        <div
-                          key={index}
-                          className="p-3 bg-muted/50 rounded-lg text-sm text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
-                        >
-                          <span className="text-xs text-primary font-medium">
-                            #{index + 1}
-                          </span>
-                          <p className="mt-1">{question}</p>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                  {isLoadingQuestions ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">Загрузка вопросов...</p>
+                    </div>
+                  ) : questionsError ? (
+                    <div className="text-center py-8">
+                      <p className="text-destructive mb-4">{questionsError}</p>
+                      <Button onClick={loadQuestions} variant="outline">
+                        Попробовать снова
+                      </Button>
+                    </div>
+                  ) : questions.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">
+                        Вопросы не найдены для данной профессии
+                      </p>
+                    </div>
+                  ) : (
+                    <InterviewQuestions
+                      questions={questions}
+                      sessionId={sessionId || ''}
+                      role={role || 'candidate'}
+                      isMobile={true}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -1818,6 +1822,15 @@ export function Interview() {
                       </span>
                     )}
                 </h3>
+                
+                {/* Questions Stats */}
+                <div className="mb-4">
+                  <QuestionsStats
+                    sessionId={sessionId || ''}
+                    totalQuestions={questions.length}
+                    role={role || 'candidate'}
+                  />
+                </div>
                 <div className="space-y-2">
                   {isLoadingQuestions ? (
                     <div className="flex items-center justify-center p-8">
@@ -1847,18 +1860,14 @@ export function Interview() {
                     </div>
                   ) : null}
 
-                  {!isLoadingQuestions &&
-                    questions.map((question, index) => (
-                      <div
-                        key={index}
-                        className="p-3 bg-muted/50 rounded-lg text-sm text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
-                      >
-                        <span className="text-xs text-primary font-medium">
-                          #{index + 1}
-                        </span>
-                        <p className="mt-1">{question}</p>
-                      </div>
-                    ))}
+                  {!isLoadingQuestions && (
+                    <InterviewQuestions
+                      questions={questions}
+                      sessionId={sessionId || ''}
+                      role={role || 'candidate'}
+                      isMobile={false}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -1998,7 +2007,12 @@ export function Interview() {
         onClose={() => setShowExitConfirmDialog(false)}
         onConfirm={handleSimpleExit}
         onComplete={handleCompleteInterview}
+        onViewResults={() => {
+          setShowExitConfirmDialog(false);
+          navigate(`/results?sessionId=${sessionId}`);
+        }}
         isLoading={isCompletingSession}
+        showResultsButton={true}
       />
 
       {/* Feedback Modal */}

@@ -608,16 +608,34 @@ app.post('/api/init', async (req, res) => {
           username: user.username || null,
           firstName: user.first_name || null,
           lastName: user.last_name || null,
+          photoUrl: user.photo_url || null,
           language: language || 'ru',
         },
       });
     } else {
-      // Update language if provided
+      // Update user data if provided
+      const updateData = {};
       if (language && dbUser.language !== language) {
-        console.log('Updating user language for ID:', userIdString);
+        updateData.language = language;
+      }
+      if (user.photo_url && dbUser.photoUrl !== user.photo_url) {
+        updateData.photoUrl = user.photo_url;
+      }
+      if (user.first_name && dbUser.firstName !== user.first_name) {
+        updateData.firstName = user.first_name;
+      }
+      if (user.last_name && dbUser.lastName !== user.last_name) {
+        updateData.lastName = user.last_name;
+      }
+      if (user.username && dbUser.username !== user.username) {
+        updateData.username = user.username;
+      }
+      
+      if (Object.keys(updateData).length > 0) {
+        console.log('Updating user data for ID:', userIdString, updateData);
         dbUser = await prisma.user.update({
           where: { id: userIdString },
-          data: { language },
+          data: updateData,
         });
       }
     }
@@ -1654,15 +1672,23 @@ app.get('/api/session/:sessionId', async (req, res) => {
   try {
     const session = await prisma.session.findUnique({
       where: { id: sessionId },
-      select: {
-        id: true,
-        interviewerUserId: true,
-        candidateUserId: true,
-        profession: true,
-        language: true,
-        slotUtc: true,
-        status: true,
-        jitsiRoom: true,
+      include: {
+        interviewer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            photoUrl: true,
+          },
+        },
+        candidate: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            photoUrl: true,
+          },
+        },
       },
     });
 
@@ -1679,7 +1705,29 @@ app.get('/api/session/:sessionId', async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    res.json(session);
+    // Преобразуем данные для совместимости с фронтендом
+    const sessionResponse = {
+      id: session.id,
+      interviewerUserId: session.interviewerUserId,
+      candidateUserId: session.candidateUserId,
+      profession: session.profession,
+      language: session.language,
+      slotUtc: session.slotUtc,
+      status: session.status,
+      jitsiRoom: session.jitsiRoom,
+      interviewerUser: session.interviewer ? {
+        first_name: session.interviewer.firstName,
+        last_name: session.interviewer.lastName,
+        photo_url: session.interviewer.photoUrl,
+      } : null,
+      candidateUser: session.candidate ? {
+        first_name: session.candidate.firstName,
+        last_name: session.candidate.lastName,
+        photo_url: session.candidate.photoUrl,
+      } : null,
+    };
+
+    res.json(sessionResponse);
   } catch (err) {
     console.error('Error getting session:', err);
     res.status(500).json({ error: 'Failed to get session' });
@@ -1913,6 +1961,50 @@ app.post('/api/feedback', async (req, res) => {
   } catch (err) {
     console.error('Error saving feedback:', err);
     res.status(500).json({ error: 'Failed to save feedback' });
+  }
+});
+
+// Question Ratings API
+app.post('/api/question-ratings', async (req, res) => {
+  const { sessionId, questionIndex, questionText, isAsked, rating } = req.body || {};
+  try {
+    await prisma.questionRating.upsert({
+      where: {
+        sessionId_questionIndex: {
+          sessionId,
+          questionIndex,
+        },
+      },
+      update: {
+        isAsked,
+        rating: rating || null,
+        questionText,
+      },
+      create: {
+        sessionId,
+        questionIndex,
+        questionText,
+        isAsked,
+        rating: rating || null,
+      },
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Error saving question rating:', err);
+    res.status(500).json({ error: 'Failed to save question rating' });
+  }
+});
+
+app.get('/api/question-ratings/:sessionId', async (req, res) => {
+  try {
+    const questionRatings = await prisma.questionRating.findMany({
+      where: { sessionId: req.params.sessionId },
+      orderBy: { questionIndex: 'asc' },
+    });
+    res.json({ questionRatings });
+  } catch (err) {
+    console.error('Error fetching question ratings:', err);
+    res.status(500).json({ error: 'Failed to fetch question ratings' });
   }
 });
 
@@ -2263,6 +2355,7 @@ app.post('/api/telegram-auth', async (req, res) => {
         username: telegramData.username || null,
         firstName: telegramData.first_name,
         lastName: telegramData.last_name || null,
+        photoUrl: telegramData.photo_url || null,
         updatedAt: new Date(),
       },
       create: {
@@ -2271,6 +2364,7 @@ app.post('/api/telegram-auth', async (req, res) => {
         username: telegramData.username || null,
         firstName: telegramData.first_name,
         lastName: telegramData.last_name || null,
+        photoUrl: telegramData.photo_url || null,
         language: 'ru',
       },
     });

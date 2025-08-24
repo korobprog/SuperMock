@@ -15,7 +15,9 @@ interface ExitConfirmDialogProps {
   onClose: () => void;
   onConfirm: () => void;
   onComplete: () => void;
+  onViewResults?: () => void;
   isLoading?: boolean;
+  showResultsButton?: boolean;
 }
 
 export function ExitConfirmDialog({
@@ -23,7 +25,9 @@ export function ExitConfirmDialog({
   onClose,
   onConfirm,
   onComplete,
+  onViewResults,
   isLoading = false,
+  showResultsButton = false,
 }: ExitConfirmDialogProps) {
   const { t } = useAppTranslation();
 
@@ -93,7 +97,17 @@ export function ExitConfirmDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex gap-2">
+          {showResultsButton && onViewResults && (
+            <Button
+              onClick={onViewResults}
+              variant="outline"
+              disabled={isLoading}
+              className="flex-1"
+            >
+              📊 Посмотреть результаты
+            </Button>
+          )}
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             {t('common.cancel') || 'Отмена'}
           </Button>

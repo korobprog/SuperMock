@@ -97,8 +97,7 @@ export function TimeSelection() {
   
   // Отладочная информация для lastRole
   useEffect(() => {
-    console.log('TimeSelection - Current role:', role);
-    console.log('TimeSelection - Last role:', lastRole);
+    // Отладочные логи удалены
   }, [role, lastRole]);
   const setRole = useAppStore((s) => s.setRole);
   // Используем role из store напрямую, а не локальное состояние
@@ -480,23 +479,14 @@ export function TimeSelection() {
 
   // Load slot counts by role
   const loadCounts = useCallback(async () => {
-    console.log(`🔄 Загрузка данных для режима: ${mode}`);
-    console.log(`🌍 Текущий часовой пояс: ${timezone}`);
-    console.log(`🕐 Текущее время в ${timezone}: ${DateTime.now().setZone(timezone).toFormat('yyyy-MM-dd HH:mm:ss')}`);
-    console.log(`🕐 Текущее время UTC: ${DateTime.now().toUTC().toFormat('yyyy-MM-dd HH:mm:ss')}`);
+    // Отладочные логи удалены
     
     // Создаем дату в локальном времени пользователя для правильного определения дня
     const localDate = DateTime.now().setZone(timezone).toFormat('yyyy-MM-dd');
 
     try {
       // Загружаем данные для кандидатов
-      console.log(`🔍 Запрос для кандидатов:`, {
-        role: 'candidate',
-        profession: profession || undefined,
-        language: language || undefined,
-        timezone,
-        date: localDate,
-      });
+      // Отладочные логи удалены
       
       const candidateRes = await apiGetEnhancedSlots({
         role: 'candidate',
@@ -506,13 +496,7 @@ export function TimeSelection() {
         date: localDate,
       });
 
-      console.log(`🔍 Запрос для интервьюеров:`, {
-        role: 'interviewer',
-        profession: profession || undefined,
-        language: language || undefined,
-        timezone,
-        date: localDate,
-      });
+      // Отладочные логи удалены
       
       // Загружаем данные для интервьюеров
       const interviewerRes = await apiGetEnhancedSlots({
@@ -527,35 +511,23 @@ export function TimeSelection() {
       const interviewerMap: Record<string, number> = {};
 
       // Enhanced API уже возвращает локальное время
-      console.log(`📡 API ответ для кандидатов:`, candidateRes.slots);
-      console.log(`📡 API ответ для интервьюеров:`, interviewerRes.slots);
-      console.log(`📊 Количество слотов кандидатов:`, candidateRes.slots.length);
-      console.log(`📊 Количество слотов интервьюеров:`, interviewerRes.slots.length);
+      // Отладочные логи удалены
       
       for (const s of candidateRes.slots) {
         candidateMap[s.time] = s.count;
-        console.log(`📊 Кандидат слот ${s.time}: ${s.count}`);
       }
       
       for (const s of interviewerRes.slots) {
         interviewerMap[s.time] = s.count;
-        console.log(`📊 Интервьюер слот ${s.time}: ${s.count}`);
       }
-      
-      console.log(`📋 Итоговый candidateMap:`, candidateMap);
-      console.log(`📋 Итоговый interviewerMap:`, interviewerMap);
 
       setCandidateCounts(candidateMap);
       setInterviewerCounts(interviewerMap);
 
       // Устанавливаем данные для текущего режима
       if (mode === 'candidate') {
-        console.log(`📊 Устанавливаем данные для кандидата: показываем ${Object.keys(interviewerMap).length} слотов с интервьюерами`);
-        console.log(`📋 Детали слотов для кандидата:`, interviewerMap);
         setSlotCounts(interviewerMap);
       } else {
-        console.log(`📊 Устанавливаем данные для интервьюера: показываем ${Object.keys(candidateMap).length} слотов с кандидатами`);
-        console.log(`📋 Детали слотов для интервьюера:`, candidateMap);
         setSlotCounts(candidateMap);
       }
     } catch (error) {
@@ -660,17 +632,12 @@ export function TimeSelection() {
 
   const handleBack = () => {
     light(); // Легкая вибрация при возврате
-    // Если выбраны инструменты, возвращаемся к их выбору
-    if (selectedTools.length > 0) {
-      navigate('/tools');
-    } else {
-      navigate('/language');
-    }
+    // Возвращаемся к выбору языка
+    navigate('/language');
   };
 
   const handleRoleToggle = (newMode: 'candidate' | 'interviewer') => {
     light(); // Легкая вибрация при переключении роли
-    console.log(`🔄 Переключение роли: ${mode} -> ${newMode}`);
     setRole(newMode); // Обновляем глобальное состояние
   };
 
@@ -717,7 +684,7 @@ export function TimeSelection() {
    • Лондон (UTC+0): ${utcTime}
     `;
     
-    console.log(debugInfo);
+    // Отладочные логи удалены
     alert(debugInfo);
   };
 
@@ -1109,10 +1076,28 @@ export function TimeSelection() {
                 onClick={() => handleRoleToggle('interviewer')}
               >
                 <div className="flex flex-col items-center gap-2">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden ${
                     mode === 'interviewer' ? 'bg-purple-400' : 'bg-purple-100'
                   }`}>
-                    <Users size={18} className={mode === 'interviewer' ? 'text-white' : 'text-purple-600'} />
+                    {telegramUser?.photo_url ? (
+                      <img 
+                        src={telegramUser.photo_url} 
+                        alt="User avatar" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Если изображение не загрузилось, показываем иконку по умолчанию
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <Users 
+                      size={18} 
+                      className={`${mode === 'interviewer' ? 'text-white' : 'text-purple-600'} ${
+                        telegramUser?.photo_url ? 'hidden' : ''
+                      }`} 
+                    />
                   </div>
                   <div className="text-center">
                     <div className={`font-semibold text-sm ${
@@ -1230,13 +1215,9 @@ export function TimeSelection() {
                 <p className="text-sm">
                   {t('time.toolsRequired.description')}
                 </p>
-                <Button
-                  onClick={() => navigate('/tools')}
-                  className="mt-4"
-                  variant="outline"
-                >
-                  {t('time.toolsRequired.selectTools')}
-                </Button>
+                <p className="text-sm text-blue-600 font-medium mt-4">
+                  Инструменты будут доступны в ближайшее время
+                </p>
               </div>
             )}
           </TabsContent>
@@ -1271,19 +1252,6 @@ export function TimeSelection() {
                   const count = slotCounts[slot.time] || 0;
                   const isSelected = selectedSlots.includes(slot.time);
                   const isRecommended = recommendedSlot?.time === slot.time;
-                  
-                  // Отладочная информация для всех слотов
-                  console.log(`🔍 Отладка слота ${slot.time}:`, {
-                    slotTime: slot.time,
-                    slotCounts: slotCounts,
-                    count: count,
-                    mode: mode,
-                    interviewerCounts: interviewerCounts,
-                    candidateCounts: candidateCounts,
-                    allSlotTimes: Object.keys(slotCounts),
-                    interviewerSlotTimes: Object.keys(interviewerCounts),
-                    candidateSlotTimes: Object.keys(candidateCounts)
-                  });
 
                   return (
                     <button

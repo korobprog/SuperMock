@@ -2,11 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users,
   History,
-  BookOpen,
-  Calendar,
   Bell,
   ArrowRight,
-  Target,
+  Grid3X3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -55,31 +53,11 @@ export function MainMenu() {
       gradient: 'from-green-500 to-blue-500',
     },
     {
-      title: t('tools.selectTools'),
-      description: t('tools.subtitle'),
-      icon: Target,
-      onClick: () => navigate('/tools'),
-      gradient: 'from-emerald-500 to-teal-500',
-    },
-    {
-      title: t('home.materials'),
-      description: t('home.materialsDesc'),
-      icon: BookOpen,
-      onClick: () => {
-        /* TODO: implement */
-      },
-      gradient: 'from-orange-500 to-red-500',
-      disabled: true,
-    },
-    {
-      title: t('home.calendar'),
-      description: t('home.calendarDesc'),
-      icon: Calendar,
-      onClick: () => {
-        /* TODO: implement */
-      },
-      gradient: 'from-purple-500 to-pink-500',
-      disabled: true,
+      title: 'Приложения',
+      description: 'Дополнительные инструменты',
+      icon: Grid3X3,
+      onClick: () => navigate('/applications'),
+      gradient: 'from-amber-500 to-orange-500',
     },
   ];
 
@@ -95,12 +73,12 @@ export function MainMenu() {
           return (
             <Card
               key={index}
-              className={`group transition-all duration-300 hover:shadow-lg p-1 main-menu-item ${
-                item.disabled
-                  ? 'opacity-60 cursor-not-allowed'
-                  : 'cursor-pointer hover:scale-[1.01] telegram-desktop-fix'
-              }`}
-              onClick={item.disabled ? undefined : item.onClick}
+                              className={`group transition-all duration-300 hover:shadow-lg p-1 main-menu-item ${
+                  (item as any).disabled
+                    ? 'opacity-60 cursor-not-allowed'
+                    : 'cursor-pointer hover:scale-[1.01] telegram-desktop-fix'
+                }`}
+                onClick={(item as any).disabled ? undefined : item.onClick}
             >
               <CardContent className="p-3">
                 <div className="flex items-center space-x-3">
@@ -118,19 +96,19 @@ export function MainMenu() {
                       {item.description}
                     </p>
 
-                    {item.disabled && (
+                    {(item as any).disabled && (
                       <span className="inline-block mt-1 text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded">
                         {t('common.comingSoon')}
                       </span>
                     )}
                   </div>
 
-                  {!item.disabled && (
-                    <ArrowRight
-                      className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200 flex-shrink-0"
-                      size={16}
-                    />
-                  )}
+                                      {!(item as any).disabled && (
+                      <ArrowRight
+                        className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200 flex-shrink-0"
+                        size={16}
+                      />
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -147,11 +125,11 @@ export function MainMenu() {
             <Card
               key={index}
               className={`group transition-all duration-300 hover:shadow-lg p-1 main-menu-item ${
-                item.disabled
+                (item as any).disabled
                   ? 'opacity-60 cursor-not-allowed'
                   : 'cursor-pointer hover:scale-[1.02] telegram-desktop-fix'
-              } ${item.primary ? 'md:col-span-2' : ''}`}
-              onClick={item.disabled ? undefined : item.onClick}
+              } ${(item as any).primary ? 'md:col-span-2' : ''}`}
+              onClick={(item as any).disabled ? undefined : item.onClick}
             >
               <CardContent className="p-2">
                 <div className="flex items-start space-x-4 p-5">
@@ -169,14 +147,14 @@ export function MainMenu() {
                       {item.description}
                     </p>
 
-                    {item.disabled && (
+                    {(item as any).disabled && (
                       <span className="inline-block mt-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2 py-1 rounded">
                         {t('common.comingSoon')}
                       </span>
                     )}
                   </div>
 
-                  {!item.disabled && (
+                  {!(item as any).disabled && (
                     <ArrowRight
                       className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200 flex-shrink-0"
                       size={20}

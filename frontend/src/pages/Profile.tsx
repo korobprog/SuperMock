@@ -224,12 +224,12 @@ export function Profile() {
         profession: newProfession,
       });
       
-      // Перенаправляем на страницу инструментов с выбранной профессией
-      navigate(`/tools?profession=${newProfession}&from=profile`);
+      // Перенаправляем на главную страницу
+      navigate('/');
     } catch (error) {
       console.error('Error saving profession:', error);
-      // Даже если сохранение не удалось, перенаправляем на инструменты
-      navigate(`/tools?profession=${newProfession}&from=profile`);
+      // Даже если сохранение не удалось, перенаправляем на главную
+      navigate('/');
     }
   };
 

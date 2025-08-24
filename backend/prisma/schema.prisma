@@ -16,6 +16,7 @@ model User {
   username    String?
   firstName   String?  @map("first_name")
   lastName    String?  @map("last_name")
+  photoUrl    String?  @map("photo_url")
   language    String?
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -85,6 +86,7 @@ model Session {
   interviewer User? @relation("InterviewerSessions", fields: [interviewerUserId], references: [id])
   candidate   User? @relation("CandidateSessions", fields: [candidateUserId], references: [id])
   feedback    Feedback[]
+  questionRatings QuestionRating[]
 
   @@map("sessions")
 }
@@ -163,6 +165,23 @@ model Feedback {
   toUser   User   @relation("FeedbackTo", fields: [toUserId], references: [id])
 
   @@map("feedback")
+}
+
+model QuestionRating {
+  id         Int      @id @default(autoincrement())
+  sessionId  String   @map("session_id")
+  questionIndex Int   @map("question_index")
+  questionText String @map("question_text")
+  isAsked    Boolean  @default(false) @map("is_asked")
+  rating     Int?     // Оценка от 1 до 5
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Отношения
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("question_ratings")
+  @@unique([sessionId, questionIndex])
 }
 
 model UserSettings {

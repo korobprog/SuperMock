@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, Bell, Users, Home, Briefcase, Target } from 'lucide-react';
+import { Settings, Bell, Users, Home, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppTranslation } from '@/lib/i18n';
 import { useHapticFeedback } from '@/lib/haptic-feedback';
@@ -16,7 +16,6 @@ export function MobileBottomMenu() {
   const isProfileActive = location.pathname === '/profile';
   const isNotificationsActive = location.pathname === '/notifications';
   const isProfessionActive = location.pathname === '/profession';
-  const isToolsActive = location.pathname === '/tools';
 
   const handleNavigation = (path: string) => {
     light(); // Вибрация при нажатии
@@ -48,20 +47,6 @@ export function MobileBottomMenu() {
           }`}
         >
           <Home className="h-5 w-5" />
-        </Button>
-
-        {/* Кнопка инструментов */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleNavigation('/tools')}
-          className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 ${
-            isToolsActive
-              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-[0_4px_16px_rgba(59,130,246,0.3)]'
-              : 'bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 text-gray-600 dark:text-gray-300 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-700 dark:hover:to-gray-600 hover:text-gray-900 dark:hover:text-white hover:shadow-[0_4px_16px_rgba(0,0,0,0.15)]'
-          }`}
-        >
-          <Target className="h-5 w-5" />
         </Button>
 
         {/* Большая полукруглая кнопка "Начать интервью" по центру */}

@@ -272,6 +272,31 @@ export async function apiFeedback(payload: {
   return res.json();
 }
 
+export async function apiSaveQuestionRating(payload: {
+  sessionId: string;
+  questionIndex: number;
+  questionText: string;
+  isAsked: boolean;
+  rating?: number;
+}) {
+  const res = await fetch(createApiUrl('/api/question-ratings'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Save question rating failed');
+  return res.json();
+}
+
+export async function apiGetQuestionRatings(sessionId: string) {
+  const res = await fetch(createApiUrl(`/api/question-ratings/${sessionId}`), {
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Get question ratings failed');
+  return res.json();
+}
+
 export async function apiHistory(userId: number) {
   const res = await fetch(
     createApiUrl(`${API_CONFIG.endpoints.history}/${userId}`),

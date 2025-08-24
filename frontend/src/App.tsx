@@ -15,12 +15,14 @@ import { applyTelegramDesktopFixes } from '@/lib/telegram-desktop-fixes';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
 import { ProfessionSelection } from './pages/ProfessionSelection';
-import { ToolSelection } from './pages/ToolSelection';
+import { Applications } from './pages/Applications';
+import { AiMentor } from './pages/AiMentor';
 
 import { LanguageSelection } from './pages/LanguageSelection';
 import { TimeSelection } from './pages/TimeSelection';
 import { Interview } from './pages/Interview';
 import { InterviewFeedback } from './pages/InterviewFeedback';
+import { InterviewResultsPage } from './pages/InterviewResults';
 import { Notifications } from './pages/Notifications';
 import { History } from './pages/History';
 import { WaitingRoom } from './pages/WaitingRoom';
@@ -72,11 +74,13 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/profession" element={<ProfessionSelection />} />
-        <Route path="/tools" element={<ToolSelection />} />
+        <Route path="/applications" element={<Applications />} />
+        <Route path="/ai-mentor" element={<AiMentor />} />
         <Route path="/language" element={<LanguageSelection />} />
         <Route path="/time" element={<TimeSelection />} />
         <Route path="/interview" element={<Interview />} />
         <Route path="/feedback" element={<InterviewFeedback />} />
+        <Route path="/results" element={<InterviewResultsPage />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/history" element={<History />} />
         <Route path="/waiting/:sessionId" element={<WaitingRoom />} />
