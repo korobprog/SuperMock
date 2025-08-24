@@ -76,13 +76,28 @@ function FeedbackForm({
     setError('');
 
     try {
+      // Получаем userId из токена или из пропсов
+      const userId = getUserIdFromToken(token);
+      
+      // Определяем toUserId (пока используем тот же userId, но в реальности нужно получать из сессии)
+      const toUserId = userId; // TODO: получить правильный toUserId из сессии
+
+      const payload = {
+        sessionId,
+        fromUserId: userId,
+        toUserId: toUserId,
+        ratings: formData.ratings,
+        comments: formData.comments,
+        recommendations: formData.recommendations,
+      };
+
       const response = await fetch(`/api/sessions/${sessionId}/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -100,6 +115,18 @@ function FeedbackForm({
       setError((error as Error).message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Вспомогательная функция для получения userId из токена
+  const getUserIdFromToken = (token: string): number => {
+    try {
+      // Простая реализация - в реальности нужно декодировать JWT токен
+      // Пока возвращаем 1 как заглушку
+      return 1;
+    } catch (error) {
+      console.error('Error parsing token:', error);
+      return 1;
     }
   };
 

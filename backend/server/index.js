@@ -16,7 +16,7 @@ if (process.env.DATABASE_URL_SECONDARY) {
   console.log('DATABASE_URL_SECONDARY:', process.env.DATABASE_URL_SECONDARY);
 }
 const prisma = new PrismaClient();
-const prismaSecondary = process.env.DATABASE_URL_SECONDARY
+const prismaSecondary = process.env.DATABASE_URL_SECONDARY && process.env.DATABASE_URL_SECONDARY.trim() !== ""
   ? new PrismaClient({
       datasources: { db: { url: process.env.DATABASE_URL_SECONDARY } },
     })
@@ -1961,6 +1961,179 @@ app.post('/api/feedback', async (req, res) => {
   } catch (err) {
     console.error('Error saving feedback:', err);
     res.status(500).json({ error: 'Failed to save feedback' });
+  }
+});
+
+// Enhanced Feedback API - для расширенного фидбека с рейтингами по категориям
+app.post('/api/sessions/:id/feedback', async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const { fromUserId, toUserId, ratings, comments, recommendations } = req.body;
+
+    if (!fromUserId || !toUserId) {
+      return res.status(400).json({ error: 'fromUserId and toUserId are required' });
+    }
+
+    // Проверяем существование сессии
+    const session = await prisma.session.findUnique({
+      where: { id: sessionId },
+      include: {
+        interviewer: true,
+        candidate: true,
+      },
+    });
+
+    if (!session) {
+      return res.status(404).json({ message: 'Сессия не найдена' });
+    }
+
+    // Проверяем, участвовал ли пользователь в сессии
+    const isInterviewer = session.interviewerUserId === fromUserId;
+    const isInterviewee = session.candidateUserId === fromUserId;
+
+    if (!isInterviewer && !isInterviewee) {
+      return res.status(403).json({
+        message: 'Вы не можете оставить обратную связь для сессии, в которой не участвовали',
+      });
+    }
+
+    // Проверяем, не отправлял ли пользователь уже обратную связь для этой сессии
+    const existingFeedback = await prisma.feedback.findFirst({
+      where: {
+        sessionId,
+        fromUserId: String(fromUserId),
+        toUserId: String(toUserId),
+      },
+    });
+
+    if (existingFeedback) {
+      return res.status(400).json({
+        message: 'Вы уже отправили обратную связь для этой сессии',
+      });
+    }
+
+    // Вычисляем общий рейтинг из рейтингов по категориям
+    let overallRating = 5; // По умолчанию
+    if (ratings && typeof ratings === 'object') {
+      const ratingValues = Object.values(ratings).filter(v => typeof v === 'number');
+      if (ratingValues.length > 0) {
+        overallRating = Math.round(ratingValues.reduce((sum, val) => sum + val, 0) / ratingValues.length);
+      }
+    }
+
+    // Создаем новую обратную связь
+    const feedback = await prisma.feedback.create({
+      data: {
+        sessionId,
+        fromUserId: String(fromUserId),
+        toUserId: String(toUserId),
+        rating: overallRating,
+        comments: comments || null,
+        ratings: ratings ? JSON.stringify(ratings) : null,
+        recommendations: recommendations || null,
+      },
+    });
+
+    // Отправляем уведомление в Telegram бот
+    try {
+      const telegramService = new TelegramNotificationService();
+      
+      // Получаем информацию о получателе фидбека
+      const targetUser = await prisma.user.findUnique({
+        where: { id: toUserId },
+        select: { firstName: true, username: true, tgId: true },
+      });
+
+      if (targetUser?.tgId) {
+        await telegramService.sendFeedbackReceivedNotification(
+          toUserId,
+          session,
+          feedback,
+          targetUser
+        );
+      }
+    } catch (telegramError) {
+      console.error('Error sending Telegram notification:', telegramError);
+      // Не прерываем выполнение, если Telegram уведомление не удалось
+    }
+
+    res.status(201).json({
+      message: 'Обратная связь успешно отправлена',
+      feedback,
+    });
+  } catch (error) {
+    console.error('Error saving enhanced feedback:', error);
+    res.status(500).json({ 
+      error: 'Failed to save feedback',
+      details: error.message 
+    });
+  }
+});
+
+// Получение обратной связи для сессии
+app.get('/api/sessions/:id/feedback', async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const userId = req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    // Проверяем существование сессии
+    const session = await prisma.session.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) {
+      return res.status(404).json({ message: 'Сессия не найдена' });
+    }
+
+    // Проверяем, участвовал ли пользователь в сессии
+    const isInterviewer = session.interviewerUserId === userId;
+    const isInterviewee = session.candidateUserId === userId;
+
+    if (!isInterviewer && !isInterviewee) {
+      return res.status(403).json({
+        message: 'Вы не можете получить обратную связь для сессии, в которой не участвовали',
+      });
+    }
+
+    // Получаем обратную связь для сессии
+    const feedbacks = await prisma.feedback.findMany({
+      where: { sessionId },
+      include: {
+        fromUser: {
+          select: { firstName: true, username: true },
+        },
+        toUser: {
+          select: { firstName: true, username: true },
+        },
+      },
+    });
+
+    // Проверяем, заполнили ли обе стороны (интервьюер и интервьюируемый) обратную связь
+    const interviewerFeedback = feedbacks.find(
+      (feedback) => feedback.fromUserId === session.interviewerUserId
+    );
+    const intervieweeFeedback = feedbacks.find(
+      (feedback) => feedback.fromUserId === session.candidateUserId
+    );
+
+    // Добавляем информацию о заполнении обратной связи обеими сторонами
+    const bothSidesSubmitted = !!(interviewerFeedback && intervieweeFeedback);
+
+    res.json({
+      feedbacks,
+      bothSidesSubmitted,
+      session,
+    });
+  } catch (error) {
+    console.error('Error fetching session feedback:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch feedback',
+      details: error.message 
+    });
   }
 });
 

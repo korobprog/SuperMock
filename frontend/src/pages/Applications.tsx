@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Map,
+  Target,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,31 +14,49 @@ import { useAppTranslation } from '@/lib/i18n';
 import { Logo } from '@/components/ui/logo';
 import { ProfileHeader } from '@/components/ui/profile-header';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
+import { useAppStore } from '@/lib/store';
 
 export function Applications() {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
+  const profession = useAppStore((s) => s.profession);
+
+  // Получаем название профессии для отображения
+  const getProfessionName = () => {
+    if (!profession) return 'разработчика';
+    return t(`profession.${profession}`).toLowerCase();
+  };
 
   const appItems = [
+    {
+      title: `Тренажер для ${getProfessionName()}`,
+      description: 'Практические задания для улучшения навыков',
+      icon: Target,
+      onClick: () => {
+        navigate('/trainer');
+      },
+      gradient: 'from-orange-500 to-red-500',
+      disabled: false,
+    },
     {
       title: t('home.materials'),
       description: t('home.materialsDesc'),
       icon: BookOpen,
       onClick: () => {
-        /* TODO: implement */
+        navigate('/materials');
       },
-      gradient: 'from-orange-500 to-red-500',
-      disabled: true,
+      gradient: 'from-purple-500 to-pink-500',
+      disabled: false,
     },
     {
       title: t('home.calendar'),
       description: t('home.calendarDesc'),
       icon: Calendar,
       onClick: () => {
-        /* TODO: implement */
+        navigate('/calendar');
       },
-      gradient: 'from-purple-500 to-pink-500',
-      disabled: true,
+      gradient: 'from-indigo-500 to-purple-500',
+      disabled: false,
     },
     {
       title: 'AI Ментор',
@@ -54,10 +73,10 @@ export function Applications() {
       description: 'Ваша дорожная карта к цели',
       icon: Map,
       onClick: () => {
-        /* TODO: implement */
+        navigate('/roadmap');
       },
       gradient: 'from-blue-500 to-indigo-500',
-      disabled: true,
+      disabled: false,
     },
   ];
 

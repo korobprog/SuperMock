@@ -179,6 +179,7 @@ export function History() {
 
     setIsSubmittingFeedback(true);
     try {
+      // Используем простой API для совместимости
       await apiFeedback({
         sessionId: selectedSession.id,
         fromUserId: userId,

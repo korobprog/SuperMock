@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
 }
 
 model User {
@@ -157,6 +158,9 @@ model Feedback {
   toUserId   String   @map("to_user_id")
   rating     Int
   comments   String?
+  // Новые поля для расширенного фидбека
+  ratings    String?  // JSON строка с рейтингами по категориям
+  recommendations String? // Рекомендации
   createdAt  DateTime @default(now()) @map("created_at")
 
   // Отношения
@@ -165,6 +169,9 @@ model Feedback {
   toUser   User   @relation("FeedbackTo", fields: [toUserId], references: [id])
 
   @@map("feedback")
+  @@index([sessionId])
+  @@index([fromUserId])
+  @@index([toUserId])
 }
 
 model QuestionRating {

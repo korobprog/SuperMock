@@ -272,6 +272,25 @@ export async function apiFeedback(payload: {
   return res.json();
 }
 
+// Новый API для расширенного фидбека
+export async function apiEnhancedFeedback(payload: {
+  sessionId: string;
+  fromUserId: number;
+  toUserId: number;
+  ratings?: Record<string, number>;
+  comments?: string;
+  recommendations?: string;
+}) {
+  const res = await fetch(createApiUrl(`/api/sessions/${payload.sessionId}/feedback`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Enhanced feedback failed');
+  return res.json();
+}
+
 export async function apiSaveQuestionRating(payload: {
   sessionId: string;
   questionIndex: number;

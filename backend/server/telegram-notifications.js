@@ -678,6 +678,67 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
   }
 
   /**
+   * Отправляет уведомление о полученном фидбеке
+   */
+  async sendFeedbackReceivedNotification(userId, session, feedback, targetUser) {
+    try {
+      if (!targetUser?.tgId) {
+        console.log(`User ${userId} has no Telegram ID`);
+        return { success: false, reason: 'No Telegram ID' };
+      }
+
+      // Получаем информацию об отправителе фидбека
+      const fromUser = await prisma.user.findUnique({
+        where: { id: feedback.fromUserId },
+        select: { firstName: true, username: true },
+      });
+
+      const fromUserName = fromUser?.firstName || fromUser?.username || 'Участник';
+      const targetUserName = targetUser.firstName || targetUser.username || 'друг';
+
+      const message = `
+⭐ <b>Вы получили новый фидбек!</b>
+
+Привет, ${targetUserName}!
+
+${fromUserName} оставил(а) фидбек о вашем собеседовании по <b>${session.profession || 'неизвестной профессии'}</b>.
+
+📊 <b>Оценка:</b> ${feedback.rating}/5 звезд
+
+${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments}"` : ''}
+
+${feedback.recommendations ? `💡 <b>Рекомендации:</b>\n"${feedback.recommendations}"` : ''}
+
+<a href="${this.frontendUrl}/history">📋 Посмотреть в истории</a>
+      `.trim();
+
+      const keyboard = {
+        inline_keyboard: [
+          [
+            {
+              text: '📋 Посмотреть в истории',
+              url: `${this.frontendUrl}/history`,
+            },
+          ],
+          [
+            {
+              text: '🎯 Найти новое собеседование',
+              url: `${this.frontendUrl}`,
+            },
+          ],
+        ],
+      };
+
+      return await this.sendMessage(targetUser.tgId, message, {
+        reply_markup: keyboard,
+      });
+    } catch (error) {
+      console.error(`❌ Error sending feedback received notification to ${userId}:`, error);
+      return { success: false, reason: error.message };
+    }
+  }
+
+  /**
    * Отправляет статистику пользователю
    */
   async sendUserStats(userId, stats) {

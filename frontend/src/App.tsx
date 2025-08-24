@@ -17,6 +17,10 @@ import NotFound from './pages/NotFound';
 import { ProfessionSelection } from './pages/ProfessionSelection';
 import { Applications } from './pages/Applications';
 import { AiMentor } from './pages/AiMentor';
+import { Trainer } from './pages/Trainer';
+import { Materials } from './pages/Materials';
+import { Calendar } from './pages/Calendar';
+import { Roadmap } from './pages/Roadmap';
 
 import { LanguageSelection } from './pages/LanguageSelection';
 import { TimeSelection } from './pages/TimeSelection';
@@ -76,6 +80,10 @@ function AppContent() {
         <Route path="/profession" element={<ProfessionSelection />} />
         <Route path="/applications" element={<Applications />} />
         <Route path="/ai-mentor" element={<AiMentor />} />
+        <Route path="/trainer" element={<Trainer />} />
+        <Route path="/materials" element={<Materials />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/roadmap" element={<Roadmap />} />
         <Route path="/language" element={<LanguageSelection />} />
         <Route path="/time" element={<TimeSelection />} />
         <Route path="/interview" element={<Interview />} />
