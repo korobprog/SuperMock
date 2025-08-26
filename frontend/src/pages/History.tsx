@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Logo } from '@/components/ui/logo';
 import { useAppTranslation } from '@/lib/i18n';
 import { useAppStore } from '@/lib/store';
-import { apiHistory, apiFeedback } from '@/lib/api';
+import { apiHistory, apiFeedback, apiEnhancedFeedback } from '@/lib/api';
 import { FeedbackModal } from '@/components/ui/feedback-modal';
 import {
   ArrowLeft,
@@ -179,14 +179,17 @@ export function History() {
 
     setIsSubmittingFeedback(true);
     try {
-      // Используем простой API для совместимости
-      await apiFeedback({
+      // 🤖 Используем расширенный API с AI анализом
+      await apiEnhancedFeedback({
         sessionId: selectedSession.id,
         fromUserId: userId,
         toUserId: targetUser.id,
-        rating: feedback.rating,
+        ratings: { overall: feedback.rating }, // конвертируем простой rating в объект
         comments: feedback.comments,
+        recommendations: '' // пока пустое
       });
+
+      console.log('✅ Feedback sent with AI analysis enabled (from History)');
 
       // Refresh history data
       const data = await apiHistory(userId);

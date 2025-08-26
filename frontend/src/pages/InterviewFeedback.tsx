@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppStore } from '@/lib/store';
-import { apiFeedback } from '@/lib/api';
+import { apiFeedback, apiEnhancedFeedback } from '@/lib/api';
 
 export function InterviewFeedback() {
   const [rating, setRating] = useState<number>(5);
@@ -14,15 +14,25 @@ export function InterviewFeedback() {
 
   const handleSubmit = async () => {
     if (!sessionId || !userId) return;
-    // For simplicity, send feedback without knowing partnerId
-    await apiFeedback({
-      sessionId,
-      fromUserId: userId,
-      toUserId: userId,
-      rating,
-      comments,
-    });
-    navigate('/');
+    
+    try {
+      // 🤖 Используем расширенный API с AI анализом
+      await apiEnhancedFeedback({
+        sessionId,
+        fromUserId: userId,
+        toUserId: userId, // TODO: получить правильный targetUserId
+        ratings: { overall: rating }, // конвертируем простой rating в объект
+        comments,
+        recommendations: '' // пока пустое
+      });
+
+      console.log('✅ Feedback sent with AI analysis enabled (from InterviewFeedback)');
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to submit feedback:', error);
+      // Fallback - still navigate
+      navigate('/');
+    }
   };
 
   return (

@@ -8,6 +8,7 @@ import { useAppTranslation } from '@/lib/i18n';
 import { Logo } from '@/components/ui/logo';
 import { ProfileHeader } from '@/components/ui/profile-header';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
+import { AIMaterialsSection } from '@/components/ui/ai-materials-section';
 import { useAppStore } from '@/lib/store';
 import { useState, useEffect } from 'react';
 
@@ -426,6 +427,11 @@ export function Materials() {
     console.log('Opening material:', material.title);
   };
 
+  const handleAIMaterialClick = (material: any) => {
+    // Обработка AI материалов
+    console.log('Opening AI material:', material.title);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4 pb-24 md:pb-4">
       <div className="max-w-4xl mx-auto pt-16 sm:pt-20">
@@ -516,6 +522,13 @@ export function Materials() {
             </Button>
           </div>
         </div>
+
+        {/* AI Generated Materials */}
+        <AIMaterialsSection 
+          className="mb-8"
+          maxItems={3}
+          onMaterialClick={handleAIMaterialClick}
+        />
 
         {/* Popular Materials */}
         {popularMaterials.length > 0 && (

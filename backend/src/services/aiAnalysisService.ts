@@ -1,40 +1,6 @@
-export interface OpenRouterModel {
-  id: string;
-  name: string;
-  description: string;
-  pricing: {
-    prompt: string;
-    completion: string;
-  };
-  context_length: number;
-}
+import { PrismaClient } from '@prisma/client';
 
-export interface OpenRouterRequest {
-  model: string;
-  messages: {
-    role: 'system' | 'user' | 'assistant';
-    content: string;
-  }[];
-  max_tokens?: number;
-  temperature?: number;
-}
-
-export interface OpenRouterResponse {
-  choices: {
-    message: {
-      content: string;
-      role: string;
-    };
-    finish_reason: string;
-  }[];
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-}
-
-// 🆕 AI АНАЛИЗ ФИДБЕКА - Новые интерфейсы
+// 🌍 ТИПЫ ДЛЯ AI АНАЛИЗА
 export interface SkillLevel {
   skill: string;
   level: number; // 1-10
@@ -60,6 +26,31 @@ export interface LearningRecommendation {
   description: string;
   estimatedHours?: number;
   dueDate?: string;
+}
+
+interface OpenRouterRequest {
+  model: string;
+  messages: {
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }[];
+  max_tokens?: number;
+  temperature?: number;
+}
+
+interface OpenRouterResponse {
+  choices: {
+    message: {
+      content: string;
+      role: string;
+    };
+    finish_reason: string;
+  }[];
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
 }
 
 // 🌍 МУЛЬТИЯЗЫЧНЫЕ ПРОМПТЫ ДЛЯ AI АНАЛИЗА
@@ -393,232 +384,42 @@ Crée 3-5 recommandations spécifiques au format JSON.`
   }
 };
 
-// 🌍 МУЛЬТИЯЗЫЧНЫЕ ПРОМПТЫ ДЛЯ ИЗВЛЕЧЕНИЯ НАВЫКОВ
-const SKILLS_PROMPTS = {
-  ru: {
-    system: `Ты эксперт по анализу технических навыков из фидбека собеседований.
-Извлекай упомянутые технологии и навыки с оценкой уровня.
-
-ВАЖНО: Отвечай ТОЛЬКО валидным JSON массивом!`,
-    user: `Извлеки навыки и технологии из фидбека с оценкой уровня (1-10):
-
-"{comments}"
-
-Верни JSON массив навыков.`
-  },
-  en: {
-    system: `You are an expert in analyzing technical skills from interview feedback.
-Extract mentioned technologies and skills with level assessment.
-
-IMPORTANT: Respond with ONLY valid JSON array!`,
-    user: `Extract skills and technologies from feedback with level assessment (1-10):
-
-"{comments}"
-
-Return JSON array of skills.`
-  },
-  es: {
-    system: `Eres un experto en analizar habilidades técnicas de comentarios de entrevistas.
-Extrae tecnologías y habilidades mencionadas con evaluación de nivel.
-
-IMPORTANTE: ¡Responde SOLO con array JSON válido!`,
-    user: `Extrae habilidades y tecnologías de comentarios con evaluación de nivel (1-10):
-
-"{comments}"
-
-Devuelve array JSON de habilidades.`
-  },
-  de: {
-    system: `Du bist ein Experte für die Analyse technischer Fähigkeiten aus Interview-Feedback.
-Extrahiere erwähnte Technologien und Fähigkeiten mit Niveaubewertung.
-
-WICHTIG: Antworte NUR mit gültigem JSON-Array!`,
-    user: `Extrahiere Fähigkeiten und Technologien aus Feedback mit Niveaubewertung (1-10):
-
-"{comments}"
-
-Gib JSON-Array der Fähigkeiten zurück.`
-  },
-  fr: {
-    system: `Tu es un expert en analyse des compétences techniques à partir des commentaires d'entretiens.
-Extrais les technologies et compétences mentionnées avec évaluation du niveau.
-
-IMPORTANT: Réponds SEULEMENT avec un array JSON valide!`,
-    user: `Extrais les compétences et technologies des commentaires avec évaluation du niveau (1-10):
-
-"{comments}"
-
-Retourne un array JSON des compétences.`
-  },
-  zh: {
-    system: `你是分析面试反馈中技术技能的专家。
-从反馈中提取提到的技术和技能并评估水平。
-
-重要：只回复有效的JSON数组！`,
-    user: `从反馈中提取技能和技术并评估水平(1-10)：
-
-"{comments}"
-
-返回技能的JSON数组。`
-  }
-};
-
-// Бесплатные модели для собеседований
-export const RECOMMENDED_MODELS: OpenRouterModel[] = [
-  {
-    id: 'meta-llama/llama-3.1-8b-instruct',
-    name: 'Llama 3.1 8B Instruct',
-    description: 'Отличная бесплатная модель от Meta',
-    pricing: { prompt: 'Free', completion: 'Free' },
-    context_length: 128000,
-  },
-  {
-    id: 'meta-llama/llama-3.1-70b-instruct',
-    name: 'Llama 3.1 70B Instruct',
-    description: 'Мощная бесплатная модель с высоким качеством',
-    pricing: { prompt: 'Free', completion: 'Free' },
-    context_length: 128000,
-  },
-  {
-    id: 'mistralai/mistral-7b-instruct',
-    name: 'Mistral 7B Instruct',
-    description: 'Быстрая бесплатная модель от Mistral AI',
-    pricing: { prompt: 'Free', completion: 'Free' },
-    context_length: 32768,
-  },
-  {
-    id: 'qwen/qwen-2.5-7b-instruct',
-    name: 'Qwen 2.5 7B Instruct',
-    description: 'Современная бесплатная модель от Alibaba',
-    pricing: { prompt: 'Free', completion: 'Free' },
-    context_length: 131072,
-  },
-  {
-    id: 'microsoft/phi-3-medium-128k-instruct',
-    name: 'Phi-3 Medium 128K',
-    description: 'Компактная бесплатная модель от Microsoft',
-    pricing: { prompt: 'Free', completion: 'Free' },
-    context_length: 128000,
-  },
-];
-
-export class OpenRouterAPI {
-  private apiKey: string;
+/**
+ * 🤖 AI Analysis Service - Сервис для анализа фидбека с использованием OpenRouter
+ * 
+ * Возможности:
+ * - Анализ фидбека на 6 языках (ru, en, es, de, fr, zh)
+ * - Извлечение навыков и слабых мест
+ * - Генерация персонализированных рекомендаций
+ * - Использование пользовательских OpenRouter API ключей
+ */
+export class AIAnalysisService {
+  private prisma: PrismaClient;
   private baseUrl = 'https://openrouter.ai/api/v1';
 
-  constructor(apiKey: string) {
-    this.apiKey = (apiKey || '').trim();
-
-    // Validate API key format
-    if (!this.apiKey) {
-      throw new Error('API ключ не может быть пустым');
-    }
-
-    if (!this.apiKey.startsWith('sk-or-')) {
-      throw new Error(
-        'Неверный формат API ключа. Ключ должен начинаться с "sk-or-"'
-      );
-    }
-
-    if (this.apiKey.length < 20) {
-      throw new Error('API ключ слишком короткий');
-    }
+  constructor() {
+    this.prisma = new PrismaClient();
   }
 
-  async generateQuestions(
-    profession: string,
-    systemPrompt: string,
-    userPrompt: string,
-    model: string = 'meta-llama/llama-3.1-8b-instruct',
-    count: number = 10,
-    level: string = 'middle'
-  ): Promise<string[]> {
-    try {
-      const formattedPrompt = userPrompt
-        .replace('{count}', count.toString())
-        .replace('{level}', level);
-
-      const response = await this.makeRequest({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: formattedPrompt },
-        ],
-        max_tokens: 2000,
-        temperature: 0.7,
-      });
-
-      const content = response.choices[0]?.message?.content || '';
-
-      // Парсим ответ - разделяем по строкам и очищаем
-      const questions = content
-        .split('\n')
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0 && !line.match(/^\d+\.?\s*/)) // убираем нумерацию
-        .slice(0, count);
-
-      return questions;
-    } catch (error) {
-      console.error('Error generating questions:', error);
-      throw new Error(
-        'Не удалось сгенерировать вопросы. Проверьте API ключ и подключение к интернету.'
-      );
-    }
-  }
-
-  async generateCodingTask(
-    profession: string,
-    systemPrompt: string,
-    taskPrompt: string,
-    model: string = 'meta-llama/llama-3.1-8b-instruct',
-    level: string = 'middle'
-  ): Promise<string> {
-    try {
-      const formattedPrompt = taskPrompt.replace('{level}', level);
-
-      const response = await this.makeRequest({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: formattedPrompt },
-        ],
-        max_tokens: 1500,
-        temperature: 0.7,
-      });
-
-      return response.choices[0]?.message?.content || '';
-    } catch (error) {
-      console.error('Error generating coding task:', error);
-      throw new Error(
-        'Не удалось сгенерировать задачу. Проверьте API ключ и подключение к интернету.'
-      );
-    }
-  }
-
-  async testConnection(): Promise<boolean> {
-    try {
-      console.log('Testing OpenRouter API connection...');
-      await this.makeRequest({
-        model: 'meta-llama/llama-3.1-8b-instruct',
-        messages: [{ role: 'user', content: 'Test connection' }],
-        max_tokens: 10,
-      });
-      console.log('OpenRouter API connection successful');
-      return true;
-    } catch (error) {
-      console.error('OpenRouter API connection test failed:', error);
-      return false;
-    }
-  }
-
-  // 🆕 AI АНАЛИЗ ФИДБЕКА - Новые методы (многоязычные)
+  /**
+   * 🧠 Анализ фидбека с помощью AI
+   */
   async analyzeFeedback(
+    feedbackId: number,
     comments: string,
-    profession: string = 'Developer',
-    userLanguage: string = 'ru', // 🌍 ПОДДЕРЖКА 6 ЯЗЫКОВ: ru, en, es, de, fr, zh
-    model: string = 'meta-llama/llama-3.1-8b-instruct'
+    profession: string,
+    userLanguage: string = 'ru',
+    userId: string
   ): Promise<FeedbackAnalysis> {
     try {
+      console.log(`🧠 Starting AI analysis for feedback ${feedbackId}`);
+      
+      // Получаем настройки пользователя
+      const userSettings = await this.getUserSettings(userId);
+      if (!userSettings?.openrouterApiKey) {
+        throw new Error('OpenRouter API ключ не найден в настройках пользователя');
+      }
+
       // 🌍 Получаем мультиязычные промпты
       const langPrompts = ANALYSIS_PROMPTS[userLanguage as keyof typeof ANALYSIS_PROMPTS] || ANALYSIS_PROMPTS.ru;
       
@@ -627,21 +428,22 @@ export class OpenRouterAPI {
         .replace('{profession}', profession)
         .replace('{comments}', comments);
 
-      const response = await this.makeRequest({
-        model,
+      const response = await this.makeOpenRouterRequest({
+        model: userSettings.preferredModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
         max_tokens: 1500,
         temperature: 0.3, // низкая температура для более точного анализа
-      });
+      }, userSettings.openrouterApiKey);
 
       const content = response.choices[0]?.message?.content || '';
       
       // Парсим JSON ответ
       try {
         const analysis = JSON.parse(content) as FeedbackAnalysis;
+        console.log(`✅ AI analysis completed for feedback ${feedbackId}`);
         return analysis;
       } catch (parseError) {
         console.error('Failed to parse AI analysis:', parseError, content);
@@ -664,13 +466,24 @@ export class OpenRouterAPI {
     }
   }
 
+  /**
+   * 💡 Генерация рекомендаций на основе анализа
+   */
   async generateRecommendations(
     analysis: FeedbackAnalysis,
-    profession: string = 'Developer',
-    userLanguage: string = 'ru', // 🌍 ПОДДЕРЖКА 6 ЯЗЫКОВ
-    model: string = 'meta-llama/llama-3.1-8b-instruct'
+    profession: string,
+    userLanguage: string = 'ru',
+    userId: string
   ): Promise<LearningRecommendation[]> {
     try {
+      console.log(`💡 Generating recommendations for user ${userId}`);
+      
+      // Получаем настройки пользователя
+      const userSettings = await this.getUserSettings(userId);
+      if (!userSettings?.openrouterApiKey) {
+        throw new Error('OpenRouter API ключ не найден');
+      }
+
       // 🌍 Получаем мультиязычные промпты для рекомендаций
       const langPrompts = RECOMMENDATIONS_PROMPTS[userLanguage as keyof typeof RECOMMENDATIONS_PROMPTS] || RECOMMENDATIONS_PROMPTS.ru;
       
@@ -682,20 +495,21 @@ export class OpenRouterAPI {
         .replace('{technicalScore}', analysis.technicalScore.toString())
         .replace('{overallReadiness}', analysis.overallReadiness.toString());
 
-      const response = await this.makeRequest({
-        model,
+      const response = await this.makeOpenRouterRequest({
+        model: userSettings.preferredModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
         max_tokens: 1000,
         temperature: 0.4,
-      });
+      }, userSettings.openrouterApiKey);
 
       const content = response.choices[0]?.message?.content || '';
       
       try {
         const recommendations = JSON.parse(content) as LearningRecommendation[];
+        console.log(`✅ Generated ${recommendations.length} recommendations`);
         return recommendations;
       } catch (parseError) {
         console.error('Failed to parse recommendations:', parseError);
@@ -716,62 +530,74 @@ export class OpenRouterAPI {
     }
   }
 
-  async extractSkills(
-    comments: string,
-    userLanguage: string = 'ru', // 🌍 ПОДДЕРЖКА 6 ЯЗЫКОВ
-    model: string = 'meta-llama/llama-3.1-8b-instruct'
-  ): Promise<SkillLevel[]> {
+  /**
+   * 🔍 Анализ уникальности проблем пользователя
+   */
+  async checkUniqueness(
+    analysis: FeedbackAnalysis,
+    userId: string
+  ): Promise<number> {
     try {
-      // 🌍 Получаем мультиязычные промпты для извлечения навыков
-      const langPrompts = SKILLS_PROMPTS[userLanguage as keyof typeof SKILLS_PROMPTS] || SKILLS_PROMPTS.ru;
+      console.log(`🔍 Checking uniqueness for user ${userId}`);
       
-      const systemPrompt = langPrompts.system;
-      const userPrompt = langPrompts.user
-        .replace('{comments}', comments);
+      // Получаем предыдущие анализы пользователя
+      // TODO: Когда будет создана таблица FeedbackAnalysis
+      // const previousAnalyses = await this.prisma.feedbackAnalysis.findMany({
+      //   where: { userId },
+      //   orderBy: { createdAt: 'desc' },
+      //   take: 5 // последние 5 анализов
+      // });
 
-      const response = await this.makeRequest({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        max_tokens: 800,
-        temperature: 0.2,
-      });
+      // Пока возвращаем базовое значение
+      // В будущем здесь будет сравнение с историей
+      return 0.8; // средняя уникальность
 
-      const content = response.choices[0]?.message?.content || '';
-      
-      try {
-        const skills = JSON.parse(content) as SkillLevel[];
-        return skills;
-      } catch (parseError) {
-        console.error('Failed to parse skills:', parseError);
-        return [];
-      }
     } catch (error) {
-      console.error('Error extracting skills:', error);
-      throw new Error('Не удалось извлечь навыки.');
+      console.error('Error checking uniqueness:', error);
+      return 0.5; // средняя уникальность при ошибке
     }
   }
 
-  private async makeRequest(
-    request: OpenRouterRequest
+  /**
+   * 🛠️ Получение настроек пользователя
+   */
+  private async getUserSettings(userId: string) {
+    try {
+      const settings = await this.prisma.userSettings.findUnique({
+        where: { userId },
+        select: {
+          openrouterApiKey: true,
+          preferredModel: true,
+        },
+      });
+      return settings;
+    } catch (error) {
+      console.error('Error getting user settings:', error);
+      return null;
+    }
+  }
+
+  /**
+   * 🌐 Выполнение запроса к OpenRouter API
+   */
+  private async makeOpenRouterRequest(
+    request: OpenRouterRequest,
+    apiKey: string
   ): Promise<OpenRouterResponse> {
     console.log('Making OpenRouter API request:', {
       url: `${this.baseUrl}/chat/completions`,
       model: request.model,
-      hasApiKey: !!this.apiKey,
-      apiKeyPrefix: this.apiKey.substring(0, 10) + '...',
-      apiKeyLength: this.apiKey.length,
+      hasApiKey: !!apiKey,
+      apiKeyPrefix: apiKey.substring(0, 10) + '...',
     });
 
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'Super Mock Telegram',
+        Authorization: `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://supermock.ru',
+        'X-Title': 'Super Mock AI Analysis',
       },
       body: JSON.stringify(request),
     });
@@ -808,32 +634,13 @@ export class OpenRouterAPI {
 
     return response.json();
   }
-}
 
-// Утилитарные функции
-export function validateApiKey(apiKey: string): boolean {
-  const k = (apiKey || '').trim();
-  return k.startsWith('sk-or-') && k.length > 20;
-}
-
-export function formatModelPrice(model: OpenRouterModel): string {
-  if (model.pricing.prompt === 'Free') {
-    return 'Бесплатно';
-  }
-  return `${model.pricing.prompt}/1M токенов`;
-}
-
-export function getRecommendedModel(
-  budget: 'free' | 'budget' | 'premium'
-): string {
-  switch (budget) {
-    case 'free':
-      return 'meta-llama/llama-3.1-8b-instruct';
-    case 'budget':
-      return 'meta-llama/llama-3.1-70b-instruct';
-    case 'premium':
-      return 'qwen/qwen-2.5-7b-instruct';
-    default:
-      return 'meta-llama/llama-3.1-8b-instruct';
+  /**
+   * 🧹 Очистка ресурсов
+   */
+  async disconnect() {
+    await this.prisma.$disconnect();
   }
 }
+
+export default AIAnalysisService;

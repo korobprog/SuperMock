@@ -6,6 +6,7 @@ import { useAppTranslation } from '@/lib/i18n';
 import { Logo } from '@/components/ui/logo';
 import { ProfileHeader } from '@/components/ui/profile-header';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
+import { AITrainingSection } from '@/components/ui/ai-training-section';
 import { useAppStore } from '@/lib/store';
 
 export function Trainer() {
@@ -536,6 +537,15 @@ export function Trainer() {
             ))}
           </div>
         </div>
+
+        {/* AI Generated Training Tasks */}
+        <AITrainingSection 
+          className="mb-8"
+          maxItems={3}
+          onTaskClick={(task) => console.log('AI Task clicked:', task)}
+          onTaskStart={(task) => console.log('AI Task started:', task)}
+          onTaskComplete={(task) => console.log('AI Task completed:', task)}
+        />
 
         {/* Recent Exercises */}
         <div className="mb-6">

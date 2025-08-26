@@ -41,7 +41,7 @@ import { java } from '@codemirror/lang-java';
 import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import StackblitzEditor from '@/components/StackblitzEditor';
-import { apiCompleteSession, apiFeedback, apiGetSession } from '@/lib/api';
+import { apiCompleteSession, apiFeedback, apiEnhancedFeedback, apiGetSession } from '@/lib/api';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
 import { InterviewQuestions } from '@/components/ui/interview-questions';
@@ -919,13 +919,17 @@ export function Interview() {
 
     setIsSubmittingFeedback(true);
     try {
-      await apiFeedback({
+      // 🤖 Используем расширенный API с AI анализом
+      await apiEnhancedFeedback({
         sessionId,
         fromUserId: userId,
         toUserId: targetUser.id,
-        rating: feedback.rating,
+        ratings: { overall: feedback.rating }, // конвертируем простой rating в объект
         comments: feedback.comments,
+        recommendations: '' // пока пустое
       });
+
+      console.log('✅ Feedback sent with AI analysis enabled');
 
       // Close modal and navigate to history
       setShowFeedbackModal(false);

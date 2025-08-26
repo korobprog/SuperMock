@@ -7,6 +7,7 @@ import { useAppTranslation } from '@/lib/i18n';
 import { Logo } from '@/components/ui/logo';
 import { ProfileHeader } from '@/components/ui/profile-header';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
+import { AICalendarSection } from '@/components/ui/ai-calendar-section';
 import { useAppStore } from '@/lib/store';
 
 export function Calendar() {
@@ -233,6 +234,14 @@ export function Calendar() {
             Планирование собеседований и обучения
           </p>
         </div>
+
+        {/* AI Generated Calendar Events */}
+        <AICalendarSection 
+          className="mb-8"
+          maxItems={3}
+          onEventClick={(event) => console.log('AI Event clicked:', event)}
+          onEventJoin={(event) => console.log('AI Event joined:', event)}
+        />
 
         {/* Quick Actions */}
         <div className="mb-6">

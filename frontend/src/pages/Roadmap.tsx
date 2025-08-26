@@ -7,6 +7,7 @@ import { useAppTranslation } from '@/lib/i18n';
 import { Logo } from '@/components/ui/logo';
 import { ProfileHeader } from '@/components/ui/profile-header';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
+import { AIRoadmapSection } from '@/components/ui/ai-roadmap-section';
 import { useAppStore } from '@/lib/store';
 
 export function Roadmap() {
@@ -607,6 +608,15 @@ export function Roadmap() {
             Ваша дорожная карта к цели
           </p>
         </div>
+
+        {/* AI Generated Roadmap */}
+        <AIRoadmapSection 
+          className="mb-8"
+          maxItems={3}
+          onStageClick={(stage) => console.log('AI Stage clicked:', stage)}
+          onStageStart={(stage) => console.log('AI Stage started:', stage)}
+          onStageComplete={(stage) => console.log('AI Stage completed:', stage)}
+        />
 
         {/* Current Status */}
         <Card className="mb-6">

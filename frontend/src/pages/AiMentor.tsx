@@ -8,6 +8,7 @@ import { useAppTranslation } from '@/lib/i18n';
 import { Logo } from '@/components/ui/logo';
 import { ProfileHeader } from '@/components/ui/profile-header';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
+import { AIDashboard } from '@/components/ui/ai-dashboard';
 import { useAppStore } from '@/lib/store';
 import { useState } from 'react';
 
@@ -193,18 +194,17 @@ export function AiMentor() {
         {/* Main View */}
         {currentView === 'main' && (
           <>
-            {/* AI Mentor Header */}
-            <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold text-foreground mb-2">
-                🤖 AI Ментор для {getProfessionName()}
-              </h1>
-              <p className="text-muted-foreground">
-                Ваш персональный помощник для подготовки к собеседованиям
-              </p>
-            </div>
+            {/* AI Dashboard */}
+            <AIDashboard 
+              className="mb-6"
+              onNavigateToMaterials={() => navigate('/materials')}
+              onNavigateToRoadmap={() => navigate('/roadmap')}
+              onNavigateToCalendar={() => navigate('/calendar')}
+              onNavigateToTrainer={() => navigate('/trainer')}
+            />
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {/* Legacy Stats Overview - Скрыто в пользу AI Dashboard */}
+            <div className="hidden grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-blue-600">{mentorData.stats.sessionsCompleted}</div>
