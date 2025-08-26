@@ -14,7 +14,6 @@ import { apiGetSlotsWithTools } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
 import { useAppTranslation } from '@/lib/i18n';
 import { getToolById } from '@/lib/professions-data';
-import { useAppTranslation } from '@/lib/i18n';
 import { useHapticFeedback } from '@/lib/haptic-feedback';
 
 interface SlotWithTools {
@@ -54,7 +53,6 @@ export function SlotsWithTools({
   const [matchStrictness, setMatchStrictness] = useState<
     'any' | 'partial' | 'exact'
   >(defaultMatchStrictness);
-  const { t } = useAppTranslation();
   const { light } = useHapticFeedback();
   const { selectedTools } = useAppStore();
   const userId = useAppStore((s) => s.userId);
@@ -79,7 +77,20 @@ export function SlotsWithTools({
       setSlots(response.slots);
     } catch (err) {
       console.error('Failed to fetch slots with tools:', err);
-      setError('Не удалось загрузить доступные слоты');
+      
+      // В dev режиме используем демо слоты
+      if (import.meta.env.DEV) {
+        console.log('🔧 Dev mode: using demo slots (backend unavailable)');
+        const demoSlots = [
+          { time: '2024-01-15T10:00:00Z', count: 5, matchScore: 0.8 },
+          { time: '2024-01-15T14:00:00Z', count: 3, matchScore: 0.6 },
+          { time: '2024-01-15T18:00:00Z', count: 7, matchScore: 0.9 },
+        ];
+        setSlots(demoSlots);
+        setError(null);
+      } else {
+        setError('Не удалось загрузить доступные слоты');
+      }
     } finally {
       setLoading(false);
     }

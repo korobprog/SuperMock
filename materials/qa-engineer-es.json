@@ -1,0 +1,95 @@
+{
+  "profession": "qa-engineer",
+  "language": "es",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Preguntas de Entrevista",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Tareas Técnicas",
+      "count": 98,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Diseño de Sistemas",
+      "count": 34,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Preguntas Conductuales",
+      "count": 78,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algoritmos y Estructuras de Datos",
+      "count": 67,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Mejores Prácticas",
+      "count": 89,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Selenium WebDriver: Automatización de Pruebas de Aplicaciones Web",
+      "description": "Fundamentos de automatización de pruebas usando Selenium WebDriver",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 28,
+      "rating": 4.8,
+      "reads": 2156,
+      "tags": ["Selenium", "WebDriver", "Automatización", "Pruebas", "Java"],
+      "content": "# Selenium WebDriver: Automatización de Pruebas de Aplicaciones Web\n\n## Introducción a Selenium WebDriver\n\nSelenium WebDriver es una herramienta para automatizar pruebas de aplicaciones web que permite controlar navegadores de forma programática.\n\n## Conceptos Básicos\n\n### Inicialización de WebDriver\n\n```java\n// Inicialización de Chrome WebDriver\nWebDriver driver = new ChromeDriver();\n\n// Inicialización de Firefox WebDriver\nWebDriver driver = new FirefoxDriver();\n\n// Inicialización de Edge WebDriver\nWebDriver driver = new EdgeDriver();\n```\n\n### Localizadores de Elementos\n\n```java\n// Buscar por ID\nWebElement element = driver.findElement(By.id(\"username\"));\n\n// Buscar por nombre de clase\nWebElement element = driver.findElement(By.className(\"btn-primary\"));\n\n// Buscar por selector CSS\nWebElement element = driver.findElement(By.cssSelector(\".login-form input[type='text']\"));\n\n// Buscar por XPath\nWebElement element = driver.findElement(By.xpath(\"//input[@name='email']\"));\n\n// Buscar por etiqueta\nWebElement element = driver.findElement(By.tagName(\"button\"));\n```\n\n### Interacciones con Elementos\n\n```java\n// Ingresar texto\nWebElement usernameField = driver.findElement(By.id(\"username\"));\nusernameField.sendKeys(\"testuser\");\n\n// Limpiar campo\nusernameField.clear();\n\n// Hacer clic en elemento\nWebElement loginButton = driver.findElement(By.id(\"login-btn\"));\nloginButton.click();\n\n// Obtener texto\nString text = element.getText();\n\n// Obtener atributo\nString value = element.getAttribute(\"value\");\n```\n\n## Esperas (Waits)\n\n### Esperas Explícitas\n\n```java\n// Espera explícita\nWebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));\nWebElement element = wait.until(ExpectedConditions.elementToBeClickable(By.id(\"submit-btn\")));\n\n// Esperar visibilidad del elemento\nWebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(\"success-message\")));\n\n// Esperar desaparición del elemento\nwait.until(ExpectedConditions.invisibilityOfElementLocated(By.id(\"loading\")));\n```\n\n### Esperas Implícitas\n\n```java\n// Establecer espera implícita\ndriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));\n```\n\n## Trabajo con Ventanas y Frames\n\n```java\n// Cambiar a nueva ventana\nString mainWindow = driver.getWindowHandle();\nfor (String windowHandle : driver.getWindowHandles()) {\n    if (!windowHandle.equals(mainWindow)) {\n        driver.switchTo().window(windowHandle);\n        break;\n    }\n}\n\n// Cambiar a frame\ndriver.switchTo().frame(\"frame-name\");\n\n// Volver al contenido principal\ndriver.switchTo().defaultContent();\n```\n\n## Mejores Prácticas\n\n1. **Usar Page Object Model (POM)**\n2. **Aplicar esperas explícitas en lugar de implícitas**\n3. **Usar localizadores únicos y estables**\n4. **Manejar excepciones**\n5. **Usar capturas de pantalla para depuración**\n6. **Agrupar pruebas lógicamente**\n\n## Ejemplo de Page Object\n\n```java\npublic class LoginPage {\n    private WebDriver driver;\n    \n    @FindBy(id = \"username\")\n    private WebElement usernameField;\n    \n    @FindBy(id = \"password\")\n    private WebElement passwordField;\n    \n    @FindBy(id = \"login-btn\")\n    private WebElement loginButton;\n    \n    public LoginPage(WebDriver driver) {\n        this.driver = driver;\n        PageFactory.initElements(driver, this);\n    }\n    \n    public void enterUsername(String username) {\n        usernameField.sendKeys(username);\n    }\n    \n    public void enterPassword(String password) {\n        passwordField.sendKeys(password);\n    }\n    \n    public void clickLogin() {\n        loginButton.click();\n    }\n    \n    public void login(String username, String password) {\n        enterUsername(username);\n        enterPassword(password);\n        clickLogin();\n    }\n}\n```\n\n## Conclusión\n\nSelenium WebDriver proporciona herramientas poderosas para la automatización de pruebas de aplicaciones web, permitiendo crear pruebas confiables y mantenibles.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Pruebas de API con Postman",
+      "description": "Pruebas de API REST usando Postman y automatización",
+      "category": "best-practices",
+      "difficulty": "intermediate",
+      "readTime": 22,
+      "rating": 4.7,
+      "reads": 1876,
+      "tags": ["API", "Postman", "REST", "Pruebas", "JSON"],
+      "content": "# Pruebas de API con Postman\n\n## Introducción a las Pruebas de API\n\nLas pruebas de API son el proceso de verificar la funcionalidad, confiabilidad y rendimiento de las APIs.\n\n## Conceptos Básicos de Postman\n\n### Crear Solicitudes\n\n```javascript\n// Ejemplo de solicitud GET\nGET https://api.example.com/users\n\n// Ejemplo de solicitud POST\nPOST https://api.example.com/users\nContent-Type: application/json\n\n{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"age\": 30\n}\n```\n\n### Variables de Entorno\n\n```javascript\n// Establecer variables\npm.environment.set(\"baseUrl\", \"https://api.example.com\");\npm.environment.set(\"token\", \"your-auth-token\");\n\n// Usar variables\nGET {{baseUrl}}/users\nAuthorization: Bearer {{token}}\n```\n\n### Pruebas en Postman\n\n```javascript\n// Verificar código de estado\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\n// Verificar tiempo de respuesta\npm.test(\"Response time is less than 200ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(200);\n});\n\n// Verificar estructura JSON\npm.test(\"Response has required fields\", function () {\n    const responseJson = pm.response.json();\n    pm.expect(responseJson).to.have.property('id');\n    pm.expect(responseJson).to.have.property('name');\n    pm.expect(responseJson).to.have.property('email');\n});\n\n// Verificar tipos de datos\npm.test(\"Data types are correct\", function () {\n    const responseJson = pm.response.json();\n    pm.expect(responseJson.id).to.be.a('number');\n    pm.expect(responseJson.name).to.be.a('string');\n    pm.expect(responseJson.email).to.be.a('string');\n});\n```\n\n## Automatización con Newman\n\n```bash\n# Instalar Newman\nnpm install -g newman\n\n# Ejecutar colección\nnewman run collection.json\n\n# Ejecutar con variables de entorno\nnewman run collection.json -e environment.json\n\n# Generar reporte\nnewman run collection.json --reporters cli,json --reporter-json-export results.json\n```\n\n## Ejemplo de Colección\n\n```json\n{\n  \"info\": {\n    \"name\": \"User API Tests\",\n    \"schema\": \"https://schema.getpostman.com/json/collection/v2.1.0/collection.json\"\n  },\n  \"item\": [\n    {\n      \"name\": \"Get Users\",\n      \"request\": {\n        \"method\": \"GET\",\n        \"header\": [],\n        \"url\": {\n          \"raw\": \"{{baseUrl}}/users\",\n          \"host\": [\"{{baseUrl}}\"],\n          \"path\": [\"users\"]\n        }\n      },\n      \"response\": []\n    },\n    {\n      \"name\": \"Create User\",\n      \"request\": {\n        \"method\": \"POST\",\n        \"header\": [\n          {\n            \"key\": \"Content-Type\",\n            \"value\": \"application/json\"\n          }\n        ],\n        \"body\": {\n          \"mode\": \"raw\",\n          \"raw\": \"{\\n  \\\"name\\\": \\\"John Doe\\\",\\n  \\\"email\\\": \\\"john@example.com\\\"\\n}\"\n        },\n        \"url\": {\n          \"raw\": \"{{baseUrl}}/users\",\n          \"host\": [\"{{baseUrl}}\"],\n          \"path\": [\"users\"]\n        }\n      },\n      \"response\": []\n    }\n  ]\n}\n```\n\n## Mejores Prácticas\n\n1. **Usar variables de entorno**\n2. **Crear pruebas reutilizables**\n3. **Probar casos límite**\n4. **Probar escenarios negativos**\n5. **Usar Pre-request Scripts**\n6. **Documentar APIs**\n\n## Pre-request Scripts\n\n```javascript\n// Generar datos aleatorios\nconst randomName = pm.variables.replaceIn('{{$randomFullName}}');\nconst randomEmail = pm.variables.replaceIn('{{$randomEmail}}');\n\npm.environment.set('testName', randomName);\npm.environment.set('testEmail', randomEmail);\n\n// Establecer marca de tiempo\npm.environment.set('timestamp', new Date().toISOString());\n```\n\n## Conclusión\n\nPostman proporciona herramientas poderosas para las pruebas de API, permitiendo crear escenarios de prueba integrales y automatizar el proceso de pruebas.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "Pruebas de Rendimiento con JMeter",
+      "description": "Pruebas de carga de aplicaciones web con Apache JMeter",
+      "category": "technical-tasks",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.6,
+      "reads": 1345,
+      "tags": ["JMeter", "Rendimiento", "Pruebas de Carga", "Apache", "Métricas"],
+      "content": "# Pruebas de Rendimiento con JMeter\n\n## Introducción a JMeter\n\nApache JMeter es una herramienta para pruebas de rendimiento y pruebas de carga de aplicaciones web.\n\n## Componentes Principales\n\n### Thread Group\n\n```xml\n<ThreadGroup guiclass=\"ThreadGroupGui\" testclass=\"ThreadGroup\" testname=\"Test Plan\">\n  <elementProp name=\"ThreadGroup.main_controller\" elementType=\"LoopController\">\n    <boolProp name=\"LoopController.continue_forever\">false</boolProp>\n    <stringProp name=\"LoopController.loops\">1</stringProp>\n  </elementProp>\n  <stringProp name=\"ThreadGroup.on_sample_error\">continue</stringProp>\n  <elementProp name=\"ThreadGroup.scheduler\" elementType=\"Scheduler\">\n    <boolProp name=\"Scheduler.scheduler\">false</boolProp>\n    <stringProp name=\"Scheduler.duration\"></stringProp>\n    <stringProp name=\"Scheduler.delay\"></stringProp>\n  </elementProp>\n  <stringProp name=\"ThreadGroup.num_threads\">10</stringProp>\n  <stringProp name=\"ThreadGroup.ramp_time\">1</stringProp>\n  <boolProp name=\"ThreadGroup.scheduler\">false</boolProp>\n  <stringProp name=\"ThreadGroup.duration\"></stringProp>\n  <stringProp name=\"ThreadGroup.delay\"></stringProp>\n</ThreadGroup>\n```\n\n### HTTP Request\n\n```xml\n<HTTPSamplerProxy guiclass=\"HttpTestSampleGui\" testclass=\"HTTPSamplerProxy\" testname=\"HTTP Request\">\n  <elementProp name=\"HTTPsampler.Arguments\" elementType=\"Arguments\">\n    <collectionProp name=\"Arguments.arguments\">\n      <elementProp name=\"\" elementType=\"HTTPArgument\">\n        <boolProp name=\"HTTPArgument.always_encode\">false</boolProp>\n        <stringProp name=\"Argument.value\"></stringProp>\n        <stringProp name=\"Argument.metadata\">=</stringProp>\n      </elementProp>\n    </collectionProp>\n  </elementProp>\n  <stringProp name=\"HTTPSampler.domain\">example.com</stringProp>\n  <stringProp name=\"HTTPSampler.port\">80</stringProp>\n  <stringProp name=\"HTTPSampler.protocol\">http</stringProp>\n  <stringProp name=\"HTTPSampler.path\">/api/users</stringProp>\n  <stringProp name=\"HTTPSampler.method\">GET</stringProp>\n  <boolProp name=\"HTTPSampler.follow_redirects\">true</boolProp>\n  <boolProp name=\"HTTPSampler.auto_redirects\">false</boolProp>\n  <boolProp name=\"HTTPSampler.use_keepalive\">true</boolProp>\n  <boolProp name=\"HTTPSampler.DO_MULTIPART_POST\">false</boolProp>\n</HTTPSamplerProxy>\n```\n\n### Assertions\n\n```xml\n<ResponseAssertion guiclass=\"AssertionGui\" testclass=\"ResponseAssertion\" testname=\"Response Assertion\">\n  <collectionProp name=\"Asserion.test_strings\">\n    <stringProp name=\"49586\">200</stringProp>\n  </collectionProp>\n  <stringProp name=\"Assertion.test_field\">Assertion.response_code</stringProp>\n  <boolProp name=\"Assertion.assume_success\">false</boolProp>\n  <intProp name=\"Assertion.test_type\">8</intProp>\n</ResponseAssertion>\n```\n\n## JMeter en Línea de Comandos\n\n```bash\n# Ejecutar prueba\njmeter -n -t test-plan.jmx -l results.jtl\n\n# Ejecutar con GUI\njmeter -t test-plan.jmx\n\n# Generar reporte HTML\njmeter -n -t test-plan.jmx -l results.jtl -e -o report/\n\n# Ejecutar con variables\njmeter -n -t test-plan.jmx -Jthreads=100 -Jduration=300\n```\n\n## Listeners\n\n### View Results Tree\n\n```xml\n<ResultCollector guiclass=\"ViewResultsFullVisualizer\" testclass=\"ResultCollector\" testname=\"View Results Tree\">\n  <boolProp name=\"ResultCollector.error_logging\">false</boolProp>\n  <objProp>\n    <name>saveConfig</name>\n    <value class=\"SampleSaveConfiguration\">\n      <time>true</time>\n      <latency>true</latency>\n      <timestamp>true</timestamp>\n      <success>true</success>\n      <label>true</label>\n      <code>true</code>\n      <message>true</message>\n      <threadName>true</threadName>\n      <dataType>true</dataType>\n      <encoding>false</encoding>\n      <assertions>true</assertions>\n      <subresults>true</subresults>\n      <responseData>false</responseData>\n      <samplerData>false</samplerData>\n      <xml>false</xml>\n      <fieldNames>true</fieldNames>\n      <responseHeaders>false</responseHeaders>\n      <requestHeaders>false</requestHeaders>\n      <responseDataOnError>false</responseDataOnError>\n      <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>\n      <assertionsResultsToSave>0</assertionsResultsToSave>\n      <bytes>true</bytes>\n      <sentBytes>true</sentBytes>\n      <url>true</url>\n      <threadCounts>true</threadCounts>\n      <idleTime>true</idleTime>\n      <connectTime>true</connectTime>\n    </value>\n  </objProp>\n  <stringProp name=\"filename\"></stringProp>\n</ResultCollector>\n```\n\n## Mejores Prácticas\n\n1. **Usar datos realistas**\n2. **Establecer timeouts apropiados**\n3. **Monitorear recursos del sistema**\n4. **Usar pruebas distribuidas**\n5. **Analizar resultados**\n6. **Optimizar planes de prueba**\n\n## Métricas de Rendimiento\n\n```javascript\n// Verificar tiempo de respuesta\npm.test(\"Response time is acceptable\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\n\n// Verificar throughput\npm.test(\"Throughput is sufficient\", function () {\n    const throughput = pm.response.responseTime / 1000; // requests per second\n    pm.expect(throughput).to.be.above(10);\n});\n```\n\n## Conclusión\n\nJMeter es una herramienta poderosa para las pruebas de rendimiento, permitiendo crear pruebas de carga integrales y analizar resultados.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

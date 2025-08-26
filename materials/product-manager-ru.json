@@ -1,0 +1,95 @@
+{
+  "profession": "product-manager",
+  "language": "ru",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Вопросы на собеседовании",
+      "count": 134,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Технические задания",
+      "count": 67,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Системный дизайн",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Поведенческие вопросы",
+      "count": 89,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Алгоритмы и структуры данных",
+      "count": 56,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Лучшие практики",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Продуктовая стратегия: от идеи до запуска",
+      "description": "Комплексное руководство по разработке продуктовой стратегии",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.8,
+      "reads": 1234,
+      "tags": ["Продуктовая стратегия", "MVP", "Roadmap", "Аналитика"],
+      "content": "# Продуктовая стратегия: от идеи до запуска\n\n## Определение продукта\n\n### Vision и Mission\n\n```markdown\n## Vision (Видение)\nСоздать платформу, которая поможет миллионам людей эффективно управлять своими финансами и достигать финансовых целей.\n\n## Mission (Миссия)\nПредоставить простые и понятные инструменты для планирования бюджета, отслеживания расходов и инвестирования.\n\n## Целевая аудитория\n- Основная: люди 25-45 лет с доходом $30k-$100k\n- Вторичная: студенты и пенсионеры\n- География: США, Европа, Азия\n```\n\n### Анализ рынка\n\n```markdown\n## Конкурентный анализ\n\n### Прямые конкуренты\n1. **Mint** - лидер рынка, 20M+ пользователей\n   - Сильные стороны: интеграция с банками, автоматизация\n   - Слабые стороны: сложный интерфейс, реклама\n\n2. **YNAB** - премиум сегмент\n   - Сильные стороны: качественная поддержка, обучение\n   - Слабые стороны: высокая цена, сложность\n\n### Косвенные конкуренты\n- Excel/Google Sheets\n- Банковские приложения\n- Специализированные приложения (инвестиции, кредиты)\n\n## Размер рынка (TAM, SAM, SOM)\n- TAM: $12B (все приложения для управления финансами)\n- SAM: $3B (персональные финансовые приложения)\n- SOM: $300M (наша доля за 3 года)\n```\n\n## MVP и Roadmap\n\n### MVP (Minimum Viable Product)\n\n```markdown\n## MVP Функции\n\n### Обязательные (Must Have)\n- [ ] Регистрация и авторизация\n- [ ] Добавление доходов и расходов\n- [ ] Категоризация транзакций\n- [ ] Базовые отчеты (месяц/год)\n- [ ] Установка финансовых целей\n\n### Желательные (Should Have)\n- [ ] Экспорт данных в CSV\n- [ ] Уведомления о превышении бюджета\n- [ ] Мобильная версия\n\n### Возможные (Could Have)\n- [ ] Интеграция с банками\n- [ ] Инвестиционный портфель\n- [ ] Социальные функции\n\n### Не нужные (Won't Have)\n- [ ] Криптовалюты\n- [ ] Налоговые отчеты\n- [ ] Бизнес-аккаунты\n```\n\n### Product Roadmap\n\n```markdown\n## Roadmap 2024\n\n### Q1: MVP Launch\n- Разработка MVP\n- Бета-тестирование (100 пользователей)\n- Запуск в App Store/Google Play\n\n### Q2: Growth\n- Интеграция с банками\n- Расширенная аналитика\n- A/B тестирование\n\n### Q3: Monetization\n- Премиум подписка\n- Рекламная модель\n- Партнерские программы\n\n### Q4: Scale\n- Международная экспансия\n- API для разработчиков\n- Корпоративные решения\n```\n\n## Метрики и KPI\n\n```markdown\n## Ключевые метрики\n\n### Пользовательские метрики\n- DAU (Daily Active Users): 10,000\n- MAU (Monthly Active Users): 100,000\n- Retention Rate (Day 7): 40%\n- Retention Rate (Day 30): 20%\n\n### Бизнес метрики\n- MRR (Monthly Recurring Revenue): $50,000\n- CAC (Customer Acquisition Cost): $15\n- LTV (Lifetime Value): $150\n- Churn Rate: 5%\n\n### Продуктовые метрики\n- Time to Value: < 5 минут\n- Feature Adoption Rate: 60%\n- NPS Score: 45\n- App Store Rating: 4.5+\n```\n\n## Заключение\n\nУспешная продуктовая стратегия требует баланса между видением, данными и исполнением. Важно постоянно измерять и корректировать подход на основе обратной связи пользователей.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Аналитика продуктов: метрики и дашборды",
+      "description": "Практическое руководство по аналитике продуктов",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.7,
+      "reads": 987,
+      "tags": ["Аналитика", "Метрики", "Дашборды", "SQL"],
+      "content": "# Аналитика продуктов: метрики и дашборды\n\n## Основные метрики\n\n### Пользовательские метрики\n\n```sql\n-- Daily Active Users (DAU)\nSELECT \n  DATE(created_at) as date,\n  COUNT(DISTINCT user_id) as dau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE(created_at)\nORDER BY date DESC;\n\n-- Monthly Active Users (MAU)\nSELECT \n  DATE_TRUNC('month', created_at) as month,\n  COUNT(DISTINCT user_id) as mau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE_TRUNC('month', created_at)\nORDER BY month DESC;\n\n-- Retention Rate\nWITH user_activity AS (\n  SELECT \n    user_id,\n    DATE(created_at) as activity_date,\n    DATE_TRUNC('week', created_at) as week\n  FROM user_events\n  WHERE event_type = 'login'\n),\ncohorts AS (\n  SELECT \n    user_id,\n    MIN(week) as cohort_week\n  FROM user_activity\n  GROUP BY user_id\n)\nSELECT \n  c.cohort_week,\n  COUNT(DISTINCT c.user_id) as cohort_size,\n  COUNT(DISTINCT CASE WHEN ua.week = c.cohort_week + INTERVAL '1 week' THEN ua.user_id END) as week_1,\n  COUNT(DISTINCT CASE WHEN ua.week = c.cohort_week + INTERVAL '2 weeks' THEN ua.user_id END) as week_2\nFROM cohorts c\nLEFT JOIN user_activity ua ON c.user_id = ua.user_id\nGROUP BY c.cohort_week\nORDER BY c.cohort_week;\n```\n\n### Бизнес метрики\n\n```sql\n-- Monthly Recurring Revenue (MRR)\nSELECT \n  DATE_TRUNC('month', subscription_date) as month,\n  SUM(monthly_amount) as mrr\nFROM subscriptions\nWHERE status = 'active'\nGROUP BY DATE_TRUNC('month', subscription_date)\nORDER BY month DESC;\n\n-- Customer Acquisition Cost (CAC)\nSELECT \n  DATE_TRUNC('month', acquisition_date) as month,\n  SUM(marketing_spend) / COUNT(DISTINCT user_id) as cac\nFROM user_acquisitions\nGROUP BY DATE_TRUNC('month', acquisition_date)\nORDER BY month DESC;\n\n-- Lifetime Value (LTV)\nSELECT \n  user_id,\n  SUM(purchase_amount) as total_spent,\n  COUNT(DISTINCT purchase_date) as purchase_count,\n  AVG(purchase_amount) as avg_purchase\nFROM user_purchases\nGROUP BY user_id\nORDER BY total_spent DESC;\n```\n\n## Дашборды\n\n### Основной дашборд\n\n```markdown\n## Daily Product Dashboard\n\n### Пользователи\n- DAU: 12,345 (+5.2% vs yesterday)\n- New Users: 1,234 (+12.1% vs yesterday)\n- Active Sessions: 45,678 (+3.4% vs yesterday)\n\n### Вовлеченность\n- Session Duration: 8m 32s (+2.1% vs yesterday)\n- Pages per Session: 4.2 (+1.8% vs yesterday)\n- Bounce Rate: 23.4% (-1.2% vs yesterday)\n\n### Конверсия\n- Sign-up Rate: 15.2% (+0.8% vs yesterday)\n- Purchase Rate: 3.4% (+0.3% vs yesterday)\n- Revenue: $12,345 (+8.7% vs yesterday)\n\n### Технические метрики\n- Error Rate: 0.12% (-0.02% vs yesterday)\n- Page Load Time: 1.8s (+0.1s vs yesterday)\n- API Response Time: 245ms (+5ms vs yesterday)\n```\n\n## Заключение\n\nЭффективная аналитика продуктов помогает принимать обоснованные решения и отслеживать прогресс к целям. Важно фокусироваться на метриках, которые действительно влияют на бизнес-результаты.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "A/B тестирование продуктовых гипотез",
+      "description": "Методология проведения A/B тестов для продуктовых решений",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 18,
+      "rating": 4.6,
+      "reads": 756,
+      "tags": ["A/B тестирование", "Гипотезы", "Статистика", "Продуктовые решения"],
+      "content": "# A/B тестирование продуктовых гипотез\n\n## Формулирование гипотез\n\n### Структура гипотезы\n\n```markdown\n## Формат гипотезы\n\n### Проблема\nПользователи не могут быстро найти нужную функцию в приложении.\n\n### Гипотеза\nЕсли мы переместим кнопку \"Новый заказ\" в верхнюю часть экрана, то количество заказов увеличится на 15%.\n\n### Обоснование\n- Кнопка будет более заметной\n- Уменьшится количество кликов\n- Улучшится пользовательский опыт\n\n### Метрики\n- Primary: Количество заказов\n- Secondary: Время до первого заказа, Bounce Rate\n- Guardrail: Общая конверсия, Revenue\n```\n\n### Примеры гипотез\n\n```markdown\n## Примеры продуктовых гипотез\n\n### Onboarding\n**Гипотеза**: Если мы добавим прогресс-бар в onboarding, то completion rate увеличится на 20%.\n**Метрики**: Completion rate, Time to complete, Drop-off points\n\n### Pricing\n**Гипотеза**: Если мы покажем годовую скидку 20% вместо месячной подписки, то ARPU увеличится на 25%.\n**Метрики**: ARPU, Conversion rate, Churn rate\n\n### Feature Discovery\n**Гипотеза**: Если мы добавим tooltips для новых функций, то feature adoption rate увеличится на 30%.\n**Метрики**: Feature adoption, User engagement, Support tickets\n```\n\n## Планирование эксперимента\n\n### Расчет размера выборки\n\n```python\nimport scipy.stats as stats\nimport numpy as np\n\n# Параметры для расчета\nbaseline_conversion = 0.05  # 5%\nmin_detectable_effect = 0.01  # 1% (20% relative increase)\nalpha = 0.05  # 5% significance level\npower = 0.8  # 80% power\n\n# Расчет размера выборки\nz_alpha = stats.norm.ppf(1 - alpha/2)\nz_beta = stats.norm.ppf(power)\n\nsample_size = (2 * (z_alpha + z_beta)**2 * baseline_conversion * (1 - baseline_conversion)) / (min_detectable_effect**2)\n\nprint(f'Размер выборки на группу: {int(sample_size)}')\nprint(f'Общий размер выборки: {int(sample_size * 2)}')\nprint(f'Длительность эксперимента (при 1000 пользователей/день): {int(sample_size * 2 / 1000)} дней')\n```\n\n### Дизайн эксперимента\n\n```markdown\n## План эксперимента\n\n### Цель\nУвеличить конверсию в премиум подписку на 15%.\n\n### Гипотеза\nЕсли мы покажем социальные доказательства (отзывы пользователей) на странице подписки, то конверсия увеличится.\n\n### Дизайн\n- **Контрольная группа (A)**: Стандартная страница подписки\n- **Тестовая группа (B)**: Страница с отзывами пользователей\n\n### Распределение\n- 50% пользователей → группа A\n- 50% пользователей → группа B\n\n### Длительность\n- Минимум: 2 недели\n- Целевая: 4 недели\n- Максимум: 6 недель\n\n### Критерии остановки\n- Статистическая значимость p < 0.05\n- Минимальный размер выборки достигнут\n- Безопасность: конверсия не упала более чем на 5%\n```\n\n## Анализ результатов\n\n```python\nimport pandas as pd\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# Данные эксперимента\nresults = pd.DataFrame({\n    'group': ['A', 'A', 'B', 'B'] * 1000,\n    'converted': [0, 1, 0, 1] * 1000,\n    'user_id': range(4000)\n})\n\n# Агрегация результатов\nexperiment_summary = results.groupby('group').agg({\n    'user_id': 'count',\n    'converted': 'sum'\n}).rename(columns={'user_id': 'users', 'converted': 'conversions'})\n\nexperiment_summary['conversion_rate'] = experiment_summary['conversions'] / experiment_summary['users']\n\nprint(experiment_summary)\n\n# Статистический тест\nconversions_a = experiment_summary.loc['A', 'conversions']\nusers_a = experiment_summary.loc['A', 'users']\nconversions_b = experiment_summary.loc['B', 'conversions']\nusers_b = experiment_summary.loc['B', 'users']\n\nz_stat, p_value = proportions_ztest(\n    [conversions_a, conversions_b],\n    [users_a, users_b]\n)\n\nprint(f'Z-статистика: {z_stat:.4f}')\nprint(f'P-значение: {p_value:.4f}')\nprint(f'Статистически значимо: {p_value < 0.05}')\n\n# Расчет эффекта\ncontrol_rate = conversions_a / users_a\ntreatment_rate = conversions_b / users_b\nrelative_improvement = (treatment_rate - control_rate) / control_rate * 100\n\nprint(f'Относительное улучшение: {relative_improvement:.2f}%')\n```\n\n## Заключение\n\nA/B тестирование - это мощный инструмент для валидации продуктовых решений. Важно правильно формулировать гипотезы, планировать эксперименты и интерпретировать результаты.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

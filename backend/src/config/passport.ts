@@ -1,6 +1,6 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { User } from '../models/UserModel'; // Импортируем универсальную модель User
+import { getCurrentUserModel } from '../models/UserModel'; // Импортируем функцию для получения модели
 import config from '../config';
 import logger from '../services/loggerService';
 
@@ -11,6 +11,7 @@ passport.serializeUser((user: any, done) => {
 
 passport.deserializeUser(async (id: string, done) => {
   try {
+    const User = getCurrentUserModel();
     const user = await User.findById(id);
     done(null, user);
   } catch (error) {
@@ -95,6 +96,7 @@ if (config.googleOAuth.enabled) {
               ? profile.emails[0].value
               : `google_${profile.id}@example.com`;
 
+          const User = getCurrentUserModel();
           // Ищем пользователя по email или googleId
           let user = await User.findOne({ email });
 

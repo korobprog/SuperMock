@@ -33,6 +33,7 @@ import { WaitingRoom } from './pages/WaitingRoom';
 import { DevWaitingRoom } from './pages/DevWaitingRoom';
 import { Profile } from './pages/Profile';
 import DevTest from './pages/DevTest';
+import { DevRouteGuard } from './components/ui/dev-route-guard';
 
 const queryClient = new QueryClient();
 
@@ -93,10 +94,23 @@ function AppContent() {
         <Route path="/history" element={<History />} />
         <Route path="/waiting/:sessionId" element={<WaitingRoom />} />
         <Route path="/profile" element={<Profile />} />
-        {import.meta.env.DEV && (
-          <Route path="/dev-test" element={<DevTest />} />
-        )}
-        <Route path="/dev-waiting" element={<DevWaitingRoom />} />
+        {/* Development-only routes with extra protection */}
+        <Route
+          path="/dev-test"
+          element={
+            <DevRouteGuard>
+              <DevTest />
+            </DevRouteGuard>
+          }
+        />
+        <Route
+          path="/dev-waiting"
+          element={
+            <DevRouteGuard>
+              <DevWaitingRoom />
+            </DevRouteGuard>
+          }
+        />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

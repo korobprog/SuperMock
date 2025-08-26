@@ -1,0 +1,95 @@
+{
+  "profession": "devops-engineer",
+  "language": "ru",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Вопросы на собеседовании",
+      "count": 134,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Технические задания",
+      "count": 89,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Системный дизайн",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Поведенческие вопросы",
+      "count": 67,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Алгоритмы и структуры данных",
+      "count": 78,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Лучшие практики",
+      "count": 92,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Docker: Контейнеризация приложений",
+      "description": "Основы работы с Docker для контейнеризации и развертывания приложений",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 2341,
+      "tags": ["Docker", "Контейнеризация", "DevOps", "CI/CD", "Микросервисы"],
+      "content": "# Docker: Контейнеризация приложений\n\n## Введение в Docker\n\nDocker - это платформа для разработки, доставки и запуска приложений в контейнерах.\n\n## Основные концепции\n\n### Образы и контейнеры\n\n```dockerfile\n# Пример Dockerfile\nFROM node:18-alpine\n\nWORKDIR /app\n\nCOPY package*.json ./\nRUN npm install\n\nCOPY . .\n\nEXPOSE 3000\n\nCMD [\"npm\", \"start\"]\n```\n\n### Основные команды\n\n```bash\n# Сборка образа\ndocker build -t my-app .\n\n# Запуск контейнера\ndocker run -d -p 3000:3000 --name my-app-container my-app\n\n# Просмотр запущенных контейнеров\ndocker ps\n\n# Остановка контейнера\ndocker stop my-app-container\n\n# Удаление контейнера\ndocker rm my-app-container\n```\n\n## Docker Compose\n\n```yaml\n# docker-compose.yml\nversion: '3.8'\n\nservices:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      - NODE_ENV=production\n    depends_on:\n      - db\n  \n  db:\n    image: postgres:15\n    environment:\n      POSTGRES_DB: myapp\n      POSTGRES_USER: user\n      POSTGRES_PASSWORD: password\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n\nvolumes:\n  postgres_data:\n```\n\n## Лучшие практики\n\n1. **Используйте многоэтапную сборку для уменьшения размера образов**\n2. **Не запускайте контейнеры от root пользователя**\n3. **Используйте .dockerignore для исключения ненужных файлов**\n4. **Оптимизируйте слои Dockerfile**\n5. **Используйте теги версий вместо latest**\n6. **Сканируйте образы на уязвимости**\n\n## Мониторинг и логирование\n\n```bash\n# Просмотр логов контейнера\ndocker logs my-app-container\n\n# Просмотр статистики контейнера\ndocker stats my-app-container\n\n# Интерактивный доступ к контейнеру\ndocker exec -it my-app-container /bin/sh\n```\n\n## Заключение\n\nDocker является фундаментальным инструментом в современной DevOps практике, обеспечивая консистентность окружений и упрощая развертывание приложений.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Kubernetes: Оркестрация контейнеров",
+      "description": "Управление контейнеризированными приложениями с помощью Kubernetes",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 30,
+      "rating": 4.8,
+      "reads": 1876,
+      "tags": ["Kubernetes", "K8s", "Оркестрация", "Микросервисы", "Масштабирование"],
+      "content": "# Kubernetes: Оркестрация контейнеров\n\n## Введение в Kubernetes\n\nKubernetes - это система оркестрации контейнеров для автоматизации развертывания, масштабирования и управления приложениями.\n\n## Основные компоненты\n\n### Pod\n\n```yaml\n# pod.yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx-pod\nspec:\n  containers:\n  - name: nginx\n    image: nginx:latest\n    ports:\n    - containerPort: 80\n```\n\n### Deployment\n\n```yaml\n# deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:latest\n        ports:\n        - containerPort: 80\n```\n\n### Service\n\n```yaml\n# service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx-service\nspec:\n  selector:\n    app: nginx\n  ports:\n  - protocol: TCP\n    port: 80\n    targetPort: 80\n  type: LoadBalancer\n```\n\n## Основные команды\n\n```bash\n# Применение конфигурации\nkubectl apply -f deployment.yaml\n\n# Просмотр подов\nkubectl get pods\n\n# Просмотр сервисов\nkubectl get services\n\n# Просмотр логов\nkubectl logs nginx-pod\n\n# Масштабирование\nkubectl scale deployment nginx-deployment --replicas=5\n\n# Доступ к поду\nkubectl exec -it nginx-pod -- /bin/bash\n```\n\n## ConfigMaps и Secrets\n\n```yaml\n# configmap.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config\ndata:\n  database_url: \"postgresql://localhost:5432/mydb\"\n  api_key: \"your-api-key\"\n```\n\n```yaml\n# secret.yaml\napiVersion: v1\nkind: Secret\nmetadata:\n  name: app-secret\ntype: Opaque\ndata:\n  username: dXNlcm5hbWU=  # base64 encoded\n  password: cGFzc3dvcmQ=  # base64 encoded\n```\n\n## Лучшие практики\n\n1. **Используйте ресурсные лимиты и запросы**\n2. **Настройте health checks (liveness и readiness probes)**\n3. **Используйте namespaces для организации ресурсов**\n4. **Настройте RBAC для безопасности**\n5. **Используйте persistent volumes для данных**\n6. **Мониторьте кластер с помощью Prometheus и Grafana**\n\n## Мониторинг\n\n```yaml\n# prometheus-config.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: prometheus-config\ndata:\n  prometheus.yml: |\n    global:\n      scrape_interval: 15s\n    scrape_configs:\n    - job_name: 'kubernetes-pods'\n      kubernetes_sd_configs:\n      - role: pod\n```\n\n## Заключение\n\nKubernetes предоставляет мощные инструменты для управления контейнеризированными приложениями в масштабе, обеспечивая высокую доступность и автоматическое масштабирование.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "CI/CD: Непрерывная интеграция и доставка",
+      "description": "Автоматизация процессов разработки, тестирования и развертывания",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 22,
+      "rating": 4.7,
+      "reads": 1456,
+      "tags": ["CI/CD", "Jenkins", "GitLab CI", "GitHub Actions", "Автоматизация"],
+      "content": "# CI/CD: Непрерывная интеграция и доставка\n\n## Введение в CI/CD\n\nCI/CD - это практика автоматизации процессов разработки, тестирования и развертывания программного обеспечения.\n\n## GitHub Actions\n\n```yaml\n# .github/workflows/ci.yml\nname: CI/CD Pipeline\n\non:\n  push:\n    branches: [ main ]\n  pull_request:\n    branches: [ main ]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    \n    steps:\n    - uses: actions/checkout@v3\n    \n    - name: Setup Node.js\n      uses: actions/setup-node@v3\n      with:\n        node-version: '18'\n        cache: 'npm'\n    \n    - name: Install dependencies\n      run: npm ci\n    \n    - name: Run tests\n      run: npm test\n    \n    - name: Build application\n      run: npm run build\n    \n    - name: Run linting\n      run: npm run lint\n\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest\n    if: github.ref == 'refs/heads/main'\n    \n    steps:\n    - name: Deploy to production\n      run: echo \"Deploying to production...\"\n```\n\n## GitLab CI\n\n```yaml\n# .gitlab-ci.yml\nstages:\n  - test\n  - build\n  - deploy\n\ntest:\n  stage: test\n  image: node:18\n  script:\n    - npm ci\n    - npm test\n    - npm run lint\n  coverage: '/Coverage: \\d+\\.\\d+%/'\n\nbuild:\n  stage: build\n  image: docker:latest\n  services:\n    - docker:dind\n  script:\n    - docker build -t my-app:$CI_COMMIT_SHA .\n    - docker push my-app:$CI_COMMIT_SHA\n  only:\n    - main\n\ndeploy:\n  stage: deploy\n  image: alpine:latest\n  script:\n    - echo \"Deploying to production\"\n    - kubectl set image deployment/my-app my-app=my-app:$CI_COMMIT_SHA\n  only:\n    - main\n```\n\n## Jenkins Pipeline\n\n```groovy\n// Jenkinsfile\npipeline {\n    agent any\n    \n    stages {\n        stage('Checkout') {\n            steps {\n                checkout scm\n            }\n        }\n        \n        stage('Test') {\n            steps {\n                sh 'npm ci'\n                sh 'npm test'\n            }\n        }\n        \n        stage('Build') {\n            steps {\n                sh 'npm run build'\n                sh 'docker build -t my-app .'\n            }\n        }\n        \n        stage('Deploy') {\n            steps {\n                sh 'kubectl apply -f k8s/'\n            }\n        }\n    }\n    \n    post {\n        always {\n            cleanWs()\n        }\n    }\n}\n```\n\n## Лучшие практики\n\n1. **Автоматизируйте все этапы процесса**\n2. **Используйте параллельное выполнение задач**\n3. **Настройте уведомления о статусе сборки**\n4. **Используйте кэширование для ускорения сборки**\n5. **Внедрите security scanning**\n6. **Настройте rollback стратегии**\n7. **Мониторьте производительность pipeline**\n\n## Мониторинг и метрики\n\n```yaml\n# prometheus-ci-metrics.yml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: ci-metrics\ndata:\n  ci-metrics.yml: |\n    - job_name: 'jenkins'\n      static_configs:\n        - targets: ['jenkins:8080']\n      metrics_path: /prometheus\n```\n\n## Заключение\n\nCI/CD является ключевым компонентом современной DevOps практики, обеспечивая быструю и надежную доставку программного обеспечения.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

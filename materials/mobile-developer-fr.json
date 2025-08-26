@@ -1,0 +1,95 @@
+{
+  "profession": "mobile-developer",
+  "language": "fr",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Questions d'Entretien",
+      "count": 142,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Tâches Techniques",
+      "count": 76,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Conception de Système",
+      "count": 28,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Questions Comportementales",
+      "count": 54,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithmes & Structures de Données",
+      "count": 98,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Meilleures Pratiques",
+      "count": 67,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Développement iOS : Swift et UIKit",
+      "description": "Fondamentaux du développement d'applications iOS avec Swift et le framework UIKit",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.8,
+      "reads": 1156,
+      "tags": ["iOS", "Swift", "UIKit", "Mobile", "Apple"],
+      "content": "# Développement iOS : Swift et UIKit\n\n## Introduction à Swift\n\nSwift est un langage de programmation moderne d'Apple pour développer des applications iOS, macOS, watchOS et tvOS.\n\n## Bases de Swift\n\n### Variables et Constantes\n\n```swift\n// Constantes (immuables)\nlet name = \"John\"\nlet age: Int = 25\n\n// Variables (mutables)\nvar score = 0\nvar isActive: Bool = true\n\n// Types optionnels\nvar optionalString: String? = nil\nvar unwrappedString: String! = \"Hello\"\n```\n\n### Fonctions\n\n```swift\n// Fonction simple\nfunc greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}\n\n// Fonction avec paramètres externes et internes\nfunc greet(person name: String, from city: String) -> String {\n    return \"Hello, \\(name) from \\(city)!\"\n}\n```\n\n## Framework UIKit\n\n### Composants de Base\n\n```swift\nimport UIKit\n\nclass ViewController: UIViewController {\n    \n    private let label: UILabel = {\n        let label = UILabel()\n        label.text = \"Hello, World!\"\n        label.textAlignment = .center\n        label.font = UIFont.systemFont(ofSize: 18, weight: .medium)\n        label.translatesAutoresizingMaskIntoConstraints = false\n        return label\n    }()\n    \n    override func viewDidLoad() {\n        super.viewDidLoad()\n        setupUI()\n    }\n    \n    private func setupUI() {\n        view.backgroundColor = .white\n        view.addSubview(label)\n        \n        NSLayoutConstraint.activate([\n            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),\n            label.centerYAnchor.constraint(equalTo: view.centerYAnchor)\n        ])\n    }\n}\n```\n\n## Meilleures Pratiques\n\n1. **Utilisez Auto Layout pour un design adaptatif**\n2. **Appliquez l'architecture MVVM ou MVP**\n3. **Utilisez weak self dans les closures pour éviter les cycles de rétention**\n4. **Gérez les erreurs réseau et affichez des messages conviviaux**\n5. **Optimisez les performances lors du travail avec de grandes listes**\n6. **Utilisez Instruments pour le profilage d'applications**\n\n## Conclusion\n\nSwift et UIKit fournissent des outils puissants pour créer des applications iOS. Comprendre les bases du langage et du framework est crucial pour un développement d'applications mobiles réussi.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Développement Android : Kotlin et Jetpack Compose",
+      "description": "Développement moderne d'applications Android avec Kotlin et Jetpack Compose",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 987,
+      "tags": ["Android", "Kotlin", "Jetpack Compose", "Mobile", "Google"],
+      "content": "# Développement Android : Kotlin et Jetpack Compose\n\n## Introduction à Kotlin\n\nKotlin est un langage de programmation moderne qui est devenu la norme pour le développement Android.\n\n## Bases de Kotlin\n\n### Variables et Types\n\n```kotlin\n// Variables immuables (val)\nval name = \"Anna\"\nval age: Int = 25\n\n// Variables mutables (var)\nvar score = 0\nvar isActive: Boolean = true\n\n// Types nullables\nvar nullableString: String? = null\nvar nonNullString: String = \"Hello\"\n\n// Appel sécurisé\nval length = nullableString?.length ?: 0\n```\n\n### Fonctions\n\n```kotlin\n// Fonction simple\nfun greet(name: String): String {\n    return \"Hello, $name!\"\n}\n\n// Fonction avec expression\nfun add(a: Int, b: Int) = a + b\n\n// Fonction avec paramètres par défaut\nfun greet(name: String, greeting: String = \"Hello\") = \"$greeting, $name!\"\n```\n\n## Jetpack Compose\n\n### Bases de Compose\n\n```kotlin\nimport androidx.compose.foundation.layout.*\nimport androidx.compose.material3.*\nimport androidx.compose.runtime.*\nimport androidx.compose.ui.Alignment\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.unit.dp\n\n@Composable\nfun GreetingScreen() {\n    var name by remember { mutableStateOf(\"\") }\n    \n    Column(\n        modifier = Modifier\n            .fillMaxSize()\n            .padding(16.dp),\n        horizontalAlignment = Alignment.CenterHorizontally,\n        verticalArrangement = Arrangement.Center\n    ) {\n        Text(\n            text = \"Hello, $name!\"\n        )\n        \n        Spacer(modifier = Modifier.height(16.dp))\n        \n        OutlinedTextField(\n            value = name,\n            onValueChange = { name = it },\n            label = { Text(\"Entrer le nom\") }\n        )\n    }\n}\n```\n\n## Meilleures Pratiques\n\n1. **Utilisez Compose pour l'interface utilisateur moderne**\n2. **Appliquez l'architecture MVVM avec ViewModel**\n3. **Utilisez StateFlow pour la programmation réactive**\n4. **Appliquez l'injection de dépendances (Hilt)**\n5. **Utilisez Room pour le stockage local de données**\n6. **Gérez les erreurs et affichez des messages conviviaux**\n7. **Optimisez les performances avec LazyColumn/LazyRow**\n8. **Utilisez Material Design 3 pour un design moderne**\n\n## Conclusion\n\nKotlin et Jetpack Compose fournissent des outils modernes pour créer des applications Android. Comprendre ces technologies est crucial pour un développement d'applications mobiles réussi.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "React Native : Développement Cross-Platform",
+      "description": "Création d'applications mobiles pour iOS et Android avec React Native",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 18,
+      "rating": 4.6,
+      "reads": 456,
+      "tags": ["React Native", "JavaScript", "Mobile", "Cross-platform", "Expo"],
+      "content": "# React Native : Développement Cross-Platform\n\n## Introduction à React Native\n\nReact Native vous permet de créer des applications mobiles natives en utilisant JavaScript et React.\n\n## Bases de React Native\n\n### Composants\n\n```jsx\nimport React from 'react';\nimport { View, Text, StyleSheet } from 'react-native';\n\nconst App = () => {\n  return (\n    <View style={styles.container}>\n      <Text style={styles.text}>Hello, React Native!</Text>\n    </View>\n  );\n};\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    justifyContent: 'center',\n    alignItems: 'center',\n    backgroundColor: '#F5FCFF',\n  },\n  text: {\n    fontSize: 20,\n    textAlign: 'center',\n    margin: 10,\n  },\n});\n\nexport default App;\n```\n\n### Navigation avec React Navigation\n\n```jsx\nimport React from 'react';\nimport { NavigationContainer } from '@react-navigation/native';\nimport { createStackNavigator } from '@react-navigation/stack';\n\nconst Stack = createStackNavigator();\n\nfunction HomeScreen({ navigation }) {\n  return (\n    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>\n      <Text>Home Screen</Text>\n      <Button\n        title=\"Go to Details\"\n        onPress={() => navigation.navigate('Details')}\n      />\n    </View>\n  );\n}\n\nfunction App() {\n  return (\n    <NavigationContainer>\n      <Stack.Navigator>\n        <Stack.Screen name=\"Home\" component={HomeScreen} />\n        <Stack.Screen name=\"Details\" component={DetailsScreen} />\n      </Stack.Navigator>\n    </NavigationContainer>\n  );\n}\n```\n\n## Meilleures Pratiques\n\n1. **Utilisez des composants fonctionnels et des hooks**\n2. **Appliquez une structure de projet appropriée**\n3. **Utilisez TypeScript pour la sécurité des types**\n4. **Optimisez les performances avec useMemo et useCallback**\n5. **Gérez les erreurs et affichez des messages conviviaux**\n6. **Utilisez une navigation appropriée pour votre application**\n7. **Testez sur de vrais appareils**\n8. **Utilisez Expo pour le prototypage rapide**\n\n## Conclusion\n\nReact Native fournit des outils puissants pour créer des applications mobiles cross-platform. Comprendre les bases de React Native est crucial pour un développement d'applications mobiles réussi.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

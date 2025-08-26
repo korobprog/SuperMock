@@ -1,0 +1,95 @@
+{
+  "profession": "data-analyst",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 142,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 76,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 28,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 54,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法与数据结构",
+      "count": 89,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 67,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "数据分析师SQL完全指南",
+      "description": "包含实用示例的SQL数据分析综合指南",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.8,
+      "reads": 1156,
+      "tags": ["SQL", "数据分析", "数据库", "PostgreSQL"],
+      "content": "# 数据分析师SQL完全指南\n\n## SQL基础\n\n### SELECT和过滤\n\n```sql\n-- 基本SELECT\nSELECT 列1, 列2\nFROM 表名\nWHERE 条件;\n\n-- 过滤示例\nSELECT user_id, 姓名, 邮箱, 创建时间\nFROM 用户\nWHERE 创建时间 >= '2024-01-01'\n  AND 状态 = '活跃';\n```\n\n### 聚合函数\n\n```sql\n-- 按状态统计用户\nSELECT \n  状态,\n  COUNT(*) as 用户数量,\n  AVG(年龄) as 平均年龄\nFROM 用户\nGROUP BY 状态\nHAVING COUNT(*) > 10;\n```\n\n## 高级技术\n\n### 窗口函数\n\n```sql\n-- 按活跃度排名用户\nSELECT \n  user_id,\n  姓名,\n  活跃度分数,\n  ROW_NUMBER() OVER (ORDER BY 活跃度分数 DESC) as 排名,\n  RANK() OVER (ORDER BY 活跃度分数 DESC) as 带并列排名,\n  DENSE_RANK() OVER (ORDER BY 活跃度分数 DESC) as 密集排名\nFROM 用户活跃度;\n\n-- 移动平均\nSELECT \n  日期,\n  收入,\n  AVG(收入) OVER (\n    ORDER BY 日期 \n    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n  ) as 7日移动平均\nFROM 日收入;\n```\n\n### CTE (公共表表达式)\n\n```sql\nWITH 用户统计 AS (\n  SELECT \n    user_id,\n    COUNT(*) as 订单数量,\n    SUM(金额) as 总消费\n  FROM 订单\n  GROUP BY user_id\n),\n高价值用户 AS (\n  SELECT user_id\n  FROM 用户统计\n  WHERE 总消费 > 1000\n)\nSELECT u.姓名, us.订单数量, us.总消费\nFROM 用户 u\nJOIN 用户统计 us ON u.id = us.user_id\nWHERE u.id IN (SELECT user_id FROM 高价值用户);\n```\n\n## 时间序列分析\n\n```sql\n-- 月度用户增长\nSELECT \n  DATE_TRUNC('month', 创建时间) as 月份,\n  COUNT(*) as 新用户数,\n  LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', 创建时间)) as 上月用户数,\n  (COUNT(*) - LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', 创建时间))) / \n    LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', 创建时间)) * 100 as 增长率百分比\nFROM 用户\nGROUP BY DATE_TRUNC('month', 创建时间)\nORDER BY 月份;\n```\n\n## 查询优化\n\n```sql\n-- 使用索引\nCREATE INDEX idx_用户_状态_创建时间 ON 用户(状态, 创建时间);\nCREATE INDEX idx_订单_用户_日期 ON 订单(user_id, 订单日期);\n\n-- 分析执行计划\nEXPLAIN ANALYZE\nSELECT u.姓名, COUNT(o.id) as 订单数量\nFROM 用户 u\nJOIN 订单 o ON u.id = o.user_id\nWHERE u.状态 = '活跃'\n  AND o.订单日期 >= '2024-01-01'\nGROUP BY u.id, u.姓名;\n```\n\n## 处理JSON\n\n```sql\n-- 从JSON提取数据\nSELECT \n  id,\n  数据->>'姓名' as 姓名,\n  数据->>'邮箱' as 邮箱,\n  (数据->>'年龄')::int as 年龄\nFROM 用户档案\nWHERE 数据->>'城市' = '北京';\n\n-- 聚合JSON数据\nSELECT \n  类别,\n  jsonb_agg(\n    jsonb_build_object(\n      'id', id,\n      '名称', 名称,\n      '价格', 价格\n    )\n  ) as 产品\nFROM 产品\nGROUP BY 类别;\n```\n\n## 结论\n\nSQL仍然是数据分析的主要工具。重要的是不仅要理解语法，还要理解查询优化原理以处理大数据量。",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Python数据分析：Pandas和NumPy",
+      "description": "使用Python进行数据分析的实用指南",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 18,
+      "rating": 4.7,
+      "reads": 892,
+      "tags": ["Python", "Pandas", "NumPy", "数据分析"],
+      "content": "# Python数据分析：Pandas和NumPy\n\n## Pandas基础\n\n```python\nimport pandas as pd\nimport numpy as np\n\n# 加载数据\ndf = pd.read_csv('数据.csv')\n\n# 基本操作\nprint(df.head())\nprint(df.info())\nprint(df.describe())\n```\n\n## 数据清洗\n\n```python\n# 处理缺失值\ndf['年龄'].fillna(df['年龄'].median(), inplace=True)\ndf.dropna(subset=['邮箱'], inplace=True)\n\n# 删除重复值\ndf.drop_duplicates(subset=['邮箱'], keep='first', inplace=True)\n\n# 更改数据类型\ndf['日期'] = pd.to_datetime(df['日期'])\ndf['金额'] = pd.to_numeric(df['金额'], errors='coerce')\n```\n\n## 聚合和分组\n\n```python\n# 按类别分组\n结果 = df.groupby('类别').agg({\n    '金额': ['sum', 'mean', 'count'],\n    'user_id': 'nunique'\n}).round(2)\n\n# 数据透视表\n透视表 = df.pivot_table(\n    values='金额',\n    index='类别',\n    columns='状态',\n    aggfunc='sum',\n    fill_value=0\n)\n```\n\n## 时间序列\n\n```python\n# 设置时间索引\ndf['日期'] = pd.to_datetime(df['日期'])\ndf.set_index('日期', inplace=True)\n\n# 按月重采样\n月度 = df.resample('M').agg({\n    '金额': 'sum',\n    'user_id': 'nunique'\n})\n\n# 移动平均\n月度['移动平均'] = 月度['金额'].rolling(window=3).mean()\n```\n\n## 可视化\n\n```python\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\n# 线图\nplt.figure(figsize=(12, 6))\n月度['金额'].plot()\nplt.title('月度收入')\nplt.xlabel('日期')\nplt.ylabel('金额')\nplt.show()\n\n# 直方图\nplt.figure(figsize=(10, 6))\ndf['金额'].hist(bins=30)\nplt.title('金额分布')\nplt.show()\n\n# 相关性矩阵\n相关性 = df[['金额', '年龄', '评分']].corr()\nsns.heatmap(相关性, annot=True, cmap='coolwarm')\nplt.show()\n```\n\n## 结论\n\nPandas和NumPy为Python中的数据分析提供了强大的工具。重要的是理解数据操作原理并优化代码以处理大数据量。",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "A/B测试：从规划到分析",
+      "description": "进行A/B测试和解释结果的综合指南",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 567,
+      "tags": ["A/B测试", "统计学", "数据分析", "假设检验"],
+      "content": "# A/B测试：从规划到分析\n\n## 实验规划\n\n### 假设定义\n\n```python\n# 假设示例\n假设 = {\n    '零假设': '新按钮不影响转化率',\n    '备择假设': '新按钮将转化率提高10%',\n    '显著性水平': 0.05,\n    '功效': 0.8\n}\n```\n\n### 样本量计算\n\n```python\nimport scipy.stats as stats\n\n# 计算参数\n基线转化率 = 0.05  # 5%\n最小可检测效应 = 0.01  # 1%\nalpha = 0.05\n功效 = 0.8\n\n# 计算样本量\n样本量 = stats.norm.ppf(1 - alpha/2) + stats.norm.ppf(功效)\n样本量 = 样本量 ** 2 * (2 * 基线转化率 * (1 - 基线转化率)) / (最小可检测效应 ** 2)\n\nprint(f'每组样本量: {int(样本量)}')\n```\n\n## 实验执行\n\n```python\n# 创建分组\nimport numpy as np\n\nnp.random.seed(42)\nuser_ids = range(10000)\n\n# 随机分配\n分配 = np.random.choice(['A', 'B'], size=len(user_ids), p=[0.5, 0.5])\n\n实验数据 = pd.DataFrame({\n    'user_id': user_ids,\n    '组别': 分配\n})\n```\n\n## 结果分析\n\n```python\n# 收集数据\n结果 = pd.DataFrame({\n    'user_id': [1, 2, 3, 4, 5],\n    '组别': ['A', 'B', 'A', 'B', 'A'],\n    '转化': [0, 1, 0, 1, 0]\n})\n\n# 按组聚合\n组统计 = 结果.groupby('组别').agg({\n    'user_id': 'count',\n    '转化': 'sum'\n}).rename(columns={'user_id': '用户数', '转化': '转化数'})\n\n组统计['转化率'] = 组统计['转化数'] / 组统计['用户数']\n\nprint(组统计)\n```\n\n## 统计检验\n\n```python\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# 比例Z检验\n转化数_a = 组统计.loc['A', '转化数']\n用户数_a = 组统计.loc['A', '用户数']\n转化数_b = 组统计.loc['B', '转化数']\n用户数_b = 组统计.loc['B', '用户数']\n\nz_stat, p值 = proportions_ztest(\n    [转化数_a, 转化数_b],\n    [用户数_a, 用户数_b]\n)\n\nprint(f'Z统计量: {z_stat:.4f}')\nprint(f'P值: {p值:.4f}')\nprint(f'统计显著: {p值 < 0.05}')\n```\n\n## 结果可视化\n\n```python\nimport matplotlib.pyplot as plt\n\n# 转化率图表\nfig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))\n\n# 各组转化率\n转化率 = 组统计['转化率']\nax1.bar(转化率.index, 转化率.values)\nax1.set_title('各组转化率')\nax1.set_ylabel('转化率')\n\n# 置信区间\nfrom scipy.stats import norm\n\ndef 置信区间(转化数, 用户数, 置信度=0.95):\n    p = 转化数 / 用户数\n    z = norm.ppf((1 + 置信度) / 2)\n    边际 = z * np.sqrt(p * (1 - p) / 用户数)\n    return p - 边际, p + 边际\n\nfor 组 in ['A', 'B']:\n    转化 = 组统计.loc[组, '转化数']\n    用户 = 组统计.loc[组, '用户数']\n    ci_下, ci_上 = 置信区间(转化, 用户)\n    ax2.errorbar(组, 转化/用户, yerr=[[转化/用户 - ci_下], [ci_上 - 转化/用户]], \n                fmt='o', capsize=5)\n\nax2.set_title('带置信区间的转化率')\nax2.set_ylabel('转化率')\n\nplt.tight_layout()\nplt.show()\n```\n\n## 结论\n\nA/B测试需要仔细规划和正确解释结果。重要的是要考虑结果的统计显著性和实际显著性。",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

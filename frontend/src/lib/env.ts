@@ -20,6 +20,7 @@ export const env = {
   // Environment
   DEV: import.meta.env.DEV,
   PROD: import.meta.env.PROD,
+  ENABLE_DEV_TEST_ACCOUNTS: import.meta.env.VITE_ENABLE_DEV_TEST_ACCOUNTS === 'true',
 } as const;
 
 /**

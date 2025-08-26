@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAppTranslation } from '@/lib/i18n';
 import { useHapticFeedback } from '@/lib/haptic-feedback';
 import { useUserDataCheck } from '@/hooks/use-user-data-check';
+import { useAppStore } from '@/lib/store';
 
 export function MobileBottomMenu() {
   const navigate = useNavigate();
@@ -11,6 +12,12 @@ export function MobileBottomMenu() {
   const { t } = useAppTranslation();
   const { light } = useHapticFeedback();
   const { isDataComplete } = useUserDataCheck();
+  
+  // Получаем данные из store
+  const profession = useAppStore((s) => s.profession);
+  const language = useAppStore((s) => s.language);
+  const selectedTools = useAppStore((s) => s.selectedTools);
+  const userId = useAppStore((s) => s.userId);
 
   const isHomeActive = location.pathname === '/';
   const isProfileActive = location.pathname === '/profile';
@@ -24,10 +31,38 @@ export function MobileBottomMenu() {
 
   const handleStartInterview = () => {
     light(); // Вибрация при нажатии
-    // Если данные уже заполнены, перенаправляем на страницу времени
-    if (isDataComplete) {
+    
+    console.log('🎯 Smart navigation check:');
+    console.log('  - profession:', profession);
+    console.log('  - language:', language);
+    console.log('  - selectedTools:', selectedTools);
+    console.log('  - selectedTools.length:', selectedTools.length);
+    console.log('  - userId:', userId);
+    
+    // Проверяем, есть ли профессия и язык
+    const hasProfessionAndLanguage = profession && language && language !== 'ru';
+    
+    console.log('  - hasProfessionAndLanguage:', hasProfessionAndLanguage);
+    console.log('  - hasProfessionAndLanguage && selectedTools.length > 0:', hasProfessionAndLanguage && selectedTools.length > 0);
+    
+    // Если есть профессия, язык и инструменты, идем сразу на время
+    if (hasProfessionAndLanguage && selectedTools.length > 0) {
+      console.log('🚀 Прямой переход на /time: профессия и язык настроены');
       navigate('/time');
-    } else {
+    }
+    // Если есть профессия и язык, но нет инструментов, идем на выбор инструментов
+    else if (hasProfessionAndLanguage && selectedTools.length === 0) {
+      console.log('🔧 Переход на /tools: профессия и язык есть, нужны инструменты');
+      navigate('/tools');
+    }
+    // Если есть профессия, но нет языка, идем на выбор языка
+    else if (profession && (!language || language === 'ru')) {
+      console.log('🌍 Переход на /language: профессия есть, нужен язык');
+      navigate('/language');
+    }
+    // В остальных случаях идем на выбор профессии
+    else {
+      console.log('💼 Переход на /profession: нужна профессия');
       navigate('/profession');
     }
   };
@@ -50,12 +85,35 @@ export function MobileBottomMenu() {
         </Button>
 
         {/* Большая полукруглая кнопка "Начать интервью" по центру */}
-        <Button
-          onClick={handleStartInterview}
-          className="flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-[0_8px_32px_rgba(59,130,246,0.4)] hover:shadow-[0_12px_40px_rgba(59,130,246,0.6)] transform hover:scale-110 active:scale-95 transition-all duration-300 -mt-4 border-4 border-white/20 backdrop-blur-sm"
-        >
-          <Users className="h-7 w-7" />
-        </Button>
+        <div className="relative">
+          <Button
+            onClick={handleStartInterview}
+            className={`flex items-center justify-center w-16 h-16 rounded-full shadow-[0_8px_32px_rgba(59,130,246,0.4)] hover:shadow-[0_12px_40px_rgba(59,130,246,0.6)] transform hover:scale-110 active:scale-95 transition-all duration-300 -mt-4 border-4 backdrop-blur-sm ${
+              profession && language && language !== 'ru' && selectedTools.length > 0
+                ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-300/30' // Готов к интервью
+                : profession && language && language !== 'ru'
+                ? 'bg-gradient-to-r from-yellow-500 to-orange-600 border-yellow-300/30' // Нужны инструменты
+                : profession
+                ? 'bg-gradient-to-r from-blue-500 to-purple-600 border-blue-300/30' // Нужен язык
+                : 'bg-gradient-to-r from-gray-500 to-gray-600 border-gray-300/30' // Нужна профессия
+            } text-white`}
+          >
+            <Users className="h-7 w-7" />
+          </Button>
+          
+          {/* Индикатор прогресса */}
+          {profession && (
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+              <div className={`w-2 h-2 rounded-full ${
+                profession && language && language !== 'ru' && selectedTools.length > 0
+                  ? 'bg-green-500' // Готов к интервью
+                  : profession && language && language !== 'ru'
+                  ? 'bg-yellow-500' // Нужны инструменты
+                  : 'bg-blue-500' // Нужен язык
+              }`} />
+            </div>
+          )}
+        </div>
 
         {/* Кнопка уведомлений */}
         <Button

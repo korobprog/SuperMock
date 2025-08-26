@@ -103,13 +103,18 @@ export function ToolSelection() {
       // Сохраняем в базу данных
       if (currentUserId && profession) {
         try {
+          console.log('💾 Saving tools to database:', selectedTools);
           await apiSaveUserTools({
             userId: currentUserId,
             profession,
             tools: selectedTools,
           });
+          console.log('✅ Tools saved successfully');
+          setSelectedToolsStore(selectedTools);
         } catch (e) {
           console.warn('Failed to save tools to database:', e);
+          // В случае ошибки все равно сохраняем локально
+          setSelectedToolsStore(selectedTools);
         }
       }
 
@@ -143,13 +148,18 @@ export function ToolSelection() {
       // Сохраняем в базу данных
       if (currentUserId && profession) {
         try {
+          console.log('💾 Saving tools to database:', selectedTools);
           await apiSaveUserTools({
             userId: currentUserId,
             profession,
             tools: selectedTools,
           });
+          console.log('✅ Tools saved successfully');
+          setSelectedToolsStore(selectedTools);
         } catch (e) {
           console.warn('Failed to save tools to database:', e);
+          // В случае ошибки все равно сохраняем локально
+          setSelectedToolsStore(selectedTools);
         }
       }
 

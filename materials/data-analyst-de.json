@@ -1,0 +1,95 @@
+{
+  "profession": "data-analyst",
+  "language": "de",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Vorstellungsgespräch Fragen",
+      "count": 142,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Technische Aufgaben",
+      "count": 76,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "System Design",
+      "count": 28,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Verhaltensfragen",
+      "count": 54,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithmen & Datenstrukturen",
+      "count": 89,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Best Practices",
+      "count": 67,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "SQL für Datenanalysten: Vollständige Anleitung",
+      "description": "Umfassende Anleitung zu SQL für Datenanalyse mit praktischen Beispielen",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.8,
+      "reads": 1156,
+      "tags": ["SQL", "Datenanalyse", "Datenbanken", "PostgreSQL"],
+      "content": "# SQL für Datenanalysten: Vollständige Anleitung\n\n## SQL Grundlagen\n\n### SELECT und Filterung\n\n```sql\n-- Grundlegendes SELECT\nSELECT spalte1, spalte2\nFROM tabellenname\nWHERE bedingung;\n\n-- Beispiel mit Filterung\nSELECT user_id, name, email, erstellt_am\nFROM benutzer\nWHERE erstellt_am >= '2024-01-01'\n  AND status = 'aktiv';\n```\n\n### Aggregatfunktionen\n\n```sql\n-- Benutzer nach Status zählen\nSELECT \n  status,\n  COUNT(*) as benutzer_anzahl,\n  AVG(alter) as durchschnittsalter\nFROM benutzer\nGROUP BY status\nHAVING COUNT(*) > 10;\n```\n\n## Erweiterte Techniken\n\n### Fensterfunktionen\n\n```sql\n-- Benutzer nach Aktivität rangieren\nSELECT \n  user_id,\n  name,\n  aktivitaets_score,\n  ROW_NUMBER() OVER (ORDER BY aktivitaets_score DESC) as rang,\n  RANK() OVER (ORDER BY aktivitaets_score DESC) as rang_mit_gleichstand,\n  DENSE_RANK() OVER (ORDER BY aktivitaets_score DESC) as dichter_rang\nFROM benutzer_aktivitaet;\n\n-- Gleitender Durchschnitt\nSELECT \n  datum,\n  umsatz,\n  AVG(umsatz) OVER (\n    ORDER BY datum \n    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n  ) as gleitender_durchschnitt_7t\nFROM taeglicher_umsatz;\n```\n\n### CTE (Common Table Expressions)\n\n```sql\nWITH benutzer_statistiken AS (\n  SELECT \n    user_id,\n    COUNT(*) as bestellungen_anzahl,\n    SUM(betrag) as gesamt_ausgaben\n  FROM bestellungen\n  GROUP BY user_id\n),\nhochwertige_benutzer AS (\n  SELECT user_id\n  FROM benutzer_statistiken\n  WHERE gesamt_ausgaben > 1000\n)\nSELECT b.name, bs.bestellungen_anzahl, bs.gesamt_ausgaben\nFROM benutzer b\nJOIN benutzer_statistiken bs ON b.id = bs.user_id\nWHERE b.id IN (SELECT user_id FROM hochwertige_benutzer);\n```\n\n## Zeitreihenanalyse\n\n```sql\n-- Monatliches Benutzerwachstum\nSELECT \n  DATE_TRUNC('month', erstellt_am) as monat,\n  COUNT(*) as neue_benutzer,\n  LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', erstellt_am)) as vorheriger_monat,\n  (COUNT(*) - LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', erstellt_am))) / \n    LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', erstellt_am)) * 100 as wachstum_prozent\nFROM benutzer\nGROUP BY DATE_TRUNC('month', erstellt_am)\nORDER BY monat;\n```\n\n## Abfrageoptimierung\n\n```sql\n-- Indizes verwenden\nCREATE INDEX idx_benutzer_status_erstellt ON benutzer(status, erstellt_am);\nCREATE INDEX idx_bestellungen_benutzer_datum ON bestellungen(user_id, bestelldatum);\n\n-- Ausführungsplan analysieren\nEXPLAIN ANALYZE\nSELECT b.name, COUNT(bs.id) as bestellungen_anzahl\nFROM benutzer b\nJOIN bestellungen bs ON b.id = bs.user_id\nWHERE b.status = 'aktiv'\n  AND bs.bestelldatum >= '2024-01-01'\nGROUP BY b.id, b.name;\n```\n\n## Arbeiten mit JSON\n\n```sql\n-- Daten aus JSON extrahieren\nSELECT \n  id,\n  daten->>'name' as name,\n  daten->>'email' as email,\n  (daten->>'alter')::int as alter\nFROM benutzer_profile\nWHERE daten->>'stadt' = 'Berlin';\n\n-- JSON-Daten aggregieren\nSELECT \n  kategorie,\n  jsonb_agg(\n    jsonb_build_object(\n      'id', id,\n      'name', name,\n      'preis', preis\n    )\n  ) as produkte\nFROM produkte\nGROUP BY kategorie;\n```\n\n## Fazit\n\nSQL bleibt das primäre Werkzeug für Datenanalyse. Es ist wichtig, nicht nur die Syntax zu verstehen, sondern auch die Prinzipien der Abfrageoptimierung für die Arbeit mit großen Datenmengen.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Python für Datenanalyse: Pandas und NumPy",
+      "description": "Praktische Anleitung zur Verwendung von Python für Datenanalyse",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 18,
+      "rating": 4.7,
+      "reads": 892,
+      "tags": ["Python", "Pandas", "NumPy", "Datenanalyse"],
+      "content": "# Python für Datenanalyse: Pandas und NumPy\n\n## Pandas Grundlagen\n\n```python\nimport pandas as pd\nimport numpy as np\n\n# Daten laden\ndf = pd.read_csv('daten.csv')\n\n# Grundlegende Operationen\nprint(df.head())\nprint(df.info())\nprint(df.describe())\n```\n\n## Datenbereinigung\n\n```python\n# Fehlende Werte behandeln\ndf['alter'].fillna(df['alter'].median(), inplace=True)\ndf.dropna(subset=['email'], inplace=True)\n\n# Duplikate entfernen\ndf.drop_duplicates(subset=['email'], keep='first', inplace=True)\n\n# Datentypen ändern\ndf['datum'] = pd.to_datetime(df['datum'])\ndf['betrag'] = pd.to_numeric(df['betrag'], errors='coerce')\n```\n\n## Aggregation und Gruppierung\n\n```python\n# Nach Kategorien gruppieren\nresultat = df.groupby('kategorie').agg({\n    'betrag': ['sum', 'mean', 'count'],\n    'user_id': 'nunique'\n}).round(2)\n\n# Pivot-Tabelle\npivot = df.pivot_table(\n    values='betrag',\n    index='kategorie',\n    columns='status',\n    aggfunc='sum',\n    fill_value=0\n)\n```\n\n## Zeitreihen\n\n```python\n# Zeitindex setzen\ndf['datum'] = pd.to_datetime(df['datum'])\ndf.set_index('datum', inplace=True)\n\n# Monatlich resamplen\nmonatlich = df.resample('M').agg({\n    'betrag': 'sum',\n    'user_id': 'nunique'\n})\n\n# Gleitender Durchschnitt\nmonatlich['gleitender_durchschnitt'] = monatlich['betrag'].rolling(window=3).mean()\n```\n\n## Visualisierung\n\n```python\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\n# Liniendiagramm\nplt.figure(figsize=(12, 6))\nmonatlich['betrag'].plot()\nplt.title('Monatlicher Umsatz')\nplt.xlabel('Datum')\nplt.ylabel('Betrag')\nplt.show()\n\n# Histogramm\nplt.figure(figsize=(10, 6))\ndf['betrag'].hist(bins=30)\nplt.title('Betragsverteilung')\nplt.show()\n\n# Korrelationsmatrix\nkorrelation = df[['betrag', 'alter', 'bewertung']].corr()\nsns.heatmap(korrelation, annot=True, cmap='coolwarm')\nplt.show()\n```\n\n## Fazit\n\nPandas und NumPy bieten leistungsstarke Werkzeuge für Datenanalyse in Python. Es ist wichtig, die Prinzipien der Datenmanipulation zu verstehen und Code für große Datenmengen zu optimieren.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "A/B-Tests: Von der Planung zur Analyse",
+      "description": "Umfassende Anleitung zur Durchführung von A/B-Tests und Interpretation der Ergebnisse",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 567,
+      "tags": ["A/B-Tests", "Statistik", "Datenanalyse", "Hypothesentests"],
+      "content": "# A/B-Tests: Von der Planung zur Analyse\n\n## Versuchsplanung\n\n### Hypothesendefinition\n\n```python\n# Beispiel-Hypothese\nhypothese = {\n    'null': 'Neuer Button beeinflusst Konversion nicht',\n    'alternativ': 'Neuer Button erhöht Konversion um 10%',\n    'signifikanzniveau': 0.05,\n    'leistung': 0.8\n}\n```\n\n### Stichprobengröße berechnen\n\n```python\nimport scipy.stats as stats\n\n# Parameter für Berechnung\nbaseline_konversion = 0.05  # 5%\nminimaler_effekt = 0.01  # 1%\nalpha = 0.05\nleistung = 0.8\n\n# Stichprobengröße berechnen\nstichprobengroesse = stats.norm.ppf(1 - alpha/2) + stats.norm.ppf(leistung)\nstichprobengroesse = stichprobengroesse ** 2 * (2 * baseline_konversion * (1 - baseline_konversion)) / (minimaler_effekt ** 2)\n\nprint(f'Stichprobengröße pro Gruppe: {int(stichprobengroesse)}')\n```\n\n## Versuchsdurchführung\n\n```python\n# Gruppen erstellen\nimport numpy as np\n\nnp.random.seed(42)\nuser_ids = range(10000)\n\n# Zufällige Zuweisung\nzuweisungen = np.random.choice(['A', 'B'], size=len(user_ids), p=[0.5, 0.5])\n\nversuchsdaten = pd.DataFrame({\n    'user_id': user_ids,\n    'gruppe': zuweisungen\n})\n```\n\n## Ergebnisanalyse\n\n```python\n# Daten sammeln\nresultate = pd.DataFrame({\n    'user_id': [1, 2, 3, 4, 5],\n    'gruppe': ['A', 'B', 'A', 'B', 'A'],\n    'konvertiert': [0, 1, 0, 1, 0]\n})\n\n# Nach Gruppen aggregieren\ngruppen_statistiken = resultate.groupby('gruppe').agg({\n    'user_id': 'count',\n    'konvertiert': 'sum'\n}).rename(columns={'user_id': 'benutzer', 'konvertiert': 'konversionen'})\n\ngruppen_statistiken['konversionsrate'] = gruppen_statistiken['konversionen'] / gruppen_statistiken['benutzer']\n\nprint(gruppen_statistiken)\n```\n\n## Statistische Tests\n\n```python\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# Z-Test für Proportionen\nkonversionen_a = gruppen_statistiken.loc['A', 'konversionen']\nbenutzer_a = gruppen_statistiken.loc['A', 'benutzer']\nkonversionen_b = gruppen_statistiken.loc['B', 'konversionen']\nbenutzer_b = gruppen_statistiken.loc['B', 'benutzer']\n\nz_stat, p_wert = proportions_ztest(\n    [konversionen_a, konversionen_b],\n    [benutzer_a, benutzer_b]\n)\n\nprint(f'Z-Statistik: {z_stat:.4f}')\nprint(f'P-Wert: {p_wert:.4f}')\nprint(f'Statistisch signifikant: {p_wert < 0.05}')\n```\n\n## Ergebnisvisualisierung\n\n```python\nimport matplotlib.pyplot as plt\n\n# Konversionsdiagramm\nfig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))\n\n# Konversionen nach Gruppe\nkonversionsraten = gruppen_statistiken['konversionsrate']\nax1.bar(konversionsraten.index, konversionsraten.values)\nax1.set_title('Konversionen nach Gruppe')\nax1.set_ylabel('Konversionsrate')\n\n# Konfidenzintervalle\nfrom scipy.stats import norm\n\ndef konfidenzintervall(konversionen, benutzer, konfidenz=0.95):\n    p = konversionen / benutzer\n    z = norm.ppf((1 + konfidenz) / 2)\n    margen = z * np.sqrt(p * (1 - p) / benutzer)\n    return p - margen, p + margen\n\nfor gruppe in ['A', 'B']:\n    konv = gruppen_statistiken.loc[gruppe, 'konversionen']\n    ben = gruppen_statistiken.loc[gruppe, 'benutzer']\n    ci_unten, ci_oben = konfidenzintervall(konv, ben)\n    ax2.errorbar(gruppe, konv/ben, yerr=[[konv/ben - ci_unten], [ci_oben - konv/ben]], \n                fmt='o', capsize=5)\n\nax2.set_title('Konversionsrate mit Konfidenzintervallen')\nax2.set_ylabel('Konversionsrate')\n\nplt.tight_layout()\nplt.show()\n```\n\n## Fazit\n\nA/B-Tests erfordern sorgfältige Planung und korrekte Interpretation der Ergebnisse. Es ist wichtig, sowohl die statistische als auch die praktische Signifikanz der Ergebnisse zu berücksichtigen.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

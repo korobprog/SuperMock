@@ -32,8 +32,14 @@ import feedbackRoutes from './routes/feedback';
 import calendarRoutes from './routes/calendar';
 import userDataCheckRoutes from './routes/user-data-check';
 import userRoutes from './routes/user';
+import historyRoutes from './routes/history';
+import userToolsRoutes from './routes/userTools';
+import materialsRoutes from './routes/materials';
 import profileRoutes from './routes/profile';
 import notificationRoutes from './routes/notifications';
+import initRoutes from './routes/init';
+import slotsRoutes from './routes/slots';
+import preferencesRoutes from './routes/preferences';
 
 // Инициализация приложения Express
 const app = express();
@@ -120,6 +126,12 @@ app.use('/api/user-data-check', userDataCheckRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/init', initRoutes);
+app.use('/api/slots', slotsRoutes);
+app.use('/api/preferences', preferencesRoutes);
+app.use('/api/history', historyRoutes);
+app.use('/api/user-tools', userToolsRoutes);
+app.use('/api/materials', materialsRoutes);
 
 // Маршруты для health-check
 app.get('/health', healthCheck);

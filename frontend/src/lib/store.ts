@@ -36,6 +36,7 @@ export type AppState = {
   userSettings: UserSettings;
   mediaSettings: MediaSettings | null; // Добавляем медиа настройки
   selectedTools: string[]; // Добавляем выбранные инструменты
+  demoMode: boolean; // Добавляем режим демо
   setUserId: (id: number) => void;
   setTelegramUser: (user: TelegramUser | null) => void;
   loadUserSettings: (userId: number) => Promise<void>;
@@ -47,6 +48,7 @@ export type AppState = {
   setUserSettings: (settings: Partial<UserSettings>) => void;
   setMediaSettings: (settings: MediaSettings) => void; // Добавляем функцию для установки медиа настроек
   setSelectedTools: (tools: string[]) => void; // Добавляем функцию для установки инструментов
+  setDemoMode: (mode: boolean) => void; // Добавляем функцию для установки режима демо
   saveCurrentRoleAsLast: () => void; // Функция для сохранения текущей роли как последней
   reset: () => void;
   clearAll: () => void;
@@ -85,6 +87,7 @@ export const useAppStore = create<AppState>()(
       jitsiRoom: null,
       mediaSettings: null, // Инициализируем медиа настройки как null
       selectedTools: [], // Инициализируем пустым массивом
+      demoMode: false, // Инициализируем режим демо как false
       userSettings: {
         openRouterApiKey: null,
         stackblitzApiKey: null,
@@ -168,6 +171,7 @@ export const useAppStore = create<AppState>()(
       },
       setSelectedTools: (tools) => set({ selectedTools: tools }), // Добавляем функцию для установки инструментов
       setMediaSettings: (settings) => set({ mediaSettings: settings }), // Добавляем функцию для установки медиа настроек
+      setDemoMode: (mode) => set({ demoMode: mode }), // Добавляем функцию для установки режима демо
       saveCurrentRoleAsLast: () => {
         const currentState = get();
         if (currentState.role) {
@@ -185,6 +189,7 @@ export const useAppStore = create<AppState>()(
           jitsiRoom: null,
           selectedTools: [], // Сбрасываем инструменты при reset
           mediaSettings: null, // Сбрасываем медиа настройки при reset
+          demoMode: false, // Сбрасываем режим демо при reset
         }),
       clearAll: () =>
         set({
@@ -198,6 +203,7 @@ export const useAppStore = create<AppState>()(
           jitsiRoom: null,
           selectedTools: [], // Очищаем инструменты при clearAll
           mediaSettings: null, // Очищаем медиа настройки при clearAll
+          demoMode: false, // Очищаем режим демо при clearAll
           userSettings: {
             openRouterApiKey: null,
             stackblitzApiKey: null,
@@ -222,6 +228,7 @@ export const useAppStore = create<AppState>()(
         profession: state.profession,
         selectedTools: state.selectedTools, // Сохраняем выбранные инструменты
         mediaSettings: state.mediaSettings, // Сохраняем медиа настройки
+        demoMode: state.demoMode, // Сохраняем режим демо
       }),
       // Версия для миграции в будущем
       version: 1,

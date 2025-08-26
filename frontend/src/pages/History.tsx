@@ -67,9 +67,9 @@ export function History() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!userId) {
-        setError(t('history.userIdNotFound'));
-        setIsLoading(false);
+      if (!userId || userId === 0) {
+        console.log('Пользователь не авторизован, перенаправляем на главную');
+        navigate('/');
         return;
       }
 

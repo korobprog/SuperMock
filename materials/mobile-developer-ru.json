@@ -1,0 +1,95 @@
+{
+  "profession": "mobile-developer",
+  "language": "ru",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Вопросы на собеседовании",
+      "count": 142,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Технические задания",
+      "count": 76,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Системный дизайн",
+      "count": 28,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Поведенческие вопросы",
+      "count": 54,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Алгоритмы и структуры данных",
+      "count": 98,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Лучшие практики",
+      "count": 67,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "iOS разработка: Swift и UIKit",
+      "description": "Основы разработки iOS приложений с использованием Swift и UIKit фреймворка",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.8,
+      "reads": 1156,
+      "tags": ["iOS", "Swift", "UIKit", "Mobile", "Apple"],
+      "content": "# iOS разработка: Swift и UIKit\n\n## Введение в Swift\n\nSwift - современный язык программирования от Apple для разработки iOS, macOS, watchOS и tvOS приложений.\n\n## Основы Swift\n\n### Переменные и константы\n\n```swift\n// Константы (неизменяемые)\nlet name = \"Иван\"\nlet age: Int = 25\n\n// Переменные (изменяемые)\nvar score = 0\nvar isActive: Bool = true\n\n// Опциональные типы\nvar optionalString: String? = nil\nvar unwrappedString: String! = \"Привет\"\n```\n\n### Функции\n\n```swift\n// Простая функция\nfunc greet(name: String) -> String {\n    return \"Привет, \\(name)!\"\n}\n\n// Функция с внешними и внутренними параметрами\nfunc greet(person name: String, from city: String) -> String {\n    return \"Привет, \\(name) из \\(city)!\"\n}\n```\n\n## UIKit Framework\n\n### Основные компоненты\n\n```swift\nimport UIKit\n\nclass ViewController: UIViewController {\n    \n    private let label: UILabel = {\n        let label = UILabel()\n        label.text = \"Привет, мир!\"\n        label.textAlignment = .center\n        label.font = UIFont.systemFont(ofSize: 18, weight: .medium)\n        label.translatesAutoresizingMaskIntoConstraints = false\n        return label\n    }()\n    \n    override func viewDidLoad() {\n        super.viewDidLoad()\n        setupUI()\n    }\n    \n    private func setupUI() {\n        view.backgroundColor = .white\n        view.addSubview(label)\n        \n        NSLayoutConstraint.activate([\n            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),\n            label.centerYAnchor.constraint(equalTo: view.centerYAnchor)\n        ])\n    }\n}\n```\n\n## Лучшие практики\n\n1. **Используйте Auto Layout для адаптивного дизайна**\n2. **Применяйте MVVM или MVP архитектуру**\n3. **Используйте weak self в замыканиях для предотвращения retain cycles**\n4. **Обрабатывайте ошибки сети и показывайте пользователю понятные сообщения**\n5. **Оптимизируйте производительность при работе с большими списками**\n6. **Используйте Instruments для профилирования приложения**\n\n## Заключение\n\nSwift и UIKit предоставляют мощные инструменты для создания iOS приложений. Понимание основ языка и фреймворка критически важно для успешной разработки мобильных приложений.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Android разработка: Kotlin и Jetpack Compose",
+      "description": "Современная разработка Android приложений с использованием Kotlin и Jetpack Compose",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 987,
+      "tags": ["Android", "Kotlin", "Jetpack Compose", "Mobile", "Google"],
+      "content": "# Android разработка: Kotlin и Jetpack Compose\n\n## Введение в Kotlin\n\nKotlin - современный язык программирования, который стал стандартом для Android разработки.\n\n## Основы Kotlin\n\n### Переменные и типы\n\n```kotlin\n// Неизменяемые переменные (val)\nval name = \"Анна\"\nval age: Int = 25\n\n// Изменяемые переменные (var)\nvar score = 0\nvar isActive: Boolean = true\n\n// Nullable типы\nvar nullableString: String? = null\nvar nonNullString: String = \"Привет\"\n\n// Безопасный вызов\nval length = nullableString?.length ?: 0\n```\n\n### Функции\n\n```kotlin\n// Простая функция\nfun greet(name: String): String {\n    return \"Привет, $name!\"\n}\n\n// Функция с выражением\nfun add(a: Int, b: Int) = a + b\n\n// Функция с параметрами по умолчанию\nfun greet(name: String, greeting: String = \"Привет\") = \"$greeting, $name!\"\n```\n\n## Jetpack Compose\n\n### Основы Compose\n\n```kotlin\nimport androidx.compose.foundation.layout.*\nimport androidx.compose.material3.*\nimport androidx.compose.runtime.*\nimport androidx.compose.ui.Alignment\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.unit.dp\n\n@Composable\nfun GreetingScreen() {\n    var name by remember { mutableStateOf(\"\") }\n    \n    Column(\n        modifier = Modifier\n            .fillMaxSize()\n            .padding(16.dp),\n        horizontalAlignment = Alignment.CenterHorizontally,\n        verticalArrangement = Arrangement.Center\n    ) {\n        Text(\n            text = \"Привет, $name!\"\n        )\n        \n        Spacer(modifier = Modifier.height(16.dp))\n        \n        OutlinedTextField(\n            value = name,\n            onValueChange = { name = it },\n            label = { Text(\"Введите имя\") }\n        )\n    }\n}\n```\n\n## Лучшие практики\n\n1. **Используйте Compose для современного UI**\n2. **Применяйте MVVM архитектуру с ViewModel**\n3. **Используйте StateFlow для реактивного программирования**\n4. **Применяйте Dependency Injection (Hilt)**\n5. **Используйте Room для локального хранения данных**\n6. **Обрабатывайте ошибки и показывайте пользователю понятные сообщения**\n7. **Оптимизируйте производительность с помощью LazyColumn/LazyRow**\n8. **Используйте Material Design 3 для современного дизайна**\n\n## Заключение\n\nKotlin и Jetpack Compose предоставляют современные инструменты для создания Android приложений. Понимание этих технологий критически важно для успешной разработки мобильных приложений.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "React Native: кроссплатформенная разработка",
+      "description": "Создание мобильных приложений для iOS и Android с помощью React Native",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 18,
+      "rating": 4.6,
+      "reads": 456,
+      "tags": ["React Native", "JavaScript", "Mobile", "Cross-platform", "Expo"],
+      "content": "# React Native: кроссплатформенная разработка\n\n## Введение в React Native\n\nReact Native позволяет создавать нативные мобильные приложения с использованием JavaScript и React.\n\n## Основы React Native\n\n### Компоненты\n\n```jsx\nimport React from 'react';\nimport { View, Text, StyleSheet } from 'react-native';\n\nconst App = () => {\n  return (\n    <View style={styles.container}>\n      <Text style={styles.text}>Привет, React Native!</Text>\n    </View>\n  );\n};\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    justifyContent: 'center',\n    alignItems: 'center',\n    backgroundColor: '#F5FCFF',\n  },\n  text: {\n    fontSize: 20,\n    textAlign: 'center',\n    margin: 10,\n  },\n});\n\nexport default App;\n```\n\n### Навигация с React Navigation\n\n```jsx\nimport React from 'react';\nimport { NavigationContainer } from '@react-navigation/native';\nimport { createStackNavigator } from '@react-navigation/stack';\n\nconst Stack = createStackNavigator();\n\nfunction HomeScreen({ navigation }) {\n  return (\n    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>\n      <Text>Домашняя страница</Text>\n      <Button\n        title=\"Перейти к деталям\"\n        onPress={() => navigation.navigate('Details')}\n      />\n    </View>\n  );\n}\n\nfunction App() {\n  return (\n    <NavigationContainer>\n      <Stack.Navigator>\n        <Stack.Screen name=\"Home\" component={HomeScreen} />\n        <Stack.Screen name=\"Details\" component={DetailsScreen} />\n      </Stack.Navigator>\n    </NavigationContainer>\n  );\n}\n```\n\n## Лучшие практики\n\n1. **Используйте функциональные компоненты и хуки**\n2. **Применяйте правильную структуру проекта**\n3. **Используйте TypeScript для типизации**\n4. **Оптимизируйте производительность с помощью useMemo и useCallback**\n5. **Обрабатывайте ошибки и показывайте пользователю понятные сообщения**\n6. **Используйте правильную навигацию для вашего приложения**\n7. **Тестируйте на реальных устройствах**\n8. **Используйте Expo для быстрого прототипирования**\n\n## Заключение\n\nReact Native предоставляет мощные инструменты для создания кроссплатформенных мобильных приложений. Понимание основ React Native критически важно для успешной разработки мобильных приложений.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

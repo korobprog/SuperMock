@@ -1,0 +1,95 @@
+{
+  "profession": "mobile-developer",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 142,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 76,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 28,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 54,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法与数据结构",
+      "count": 98,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 67,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "iOS开发：Swift和UIKit",
+      "description": "使用Swift和UIKit框架进行iOS应用开发的基础知识",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.8,
+      "reads": 1156,
+      "tags": ["iOS", "Swift", "UIKit", "Mobile", "Apple"],
+      "content": "# iOS开发：Swift和UIKit\n\n## Swift简介\n\nSwift是Apple开发的现代编程语言，用于开发iOS、macOS、watchOS和tvOS应用程序。\n\n## Swift基础\n\n### 变量和常量\n\n```swift\n// 常量（不可变）\nlet name = \"John\"\nlet age: Int = 25\n\n// 变量（可变）\nvar score = 0\nvar isActive: Bool = true\n\n// 可选类型\nvar optionalString: String? = nil\nvar unwrappedString: String! = \"Hello\"\n```\n\n### 函数\n\n```swift\n// 简单函数\nfunc greet(name: String) -> String {\n    return \"Hello, \\(name)!\"\n}\n\n// 带外部和内部参数的函数\nfunc greet(person name: String, from city: String) -> String {\n    return \"Hello, \\(name) from \\(city)!\"\n}\n```\n\n## UIKit框架\n\n### 基础组件\n\n```swift\nimport UIKit\n\nclass ViewController: UIViewController {\n    \n    private let label: UILabel = {\n        let label = UILabel()\n        label.text = \"Hello, World!\"\n        label.textAlignment = .center\n        label.font = UIFont.systemFont(ofSize: 18, weight: .medium)\n        label.translatesAutoresizingMaskIntoConstraints = false\n        return label\n    }()\n    \n    override func viewDidLoad() {\n        super.viewDidLoad()\n        setupUI()\n    }\n    \n    private func setupUI() {\n        view.backgroundColor = .white\n        view.addSubview(label)\n        \n        NSLayoutConstraint.activate([\n            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),\n            label.centerYAnchor.constraint(equalTo: view.centerYAnchor)\n        ])\n    }\n}\n```\n\n## 最佳实践\n\n1. **使用Auto Layout进行自适应设计**\n2. **应用MVVM或MVP架构**\n3. **在闭包中使用weak self防止循环引用**\n4. **处理网络错误并显示用户友好的消息**\n5. **在处理大型列表时优化性能**\n6. **使用Instruments进行应用性能分析**\n\n## 结论\n\nSwift和UIKit为创建iOS应用程序提供了强大的工具。理解语言和框架的基础知识对于成功的移动应用开发至关重要。",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Android开发：Kotlin和Jetpack Compose",
+      "description": "使用Kotlin和Jetpack Compose进行现代Android应用开发",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 987,
+      "tags": ["Android", "Kotlin", "Jetpack Compose", "Mobile", "Google"],
+      "content": "# Android开发：Kotlin和Jetpack Compose\n\n## Kotlin简介\n\nKotlin是一种现代编程语言，已成为Android开发的标准。\n\n## Kotlin基础\n\n### 变量和类型\n\n```kotlin\n// 不可变变量（val）\nval name = \"Anna\"\nval age: Int = 25\n\n// 可变变量（var）\nvar score = 0\nvar isActive: Boolean = true\n\n// 可空类型\nvar nullableString: String? = null\nvar nonNullString: String = \"Hello\"\n\n// 安全调用\nval length = nullableString?.length ?: 0\n```\n\n### 函数\n\n```kotlin\n// 简单函数\nfun greet(name: String): String {\n    return \"Hello, $name!\"\n}\n\n// 表达式函数\nfun add(a: Int, b: Int) = a + b\n\n// 带默认参数的函数\nfun greet(name: String, greeting: String = \"Hello\") = \"$greeting, $name!\"\n```\n\n## Jetpack Compose\n\n### Compose基础\n\n```kotlin\nimport androidx.compose.foundation.layout.*\nimport androidx.compose.material3.*\nimport androidx.compose.runtime.*\nimport androidx.compose.ui.Alignment\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.unit.dp\n\n@Composable\nfun GreetingScreen() {\n    var name by remember { mutableStateOf(\"\") }\n    \n    Column(\n        modifier = Modifier\n            .fillMaxSize()\n            .padding(16.dp),\n        horizontalAlignment = Alignment.CenterHorizontally,\n        verticalArrangement = Arrangement.Center\n    ) {\n        Text(\n            text = \"Hello, $name!\"\n        )\n        \n        Spacer(modifier = Modifier.height(16.dp))\n        \n        OutlinedTextField(\n            value = name,\n            onValueChange = { name = it },\n            label = { Text(\"输入姓名\") }\n        )\n    }\n}\n```\n\n## 最佳实践\n\n1. **使用Compose构建现代UI**\n2. **应用带ViewModel的MVVM架构**\n3. **使用StateFlow进行响应式编程**\n4. **应用依赖注入（Hilt）**\n5. **使用Room进行本地数据存储**\n6. **处理错误并显示用户友好的消息**\n7. **使用LazyColumn/LazyRow优化性能**\n8. **使用Material Design 3进行现代设计**\n\n## 结论\n\nKotlin和Jetpack Compose为创建Android应用程序提供了现代工具。理解这些技术对于成功的移动应用开发至关重要。",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "React Native：跨平台开发",
+      "description": "使用React Native为iOS和Android创建移动应用程序",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 18,
+      "rating": 4.6,
+      "reads": 456,
+      "tags": ["React Native", "JavaScript", "Mobile", "Cross-platform", "Expo"],
+      "content": "# React Native：跨平台开发\n\n## React Native简介\n\nReact Native允许您使用JavaScript和React创建原生移动应用程序。\n\n## React Native基础\n\n### 组件\n\n```jsx\nimport React from 'react';\nimport { View, Text, StyleSheet } from 'react-native';\n\nconst App = () => {\n  return (\n    <View style={styles.container}>\n      <Text style={styles.text}>Hello, React Native!</Text>\n    </View>\n  );\n};\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    justifyContent: 'center',\n    alignItems: 'center',\n    backgroundColor: '#F5FCFF',\n  },\n  text: {\n    fontSize: 20,\n    textAlign: 'center',\n    margin: 10,\n  },\n});\n\nexport default App;\n```\n\n### 使用React Navigation进行导航\n\n```jsx\nimport React from 'react';\nimport { NavigationContainer } from '@react-navigation/native';\nimport { createStackNavigator } from '@react-navigation/stack';\n\nconst Stack = createStackNavigator();\n\nfunction HomeScreen({ navigation }) {\n  return (\n    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>\n      <Text>Home Screen</Text>\n      <Button\n        title=\"Go to Details\"\n        onPress={() => navigation.navigate('Details')}\n      />\n    </View>\n  );\n}\n\nfunction App() {\n  return (\n    <NavigationContainer>\n      <Stack.Navigator>\n        <Stack.Screen name=\"Home\" component={HomeScreen} />\n        <Stack.Screen name=\"Details\" component={DetailsScreen} />\n      </Stack.Navigator>\n    </NavigationContainer>\n  );\n}\n```\n\n## 最佳实践\n\n1. **使用函数组件和hooks**\n2. **应用适当的项目结构**\n3. **使用TypeScript进行类型安全**\n4. **使用useMemo和useCallback优化性能**\n5. **处理错误并显示用户友好的消息**\n6. **为您的应用使用适当的导航**\n7. **在真实设备上测试**\n8. **使用Expo进行快速原型设计**\n\n## 结论\n\nReact Native为创建跨平台移动应用程序提供了强大的工具。理解React Native基础知识对于成功的移动应用开发至关重要。",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

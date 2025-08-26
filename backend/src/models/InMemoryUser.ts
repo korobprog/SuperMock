@@ -10,6 +10,7 @@ export interface UserData {
   googleId?: string;
   googleAccessToken?: string;
   googleRefreshToken?: string;
+  tgId?: string;
 }
 
 // Интерфейс для элемента истории ролей
@@ -37,6 +38,7 @@ export class InMemoryUser {
   googleId?: string;
   googleAccessToken?: string;
   googleRefreshToken?: string;
+  tgId?: string;
 
   constructor(userData: UserData) {
     this.id = crypto.randomUUID();
@@ -48,11 +50,17 @@ export class InMemoryUser {
     this.googleId = userData.googleId;
     this.googleAccessToken = userData.googleAccessToken;
     this.googleRefreshToken = userData.googleRefreshToken;
+    this.tgId = userData.tgId;
   }
 
-  // Статический метод для поиска пользователя по email
-  static async findOne(query: UserQuery): Promise<InMemoryUser | null> {
-    return users.find((user) => user.email === query.email) || null;
+  // Статический метод для поиска пользователя по email или tgId
+  static async findOne(query: UserQuery | { email?: string; tgId?: string }): Promise<InMemoryUser | null> {
+    if ('email' in query && query.email) {
+      return users.find((user) => user.email === query.email) || null;
+    } else if ('tgId' in query && query.tgId) {
+      return users.find((user) => user.tgId === query.tgId) || null;
+    }
+    return null;
   }
 
   // Статический метод для поиска пользователя по googleId

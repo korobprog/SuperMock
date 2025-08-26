@@ -1,0 +1,95 @@
+{
+  "profession": "ux-ui-designer",
+  "language": "fr",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Questions d'Entretien",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Tâches Techniques",
+      "count": 98,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Conception de Système",
+      "count": 34,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Questions Comportementales",
+      "count": 78,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithmes et Structures de Données",
+      "count": 67,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Meilleures Pratiques",
+      "count": 89,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Fondamentaux UX/UI: Principes et Méthodologies",
+      "description": "Principes fondamentaux du design UX/UI et méthodologies modernes",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.8,
+      "reads": 2345,
+      "tags": ["UX", "UI", "Design", "Principes", "Méthodologies"],
+      "content": "# Fondamentaux UX/UI\n\n## Introduction au Design UX/UI\n\nLe design UX/UI est le processus de création d'interfaces utilisateur qui offrent une excellente expérience utilisateur.\n\n## Principes Fondamentaux\n\n1. **Approche Centrée sur l'Utilisateur**\n2. **Simplicité et Clarté**\n3. **Cohérence**\n4. **Accessibilité**\n5. **Réactivité**\n\n## Méthodologies\n\n- Design Thinking\n- Lean UX\n- Agile UX\n- Human-Centered Design",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Prototypage et Tests",
+      "description": "Création de prototypes et méthodes de test UX/UI",
+      "category": "best-practices",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.7,
+      "reads": 1876,
+      "tags": ["Prototypage", "Tests", "UX", "UI", "Figma"],
+      "content": "# Prototypage et Tests\n\n## Types de Prototypes\n\n- Prototypes papier\n- Prototypes numériques\n- Prototypes interactifs\n\n## Outils\n\n- Figma\n- Sketch\n- Adobe XD\n- InVision\n\n## Méthodes de Test\n\n- Tests d'Utilisabilité\n- Tests A/B\n- Eye Tracking\n- Analytics",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "Systèmes de Design",
+      "description": "Création et maintenance de systèmes de design pour projets évolutifs",
+      "category": "system-design",
+      "difficulty": "advanced",
+      "readTime": 30,
+      "rating": 4.6,
+      "reads": 1456,
+      "tags": ["Système de Design", "Composants", "Évolutivité", "Figma", "Storybook"],
+      "content": "# Systèmes de Design\n\n## Qu'est-ce qu'un Système de Design\n\nUn système de design est une collection de composants, directives et principes interconnectés.\n\n## Structure\n\n- Tokens de design\n- Composants de base\n- Composants complexes\n- Templates\n\n## Outils\n\n- Figma\n- Storybook\n- Zeroheight\n- Abstract",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

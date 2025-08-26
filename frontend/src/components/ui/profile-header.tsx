@@ -62,9 +62,23 @@ export function ProfileHeader() {
   }, [userId]);
 
   const handleLogout = () => {
+    // Очищаем все данные пользователя
     setTelegramUser(null);
     setUserId(0);
     setRealUser(null);
+    
+    // Очищаем данные из localStorage
+    localStorage.removeItem('Super Mock-storage');
+    localStorage.removeItem('telegram_user');
+    
+    // Устанавливаем флаги выхода
+    sessionStorage.setItem('just_logged_out', 'true');
+    sessionStorage.setItem('logout_timestamp', Date.now().toString());
+    
+    // Перезагружаем страницу для полной очистки
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const handleTelegramAuth = async (user: TelegramUser) => {

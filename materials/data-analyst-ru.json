@@ -1,0 +1,95 @@
+{
+  "profession": "data-analyst",
+  "language": "ru",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Вопросы на собеседовании",
+      "count": 142,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Технические задания",
+      "count": 76,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Системный дизайн",
+      "count": 28,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Поведенческие вопросы",
+      "count": 54,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Алгоритмы и структуры данных",
+      "count": 89,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Лучшие практики",
+      "count": 67,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "SQL для аналитиков: полное руководство",
+      "description": "Комплексное руководство по SQL для анализа данных с практическими примерами",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.8,
+      "reads": 1156,
+      "tags": ["SQL", "Анализ данных", "Базы данных", "PostgreSQL"],
+      "content": "# SQL для аналитиков: полное руководство\n\n## Основы SQL\n\n### SELECT и фильтрация\n\n```sql\n-- Базовый SELECT\nSELECT column1, column2\nFROM table_name\nWHERE condition;\n\n-- Пример с фильтрацией\nSELECT user_id, name, email, created_at\nFROM users\nWHERE created_at >= '2024-01-01'\n  AND status = 'active';\n```\n\n### Агрегатные функции\n\n```sql\n-- Подсчет пользователей по статусу\nSELECT \n  status,\n  COUNT(*) as user_count,\n  AVG(age) as avg_age\nFROM users\nGROUP BY status\nHAVING COUNT(*) > 10;\n```\n\n## Продвинутые техники\n\n### Window Functions\n\n```sql\n-- Ранжирование пользователей по активности\nSELECT \n  user_id,\n  name,\n  activity_score,\n  ROW_NUMBER() OVER (ORDER BY activity_score DESC) as rank,\n  RANK() OVER (ORDER BY activity_score DESC) as rank_with_ties,\n  DENSE_RANK() OVER (ORDER BY activity_score DESC) as dense_rank\nFROM user_activity;\n\n-- Скользящее среднее\nSELECT \n  date,\n  revenue,\n  AVG(revenue) OVER (\n    ORDER BY date \n    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n  ) as moving_avg_7d\nFROM daily_revenue;\n```\n\n### CTE (Common Table Expressions)\n\n```sql\nWITH user_stats AS (\n  SELECT \n    user_id,\n    COUNT(*) as order_count,\n    SUM(amount) as total_spent\n  FROM orders\n  GROUP BY user_id\n),\nhigh_value_users AS (\n  SELECT user_id\n  FROM user_stats\n  WHERE total_spent > 1000\n)\nSELECT u.name, us.order_count, us.total_spent\nFROM users u\nJOIN user_stats us ON u.id = us.user_id\nWHERE u.id IN (SELECT user_id FROM high_value_users);\n```\n\n## Анализ временных рядов\n\n```sql\n-- Месячный рост пользователей\nSELECT \n  DATE_TRUNC('month', created_at) as month,\n  COUNT(*) as new_users,\n  LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', created_at)) as prev_month,\n  (COUNT(*) - LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', created_at))) / \n    LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', created_at)) * 100 as growth_percent\nFROM users\nGROUP BY DATE_TRUNC('month', created_at)\nORDER BY month;\n```\n\n## Оптимизация запросов\n\n```sql\n-- Использование индексов\nCREATE INDEX idx_users_status_created ON users(status, created_at);\nCREATE INDEX idx_orders_user_date ON orders(user_id, order_date);\n\n-- Анализ плана выполнения\nEXPLAIN ANALYZE\nSELECT u.name, COUNT(o.id) as order_count\nFROM users u\nJOIN orders o ON u.id = o.user_id\nWHERE u.status = 'active'\n  AND o.order_date >= '2024-01-01'\nGROUP BY u.id, u.name;\n```\n\n## Работа с JSON\n\n```sql\n-- Извлечение данных из JSON\nSELECT \n  id,\n  data->>'name' as name,\n  data->>'email' as email,\n  (data->>'age')::int as age\nFROM user_profiles\nWHERE data->>'city' = 'Москва';\n\n-- Агрегация JSON данных\nSELECT \n  category,\n  jsonb_agg(\n    jsonb_build_object(\n      'id', id,\n      'name', name,\n      'price', price\n    )\n  ) as products\nFROM products\nGROUP BY category;\n```\n\n## Заключение\n\nSQL остается основным инструментом для анализа данных. Важно понимать не только синтаксис, но и принципы оптимизации запросов для работы с большими объемами данных.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Python для анализа данных: Pandas и NumPy",
+      "description": "Практическое руководство по использованию Python для анализа данных",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 18,
+      "rating": 4.7,
+      "reads": 892,
+      "tags": ["Python", "Pandas", "NumPy", "Анализ данных"],
+      "content": "# Python для анализа данных: Pandas и NumPy\n\n## Основы Pandas\n\n```python\nimport pandas as pd\nimport numpy as np\n\n# Загрузка данных\n df = pd.read_csv('data.csv')\n\n# Базовые операции\nprint(df.head())\nprint(df.info())\nprint(df.describe())\n```\n\n## Очистка данных\n\n```python\n# Обработка пропущенных значений\ndf['age'].fillna(df['age'].median(), inplace=True)\ndf.dropna(subset=['email'], inplace=True)\n\n# Удаление дубликатов\ndf.drop_duplicates(subset=['email'], keep='first', inplace=True)\n\n# Изменение типов данных\ndf['date'] = pd.to_datetime(df['date'])\ndf['amount'] = pd.to_numeric(df['amount'], errors='coerce')\n```\n\n## Агрегация и группировка\n\n```python\n# Группировка по категориям\nresult = df.groupby('category').agg({\n    'amount': ['sum', 'mean', 'count'],\n    'user_id': 'nunique'\n}).round(2)\n\n# Сводная таблица\npivot = df.pivot_table(\n    values='amount',\n    index='category',\n    columns='status',\n    aggfunc='sum',\n    fill_value=0\n)\n```\n\n## Временные ряды\n\n```python\n# Установка индекса времени\ndf['date'] = pd.to_datetime(df['date'])\ndf.set_index('date', inplace=True)\n\n# Ресемплинг по месяцам\nmonthly = df.resample('M').agg({\n    'amount': 'sum',\n    'user_id': 'nunique'\n})\n\n# Скользящее среднее\nmonthly['rolling_avg'] = monthly['amount'].rolling(window=3).mean()\n```\n\n## Визуализация\n\n```python\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\n# Линейный график\nplt.figure(figsize=(12, 6))\nmonthly['amount'].plot()\nplt.title('Месячная выручка')\nplt.xlabel('Дата')\nplt.ylabel('Сумма')\nplt.show()\n\n# Гистограмма\nplt.figure(figsize=(10, 6))\ndf['amount'].hist(bins=30)\nplt.title('Распределение сумм')\nplt.show()\n\n# Корреляционная матрица\ncorrelation = df[['amount', 'age', 'rating']].corr()\nsns.heatmap(correlation, annot=True, cmap='coolwarm')\nplt.show()\n```\n\n## Заключение\n\nPandas и NumPy предоставляют мощные инструменты для анализа данных в Python. Важно понимать принципы работы с данными и уметь оптимизировать код для больших объемов.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "A/B тестирование: от планирования до анализа",
+      "description": "Комплексное руководство по проведению A/B тестов и интерпретации результатов",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 567,
+      "tags": ["A/B тестирование", "Статистика", "Анализ данных", "Гипотезы"],
+      "content": "# A/B тестирование: от планирования до анализа\n\n## Планирование эксперимента\n\n### Определение гипотезы\n\n```python\n# Пример гипотезы\nhypothesis = {\n    'null': 'Новая кнопка не влияет на конверсию',\n    'alternative': 'Новая кнопка увеличивает конверсию на 10%',\n    'significance_level': 0.05,\n    'power': 0.8\n}\n```\n\n### Расчет размера выборки\n\n```python\nimport scipy.stats as stats\n\n# Параметры для расчета\nbaseline_conversion = 0.05  # 5%\nmin_detectable_effect = 0.01  # 1%\nalpha = 0.05\npower = 0.8\n\n# Расчет размера выборки\nsample_size = stats.norm.ppf(1 - alpha/2) + stats.norm.ppf(power)\nsample_size = sample_size ** 2 * (2 * baseline_conversion * (1 - baseline_conversion)) / (min_detectable_effect ** 2)\n\nprint(f'Размер выборки на группу: {int(sample_size)}')\n```\n\n## Проведение эксперимента\n\n```python\n# Создание групп\nimport numpy as np\n\nnp.random.seed(42)\nuser_ids = range(10000)\n\n# Случайное распределение\nassignments = np.random.choice(['A', 'B'], size=len(user_ids), p=[0.5, 0.5])\n\nexperiment_data = pd.DataFrame({\n    'user_id': user_ids,\n    'group': assignments\n})\n```\n\n## Анализ результатов\n\n```python\n# Сбор данных\nresults = pd.DataFrame({\n    'user_id': [1, 2, 3, 4, 5],\n    'group': ['A', 'B', 'A', 'B', 'A'],\n    'converted': [0, 1, 0, 1, 0]\n})\n\n# Агрегация по группам\ngroup_stats = results.groupby('group').agg({\n    'user_id': 'count',\n    'converted': 'sum'\n}).rename(columns={'user_id': 'users', 'converted': 'conversions'})\n\ngroup_stats['conversion_rate'] = group_stats['conversions'] / group_stats['users']\n\nprint(group_stats)\n```\n\n## Статистические тесты\n\n```python\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# Z-тест для пропорций\nconversions_a = group_stats.loc['A', 'conversions']\nusers_a = group_stats.loc['A', 'users']\nconversions_b = group_stats.loc['B', 'conversions']\nusers_b = group_stats.loc['B', 'users']\n\nz_stat, p_value = proportions_ztest(\n    [conversions_a, conversions_b],\n    [users_a, users_b]\n)\n\nprint(f'Z-статистика: {z_stat:.4f}')\nprint(f'P-значение: {p_value:.4f}')\nprint(f'Статистически значимо: {p_value < 0.05}')\n```\n\n## Визуализация результатов\n\n```python\nimport matplotlib.pyplot as plt\n\n# График конверсий\nfig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))\n\n# Конверсии по группам\nconversion_rates = group_stats['conversion_rate']\nax1.bar(conversion_rates.index, conversion_rates.values)\nax1.set_title('Конверсия по группам')\nax1.set_ylabel('Конверсия')\n\n# Доверительные интервалы\nfrom scipy.stats import norm\n\ndef confidence_interval(conversions, users, confidence=0.95):\n    p = conversions / users\n    z = norm.ppf((1 + confidence) / 2)\n    margin = z * np.sqrt(p * (1 - p) / users)\n    return p - margin, p + margin\n\nfor group in ['A', 'B']:\n    conv = group_stats.loc[group, 'conversions']\n    users = group_stats.loc[group, 'users']\n    ci_low, ci_high = confidence_interval(conv, users)\n    ax2.errorbar(group, conv/users, yerr=[[conv/users - ci_low], [ci_high - conv/users]], \n                fmt='o', capsize=5)\n\nax2.set_title('Конверсия с доверительными интервалами')\nax2.set_ylabel('Конверсия')\n\nplt.tight_layout()\nplt.show()\n```\n\n## Заключение\n\nA/B тестирование требует тщательного планирования и правильной интерпретации результатов. Важно учитывать статистическую значимость и практическую значимость результатов.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "profession": "frontend-developer",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 89,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 34,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 67,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法和数据结构",
+      "count": 123,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "JavaScript 面试前50题",
+      "description": "JavaScript面试中最常见的问题，包含详细答案和代码示例",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 15,
+      "rating": 4.8,
+      "reads": 1247,
+      "tags": ["JavaScript", "基础", "ES6+", "面试"],
+      "content": "# JavaScript 面试前50题\n\n## 1. JavaScript中的提升（Hoisting）是什么？\n\n提升是JavaScript的一种机制，变量和函数声明会被提升到其作用域的顶部。\n\n```javascript\nconsole.log(x); // undefined\nvar x = 5;\n\n// 被解释为：\nvar x;\nconsole.log(x); // undefined\nx = 5;\n```\n\n## 2. var、let和const的区别\n\n- **var**：函数作用域，会被提升（hoisting）\n- **let**：块级作用域，不会被提升\n- **const**：块级作用域，不会被提升，不能重新赋值\n\n```javascript\n// var - 函数作用域\nfunction example() {\n  var x = 1;\n  if (true) {\n    var x = 2; // 同一个变量\n  }\n  console.log(x); // 2\n}\n\n// let - 块级作用域\nfunction example2() {\n  let x = 1;\n  if (true) {\n    let x = 2; // 新变量\n  }\n  console.log(x); // 1\n}\n```\n\n## 3. 什么是闭包（Closures）？\n\n闭包是一个函数，它可以访问外部作用域中的变量。\n\n```javascript\nfunction createCounter() {\n  let count = 0;\n  return function() {\n    return ++count;\n  };\n}\n\nconst counter = createCounter();\nconsole.log(counter()); // 1\nconsole.log(counter()); // 2\n```\n\n## 4. JavaScript中的事件循环（Event Loop）\n\n事件循环是允许JavaScript执行异步操作的机制。\n\n```javascript\nconsole.log('1');\nsetTimeout(() => console.log('2'), 0);\nPromise.resolve().then(() => console.log('3'));\nconsole.log('4');\n\n// 输出：1, 4, 3, 2\n```\n\n## 5. Promise和async/await\n\n```javascript\n// Promise\nfunction fetchData() {\n  return new Promise((resolve, reject) => {\n    setTimeout(() => {\n      resolve('数据获取成功');\n    }, 1000);\n  });\n}\n\n// async/await\nasync function getData() {\n  try {\n    const data = await fetchData();\n    console.log(data);\n  } catch (error) {\n    console.error(error);\n  }\n}\n```\n\n## 6. 原型继承\n\n```javascript\nfunction Animal(name) {\n  this.name = name;\n}\n\nAnimal.prototype.speak = function() {\n  console.log(`${this.name} 发出声音`);\n};\n\nfunction Dog(name) {\n  Animal.call(this, name);\n}\n\nDog.prototype = Object.create(Animal.prototype);\nDog.prototype.constructor = Dog;\n\nconst dog = new Dog('雷克斯');\ndog.speak(); // 雷克斯 发出声音\n```\n\n## 7. Map vs Object\n\n```javascript\n// Object\nconst obj = {\n  key: 'value'\n};\n\n// Map\nconst map = new Map();\nmap.set('key', 'value');\nmap.set(1, 'number key');\nmap.set({}, 'object key');\n\nconsole.log(map.get('key')); // value\nconsole.log(map.size); // 3\n```\n\n## 8. 解构赋值\n\n```javascript\n// 数组\nconst [a, b, ...rest] = [1, 2, 3, 4, 5];\nconsole.log(a, b, rest); // 1, 2, [3, 4, 5]\n\n// 对象\nconst { name, age, ...other } = {\n  name: '张三',\n  age: 25,\n  city: '北京',\n  job: 'Developer'\n};\nconsole.log(name, age, other); // 张三, 25, {city: '北京', job: 'Developer'}\n```\n\n## 9. ES6模块\n\n```javascript\n// math.js\nexport const add = (a, b) => a + b;\nexport const subtract = (a, b) => a - b;\nexport default function multiply(a, b) {\n  return a * b;\n}\n\n// main.js\nimport multiply, { add, subtract } from './math.js';\nconsole.log(add(2, 3)); // 5\nconsole.log(multiply(2, 3)); // 6\n```\n\n## 10. DOM操作\n\n```javascript\n// 创建元素\nconst div = document.createElement('div');\ndiv.textContent = '你好世界！';\ndiv.className = 'greeting';\n\ndocument.body.appendChild(div);\n\n// 查找元素\nconst element = document.querySelector('.greeting');\nconst elements = document.querySelectorAll('.item');\n\n// 事件处理器\nconst button = document.querySelector('button');\nbutton.addEventListener('click', (event) => {\n  console.log('按钮被点击！');\n});\n```\n\n这些是JavaScript的基础问题。为了完全理解，建议练习代码并学习文档。",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "React Hooks：完整指南",
+      "description": "深入分析所有React Hooks，包含使用示例和最佳实践",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 892,
+      "tags": ["React", "Hooks", "前端", "useState", "useEffect"],
+      "content": "# React Hooks：完整指南\n\n## 介绍\n\nReact Hooks在React 16.8中引入，允许在函数组件中使用状态和其他React功能。\n\n## useState\n\n管理状态的基础Hook。\n\n```jsx\nimport React, { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  \n  return (\n    <div>\n      <p>计数器：{count}</p>\n      <button onClick={() => setCount(count + 1)}>\n        增加\n      </button>\n    </div>\n  );\n}\n```\n\n### 函数式更新\n\n```jsx\nconst [count, setCount] = useState(0);\n\n// 而不是这样：\nsetCount(count + 1);\n\n// 使用这样：\nsetCount(prevCount => prevCount + 1);\n```\n\n## useEffect\n\n执行副作用效果的Hook。\n\n```jsx\nimport React, { useState, useEffect } from 'react';\n\nfunction UserProfile({ userId }) {\n  const [user, setUser] = useState(null);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    async function fetchUser() {\n      try {\n        const response = await fetch(`/api/users/${userId}`);\n        const userData = await response.json();\n        setUser(userData);\n      } catch (error) {\n        console.error('加载用户时出错：', error);\n      } finally {\n        setLoading(false);\n      }\n    }\n\n    fetchUser();\n  }, [userId]); // 依赖项\n\n  if (loading) return <div>加载中...</div>;\n  if (!user) return <div>用户未找到</div>;\n\n  return (\n    <div>\n      <h2>{user.name}</h2>\n      <p>{user.email}</p>\n    </div>\n  );\n}\n```\n\n### 清理效果\n\n```jsx\nuseEffect(() => {\n  const interval = setInterval(() => {\n    console.log('滴答');\n  }, 1000);\n\n  // 清理函数\n  return () => {\n    clearInterval(interval);\n  };\n}, []);\n```\n\n## useContext\n\n使用上下文的Hook。\n\n```jsx\n// 创建上下文\nconst ThemeContext = React.createContext();\n\n// Provider\nfunction App() {\n  const [theme, setTheme] = useState('light');\n\n  return (\n    <ThemeContext.Provider value={{ theme, setTheme }}>\n      <Header />\n      <Main />\n    </ThemeContext.Provider>\n  );\n}\n\n// 在组件中使用\nfunction Header() {\n  const { theme, setTheme } = useContext(ThemeContext);\n\n  return (\n    <header className={`header-${theme}`}>\n      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>\n        切换主题\n      </button>\n    </header>\n  );\n}\n```\n\n## useReducer\n\n管理复杂状态的Hook。\n\n```jsx\nimport React, { useReducer } from 'react';\n\nconst initialState = { count: 0 };\n\nfunction reducer(state, action) {\n  switch (action.type) {\n    case 'increment':\n      return { count: state.count + 1 };\n    case 'decrement':\n      return { count: state.count - 1 };\n    case 'reset':\n      return { count: 0 };\n    default:\n      throw new Error();\n  }\n}\n\nfunction Counter() {\n  const [state, dispatch] = useReducer(reducer, initialState);\n\n  return (\n    <div>\n      <p>计数器：{state.count}</p>\n      <button onClick={() => dispatch({ type: 'increment' })}>\n        +\n      </button>\n      <button onClick={() => dispatch({ type: 'decrement' })}>\n        -\n      </button>\n      <button onClick={() => dispatch({ type: 'reset' })}>\n        重置\n      </button>\n    </div>\n  );\n}\n```\n\n## useCallback\n\n记忆化函数的Hook。\n\n```jsx\nimport React, { useState, useCallback } from 'react';\n\nfunction Parent() {\n  const [count, setCount] = useState(0);\n\n  const handleClick = useCallback(() => {\n    console.log('按钮被点击');\n  }, []); // 依赖项\n\n  return (\n    <div>\n      <p>计数器：{count}</p>\n      <button onClick={() => setCount(count + 1)}>\n        增加计数器\n      </button>\n      <Child onClick={handleClick} />\n    </div>\n  );\n}\n\nconst Child = React.memo(function Child({ onClick }) {\n  console.log('Child重新渲染');\n  return <button onClick={onClick}>子按钮</button>;\n});\n```\n\n## useMemo\n\n记忆化值的Hook。\n\n```jsx\nimport React, { useState, useMemo } from 'react';\n\nfunction ExpensiveComponent({ items }) {\n  const expensiveValue = useMemo(() => {\n    console.log('计算昂贵值');\n    return items.reduce((sum, item) => sum + item.value, 0);\n  }, [items]); // 依赖项\n\n  return <div>结果：{expensiveValue}</div>;\n}\n```\n\n## useRef\n\n创建可变引用的Hook。\n\n```jsx\nimport React, { useRef, useEffect } from 'react';\n\nfunction TextInputWithFocusButton() {\n  const inputRef = useRef(null);\n\n  const focusInput = () => {\n    inputRef.current.focus();\n  };\n\n  return (\n    <div>\n      <input ref={inputRef} type=\"text\" />\n      <button onClick={focusInput}>聚焦输入框</button>\n    </div>\n  );\n}\n\n// 保存前一个值\nfunction usePrevious(value) {\n  const ref = useRef();\n  useEffect(() => {\n    ref.current = value;\n  });\n  return ref.current;\n}\n```\n\n## 自定义Hooks\n\n```jsx\n// useLocalStorage.js\nimport { useState, useEffect } from 'react';\n\nfunction useLocalStorage(key, initialValue) {\n  const [storedValue, setStoredValue] = useState(() => {\n    try {\n      const item = window.localStorage.getItem(key);\n      return item ? JSON.parse(item) : initialValue;\n    } catch (error) {\n      console.error(error);\n      return initialValue;\n    }\n  });\n\n  const setValue = value => {\n    try {\n      const valueToStore = value instanceof Function ? value(storedValue) : value;\n      setStoredValue(valueToStore);\n      window.localStorage.setItem(key, JSON.stringify(valueToStore));\n    } catch (error) {\n      console.error(error);\n    }\n  };\n\n  return [storedValue, setValue];\n}\n\n// 使用\nfunction App() {\n  const [name, setName] = useLocalStorage('name', '访客');\n\n  return (\n    <div>\n      <input\n        value={name}\n        onChange={e => setName(e.target.value)}\n        placeholder=\"输入您的姓名\"\n      />\n    </div>\n  );\n}\n```\n\n## 最佳实践\n\n1. **始终在useEffect中指定依赖项**\n2. **在useState中使用函数式更新**\n3. **使用useMemo记忆化昂贵的计算**\n4. **使用useCallback记忆化函数**\n5. **创建自定义Hooks用于可重用逻辑**\n6. **避免在渲染中创建对象**\n\n## 结论\n\nReact Hooks提供了一种强大而灵活的方式来管理函数组件中的状态和副作用。正确使用Hooks会带来更清洁和可维护的代码。",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "TypeScript：高级类型",
+      "description": "深入TypeScript类型系统的研究，包含实际示例",
+      "category": "interview-questions",
+      "difficulty": "advanced",
+      "readTime": 18,
+      "rating": 4.7,
+      "reads": 234,
+      "tags": ["TypeScript", "类型", "前端", "泛型"],
+      "content": "# TypeScript：高级类型\n\n## 介绍\n\nTypeScript提供了强大的类型系统，帮助编写更健壮的代码。让我们看看高级类型化功能。\n\n## 条件类型（Conditional Types）\n\n```typescript\ntype NonNullable<T> = T extends null | undefined ? never : T;\n\ntype T0 = NonNullable<string | number | null>; // string | number\ntype T1 = NonNullable<string[] | null | undefined>; // string[]\n```\n\n## 映射类型（Mapped Types）\n\n```typescript\n// 使所有属性可选\ntype Partial<T> = {\n  [P in keyof T]?: T[P];\n};\n\n// 使所有属性必需\ntype Required<T> = {\n  [P in keyof T]-?: T[P];\n};\n\n// 使所有属性只读\ntype Readonly<T> = {\n  readonly [P in keyof T]: T[P];\n};\n\n// 使用示例\ninterface User {\n  id: number;\n  name: string;\n  email?: string;\n}\n\ntype PartialUser = Partial<User>;\n// { id?: number; name?: string; email?: string }\n\ntype RequiredUser = Required<User>;\n// { id: number; name: string; email: string }\n```\n\n## 泛型（Generics）\n\n```typescript\n// 简单泛型\nfunction identity<T>(arg: T): T {\n  return arg;\n}\n\nconst result = identity<string>('hello');\nconst result2 = identity('hello'); // 自动类型推断\n\n// 带约束的泛型\ninterface Lengthwise {\n  length: number;\n}\n\nfunction loggingIdentity<T extends Lengthwise>(arg: T): T {\n  console.log(arg.length);\n  return arg;\n}\n\nloggingIdentity('hello'); // OK\nloggingIdentity([1, 2, 3]); // OK\n// loggingIdentity(123); // 错误\n```\n\n## 实用类型\n\n```typescript\n// Pick - 选择特定属性\ninterface Todo {\n  title: string;\n  description: string;\n  completed: boolean;\n}\n\ntype TodoPreview = Pick<Todo, 'title' | 'completed'>;\n// { title: string; completed: boolean }\n\n// Omit - 排除特定属性\ntype TodoInfo = Omit<Todo, 'completed'>;\n// { title: string; description: string }\n\n// Record - 创建具有特定键和值的对象\ntype CatInfo = {\n  age: number;\n  breed: string;\n};\n\ntype CatName = 'miffy' | 'boris' | 'mordred';\n\nconst cats: Record<CatName, CatInfo> = {\n  miffy: { age: 10, breed: 'Persian' },\n  boris: { age: 5, breed: 'Maine Coon' },\n  mordred: { age: 16, breed: 'British Shorthair' }\n};\n```\n\n## 类型交集和并集\n\n```typescript\n// 类型并集\ntype Status = 'loading' | 'success' | 'error';\n\ntype ApiResponse<T> = {\n  data: T;\n  status: Status;\n};\n\n// 类型交集\ninterface HasName {\n  name: string;\n}\n\ninterface HasAge {\n  age: number;\n}\n\ntype Person = HasName & HasAge;\n// { name: string; age: number }\n\n// 带并集的条件类型\ntype ArrayElement<T> = T extends Array<infer U> ? U : never;\n\ntype T0 = ArrayElement<string[]>; // string\ntype T1 = ArrayElement<number[]>; // number\n```\n\n## 类型推断\n\n```typescript\n// 自动类型推断\nconst names = ['Alice', 'Bob', 'Charlie'];\n// TypeScript自动推断类型为string[]\n\n// 函数中的类型推断\nfunction map<T, U>(array: T[], fn: (item: T) => U): U[] {\n  return array.map(fn);\n}\n\nconst numbers = [1, 2, 3, 4];\nconst doubled = map(numbers, x => x * 2); // number[]\nconst strings = map(numbers, x => x.toString()); // string[]\n```\n\n## 模板字面量类型\n\n```typescript\ntype EmailLocaleIDs = 'welcome_email' | 'email_heading';\ntype FooterLocaleIDs = 'footer_title' | 'footer_sendoff';\n\ntype AllLocaleIDs = `${EmailLocaleIDs | FooterLocaleIDs}_id`;\n// 'welcome_email_id' | 'email_heading_id' | 'footer_title_id' | 'footer_sendoff_id'\n\ntype Lang = 'en' | 'zh';\ntype LocaleMessageIDs = `${Lang}_${AllLocaleIDs}`;\n// 'en_welcome_email_id' | 'en_email_heading_id' | ... | 'zh_footer_sendoff_id'\n```\n\n## React组件的类型\n\n```typescript\nimport React from 'react';\n\n// Props类型化\ninterface ButtonProps {\n  children: React.ReactNode;\n  onClick?: () => void;\n  variant?: 'primary' | 'secondary' | 'danger';\n  size?: 'small' | 'medium' | 'large';\n  disabled?: boolean;\n}\n\nconst Button: React.FC<ButtonProps> = ({\n  children,\n  onClick,\n  variant = 'primary',\n  size = 'medium',\n  disabled = false\n}) => {\n  return (\n    <button\n      onClick={onClick}\n      className={`btn btn-${variant} btn-${size}`}\n      disabled={disabled}\n    >\n      {children}\n    </button>\n  );\n};\n\n// Hook类型化\nfunction useLocalStorage<T>(key: string, initialValue: T) {\n  const [storedValue, setStoredValue] = React.useState<T>(() => {\n    try {\n      const item = window.localStorage.getItem(key);\n      return item ? JSON.parse(item) : initialValue;\n    } catch (error) {\n      return initialValue;\n    }\n  });\n\n  const setValue = (value: T | ((val: T) => T)) => {\n    try {\n      const valueToStore = value instanceof Function ? value(storedValue) : value;\n      setStoredValue(valueToStore);\n      window.localStorage.setItem(key, JSON.stringify(valueToStore));\n    } catch (error) {\n      console.error(error);\n    }\n  };\n\n  return [storedValue, setValue] as const;\n}\n```\n\n## API的类型\n\n```typescript\n// API响应的类型\ninterface ApiResponse<T> {\n  data: T;\n  status: 'success' | 'error';\n  message?: string;\n}\n\ninterface User {\n  id: number;\n  name: string;\n  email: string;\n}\n\n// 类型化的API函数\nasync function fetchUser(id: number): Promise<ApiResponse<User>> {\n  const response = await fetch(`/api/users/${id}`);\n  return response.json();\n}\n\n// 使用\nconst userResponse = await fetchUser(1);\nif (userResponse.status === 'success') {\n  console.log(userResponse.data.name); // TypeScript知道这是User\n}\n```\n\n## 结论\n\nTypeScript的高级类型允许创建更具表现力和更安全的类型。正确使用这些功能会带来更好的代码质量和更少的运行时错误。",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

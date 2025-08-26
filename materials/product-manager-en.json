@@ -1,0 +1,95 @@
+{
+  "profession": "product-manager",
+  "language": "en",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Interview Questions",
+      "count": 134,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Technical Tasks",
+      "count": 67,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "System Design",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Behavioral Questions",
+      "count": 89,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithms & Data Structures",
+      "count": 56,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Best Practices",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Product Strategy: From Idea to Launch",
+      "description": "Comprehensive guide to developing product strategy",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.8,
+      "reads": 1234,
+      "tags": ["Product Strategy", "MVP", "Roadmap", "Analytics"],
+      "content": "# Product Strategy: From Idea to Launch\n\n## Product Definition\n\n### Vision and Mission\n\n```markdown\n## Vision\nCreate a platform that helps millions of people effectively manage their finances and achieve financial goals.\n\n## Mission\nProvide simple and understandable tools for budget planning, expense tracking, and investing.\n\n## Target Audience\n- Primary: People 25-45 years old with income $30k-$100k\n- Secondary: Students and retirees\n- Geography: US, Europe, Asia\n```\n\n### Market Analysis\n\n```markdown\n## Competitive Analysis\n\n### Direct Competitors\n1. **Mint** - Market leader, 20M+ users\n   - Strengths: Bank integration, automation\n   - Weaknesses: Complex interface, ads\n\n2. **YNAB** - Premium segment\n   - Strengths: Quality support, education\n   - Weaknesses: High price, complexity\n\n## Market Size (TAM, SAM, SOM)\n- TAM: $12B (all financial management apps)\n- SAM: $3B (personal finance apps)\n- SOM: $300M (our share in 3 years)\n```\n\n## MVP and Roadmap\n\n### MVP (Minimum Viable Product)\n\n```markdown\n## MVP Features\n\n### Must Have\n- [ ] Registration and authentication\n- [ ] Add income and expenses\n- [ ] Transaction categorization\n- [ ] Basic reports (month/year)\n- [ ] Set financial goals\n\n### Should Have\n- [ ] Export data to CSV\n- [ ] Budget limit notifications\n- [ ] Mobile version\n\n### Could Have\n- [ ] Bank integration\n- [ ] Investment portfolio\n- [ ] Social features\n\n### Won't Have\n- [ ] Cryptocurrencies\n- [ ] Tax reports\n- [ ] Business accounts\n```\n\n### Product Roadmap\n\n```markdown\n## Roadmap 2024\n\n### Q1: MVP Launch\n- MVP development\n- Beta testing (100 users)\n- App Store/Google Play launch\n\n### Q2: Growth\n- Bank integration\n- Advanced analytics\n- A/B testing\n\n### Q3: Monetization\n- Premium subscription\n- Advertising model\n- Partnership programs\n\n### Q4: Scale\n- International expansion\n- API for developers\n- Enterprise solutions\n```\n\n## Metrics and KPI\n\n```markdown\n## Key Metrics\n\n### User Metrics\n- DAU (Daily Active Users): 10,000\n- MAU (Monthly Active Users): 100,000\n- Retention Rate (Day 7): 40%\n- Retention Rate (Day 30): 20%\n\n### Business Metrics\n- MRR (Monthly Recurring Revenue): $50,000\n- CAC (Customer Acquisition Cost): $15\n- LTV (Lifetime Value): $150\n- Churn Rate: 5%\n\n### Product Metrics\n- Time to Value: < 5 minutes\n- Feature Adoption Rate: 60%\n- NPS Score: 45\n- App Store Rating: 4.5+\n```\n\n## Conclusion\n\nSuccessful product strategy requires balance between vision, data, and execution. It's important to constantly measure and adjust approach based on user feedback.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Product Analytics: Metrics and Dashboards",
+      "description": "Practical guide to product analytics",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.7,
+      "reads": 987,
+      "tags": ["Analytics", "Metrics", "Dashboards", "SQL"],
+      "content": "# Product Analytics: Metrics and Dashboards\n\n## Key Metrics\n\n### User Metrics\n\n```sql\n-- Daily Active Users (DAU)\nSELECT \n  DATE(created_at) as date,\n  COUNT(DISTINCT user_id) as dau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE(created_at)\nORDER BY date DESC;\n\n-- Monthly Active Users (MAU)\nSELECT \n  DATE_TRUNC('month', created_at) as month,\n  COUNT(DISTINCT user_id) as mau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE_TRUNC('month', created_at)\nORDER BY month DESC;\n\n-- Retention Rate\nWITH user_activity AS (\n  SELECT \n    user_id,\n    DATE(created_at) as activity_date,\n    DATE_TRUNC('week', created_at) as week\n  FROM user_events\n  WHERE event_type = 'login'\n),\ncohorts AS (\n  SELECT \n    user_id,\n    MIN(week) as cohort_week\n  FROM user_activity\n  GROUP BY user_id\n)\nSELECT \n  c.cohort_week,\n  COUNT(DISTINCT c.user_id) as cohort_size,\n  COUNT(DISTINCT CASE WHEN ua.week = c.cohort_week + INTERVAL '1 week' THEN ua.user_id END) as week_1,\n  COUNT(DISTINCT CASE WHEN ua.week = c.cohort_week + INTERVAL '2 weeks' THEN ua.user_id END) as week_2\nFROM cohorts c\nLEFT JOIN user_activity ua ON c.user_id = ua.user_id\nGROUP BY c.cohort_week\nORDER BY c.cohort_week;\n```\n\n### Business Metrics\n\n```sql\n-- Monthly Recurring Revenue (MRR)\nSELECT \n  DATE_TRUNC('month', subscription_date) as month,\n  SUM(monthly_amount) as mrr\nFROM subscriptions\nWHERE status = 'active'\nGROUP BY DATE_TRUNC('month', subscription_date)\nORDER BY month DESC;\n\n-- Customer Acquisition Cost (CAC)\nSELECT \n  DATE_TRUNC('month', acquisition_date) as month,\n  SUM(marketing_spend) / COUNT(DISTINCT user_id) as cac\nFROM user_acquisitions\nGROUP BY DATE_TRUNC('month', acquisition_date)\nORDER BY month DESC;\n\n-- Lifetime Value (LTV)\nSELECT \n  user_id,\n  SUM(purchase_amount) as total_spent,\n  COUNT(DISTINCT purchase_date) as purchase_count,\n  AVG(purchase_amount) as avg_purchase\nFROM user_purchases\nGROUP BY user_id\nORDER BY total_spent DESC;\n```\n\n## Dashboards\n\n### Main Dashboard\n\n```markdown\n## Daily Product Dashboard\n\n### Users\n- DAU: 12,345 (+5.2% vs yesterday)\n- New Users: 1,234 (+12.1% vs yesterday)\n- Active Sessions: 45,678 (+3.4% vs yesterday)\n\n### Engagement\n- Session Duration: 8m 32s (+2.1% vs yesterday)\n- Pages per Session: 4.2 (+1.8% vs yesterday)\n- Bounce Rate: 23.4% (-1.2% vs yesterday)\n\n### Conversion\n- Sign-up Rate: 15.2% (+0.8% vs yesterday)\n- Purchase Rate: 3.4% (+0.3% vs yesterday)\n- Revenue: $12,345 (+8.7% vs yesterday)\n\n### Technical Metrics\n- Error Rate: 0.12% (-0.02% vs yesterday)\n- Page Load Time: 1.8s (+0.1s vs yesterday)\n- API Response Time: 245ms (+5ms vs yesterday)\n```\n\n## Conclusion\n\nEffective product analytics helps make data-driven decisions and track progress toward goals. It's important to focus on metrics that actually impact business outcomes.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "A/B Testing Product Hypotheses",
+      "description": "Methodology for conducting A/B tests for product decisions",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 18,
+      "rating": 4.6,
+      "reads": 756,
+      "tags": ["A/B Testing", "Hypotheses", "Statistics", "Product Decisions"],
+      "content": "# A/B Testing Product Hypotheses\n\n## Hypothesis Formulation\n\n### Hypothesis Structure\n\n```markdown\n## Hypothesis Format\n\n### Problem\nUsers cannot quickly find the needed function in the app.\n\n### Hypothesis\nIf we move the \"New Order\" button to the top of the screen, the number of orders will increase by 15%.\n\n### Rationale\n- Button will be more visible\n- Number of clicks will decrease\n- User experience will improve\n\n### Metrics\n- Primary: Number of orders\n- Secondary: Time to first order, Bounce Rate\n- Guardrail: Overall conversion, Revenue\n```\n\n### Hypothesis Examples\n\n```markdown\n## Product Hypothesis Examples\n\n### Onboarding\n**Hypothesis**: If we add a progress bar to onboarding, completion rate will increase by 20%.\n**Metrics**: Completion rate, Time to complete, Drop-off points\n\n### Pricing\n**Hypothesis**: If we show 20% annual discount instead of monthly subscription, ARPU will increase by 25%.\n**Metrics**: ARPU, Conversion rate, Churn rate\n\n### Feature Discovery\n**Hypothesis**: If we add tooltips for new features, feature adoption rate will increase by 30%.\n**Metrics**: Feature adoption, User engagement, Support tickets\n```\n\n## Experiment Planning\n\n### Sample Size Calculation\n\n```python\nimport scipy.stats as stats\nimport numpy as np\n\n# Parameters for calculation\nbaseline_conversion = 0.05  # 5%\nmin_detectable_effect = 0.01  # 1% (20% relative increase)\nalpha = 0.05  # 5% significance level\npower = 0.8  # 80% power\n\n# Sample size calculation\nz_alpha = stats.norm.ppf(1 - alpha/2)\nz_beta = stats.norm.ppf(power)\n\nsample_size = (2 * (z_alpha + z_beta)**2 * baseline_conversion * (1 - baseline_conversion)) / (min_detectable_effect**2)\n\nprint(f'Sample size per group: {int(sample_size)}')\nprint(f'Total sample size: {int(sample_size * 2)}')\nprint(f'Experiment duration (with 1000 users/day): {int(sample_size * 2 / 1000)} days')\n```\n\n### Experiment Design\n\n```markdown\n## Experiment Plan\n\n### Goal\nIncrease premium subscription conversion by 15%.\n\n### Hypothesis\nIf we show social proof (user reviews) on the subscription page, conversion will increase.\n\n### Design\n- **Control Group (A)**: Standard subscription page\n- **Test Group (B)**: Page with user reviews\n\n### Distribution\n- 50% users → group A\n- 50% users → group B\n\n### Duration\n- Minimum: 2 weeks\n- Target: 4 weeks\n- Maximum: 6 weeks\n\n### Stopping Criteria\n- Statistical significance p < 0.05\n- Minimum sample size reached\n- Safety: conversion didn't drop more than 5%\n```\n\n## Results Analysis\n\n```python\nimport pandas as pd\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# Experiment data\nresults = pd.DataFrame({\n    'group': ['A', 'A', 'B', 'B'] * 1000,\n    'converted': [0, 1, 0, 1] * 1000,\n    'user_id': range(4000)\n})\n\n# Aggregate results\nexperiment_summary = results.groupby('group').agg({\n    'user_id': 'count',\n    'converted': 'sum'\n}).rename(columns={'user_id': 'users', 'converted': 'conversions'})\n\nexperiment_summary['conversion_rate'] = experiment_summary['conversions'] / experiment_summary['users']\n\nprint(experiment_summary)\n\n# Statistical test\nconversions_a = experiment_summary.loc['A', 'conversions']\nusers_a = experiment_summary.loc['A', 'users']\nconversions_b = experiment_summary.loc['B', 'conversions']\nusers_b = experiment_summary.loc['B', 'users']\n\nz_stat, p_value = proportions_ztest(\n    [conversions_a, conversions_b],\n    [users_a, users_b]\n)\n\nprint(f'Z-statistic: {z_stat:.4f}')\nprint(f'P-value: {p_value:.4f}')\nprint(f'Statistically significant: {p_value < 0.05}')\n\n# Effect calculation\ncontrol_rate = conversions_a / users_a\ntreatment_rate = conversions_b / users_b\nrelative_improvement = (treatment_rate - control_rate) / control_rate * 100\n\nprint(f'Relative improvement: {relative_improvement:.2f}%')\n```\n\n## Conclusion\n\nA/B testing is a powerful tool for validating product decisions. It's important to properly formulate hypotheses, plan experiments, and interpret results.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

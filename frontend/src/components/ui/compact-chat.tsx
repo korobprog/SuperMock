@@ -105,7 +105,7 @@ export function CompactChat({ sessionId, participants, currentUserId }: CompactC
     if (!sessionId || !currentUserId) return;
 
     // Создаем WebSocket соединение
-    const socketUrl = createApiUrl('').replace('http://', 'ws://').replace('https://', 'wss://');
+    const socketUrl = API_CONFIG.wsURL;
     const newSocket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       withCredentials: true,

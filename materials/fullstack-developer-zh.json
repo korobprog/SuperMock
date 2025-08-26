@@ -1,0 +1,65 @@
+{
+  "profession": "fullstack-developer",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 89,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 34,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 67,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法和数据结构",
+      "count": 123,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "全栈开发：从概念到部署",
+      "description": "全栈开发综合指南，包括前端、后端和DevOps实践",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 1345,
+      "tags": ["全栈", "前端", "后端", "DevOps", "架构"],
+      "content": "# 全栈开发：从概念到部署\n\n## 介绍\n\n全栈开发人员是能够同时处理应用程序前端和后端部分，并理解部署过程和DevOps的专业人士。\n\n## 全栈应用程序架构\n\n```javascript\n// 项目结构\nproject/\n├── frontend/          # React/Vue/Angular 应用程序\n│   ├── src/\n│   ├── public/\n│   └── package.json\n├── backend/           # Node.js/Python/Java 服务器\n│   ├── src/\n│   ├── routes/\n│   └── package.json\n├── database/          # 模式和迁移\n├── docker/           # Docker 配置\n└── docs/             # 文档\n```\n\n## 前端 (React + TypeScript)\n\n```typescript\n// 使用 TypeScript 的组件\ninterface User {\n  id: number;\n  name: string;\n  email: string;\n}\n\ninterface UserListProps {\n  users: User[];\n  onUserSelect: (user: User) => void;\n}\n\nconst UserList: React.FC<UserListProps> = ({ users, onUserSelect }) => {\n  const [loading, setLoading] = useState(false);\n  const [error, setError] = useState<string | null>(null);\n\n  const handleUserClick = async (user: User) => {\n    try {\n      setLoading(true);\n      await onUserSelect(user);\n    } catch (err) {\n      setError(err.message);\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  return (\n    <div className=\"user-list\">\n      {users.map(user => (\n        <div key={user.id} onClick={() => handleUserClick(user)}>\n          <h3>{user.name}</h3>\n          <p>{user.email}</p>\n        </div>\n      ))}\n    </div>\n  );\n};\n```\n\n## 后端 (Node.js + Express)\n\n```javascript\n// 使用 Express 的 API 服务器\nconst express = require('express');\nconst cors = require('cors');\nconst helmet = require('helmet');\nconst rateLimit = require('express-rate-limit');\n\nconst app = express();\n\n// 中间件\napp.use(helmet());\napp.use(cors({\n  origin: process.env.FRONTEND_URL,\n  credentials: true\n}));\n\n// 速率限制\nconst limiter = rateLimit({\n  windowMs: 15 * 60 * 1000, // 15 分钟\n  max: 100 // 最多 100 个请求\n});\napp.use('/api/', limiter);\n\n// 路由\napp.use('/api/users', require('./routes/users'));\napp.use('/api/auth', require('./routes/auth'));\napp.use('/api/products', require('./routes/products'));\n\n// 错误处理\napp.use((err, req, res, next) => {\n  console.error(err.stack);\n  res.status(500).json({ error: '内部服务器错误' });\n});\n\nmodule.exports = app;\n```\n\n## 数据库 (PostgreSQL + Prisma)\n\n```javascript\n// Prisma 模式\n// prisma/schema.prisma\n\ngenerator client {\n  provider = \"prisma-client-js\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        Int      @id @default(autoincrement())\n  email     String   @unique\n  name      String\n  password  String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  posts     Post[]\n}\n\nmodel Post {\n  id        Int      @id @default(autoincrement())\n  title     String\n  content   String\n  published Boolean  @default(false)\n  authorId  Int\n  author    User     @relation(fields: [authorId], references: [id])\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n```\n\n## API 集成\n\n```typescript\n// API 客户端\nclass ApiClient {\n  private baseURL: string;\n  private token: string | null = null;\n\n  constructor(baseURL: string) {\n    this.baseURL = baseURL;\n  }\n\n  setToken(token: string) {\n    this.token = token;\n  }\n\n  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {\n    const url = `${this.baseURL}${endpoint}`;\n    const config: RequestInit = {\n      headers: {\n        'Content-Type': 'application/json',\n        ...(this.token && { Authorization: `Bearer ${this.token}` }),\n        ...options.headers,\n      },\n      ...options,\n    };\n\n    const response = await fetch(url, config);\n\n    if (!response.ok) {\n      throw new Error(`HTTP 错误！状态: ${response.status}`);\n    }\n\n    return response.json();\n  }\n\n  // 用户 API\n  async getUsers(): Promise<User[]> {\n    return this.request<User[]>('/api/users');\n  }\n\n  async createUser(userData: Omit<User, 'id'>): Promise<User> {\n    return this.request<User>('/api/users', {\n      method: 'POST',\n      body: JSON.stringify(userData),\n    });\n  }\n\n  // 认证 API\n  async login(credentials: { email: string; password: string }): Promise<{ token: string }> {\n    const result = await this.request<{ token: string }>('/api/auth/login', {\n      method: 'POST',\n      body: JSON.stringify(credentials),\n    });\n    this.setToken(result.token);\n    return result;\n  }\n}\n\n// 使用\nconst api = new ApiClient('http://localhost:3000');\n```\n\n## 状态管理 (Redux Toolkit)\n\n```typescript\n// Redux Store\nimport { configureStore } from '@reduxjs/toolkit';\nimport authReducer from './slices/authSlice';\nimport usersReducer from './slices/usersSlice';\n\nexport const store = configureStore({\n  reducer: {\n    auth: authReducer,\n    users: usersReducer,\n  },\n  middleware: (getDefaultMiddleware) =>\n    getDefaultMiddleware({\n      serializableCheck: {\n        ignoredActions: ['persist/PERSIST'],\n      },\n    }),\n});\n\nexport type RootState = ReturnType<typeof store.getState>;\nexport type AppDispatch = typeof store.dispatch;\n\n// 认证 Slice\nimport { createSlice, createAsyncThunk } from '@reduxjs/toolkit';\nimport { api } from '../services/api';\n\ninterface AuthState {\n  user: User | null;\n  token: string | null;\n  loading: boolean;\n  error: string | null;\n}\n\nconst initialState: AuthState = {\n  user: null,\n  token: localStorage.getItem('token'),\n  loading: false,\n  error: null,\n};\n\nexport const login = createAsyncThunk(\n  'auth/login',\n  async (credentials: { email: string; password: string }) => {\n    const response = await api.login(credentials);\n    return response;\n  }\n);\n\nconst authSlice = createSlice({\n  name: 'auth',\n  initialState,\n  reducers: {\n    logout: (state) => {\n      state.user = null;\n      state.token = null;\n      localStorage.removeItem('token');\n    },\n  },\n  extraReducers: (builder) => {\n    builder\n      .addCase(login.pending, (state) => {\n        state.loading = true;\n        state.error = null;\n      })\n      .addCase(login.fulfilled, (state, action) => {\n        state.loading = false;\n        state.token = action.payload.token;\n        localStorage.setItem('token', action.payload.token);\n      })\n      .addCase(login.rejected, (state, action) => {\n        state.loading = false;\n        state.error = action.error.message || '登录错误';\n      });\n  },\n});\n\nexport const { logout } = authSlice.actions;\nexport default authSlice.reducer;\n```\n\n## Docker 和部署\n\n```dockerfile\n# 前端的 Dockerfile\nFROM node:18-alpine as build\n\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\n\nCOPY . .\nRUN npm run build\n\nFROM nginx:alpine\nCOPY --from=build /app/build /usr/share/nginx/html\nCOPY nginx.conf /etc/nginx/nginx.conf\n\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]\n```\n\n```yaml\n# docker-compose.yml\nversion: '3.8'\n\nservices:\n  frontend:\n    build: ./frontend\n    ports:\n      - \"3000:80\"\n    depends_on:\n      - backend\n    environment:\n      - REACT_APP_API_URL=http://localhost:3001\n\n  backend:\n    build: ./backend\n    ports:\n      - \"3001:3001\"\n    depends_on:\n      - postgres\n      - redis\n    environment:\n      - DATABASE_URL=postgresql://user:password@postgres:5432/myapp\n      - REDIS_URL=redis://redis:6379\n      - JWT_SECRET=your-secret-key\n\n  postgres:\n    image: postgres:15\n    environment:\n      - POSTGRES_DB=myapp\n      - POSTGRES_USER=user\n      - POSTGRES_PASSWORD=password\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n    ports:\n      - \"5432:5432\"\n\n  redis:\n    image: redis:7-alpine\n    ports:\n      - \"6379:6379\"\n\nvolumes:\n  postgres_data:\n```\n\n## CI/CD 流水线\n\n```yaml\n# .github/workflows/deploy.yml\nname: 部署到生产环境\n\non:\n  push:\n    branches: [main]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      \n      - name: 设置 Node.js\n        uses: actions/setup-node@v3\n        with:\n          node-version: '18'\n          cache: 'npm'\n      \n      - name: 安装依赖\n        run: |\n          cd frontend && npm ci\n          cd ../backend && npm ci\n      \n      - name: 运行测试\n        run: |\n          cd frontend && npm test\n          cd ../backend && npm test\n      \n      - name: 构建\n        run: |\n          cd frontend && npm run build\n          cd ../backend && npm run build\n\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest\n    steps:\n      - name: 部署到服务器\n        run: |\n          # SSH 部署命令\n          ssh user@server 'cd /app && git pull && docker-compose up -d'\n```\n\n## 监控和日志记录\n\n```javascript\n// Winston 日志记录器\nconst winston = require('winston');\n\nconst logger = winston.createLogger({\n  level: 'info',\n  format: winston.format.combine(\n    winston.format.timestamp(),\n    winston.format.errors({ stack: true }),\n    winston.format.json()\n  ),\n  defaultMeta: { service: 'fullstack-app' },\n  transports: [\n    new winston.transports.File({ filename: 'error.log', level: 'error' }),\n    new winston.transports.File({ filename: 'combined.log' }),\n  ],\n});\n\nif (process.env.NODE_ENV !== 'production') {\n  logger.add(new winston.transports.Console({\n    format: winston.format.simple()\n  }));\n}\n\n// 使用\nlogger.info('应用程序已启动', { port: process.env.PORT });\nlogger.error('数据库错误', { error: err.message });\n```\n\n## 测试\n\n```typescript\n// Jest + React Testing Library\nimport { render, screen, fireEvent, waitFor } from '@testing-library/react';\nimport { Provider } from 'react-redux';\nimport { store } from '../store';\nimport UserList from './UserList';\n\nconst mockUsers = [\n  { id: 1, name: '张三', email: 'zhangsan@example.com' },\n  { id: 2, name: '李四', email: 'lisi@example.com' }\n];\n\nconst mockOnUserSelect = jest.fn();\n\ndescribe('UserList', () => {\n  it('显示用户列表', () => {\n    render(\n      <Provider store={store}>\n        <UserList users={mockUsers} onUserSelect={mockOnUserSelect} />\n      </Provider>\n    );\n\n    expect(screen.getByText('张三')).toBeInTheDocument();\n    expect(screen.getByText('李四')).toBeInTheDocument();\n  });\n\n  it('点击用户时调用 onUserSelect', async () => {\n    render(\n      <Provider store={store}>\n        <UserList users={mockUsers} onUserSelect={mockOnUserSelect} />\n      </Provider>\n    );\n\n    fireEvent.click(screen.getByText('张三'));\n\n    await waitFor(() => {\n      expect(mockOnUserSelect).toHaveBeenCalledWith(mockUsers[0]);\n    });\n  });\n});\n```\n\n## 最佳实践\n\n1. **关注点分离**: 明确分离前端和后端逻辑\n2. **类型安全**: 使用 TypeScript 获得更好的开发体验\n3. **安全性**: 在所有层面验证数据\n4. **性能**: 优化查询和缓存\n5. **可扩展性**: 设计时考虑增长\n6. **监控**: 跟踪性能和错误\n7. **文档**: 维护最新的文档\n8. **测试**: 用测试覆盖代码\n\n## 结论\n\n全栈开发需要对应用程序的所有层有深入的理解。成功的全栈开发人员必须能够有效地处理前端、后端和基础设施。",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "profession": "backend-developer",
+  "language": "fr",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Questions d'Entretien",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Tâches Techniques",
+      "count": 89,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Conception de Système",
+      "count": 34,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Questions Comportementales",
+      "count": 67,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithmes & Structures de Données",
+      "count": 123,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Bonnes Pratiques",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Node.js: Fondamentaux et Architecture",
+      "description": "Analyse approfondie de l'architecture Node.js, event loop et principes fondamentaux pour le développement backend",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.8,
+      "reads": 1156,
+      "tags": ["Node.js", "JavaScript", "Backend", "Architecture"],
+      "content": "# Node.js: Fondamentaux et Architecture\n\n## Introduction\n\nNode.js est un environnement d'exécution JavaScript construit sur le moteur V8 de Chrome qui permet l'exécution de JavaScript côté serveur.\n\n## Architecture Node.js\n\n```javascript\n// Exemple de l'Event Loop\nconsole.log('1');\nsetTimeout(() => console.log('2'), 0);\nsetImmediate(() => console.log('3'));\nprocess.nextTick(() => console.log('4'));\nconsole.log('5');\n\n// Sortie: 1, 5, 4, 2, 3\n```\n\n## Système de Modules\n\n```javascript\n// CommonJS\nconst fs = require('fs');\nconst path = require('path');\n\n// ES Modules\nimport fs from 'fs';\nimport path from 'path';\n\n// Création d'un module\nmodule.exports = {\n  add: (a, b) => a + b,\n  subtract: (a, b) => a - b\n};\n```\n\n## Programmation Asynchrone\n\n```javascript\n// Callbacks\nfs.readFile('fichier.txt', 'utf8', (err, data) => {\n  if (err) {\n    console.error('Erreur:', err);\n    return;\n  }\n  console.log('Données:', data);\n});\n\n// Promesses\nconst readFilePromise = (filename) => {\n  return new Promise((resolve, reject) => {\n    fs.readFile(filename, 'utf8', (err, data) => {\n      if (err) reject(err);\n      else resolve(data);\n    });\n  });\n};\n\n// Async/Await\nasync function readFiles() {\n  try {\n    const data1 = await readFilePromise('fichier1.txt');\n    const data2 = await readFilePromise('fichier2.txt');\n    console.log(data1, data2);\n  } catch (error) {\n    console.error('Erreur:', error);\n  }\n}\n```\n\n## Serveur HTTP\n\n```javascript\nconst http = require('http');\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'application/json' });\n  \n  const response = {\n    message: 'Bonjour, Monde!',\n    timestamp: new Date().toISOString()\n  };\n  \n  res.end(JSON.stringify(response));\n});\n\nserver.listen(3000, () => {\n  console.log('Serveur en cours d\\\\'exécution sur le port 3000');\n});\n```\n\n## Framework Express.js\n\n```javascript\nconst express = require('express');\nconst app = express();\n\n// Middleware\napp.use(express.json());\napp.use(express.urlencoded({ extended: true }));\n\n// Routes\napp.get('/api/utilisateurs', (req, res) => {\n  res.json({ utilisateurs: [] });\n});\n\napp.post('/api/utilisateurs', (req, res) => {\n  const { nom, email } = req.body;\n  // Logique de création d'utilisateur\n  res.status(201).json({ message: 'Utilisateur créé' });\n});\n\napp.listen(3000, () => {\n  console.log('Serveur Express en cours d\\\\'exécution');\n});\n```\n\n## Gestion des Erreurs\n\n```javascript\n// Gestionnaires d'erreurs globaux\nprocess.on('uncaughtException', (err) => {\n  console.error('Exception non gérée:', err);\n  process.exit(1);\n});\n\nprocess.on('unhandledRejection', (reason, promise) => {\n  console.error('Promesse rejetée non gérée:', reason);\n});\n\n// Middleware de gestion d'erreurs Express\napp.use((err, req, res, next) => {\n  console.error(err.stack);\n  res.status(500).json({ error: 'Quelque chose s\\\\'est mal passé!' });\n});\n```\n\n## Bonnes Pratiques\n\n### Sécurité\n```javascript\n// Utiliser helmet pour les en-têtes de sécurité\nconst helmet = require('helmet');\napp.use(helmet());\n\n// Validation des entrées\nconst { body, validationResult } = require('express-validator');\n\napp.post('/api/utilisateurs', [\n  body('email').isEmail(),\n  body('password').isLength({ min: 6 })\n], (req, res) => {\n  const errors = validationResult(req);\n  if (!errors.isEmpty()) {\n    return res.status(400).json({ errors: errors.array() });\n  }\n  // Traiter les données valides\n});\n```\n\n### Performance\n```javascript\n// Utiliser les streams pour les gros fichiers\nconst fs = require('fs');\nconst readStream = fs.createReadStream('gros-fichier.txt');\nconst writeStream = fs.createWriteStream('sortie.txt');\n\nreadStream.pipe(writeStream);\n\n// Cache avec Redis\nconst redis = require('redis');\nconst client = redis.createClient();\n\nasync function getCachedData(key) {\n  const cached = await client.get(key);\n  if (cached) return JSON.parse(cached);\n  \n  const data = await fetchDataFromDatabase();\n  await client.setex(key, 3600, JSON.stringify(data));\n  return data;\n}\n```\n\n### Tests\n```javascript\n// Tests unitaires avec Jest\nconst request = require('supertest');\nconst app = require('../app');\n\ndescribe('API Utilisateurs', () => {\n  test('GET /api/utilisateurs devrait retourner des utilisateurs', async () => {\n    const response = await request(app)\n      .get('/api/utilisateurs')\n      .expect(200);\n    \n    expect(response.body).toHaveProperty('utilisateurs');\n    expect(Array.isArray(response.body.utilisateurs)).toBe(true);\n  });\n});\n```\n\n## Conclusion\n\nNode.js fournit une plateforme puissante pour construire des applications côté serveur évolutives. Comprendre son architecture et ses principes est crucial pour les développeurs backend.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}

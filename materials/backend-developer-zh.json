@@ -1,0 +1,65 @@
+{
+  "profession": "backend-developer",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 89,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 34,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 67,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法与数据结构",
+      "count": 123,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Node.js: 基础与架构",
+      "description": "深入分析Node.js架构、事件循环和后端开发的核心原理",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.8,
+      "reads": 1156,
+      "tags": ["Node.js", "JavaScript", "后端", "架构"],
+      "content": "# Node.js: 基础与架构\n\n## 介绍\n\nNode.js是一个基于Chrome V8引擎构建的JavaScript运行时环境，支持服务器端JavaScript执行。\n\n## Node.js架构\n\n```javascript\n// 事件循环示例\nconsole.log('1');\nsetTimeout(() => console.log('2'), 0);\nsetImmediate(() => console.log('3'));\nprocess.nextTick(() => console.log('4'));\nconsole.log('5');\n\n// 输出: 1, 5, 4, 2, 3\n```\n\n## 模块系统\n\n```javascript\n// CommonJS\nconst fs = require('fs');\nconst path = require('path');\n\n// ES模块\nimport fs from 'fs';\nimport path from 'path';\n\n// 创建模块\nmodule.exports = {\n  add: (a, b) => a + b,\n  subtract: (a, b) => a - b\n};\n```\n\n## 异步编程\n\n```javascript\n// 回调函数\nfs.readFile('文件.txt', 'utf8', (err, data) => {\n  if (err) {\n    console.error('错误:', err);\n    return;\n  }\n  console.log('数据:', data);\n});\n\n// Promise\nconst readFilePromise = (filename) => {\n  return new Promise((resolve, reject) => {\n    fs.readFile(filename, 'utf8', (err, data) => {\n      if (err) reject(err);\n      else resolve(data);\n    });\n  });\n};\n\n// Async/Await\nasync function readFiles() {\n  try {\n    const data1 = await readFilePromise('文件1.txt');\n    const data2 = await readFilePromise('文件2.txt');\n    console.log(data1, data2);\n  } catch (error) {\n    console.error('错误:', error);\n  }\n}\n```\n\n## HTTP服务器\n\n```javascript\nconst http = require('http');\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'application/json' });\n  \n  const response = {\n    message: '你好，世界！',\n    timestamp: new Date().toISOString()\n  };\n  \n  res.end(JSON.stringify(response));\n});\n\nserver.listen(3000, () => {\n  console.log('服务器运行在端口3000');\n});\n```\n\n## Express.js框架\n\n```javascript\nconst express = require('express');\nconst app = express();\n\n// 中间件\napp.use(express.json());\napp.use(express.urlencoded({ extended: true }));\n\n// 路由\napp.get('/api/用户', (req, res) => {\n  res.json({ 用户: [] });\n});\n\napp.post('/api/用户', (req, res) => {\n  const { 姓名, 邮箱 } = req.body;\n  // 用户创建逻辑\n  res.status(201).json({ message: '用户已创建' });\n});\n\napp.listen(3000, () => {\n  console.log('Express服务器运行中');\n});\n```\n\n## 错误处理\n\n```javascript\n// 全局错误处理器\nprocess.on('uncaughtException', (err) => {\n  console.error('未捕获的异常:', err);\n  process.exit(1);\n});\n\nprocess.on('unhandledRejection', (reason, promise) => {\n  console.error('未处理的Promise拒绝:', reason);\n});\n\n// Express错误处理中间件\napp.use((err, req, res, next) => {\n  console.error(err.stack);\n  res.status(500).json({ error: '出现了一些问题！' });\n});\n```\n\n## 最佳实践\n\n### 安全性\n```javascript\n// 使用helmet设置安全头\nconst helmet = require('helmet');\napp.use(helmet());\n\n// 输入验证\nconst { body, validationResult } = require('express-validator');\n\napp.post('/api/用户', [\n  body('email').isEmail(),\n  body('password').isLength({ min: 6 })\n], (req, res) => {\n  const errors = validationResult(req);\n  if (!errors.isEmpty()) {\n    return res.status(400).json({ errors: errors.array() });\n  }\n  // 处理有效数据\n});\n```\n\n### 性能\n```javascript\n// 对大文件使用流\nconst fs = require('fs');\nconst readStream = fs.createReadStream('大文件.txt');\nconst writeStream = fs.createWriteStream('输出.txt');\n\nreadStream.pipe(writeStream);\n\n// Redis缓存\nconst redis = require('redis');\nconst client = redis.createClient();\n\nasync function getCachedData(key) {\n  const cached = await client.get(key);\n  if (cached) return JSON.parse(cached);\n  \n  const data = await fetchDataFromDatabase();\n  await client.setex(key, 3600, JSON.stringify(data));\n  return data;\n}\n```\n\n### 测试\n```javascript\n// 使用Jest进行单元测试\nconst request = require('supertest');\nconst app = require('../app');\n\ndescribe('用户API', () => {\n  test('GET /api/用户应该返回用户', async () => {\n    const response = await request(app)\n      .get('/api/用户')\n      .expect(200);\n    \n    expect(response.body).toHaveProperty('用户');\n    expect(Array.isArray(response.body.用户)).toBe(true);\n  });\n});\n```\n\n## 结论\n\nNode.js为构建可扩展的服务器端应用程序提供了强大的平台。理解其架构和原理对后端开发人员至关重要。",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}

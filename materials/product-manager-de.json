@@ -1,0 +1,95 @@
+{
+  "profession": "product-manager",
+  "language": "de",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Vorstellungsgespräch Fragen",
+      "count": 134,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Technische Aufgaben",
+      "count": 67,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "System Design",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Verhaltensfragen",
+      "count": 89,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithmen & Datenstrukturen",
+      "count": 56,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Best Practices",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Produktstrategie: Von der Idee zum Launch",
+      "description": "Umfassender Leitfaden zur Entwicklung von Produktstrategien",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.8,
+      "reads": 1234,
+      "tags": ["Produktstrategie", "MVP", "Roadmap", "Analytik"],
+      "content": "# Produktstrategie: Von der Idee zum Launch\n\n## Produktdefinition\n\n### Vision und Mission\n\n```markdown\n## Vision\nEine Plattform schaffen, die Millionen von Menschen hilft, ihre Finanzen effektiv zu verwalten und finanzielle Ziele zu erreichen.\n\n## Mission\nEinfache und verständliche Tools für Budgetplanung, Ausgabenverfolgung und Investitionen bereitstellen.\n\n## Zielgruppe\n- Primär: Menschen 25-45 Jahre mit Einkommen $30k-$100k\n- Sekundär: Studenten und Rentner\n- Geografie: USA, Europa, Asien\n```\n\n### Marktanalyse\n\n```markdown\n## Wettbewerbsanalyse\n\n### Direkte Konkurrenten\n1. **Mint** - Marktführer, 20M+ Nutzer\n   - Stärken: Bankintegration, Automatisierung\n   - Schwächen: Komplexe Oberfläche, Werbung\n\n2. **YNAB** - Premium-Segment\n   - Stärken: Qualitäts-Support, Bildung\n   - Schwächen: Hoher Preis, Komplexität\n\n## Marktgröße (TAM, SAM, SOM)\n- TAM: $12B (alle Finanzmanagement-Apps)\n- SAM: $3B (persönliche Finanz-Apps)\n- SOM: $300M (unser Anteil in 3 Jahren)\n```\n\n## MVP und Roadmap\n\n### MVP (Minimum Viable Product)\n\n```markdown\n## MVP-Funktionen\n\n### Muss haben\n- [ ] Registrierung und Authentifizierung\n- [ ] Einnahmen und Ausgaben hinzufügen\n- [ ] Transaktionskategorisierung\n- [ ] Grundlegende Berichte (Monat/Jahr)\n- [ ] Finanzielle Ziele setzen\n\n### Sollte haben\n- [ ] Datenexport zu CSV\n- [ ] Budgetlimit-Benachrichtigungen\n- [ ] Mobile Version\n\n### Könnte haben\n- [ ] Bankintegration\n- [ ] Investment-Portfolio\n- [ ] Soziale Funktionen\n\n### Wird nicht haben\n- [ ] Kryptowährungen\n- [ ] Steuerberichte\n- [ ] Geschäftskonten\n```\n\n### Produkt-Roadmap\n\n```markdown\n## Roadmap 2024\n\n### Q1: MVP-Launch\n- MVP-Entwicklung\n- Beta-Tests (100 Nutzer)\n- App Store/Google Play Launch\n\n### Q2: Wachstum\n- Bankintegration\n- Erweiterte Analytik\n- A/B-Tests\n\n### Q3: Monetarisierung\n- Premium-Abonnement\n- Werbemodell\n- Partnerschaftsprogramme\n\n### Q4: Skalierung\n- Internationale Expansion\n- API für Entwickler\n- Unternehmenslösungen\n```\n\n## Metriken und KPI\n\n```markdown\n## Schlüsselmetriken\n\n### Nutzermetriken\n- DAU (Tägliche aktive Nutzer): 10,000\n- MAU (Monatliche aktive Nutzer): 100,000\n- Retention Rate (Tag 7): 40%\n- Retention Rate (Tag 30): 20%\n\n### Geschäftsmetriken\n- MRR (Monatliche wiederkehrende Einnahmen): $50,000\n- CAC (Kundenakquisitionskosten): $15\n- LTV (Lebenszeitwert): $150\n- Churn Rate: 5%\n\n### Produktmetriken\n- Time to Value: < 5 Minuten\n- Feature Adoption Rate: 60%\n- NPS Score: 45\n- App Store Rating: 4.5+\n```\n\n## Fazit\n\nErfolgreiche Produktstrategie erfordert Balance zwischen Vision, Daten und Ausführung. Es ist wichtig, den Ansatz kontinuierlich zu messen und basierend auf Nutzer-Feedback anzupassen.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Produktanalytik: Metriken und Dashboards",
+      "description": "Praktischer Leitfaden zur Produktanalytik",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.7,
+      "reads": 987,
+      "tags": ["Analytik", "Metriken", "Dashboards", "SQL"],
+      "content": "# Produktanalytik: Metriken und Dashboards\n\n## Schlüsselmetriken\n\n### Nutzermetriken\n\n```sql\n-- Tägliche aktive Nutzer (DAU)\nSELECT \n  DATE(created_at) as datum,\n  COUNT(DISTINCT user_id) as dau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE(created_at)\nORDER BY datum DESC;\n\n-- Monatliche aktive Nutzer (MAU)\nSELECT \n  DATE_TRUNC('month', created_at) as monat,\n  COUNT(DISTINCT user_id) as mau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE_TRUNC('month', created_at)\nORDER BY monat DESC;\n\n-- Retention Rate\nWITH user_activity AS (\n  SELECT \n    user_id,\n    DATE(created_at) as aktivitaets_datum,\n    DATE_TRUNC('week', created_at) as woche\n  FROM user_events\n  WHERE event_type = 'login'\n),\ncohorts AS (\n  SELECT \n    user_id,\n    MIN(woche) as cohort_woche\n  FROM user_activity\n  GROUP BY user_id\n)\nSELECT \n  c.cohort_woche,\n  COUNT(DISTINCT c.user_id) as cohort_groesse,\n  COUNT(DISTINCT CASE WHEN ua.woche = c.cohort_woche + INTERVAL '1 week' THEN ua.user_id END) as woche_1,\n  COUNT(DISTINCT CASE WHEN ua.woche = c.cohort_woche + INTERVAL '2 weeks' THEN ua.user_id END) as woche_2\nFROM cohorts c\nLEFT JOIN user_activity ua ON c.user_id = ua.user_id\nGROUP BY c.cohort_woche\nORDER BY c.cohort_woche;\n```\n\n### Geschäftsmetriken\n\n```sql\n-- Monatliche wiederkehrende Einnahmen (MRR)\nSELECT \n  DATE_TRUNC('month', subscription_date) as monat,\n  SUM(monthly_amount) as mrr\nFROM subscriptions\nWHERE status = 'active'\nGROUP BY DATE_TRUNC('month', subscription_date)\nORDER BY monat DESC;\n\n-- Kundenakquisitionskosten (CAC)\nSELECT \n  DATE_TRUNC('month', acquisition_date) as monat,\n  SUM(marketing_spend) / COUNT(DISTINCT user_id) as cac\nFROM user_acquisitions\nGROUP BY DATE_TRUNC('month', acquisition_date)\nORDER BY monat DESC;\n\n-- Lebenszeitwert (LTV)\nSELECT \n  user_id,\n  SUM(purchase_amount) as gesamt_ausgaben,\n  COUNT(DISTINCT purchase_date) as anzahl_kaeufe,\n  AVG(purchase_amount) as durchschnitt_kauf\nFROM user_purchases\nGROUP BY user_id\nORDER BY gesamt_ausgaben DESC;\n```\n\n## Dashboards\n\n### Hauptdashboard\n\n```markdown\n## Tägliches Produkt-Dashboard\n\n### Nutzer\n- DAU: 12,345 (+5.2% vs gestern)\n- Neue Nutzer: 1,234 (+12.1% vs gestern)\n- Aktive Sessions: 45,678 (+3.4% vs gestern)\n\n### Engagement\n- Session-Dauer: 8m 32s (+2.1% vs gestern)\n- Seiten pro Session: 4.2 (+1.8% vs gestern)\n- Bounce Rate: 23.4% (-1.2% vs gestern)\n\n### Konversion\n- Registrierungsrate: 15.2% (+0.8% vs gestern)\n- Kaufrate: 3.4% (+0.3% vs gestern)\n- Umsatz: $12,345 (+8.7% vs gestern)\n\n### Technische Metriken\n- Fehlerrate: 0.12% (-0.02% vs gestern)\n- Seitenladezeit: 1.8s (+0.1s vs gestern)\n- API-Antwortzeit: 245ms (+5ms vs gestern)\n```\n\n## Fazit\n\nEffektive Produktanalytik hilft bei datengestützten Entscheidungen und verfolgt den Fortschritt zu Zielen. Es ist wichtig, sich auf Metriken zu konzentrieren, die tatsächlich Geschäftsergebnisse beeinflussen.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "A/B-Tests von Produkthypothesen",
+      "description": "Methodik zur Durchführung von A/B-Tests für Produktentscheidungen",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 18,
+      "rating": 4.6,
+      "reads": 756,
+      "tags": ["A/B-Tests", "Hypothesen", "Statistik", "Produktentscheidungen"],
+      "content": "# A/B-Tests von Produkthypothesen\n\n## Hypothesenformulierung\n\n### Hypothesenstruktur\n\n```markdown\n## Hypothesenformat\n\n### Problem\nNutzer können die benötigte Funktion in der App nicht schnell finden.\n\n### Hypothese\nWenn wir den \"Neue Bestellung\"-Button an die obere Bildschirmseite verschieben, wird die Anzahl der Bestellungen um 15% zunehmen.\n\n### Begründung\n- Button wird sichtbarer sein\n- Anzahl der Klicks wird abnehmen\n- Nutzererfahrung wird sich verbessern\n\n### Metriken\n- Primär: Anzahl der Bestellungen\n- Sekundär: Zeit bis erste Bestellung, Bounce Rate\n- Guardrail: Gesamtkonversion, Umsatz\n```\n\n### Hypothesenbeispiele\n\n```markdown\n## Produkthypothesen-Beispiele\n\n### Onboarding\n**Hypothese**: Wenn wir eine Fortschrittsleiste zum Onboarding hinzufügen, wird die Abschlussrate um 20% zunehmen.\n**Metriken**: Abschlussrate, Zeit bis Abschluss, Abbrechpunkte\n\n### Preisgestaltung\n**Hypothese**: Wenn wir 20% Jahresrabatt statt monatliches Abonnement zeigen, wird ARPU um 25% zunehmen.\n**Metriken**: ARPU, Konversionsrate, Churn Rate\n\n### Feature-Entdeckung\n**Hypothese**: Wenn wir Tooltips für neue Funktionen hinzufügen, wird die Feature-Adoption-Rate um 30% zunehmen.\n**Metriken**: Feature-Adoption, Nutzerengagement, Support-Tickets\n```\n\n## Experimentplanung\n\n### Stichprobengröße berechnen\n\n```python\nimport scipy.stats as stats\nimport numpy as np\n\n# Parameter für Berechnung\nbaseline_konversion = 0.05  # 5%\nminimaler_effekt = 0.01  # 1% (20% relativer Anstieg)\nalpha = 0.05  # 5% Signifikanzniveau\npower = 0.8  # 80% Power\n\n# Stichprobengröße berechnen\nz_alpha = stats.norm.ppf(1 - alpha/2)\nz_beta = stats.norm.ppf(power)\n\nstichprobengroesse = (2 * (z_alpha + z_beta)**2 * baseline_konversion * (1 - baseline_konversion)) / (minimaler_effekt**2)\n\nprint(f'Stichprobengröße pro Gruppe: {int(stichprobengroesse)}')\nprint(f'Gesamtstichprobengröße: {int(stichprobengroesse * 2)}')\nprint(f'Experimentdauer (bei 1000 Nutzern/Tag): {int(stichprobengroesse * 2 / 1000)} Tage')\n```\n\n### Experimentdesign\n\n```markdown\n## Experimentplan\n\n### Ziel\nPremium-Abonnement-Konversion um 15% erhöhen.\n\n### Hypothese\nWenn wir soziale Beweise (Nutzerbewertungen) auf der Abonnement-Seite zeigen, wird die Konversion zunehmen.\n\n### Design\n- **Kontrollgruppe (A)**: Standard-Abonnement-Seite\n- **Testgruppe (B)**: Seite mit Nutzerbewertungen\n\n### Verteilung\n- 50% Nutzer → Gruppe A\n- 50% Nutzer → Gruppe B\n\n### Dauer\n- Minimum: 2 Wochen\n- Ziel: 4 Wochen\n- Maximum: 6 Wochen\n\n### Stoppkriterien\n- Statistische Signifikanz p < 0.05\n- Minimale Stichprobengröße erreicht\n- Sicherheit: Konversion nicht um mehr als 5% gefallen\n```\n\n## Ergebnisanalyse\n\n```python\nimport pandas as pd\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# Experimentdaten\nresultate = pd.DataFrame({\n    'gruppe': ['A', 'A', 'B', 'B'] * 1000,\n    'konvertiert': [0, 1, 0, 1] * 1000,\n    'user_id': range(4000)\n})\n\n# Ergebnisaggregation\nexperiment_zusammenfassung = resultate.groupby('gruppe').agg({\n    'user_id': 'count',\n    'konvertiert': 'sum'\n}).rename(columns={'user_id': 'nutzer', 'konvertiert': 'konversionen'})\n\nexperiment_zusammenfassung['konversionsrate'] = experiment_zusammenfassung['konversionen'] / experiment_zusammenfassung['nutzer']\n\nprint(experiment_zusammenfassung)\n\n# Statistischer Test\nkonversionen_a = experiment_zusammenfassung.loc['A', 'konversionen']\nnutzer_a = experiment_zusammenfassung.loc['A', 'nutzer']\nkonversionen_b = experiment_zusammenfassung.loc['B', 'konversionen']\nnutzer_b = experiment_zusammenfassung.loc['B', 'nutzer']\n\nz_stat, p_wert = proportions_ztest(\n    [konversionen_a, konversionen_b],\n    [nutzer_a, nutzer_b]\n)\n\nprint(f'Z-Statistik: {z_stat:.4f}')\nprint(f'P-Wert: {p_wert:.4f}')\nprint(f'Statistisch signifikant: {p_wert < 0.05}')\n\n# Effektberechnung\nkontrollrate = konversionen_a / nutzer_a\nbehandlungsrate = konversionen_b / nutzer_b\nrelative_verbesserung = (behandlungsrate - kontrollrate) / kontrollrate * 100\n\nprint(f'Relative Verbesserung: {relative_verbesserung:.2f}%')\n```\n\n## Fazit\n\nA/B-Tests sind ein mächtiges Werkzeug zur Validierung von Produktentscheidungen. Es ist wichtig, Hypothesen richtig zu formulieren, Experimente zu planen und Ergebnisse zu interpretieren.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

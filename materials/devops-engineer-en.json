@@ -1,0 +1,95 @@
+{
+  "profession": "devops-engineer",
+  "language": "en",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Interview Questions",
+      "count": 134,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Technical Tasks",
+      "count": 89,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "System Design",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Behavioral Questions",
+      "count": 67,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithms & Data Structures",
+      "count": 78,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Best Practices",
+      "count": 92,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Docker: Application Containerization",
+      "description": "Fundamentals of working with Docker for containerization and application deployment",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 2341,
+      "tags": ["Docker", "Containerization", "DevOps", "CI/CD", "Microservices"],
+      "content": "# Docker: Application Containerization\n\n## Introduction to Docker\n\nDocker is a platform for developing, shipping, and running applications in containers.\n\n## Core Concepts\n\n### Images and Containers\n\n```dockerfile\n# Example Dockerfile\nFROM node:18-alpine\n\nWORKDIR /app\n\nCOPY package*.json ./\nRUN npm install\n\nCOPY . .\n\nEXPOSE 3000\n\nCMD [\"npm\", \"start\"]\n```\n\n### Basic Commands\n\n```bash\n# Build image\ndocker build -t my-app .\n\n# Run container\ndocker run -d -p 3000:3000 --name my-app-container my-app\n\n# View running containers\ndocker ps\n\n# Stop container\ndocker stop my-app-container\n\n# Remove container\ndocker rm my-app-container\n```\n\n## Docker Compose\n\n```yaml\n# docker-compose.yml\nversion: '3.8'\n\nservices:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      - NODE_ENV=production\n    depends_on:\n      - db\n  \n  db:\n    image: postgres:15\n    environment:\n      POSTGRES_DB: myapp\n      POSTGRES_USER: user\n      POSTGRES_PASSWORD: password\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n\nvolumes:\n  postgres_data:\n```\n\n## Best Practices\n\n1. **Use multi-stage builds to reduce image size**\n2. **Don't run containers as root user**\n3. **Use .dockerignore to exclude unnecessary files**\n4. **Optimize Dockerfile layers**\n5. **Use version tags instead of latest**\n6. **Scan images for vulnerabilities**\n\n## Monitoring and Logging\n\n```bash\n# View container logs\ndocker logs my-app-container\n\n# View container statistics\ndocker stats my-app-container\n\n# Interactive access to container\ndocker exec -it my-app-container /bin/sh\n```\n\n## Conclusion\n\nDocker is a fundamental tool in modern DevOps practice, ensuring environment consistency and simplifying application deployment.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Kubernetes: Container Orchestration",
+      "description": "Managing containerized applications with Kubernetes",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 30,
+      "rating": 4.8,
+      "reads": 1876,
+      "tags": ["Kubernetes", "K8s", "Orchestration", "Microservices", "Scaling"],
+      "content": "# Kubernetes: Container Orchestration\n\n## Introduction to Kubernetes\n\nKubernetes is a container orchestration system for automating deployment, scaling, and management of applications.\n\n## Core Components\n\n### Pod\n\n```yaml\n# pod.yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx-pod\nspec:\n  containers:\n  - name: nginx\n    image: nginx:latest\n    ports:\n    - containerPort: 80\n```\n\n### Deployment\n\n```yaml\n# deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:latest\n        ports:\n        - containerPort: 80\n```\n\n### Service\n\n```yaml\n# service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx-service\nspec:\n  selector:\n    app: nginx\n  ports:\n  - protocol: TCP\n    port: 80\n    targetPort: 80\n  type: LoadBalancer\n```\n\n## Basic Commands\n\n```bash\n# Apply configuration\nkubectl apply -f deployment.yaml\n\n# View pods\nkubectl get pods\n\n# View services\nkubectl get services\n\n# View logs\nkubectl logs nginx-pod\n\n# Scale deployment\nkubectl scale deployment nginx-deployment --replicas=5\n\n# Access pod\nkubectl exec -it nginx-pod -- /bin/bash\n```\n\n## ConfigMaps and Secrets\n\n```yaml\n# configmap.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config\ndata:\n  database_url: \"postgresql://localhost:5432/mydb\"\n  api_key: \"your-api-key\"\n```\n\n```yaml\n# secret.yaml\napiVersion: v1\nkind: Secret\nmetadata:\n  name: app-secret\ntype: Opaque\ndata:\n  username: dXNlcm5hbWU=  # base64 encoded\n  password: cGFzc3dvcmQ=  # base64 encoded\n```\n\n## Best Practices\n\n1. **Use resource limits and requests**\n2. **Configure health checks (liveness and readiness probes)**\n3. **Use namespaces for resource organization**\n4. **Configure RBAC for security**\n5. **Use persistent volumes for data**\n6. **Monitor cluster with Prometheus and Grafana**\n\n## Monitoring\n\n```yaml\n# prometheus-config.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: prometheus-config\ndata:\n  prometheus.yml: |\n    global:\n      scrape_interval: 15s\n    scrape_configs:\n    - job_name: 'kubernetes-pods'\n      kubernetes_sd_configs:\n      - role: pod\n```\n\n## Conclusion\n\nKubernetes provides powerful tools for managing containerized applications at scale, ensuring high availability and automatic scaling.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "CI/CD: Continuous Integration and Delivery",
+      "description": "Automation of development, testing, and deployment processes",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 22,
+      "rating": 4.7,
+      "reads": 1456,
+      "tags": ["CI/CD", "Jenkins", "GitLab CI", "GitHub Actions", "Automation"],
+      "content": "# CI/CD: Continuous Integration and Delivery\n\n## Introduction to CI/CD\n\nCI/CD is the practice of automating software development, testing, and deployment processes.\n\n## GitHub Actions\n\n```yaml\n# .github/workflows/ci.yml\nname: CI/CD Pipeline\n\non:\n  push:\n    branches: [ main ]\n  pull_request:\n    branches: [ main ]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    \n    steps:\n    - uses: actions/checkout@v3\n    \n    - name: Setup Node.js\n      uses: actions/setup-node@v3\n      with:\n        node-version: '18'\n        cache: 'npm'\n    \n    - name: Install dependencies\n      run: npm ci\n    \n    - name: Run tests\n      run: npm test\n    \n    - name: Build application\n      run: npm run build\n    \n    - name: Run linting\n      run: npm run lint\n\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest\n    if: github.ref == 'refs/heads/main'\n    \n    steps:\n    - name: Deploy to production\n      run: echo \"Deploying to production...\"\n```\n\n## GitLab CI\n\n```yaml\n# .gitlab-ci.yml\nstages:\n  - test\n  - build\n  - deploy\n\ntest:\n  stage: test\n  image: node:18\n  script:\n    - npm ci\n    - npm test\n    - npm run lint\n  coverage: '/Coverage: \\d+\\.\\d+%/'\n\nbuild:\n  stage: build\n  image: docker:latest\n  services:\n    - docker:dind\n  script:\n    - docker build -t my-app:$CI_COMMIT_SHA .\n    - docker push my-app:$CI_COMMIT_SHA\n  only:\n    - main\n\ndeploy:\n  stage: deploy\n  image: alpine:latest\n  script:\n    - echo \"Deploying to production\"\n    - kubectl set image deployment/my-app my-app=my-app:$CI_COMMIT_SHA\n  only:\n    - main\n```\n\n## Jenkins Pipeline\n\n```groovy\n// Jenkinsfile\npipeline {\n    agent any\n    \n    stages {\n        stage('Checkout') {\n            steps {\n                checkout scm\n            }\n        }\n        \n        stage('Test') {\n            steps {\n                sh 'npm ci'\n                sh 'npm test'\n            }\n        }\n        \n        stage('Build') {\n            steps {\n                sh 'npm run build'\n                sh 'docker build -t my-app .'\n            }\n        }\n        \n        stage('Deploy') {\n            steps {\n                sh 'kubectl apply -f k8s/'\n            }\n        }\n    }\n    \n    post {\n        always {\n            cleanWs()\n        }\n    }\n}\n```\n\n## Best Practices\n\n1. **Automate all stages of the process**\n2. **Use parallel task execution**\n3. **Configure build status notifications**\n4. **Use caching to speed up builds**\n5. **Implement security scanning**\n6. **Configure rollback strategies**\n7. **Monitor pipeline performance**\n\n## Monitoring and Metrics\n\n```yaml\n# prometheus-ci-metrics.yml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: ci-metrics\ndata:\n  ci-metrics.yml: |\n    - job_name: 'jenkins'\n      static_configs:\n        - targets: ['jenkins:8080']\n      metrics_path: /prometheus\n```\n\n## Conclusion\n\nCI/CD is a key component of modern DevOps practice, ensuring fast and reliable software delivery.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

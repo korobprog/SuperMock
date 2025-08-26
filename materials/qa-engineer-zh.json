@@ -1,0 +1,95 @@
+{
+  "profession": "qa-engineer",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 98,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 34,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 78,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法和数据结构",
+      "count": 67,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 89,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Selenium WebDriver: Web应用程序测试自动化",
+      "description": "使用Selenium WebDriver进行测试自动化的基础知识",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 28,
+      "rating": 4.8,
+      "reads": 2156,
+      "tags": ["Selenium", "WebDriver", "自动化", "测试", "Java"],
+      "content": "# Selenium WebDriver: Web应用程序测试自动化\n\n## Selenium WebDriver简介\n\nSelenium WebDriver是一个用于Web应用程序测试自动化的工具，允许以编程方式控制浏览器。\n\n## 核心概念\n\n### WebDriver初始化\n\n```java\n// Chrome WebDriver初始化\nWebDriver driver = new ChromeDriver();\n\n// Firefox WebDriver初始化\nWebDriver driver = new FirefoxDriver();\n\n// Edge WebDriver初始化\nWebDriver driver = new EdgeDriver();\n```\n\n### 元素定位器\n\n```java\n// 通过ID查找\nWebElement element = driver.findElement(By.id(\"username\"));\n\n// 通过类名查找\nWebElement element = driver.findElement(By.className(\"btn-primary\"));\n\n// 通过CSS选择器查找\nWebElement element = driver.findElement(By.cssSelector(\".login-form input[type='text']\"));\n\n// 通过XPath查找\nWebElement element = driver.findElement(By.xpath(\"//input[@name='email']\"));\n\n// 通过标签名查找\nWebElement element = driver.findElement(By.tagName(\"button\"));\n```\n\n### 元素交互\n\n```java\n// 输入文本\nWebElement usernameField = driver.findElement(By.id(\"username\"));\nusernameField.sendKeys(\"testuser\");\n\n// 清除字段\nusernameField.clear();\n\n// 点击元素\nWebElement loginButton = driver.findElement(By.id(\"login-btn\"));\nloginButton.click();\n\n// 获取文本\nString text = element.getText();\n\n// 获取属性\nString value = element.getAttribute(\"value\");\n```\n\n## 等待（Waits）\n\n### 显式等待\n\n```java\n// 显式等待\nWebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));\nWebElement element = wait.until(ExpectedConditions.elementToBeClickable(By.id(\"submit-btn\")));\n\n// 等待元素可见性\nWebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(\"success-message\")));\n\n// 等待元素消失\nwait.until(ExpectedConditions.invisibilityOfElementLocated(By.id(\"loading\")));\n```\n\n### 隐式等待\n\n```java\n// 设置隐式等待\ndriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));\n```\n\n## 处理窗口和框架\n\n```java\n// 切换到新窗口\nString mainWindow = driver.getWindowHandle();\nfor (String windowHandle : driver.getWindowHandles()) {\n    if (!windowHandle.equals(mainWindow)) {\n        driver.switchTo().window(windowHandle);\n        break;\n    }\n}\n\n// 切换到框架\ndriver.switchTo().frame(\"frame-name\");\n\n// 返回默认内容\ndriver.switchTo().defaultContent();\n```\n\n## 最佳实践\n\n1. **使用页面对象模型（POM）**\n2. **应用显式等待而不是隐式等待**\n3. **使用唯一且稳定的定位器**\n4. **处理异常**\n5. **使用截图进行调试**\n6. **逻辑分组测试**\n\n## 页面对象示例\n\n```java\npublic class LoginPage {\n    private WebDriver driver;\n    \n    @FindBy(id = \"username\")\n    private WebElement usernameField;\n    \n    @FindBy(id = \"password\")\n    private WebElement passwordField;\n    \n    @FindBy(id = \"login-btn\")\n    private WebElement loginButton;\n    \n    public LoginPage(WebDriver driver) {\n        this.driver = driver;\n        PageFactory.initElements(driver, this);\n    }\n    \n    public void enterUsername(String username) {\n        usernameField.sendKeys(username);\n    }\n    \n    public void enterPassword(String password) {\n        passwordField.sendKeys(password);\n    }\n    \n    public void clickLogin() {\n        loginButton.click();\n    }\n    \n    public void login(String username, String password) {\n        enterUsername(username);\n        enterPassword(password);\n        clickLogin();\n    }\n}\n```\n\n## 结论\n\nSelenium WebDriver为Web应用程序测试自动化提供了强大的工具，能够创建可靠且可维护的测试。",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "使用Postman进行API测试",
+      "description": "使用Postman进行REST API测试和自动化",
+      "category": "best-practices",
+      "difficulty": "intermediate",
+      "readTime": 22,
+      "rating": 4.7,
+      "reads": 1876,
+      "tags": ["API", "Postman", "REST", "测试", "JSON"],
+      "content": "# 使用Postman进行API测试\n\n## API测试简介\n\nAPI测试是验证API功能、可靠性和性能的过程。\n\n## Postman基础\n\n### 创建请求\n\n```javascript\n// GET请求示例\nGET https://api.example.com/users\n\n// POST请求示例\nPOST https://api.example.com/users\nContent-Type: application/json\n\n{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"age\": 30\n}\n```\n\n### 环境变量\n\n```javascript\n// 设置变量\npm.environment.set(\"baseUrl\", \"https://api.example.com\");\npm.environment.set(\"token\", \"your-auth-token\");\n\n// 使用变量\nGET {{baseUrl}}/users\nAuthorization: Bearer {{token}}\n```\n\n### Postman测试\n\n```javascript\n// 检查状态码\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\n// 检查响应时间\npm.test(\"Response time is less than 200ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(200);\n});\n\n// 检查JSON结构\npm.test(\"Response has required fields\", function () {\n    const responseJson = pm.response.json();\n    pm.expect(responseJson).to.have.property('id');\n    pm.expect(responseJson).to.have.property('name');\n    pm.expect(responseJson).to.have.property('email');\n});\n\n// 检查数据类型\npm.test(\"Data types are correct\", function () {\n    const responseJson = pm.response.json();\n    pm.expect(responseJson.id).to.be.a('number');\n    pm.expect(responseJson.name).to.be.a('string');\n    pm.expect(responseJson.email).to.be.a('string');\n});\n```\n\n## 使用Newman进行自动化\n\n```bash\n# 安装Newman\nnpm install -g newman\n\n# 运行集合\nnewman run collection.json\n\n# 使用环境变量运行\nnewman run collection.json -e environment.json\n\n# 生成报告\nnewman run collection.json --reporters cli,json --reporter-json-export results.json\n```\n\n## 集合示例\n\n```json\n{\n  \"info\": {\n    \"name\": \"User API Tests\",\n    \"schema\": \"https://schema.getpostman.com/json/collection/v2.1.0/collection.json\"\n  },\n  \"item\": [\n    {\n      \"name\": \"Get Users\",\n      \"request\": {\n        \"method\": \"GET\",\n        \"header\": [],\n        \"url\": {\n          \"raw\": \"{{baseUrl}}/users\",\n          \"host\": [\"{{baseUrl}}\"],\n          \"path\": [\"users\"]\n        }\n      },\n      \"response\": []\n    },\n    {\n      \"name\": \"Create User\",\n      \"request\": {\n        \"method\": \"POST\",\n        \"header\": [\n          {\n            \"key\": \"Content-Type\",\n            \"value\": \"application/json\"\n          }\n        ],\n        \"body\": {\n          \"mode\": \"raw\",\n          \"raw\": \"{\\n  \\\"name\\\": \\\"John Doe\\\",\\n  \\\"email\\\": \\\"john@example.com\\\"\\n}\"\n        },\n        \"url\": {\n          \"raw\": \"{{baseUrl}}/users\",\n          \"host\": [\"{{baseUrl}}\"],\n          \"path\": [\"users\"]\n        }\n      },\n      \"response\": []\n    }\n  ]\n}\n```\n\n## 最佳实践\n\n1. **使用环境变量**\n2. **创建可重用的测试**\n3. **测试边界情况**\n4. **测试负面场景**\n5. **使用Pre-request Scripts**\n6. **记录API**\n\n## Pre-request Scripts\n\n```javascript\n// 生成随机数据\nconst randomName = pm.variables.replaceIn('{{$randomFullName}}');\nconst randomEmail = pm.variables.replaceIn('{{$randomEmail}}');\n\npm.environment.set('testName', randomName);\npm.environment.set('testEmail', randomEmail);\n\n// 设置时间戳\npm.environment.set('timestamp', new Date().toISOString());\n```\n\n## 结论\n\nPostman为API测试提供了强大的工具，能够创建全面的测试场景并自动化测试过程。",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "使用JMeter进行性能测试",
+      "description": "使用Apache JMeter进行Web应用程序负载测试",
+      "category": "technical-tasks",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.6,
+      "reads": 1345,
+      "tags": ["JMeter", "性能", "负载测试", "Apache", "指标"],
+      "content": "# 使用JMeter进行性能测试\n\n## JMeter简介\n\nApache JMeter是一个用于Web应用程序性能测试和负载测试的工具。\n\n## 主要组件\n\n### 线程组\n\n```xml\n<ThreadGroup guiclass=\"ThreadGroupGui\" testclass=\"ThreadGroup\" testname=\"Test Plan\">\n  <elementProp name=\"ThreadGroup.main_controller\" elementType=\"LoopController\">\n    <boolProp name=\"LoopController.continue_forever\">false</boolProp>\n    <stringProp name=\"LoopController.loops\">1</stringProp>\n  </elementProp>\n  <stringProp name=\"ThreadGroup.on_sample_error\">continue</stringProp>\n  <elementProp name=\"ThreadGroup.scheduler\" elementType=\"Scheduler\">\n    <boolProp name=\"Scheduler.scheduler\">false</boolProp>\n    <stringProp name=\"Scheduler.duration\"></stringProp>\n    <stringProp name=\"Scheduler.delay\"></stringProp>\n  </elementProp>\n  <stringProp name=\"ThreadGroup.num_threads\">10</stringProp>\n  <stringProp name=\"ThreadGroup.ramp_time\">1</stringProp>\n  <boolProp name=\"ThreadGroup.scheduler\">false</boolProp>\n  <stringProp name=\"ThreadGroup.duration\"></stringProp>\n  <stringProp name=\"ThreadGroup.delay\"></stringProp>\n</ThreadGroup>\n```\n\n### HTTP请求\n\n```xml\n<HTTPSamplerProxy guiclass=\"HttpTestSampleGui\" testclass=\"HTTPSamplerProxy\" testname=\"HTTP Request\">\n  <elementProp name=\"HTTPsampler.Arguments\" elementType=\"Arguments\">\n    <collectionProp name=\"Arguments.arguments\">\n      <elementProp name=\"\" elementType=\"HTTPArgument\">\n        <boolProp name=\"HTTPArgument.always_encode\">false</boolProp>\n        <stringProp name=\"Argument.value\"></stringProp>\n        <stringProp name=\"Argument.metadata\">=</stringProp>\n      </elementProp>\n    </collectionProp>\n  </elementProp>\n  <stringProp name=\"HTTPSampler.domain\">example.com</stringProp>\n  <stringProp name=\"HTTPSampler.port\">80</stringProp>\n  <stringProp name=\"HTTPSampler.protocol\">http</stringProp>\n  <stringProp name=\"HTTPSampler.path\">/api/users</stringProp>\n  <stringProp name=\"HTTPSampler.method\">GET</stringProp>\n  <boolProp name=\"HTTPSampler.follow_redirects\">true</boolProp>\n  <boolProp name=\"HTTPSampler.auto_redirects\">false</boolProp>\n  <boolProp name=\"HTTPSampler.use_keepalive\">true</boolProp>\n  <boolProp name=\"HTTPSampler.DO_MULTIPART_POST\">false</boolProp>\n</HTTPSamplerProxy>\n```\n\n### 断言\n\n```xml\n<ResponseAssertion guiclass=\"AssertionGui\" testclass=\"ResponseAssertion\" testname=\"Response Assertion\">\n  <collectionProp name=\"Asserion.test_strings\">\n    <stringProp name=\"49586\">200</stringProp>\n  </collectionProp>\n  <stringProp name=\"Assertion.test_field\">Assertion.response_code</stringProp>\n  <boolProp name=\"Assertion.assume_success\">false</boolProp>\n  <intProp name=\"Assertion.test_type\">8</intProp>\n</ResponseAssertion>\n```\n\n## JMeter命令行\n\n```bash\n# 运行测试\njmeter -n -t test-plan.jmx -l results.jtl\n\n# 使用GUI运行\njmeter -t test-plan.jmx\n\n# 生成HTML报告\njmeter -n -t test-plan.jmx -l results.jtl -e -o report/\n\n# 使用变量运行\njmeter -n -t test-plan.jmx -Jthreads=100 -Jduration=300\n```\n\n## 监听器\n\n### 查看结果树\n\n```xml\n<ResultCollector guiclass=\"ViewResultsFullVisualizer\" testclass=\"ResultCollector\" testname=\"View Results Tree\">\n  <boolProp name=\"ResultCollector.error_logging\">false</boolProp>\n  <objProp>\n    <name>saveConfig</name>\n    <value class=\"SampleSaveConfiguration\">\n      <time>true</time>\n      <latency>true</latency>\n      <timestamp>true</timestamp>\n      <success>true</success>\n      <label>true</label>\n      <code>true</code>\n      <message>true</message>\n      <threadName>true</threadName>\n      <dataType>true</dataType>\n      <encoding>false</encoding>\n      <assertions>true</assertions>\n      <subresults>true</subresults>\n      <responseData>false</responseData>\n      <samplerData>false</samplerData>\n      <xml>false</xml>\n      <fieldNames>true</fieldNames>\n      <responseHeaders>false</responseHeaders>\n      <requestHeaders>false</requestHeaders>\n      <responseDataOnError>false</responseDataOnError>\n      <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>\n      <assertionsResultsToSave>0</assertionsResultsToSave>\n      <bytes>true</bytes>\n      <sentBytes>true</sentBytes>\n      <url>true</url>\n      <threadCounts>true</threadCounts>\n      <idleTime>true</idleTime>\n      <connectTime>true</connectTime>\n    </value>\n  </objProp>\n  <stringProp name=\"filename\"></stringProp>\n</ResultCollector>\n```\n\n## 最佳实践\n\n1. **使用真实数据**\n2. **设置适当的超时**\n3. **监控系统资源**\n4. **使用分布式测试**\n5. **分析结果**\n6. **优化测试计划**\n\n## 性能指标\n\n```javascript\n// 检查响应时间\npm.test(\"Response time is acceptable\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\n\n// 检查吞吐量\npm.test(\"Throughput is sufficient\", function () {\n    const throughput = pm.response.responseTime / 1000; // requests per second\n    pm.expect(throughput).to.be.above(10);\n});\n```\n\n## 结论\n\nJMeter是性能测试的强大工具，能够创建全面的负载测试并分析结果。",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

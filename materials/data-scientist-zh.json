@@ -1,0 +1,95 @@
+{
+  "profession": "data-scientist",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 89,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 67,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法与数据结构",
+      "count": 123,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "机器学习：从基础到高级算法",
+      "description": "包含实用示例的机器学习综合指南",
+      "category": "interview-questions",
+      "difficulty": "advanced",
+      "readTime": 30,
+      "rating": 4.9,
+      "reads": 1345,
+      "tags": ["机器学习", "Python", "Scikit-learn", "算法"],
+      "content": "# 机器学习：从基础到高级算法\n\n## 监督学习\n\n```python\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import classification_report\n\n# 数据准备\nX = df[['特征1', '特征2', '特征3']]\ny = df['目标']\n\n# 数据分割\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# 模型训练\n模型 = RandomForestClassifier(n_estimators=100, random_state=42)\n模型.fit(X_train, y_train)\n\n# 预测\ny_pred = 模型.predict(X_test)\nprint(classification_report(y_test, y_pred))\n```\n\n## 深度学习\n\n```python\nimport tensorflow as tf\nfrom tensorflow.keras.models import Sequential\nfrom tensorflow.keras.layers import Dense, Dropout\n\n# 创建模型\n模型 = Sequential([\n    Dense(128, activation='relu', input_shape=(X_train.shape[1],)),\n    Dropout(0.3),\n    Dense(64, activation='relu'),\n    Dense(1, activation='sigmoid')\n])\n\n# 编译\n模型.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])\n\n# 训练\n历史 = 模型.fit(X_train, y_train, epochs=50, validation_split=0.2)\n```\n\n## 特征工程\n\n```python\n# 创建新特征\ndf['特征比率'] = df['特征1'] / df['特征2']\ndf['特征总和'] = df['特征1'] + df['特征2']\n\n# 多项式特征\nfrom sklearn.preprocessing import PolynomialFeatures\npoly = PolynomialFeatures(degree=2, include_bias=False)\nX_poly = poly.fit_transform(X_scaled)\n```\n\n## 模型验证\n\n```python\nfrom sklearn.model_selection import cross_val_score\n\n# 交叉验证\ncv_scores = cross_val_score(模型, X, y, cv=5, scoring='accuracy')\nprint(f'平均CV分数: {cv_scores.mean():.4f} (+/- {cv_scores.std() * 2:.4f})')\n```\n\n## 结论\n\n机器学习需要深入理解算法、数据操作技能和持续学习新方法。",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "深度学习：TensorFlow和PyTorch",
+      "description": "深度学习实用指南",
+      "category": "technical-tasks",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.8,
+      "reads": 987,
+      "tags": ["深度学习", "TensorFlow", "PyTorch", "神经网络"],
+      "content": "# 深度学习：TensorFlow和PyTorch\n\n## TensorFlow\n\n```python\nimport tensorflow as tf\nfrom tensorflow.keras import layers\n\n# 函数式API\ninputs = tf.keras.Input(shape=(784,))\nx = layers.Dense(128, activation='relu')(inputs)\nx = layers.Dropout(0.2)(x)\noutputs = layers.Dense(10, activation='softmax')(x)\n\n模型 = tf.keras.Model(inputs=inputs, outputs=outputs)\n模型.compile(optimizer='adam', loss='sparse_categorical_crossentropy')\n```\n\n## PyTorch\n\n```python\nimport torch\nimport torch.nn as nn\n\nclass 神经网络(nn.Module):\n    def __init__(self, input_size, hidden_size, output_size):\n        super().__init__()\n        self.层1 = nn.Linear(input_size, hidden_size)\n        self.层2 = nn.Linear(hidden_size, output_size)\n        self.relu = nn.ReLU()\n    \n    def forward(self, x):\n        x = self.relu(self.层1(x))\n        x = self.层2(x)\n        return x\n\n模型 = 神经网络(784, 128, 10)\n损失函数 = nn.CrossEntropyLoss()\n优化器 = torch.optim.Adam(模型.parameters())\n```\n\n## 结论\n\n深度学习为解决复杂问题开辟了新的可能性，但需要大量计算资源。",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "自然语言处理（NLP）",
+      "description": "现代文本处理和语言模型方法",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 22,
+      "rating": 4.7,
+      "reads": 756,
+      "tags": ["NLP", "BERT", "Transformers", "分词"],
+      "content": "# 自然语言处理（NLP）\n\n## Transformer\n\n```python\nfrom transformers import AutoTokenizer, AutoModel\nimport torch\n\n# 加载预训练模型\n模型名称 = 'bert-base-uncased'\ntokenizer = AutoTokenizer.from_pretrained(模型名称)\n模型 = AutoModel.from_pretrained(模型名称)\n\n# 文本分词\n文本 = \"你好，你好吗？\"\ninputs = tokenizer(文本, return_tensors=\"pt\", padding=True, truncation=True)\n\n# 获取嵌入\nwith torch.no_grad():\n    outputs = 模型(**inputs)\n    embeddings = outputs.last_hidden_state\n```\n\n## 微调\n\n```python\nfrom transformers import Trainer, TrainingArguments\n\n# 训练参数\ntraining_args = TrainingArguments(\n    output_dir='./结果',\n    num_train_epochs=3,\n    per_device_train_batch_size=16,\n    per_device_eval_batch_size=64,\n    warmup_steps=500,\n    weight_decay=0.01,\n)\n\n# 训练\ntrainer = Trainer(model=模型, args=training_args, train_dataset=训练数据集)\ntrainer.train()\n```\n\n## 结论\n\nNLP正在快速发展，这要归功于transformer和大型语言模型。重要的是要跟上新的发展。",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

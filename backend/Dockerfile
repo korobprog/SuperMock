@@ -21,6 +21,7 @@ ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["node", "backend/server/index.js"]
+# Run the production server (uses backend/server/index.mjs)
+CMD ["node", "backend/server/index.mjs"]
 
 

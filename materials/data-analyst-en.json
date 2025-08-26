@@ -1,0 +1,95 @@
+{
+  "profession": "data-analyst",
+  "language": "en",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Interview Questions",
+      "count": 142,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Technical Tasks",
+      "count": 76,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "System Design",
+      "count": 28,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Behavioral Questions",
+      "count": 54,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithms & Data Structures",
+      "count": 89,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Best Practices",
+      "count": 67,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "SQL for Data Analysts: Complete Guide",
+      "description": "Comprehensive guide to SQL for data analysis with practical examples",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.8,
+      "reads": 1156,
+      "tags": ["SQL", "Data Analysis", "Databases", "PostgreSQL"],
+      "content": "# SQL for Data Analysts: Complete Guide\n\n## SQL Basics\n\n### SELECT and Filtering\n\n```sql\n-- Basic SELECT\nSELECT column1, column2\nFROM table_name\nWHERE condition;\n\n-- Example with filtering\nSELECT user_id, name, email, created_at\nFROM users\nWHERE created_at >= '2024-01-01'\n  AND status = 'active';\n```\n\n### Aggregate Functions\n\n```sql\n-- Count users by status\nSELECT \n  status,\n  COUNT(*) as user_count,\n  AVG(age) as avg_age\nFROM users\nGROUP BY status\nHAVING COUNT(*) > 10;\n```\n\n## Advanced Techniques\n\n### Window Functions\n\n```sql\n-- Rank users by activity\nSELECT \n  user_id,\n  name,\n  activity_score,\n  ROW_NUMBER() OVER (ORDER BY activity_score DESC) as rank,\n  RANK() OVER (ORDER BY activity_score DESC) as rank_with_ties,\n  DENSE_RANK() OVER (ORDER BY activity_score DESC) as dense_rank\nFROM user_activity;\n\n-- Moving average\nSELECT \n  date,\n  revenue,\n  AVG(revenue) OVER (\n    ORDER BY date \n    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n  ) as moving_avg_7d\nFROM daily_revenue;\n```\n\n### CTE (Common Table Expressions)\n\n```sql\nWITH user_stats AS (\n  SELECT \n    user_id,\n    COUNT(*) as order_count,\n    SUM(amount) as total_spent\n  FROM orders\n  GROUP BY user_id\n),\nhigh_value_users AS (\n  SELECT user_id\n  FROM user_stats\n  WHERE total_spent > 1000\n)\nSELECT u.name, us.order_count, us.total_spent\nFROM users u\nJOIN user_stats us ON u.id = us.user_id\nWHERE u.id IN (SELECT user_id FROM high_value_users);\n```\n\n## Time Series Analysis\n\n```sql\n-- Monthly user growth\nSELECT \n  DATE_TRUNC('month', created_at) as month,\n  COUNT(*) as new_users,\n  LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', created_at)) as prev_month,\n  (COUNT(*) - LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', created_at))) / \n    LAG(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', created_at)) * 100 as growth_percent\nFROM users\nGROUP BY DATE_TRUNC('month', created_at)\nORDER BY month;\n```\n\n## Query Optimization\n\n```sql\n-- Using indexes\nCREATE INDEX idx_users_status_created ON users(status, created_at);\nCREATE INDEX idx_orders_user_date ON orders(user_id, order_date);\n\n-- Analyze execution plan\nEXPLAIN ANALYZE\nSELECT u.name, COUNT(o.id) as order_count\nFROM users u\nJOIN orders o ON u.id = o.user_id\nWHERE u.status = 'active'\n  AND o.order_date >= '2024-01-01'\nGROUP BY u.id, u.name;\n```\n\n## Working with JSON\n\n```sql\n-- Extract data from JSON\nSELECT \n  id,\n  data->>'name' as name,\n  data->>'email' as email,\n  (data->>'age')::int as age\nFROM user_profiles\nWHERE data->>'city' = 'New York';\n\n-- Aggregate JSON data\nSELECT \n  category,\n  jsonb_agg(\n    jsonb_build_object(\n      'id', id,\n      'name', name,\n      'price', price\n    )\n  ) as products\nFROM products\nGROUP BY category;\n```\n\n## Conclusion\n\nSQL remains the primary tool for data analysis. It's important to understand not only syntax but also query optimization principles for working with large datasets.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Python for Data Analysis: Pandas and NumPy",
+      "description": "Practical guide to using Python for data analysis",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 18,
+      "rating": 4.7,
+      "reads": 892,
+      "tags": ["Python", "Pandas", "NumPy", "Data Analysis"],
+      "content": "# Python for Data Analysis: Pandas and NumPy\n\n## Pandas Basics\n\n```python\nimport pandas as pd\nimport numpy as np\n\n# Load data\ndf = pd.read_csv('data.csv')\n\n# Basic operations\nprint(df.head())\nprint(df.info())\nprint(df.describe())\n```\n\n## Data Cleaning\n\n```python\n# Handle missing values\ndf['age'].fillna(df['age'].median(), inplace=True)\ndf.dropna(subset=['email'], inplace=True)\n\n# Remove duplicates\ndf.drop_duplicates(subset=['email'], keep='first', inplace=True)\n\n# Change data types\ndf['date'] = pd.to_datetime(df['date'])\ndf['amount'] = pd.to_numeric(df['amount'], errors='coerce')\n```\n\n## Aggregation and Grouping\n\n```python\n# Group by categories\nresult = df.groupby('category').agg({\n    'amount': ['sum', 'mean', 'count'],\n    'user_id': 'nunique'\n}).round(2)\n\n# Pivot table\npivot = df.pivot_table(\n    values='amount',\n    index='category',\n    columns='status',\n    aggfunc='sum',\n    fill_value=0\n)\n```\n\n## Time Series\n\n```python\n# Set time index\ndf['date'] = pd.to_datetime(df['date'])\ndf.set_index('date', inplace=True)\n\n# Resample by month\nmonthly = df.resample('M').agg({\n    'amount': 'sum',\n    'user_id': 'nunique'\n})\n\n# Moving average\nmonthly['rolling_avg'] = monthly['amount'].rolling(window=3).mean()\n```\n\n## Visualization\n\n```python\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\n# Line plot\nplt.figure(figsize=(12, 6))\nmonthly['amount'].plot()\nplt.title('Monthly Revenue')\nplt.xlabel('Date')\nplt.ylabel('Amount')\nplt.show()\n\n# Histogram\nplt.figure(figsize=(10, 6))\ndf['amount'].hist(bins=30)\nplt.title('Amount Distribution')\nplt.show()\n\n# Correlation matrix\ncorrelation = df[['amount', 'age', 'rating']].corr()\nsns.heatmap(correlation, annot=True, cmap='coolwarm')\nplt.show()\n```\n\n## Conclusion\n\nPandas and NumPy provide powerful tools for data analysis in Python. It's important to understand data manipulation principles and optimize code for large datasets.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "A/B Testing: From Planning to Analysis",
+      "description": "Comprehensive guide to conducting A/B tests and interpreting results",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 567,
+      "tags": ["A/B Testing", "Statistics", "Data Analysis", "Hypothesis Testing"],
+      "content": "# A/B Testing: From Planning to Analysis\n\n## Experiment Planning\n\n### Hypothesis Definition\n\n```python\n# Example hypothesis\nhypothesis = {\n    'null': 'New button does not affect conversion',\n    'alternative': 'New button increases conversion by 10%',\n    'significance_level': 0.05,\n    'power': 0.8\n}\n```\n\n### Sample Size Calculation\n\n```python\nimport scipy.stats as stats\n\n# Parameters for calculation\nbaseline_conversion = 0.05  # 5%\nmin_detectable_effect = 0.01  # 1%\nalpha = 0.05\npower = 0.8\n\n# Sample size calculation\nsample_size = stats.norm.ppf(1 - alpha/2) + stats.norm.ppf(power)\nsample_size = sample_size ** 2 * (2 * baseline_conversion * (1 - baseline_conversion)) / (min_detectable_effect ** 2)\n\nprint(f'Sample size per group: {int(sample_size)}')\n```\n\n## Running the Experiment\n\n```python\n# Create groups\nimport numpy as np\n\nnp.random.seed(42)\nuser_ids = range(10000)\n\n# Random assignment\nassignments = np.random.choice(['A', 'B'], size=len(user_ids), p=[0.5, 0.5])\n\nexperiment_data = pd.DataFrame({\n    'user_id': user_ids,\n    'group': assignments\n})\n```\n\n## Results Analysis\n\n```python\n# Collect data\nresults = pd.DataFrame({\n    'user_id': [1, 2, 3, 4, 5],\n    'group': ['A', 'B', 'A', 'B', 'A'],\n    'converted': [0, 1, 0, 1, 0]\n})\n\n# Aggregate by groups\ngroup_stats = results.groupby('group').agg({\n    'user_id': 'count',\n    'converted': 'sum'\n}).rename(columns={'user_id': 'users', 'converted': 'conversions'})\n\ngroup_stats['conversion_rate'] = group_stats['conversions'] / group_stats['users']\n\nprint(group_stats)\n```\n\n## Statistical Tests\n\n```python\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# Z-test for proportions\nconversions_a = group_stats.loc['A', 'conversions']\nusers_a = group_stats.loc['A', 'users']\nconversions_b = group_stats.loc['B', 'conversions']\nusers_b = group_stats.loc['B', 'users']\n\nz_stat, p_value = proportions_ztest(\n    [conversions_a, conversions_b],\n    [users_a, users_b]\n)\n\nprint(f'Z-statistic: {z_stat:.4f}')\nprint(f'P-value: {p_value:.4f}')\nprint(f'Statistically significant: {p_value < 0.05}')\n```\n\n## Results Visualization\n\n```python\nimport matplotlib.pyplot as plt\n\n# Conversion chart\nfig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))\n\n# Conversions by group\nconversion_rates = group_stats['conversion_rate']\nax1.bar(conversion_rates.index, conversion_rates.values)\nax1.set_title('Conversions by Group')\nax1.set_ylabel('Conversion Rate')\n\n# Confidence intervals\nfrom scipy.stats import norm\n\ndef confidence_interval(conversions, users, confidence=0.95):\n    p = conversions / users\n    z = norm.ppf((1 + confidence) / 2)\n    margin = z * np.sqrt(p * (1 - p) / users)\n    return p - margin, p + margin\n\nfor group in ['A', 'B']:\n    conv = group_stats.loc[group, 'conversions']\n    users = group_stats.loc[group, 'users']\n    ci_low, ci_high = confidence_interval(conv, users)\n    ax2.errorbar(group, conv/users, yerr=[[conv/users - ci_low], [ci_high - conv/users]], \n                fmt='o', capsize=5)\n\nax2.set_title('Conversion Rate with Confidence Intervals')\nax2.set_ylabel('Conversion Rate')\n\nplt.tight_layout()\nplt.show()\n```\n\n## Conclusion\n\nA/B testing requires careful planning and proper interpretation of results. It's important to consider both statistical significance and practical significance of results.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

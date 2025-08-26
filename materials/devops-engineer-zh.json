@@ -1,0 +1,95 @@
+{
+  "profession": "devops-engineer",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 134,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 89,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 67,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法与数据结构",
+      "count": 78,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 92,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Docker：应用程序容器化",
+      "description": "使用Docker进行容器化和应用程序部署的基础知识",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 2341,
+      "tags": ["Docker", "容器化", "DevOps", "CI/CD", "微服务"],
+      "content": "# Docker：应用程序容器化\n\n## Docker简介\n\nDocker是一个用于在容器中开发、交付和运行应用程序的平台。\n\n## 核心概念\n\n### 镜像和容器\n\n```dockerfile\n# 示例Dockerfile\nFROM node:18-alpine\n\nWORKDIR /app\n\nCOPY package*.json ./\nRUN npm install\n\nCOPY . .\n\nEXPOSE 3000\n\nCMD [\"npm\", \"start\"]\n```\n\n### 基本命令\n\n```bash\n# 构建镜像\ndocker build -t my-app .\n\n# 运行容器\ndocker run -d -p 3000:3000 --name my-app-container my-app\n\n# 查看运行中的容器\ndocker ps\n\n# 停止容器\ndocker stop my-app-container\n\n# 删除容器\ndocker rm my-app-container\n```\n\n## Docker Compose\n\n```yaml\n# docker-compose.yml\nversion: '3.8'\n\nservices:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      - NODE_ENV=production\n    depends_on:\n      - db\n  \n  db:\n    image: postgres:15\n    environment:\n      POSTGRES_DB: myapp\n      POSTGRES_USER: user\n      POSTGRES_PASSWORD: password\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n\nvolumes:\n  postgres_data:\n```\n\n## 最佳实践\n\n1. **使用多阶段构建来减小镜像大小**\n2. **不要以root用户身份运行容器**\n3. **使用.dockerignore排除不必要的文件**\n4. **优化Dockerfile层**\n5. **使用版本标签而不是latest**\n6. **扫描镜像中的漏洞**\n\n## 监控和日志记录\n\n```bash\n# 查看容器日志\ndocker logs my-app-container\n\n# 查看容器统计信息\ndocker stats my-app-container\n\n# 交互式访问容器\ndocker exec -it my-app-container /bin/sh\n```\n\n## 结论\n\nDocker是现代DevOps实践中的基础工具，确保环境一致性并简化应用程序部署。",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Kubernetes：容器编排",
+      "description": "使用Kubernetes管理容器化应用程序",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 30,
+      "rating": 4.8,
+      "reads": 1876,
+      "tags": ["Kubernetes", "K8s", "编排", "微服务", "扩展"],
+      "content": "# Kubernetes：容器编排\n\n## Kubernetes简介\n\nKubernetes是一个容器编排系统，用于自动化应用程序的部署、扩展和管理。\n\n## 核心组件\n\n### Pod\n\n```yaml\n# pod.yaml\napiVersion: v1\nkind: Pod\nmetadata:\n  name: nginx-pod\nspec:\n  containers:\n  - name: nginx\n    image: nginx:latest\n    ports:\n    - containerPort: 80\n```\n\n### Deployment\n\n```yaml\n# deployment.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: nginx\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:latest\n        ports:\n        - containerPort: 80\n```\n\n### Service\n\n```yaml\n# service.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: nginx-service\nspec:\n  selector:\n    app: nginx\n  ports:\n  - protocol: TCP\n    port: 80\n    targetPort: 80\n  type: LoadBalancer\n```\n\n## 基本命令\n\n```bash\n# 应用配置\nkubectl apply -f deployment.yaml\n\n# 查看pods\nkubectl get pods\n\n# 查看服务\nkubectl get services\n\n# 查看日志\nkubectl logs nginx-pod\n\n# 扩展deployment\nkubectl scale deployment nginx-deployment --replicas=5\n\n# 访问pod\nkubectl exec -it nginx-pod -- /bin/bash\n```\n\n## ConfigMaps和Secrets\n\n```yaml\n# configmap.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: app-config\ndata:\n  database_url: \"postgresql://localhost:5432/mydb\"\n  api_key: \"your-api-key\"\n```\n\n```yaml\n# secret.yaml\napiVersion: v1\nkind: Secret\nmetadata:\n  name: app-secret\ntype: Opaque\ndata:\n  username: dXNlcm5hbWU=  # base64 encoded\n  password: cGFzc3dvcmQ=  # base64 encoded\n```\n\n## 最佳实践\n\n1. **使用资源限制和请求**\n2. **配置健康检查（liveness和readiness probes）**\n3. **使用namespaces组织资源**\n4. **配置RBAC进行安全控制**\n5. **使用persistent volumes存储数据**\n6. **使用Prometheus和Grafana监控集群**\n\n## 监控\n\n```yaml\n# prometheus-config.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: prometheus-config\ndata:\n  prometheus.yml: |\n    global:\n      scrape_interval: 15s\n    scrape_configs:\n    - job_name: 'kubernetes-pods'\n      kubernetes_sd_configs:\n      - role: pod\n```\n\n## 结论\n\nKubernetes提供了强大的工具来大规模管理容器化应用程序，确保高可用性和自动扩展。",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "CI/CD：持续集成和持续交付",
+      "description": "自动化开发、测试和部署流程",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 22,
+      "rating": 4.7,
+      "reads": 1456,
+      "tags": ["CI/CD", "Jenkins", "GitLab CI", "GitHub Actions", "自动化"],
+      "content": "# CI/CD：持续集成和持续交付\n\n## CI/CD简介\n\nCI/CD是自动化软件开发、测试和部署流程的实践。\n\n## GitHub Actions\n\n```yaml\n# .github/workflows/ci.yml\nname: CI/CD Pipeline\n\non:\n  push:\n    branches: [ main ]\n  pull_request:\n    branches: [ main ]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    \n    steps:\n    - uses: actions/checkout@v3\n    \n    - name: Setup Node.js\n      uses: actions/setup-node@v3\n      with:\n        node-version: '18'\n        cache: 'npm'\n    \n    - name: Install dependencies\n      run: npm ci\n    \n    - name: Run tests\n      run: npm test\n    \n    - name: Build application\n      run: npm run build\n    \n    - name: Run linting\n      run: npm run lint\n\n  deploy:\n    needs: test\n    runs-on: ubuntu-latest\n    if: github.ref == 'refs/heads/main'\n    \n    steps:\n    - name: Deploy to production\n      run: echo \"Deploying to production...\"\n```\n\n## GitLab CI\n\n```yaml\n# .gitlab-ci.yml\nstages:\n  - test\n  - build\n  - deploy\n\ntest:\n  stage: test\n  image: node:18\n  script:\n    - npm ci\n    - npm test\n    - npm run lint\n  coverage: '/Coverage: \\d+\\.\\d+%/'\n\nbuild:\n  stage: build\n  image: docker:latest\n  services:\n    - docker:dind\n  script:\n    - docker build -t my-app:$CI_COMMIT_SHA .\n    - docker push my-app:$CI_COMMIT_SHA\n  only:\n    - main\n\ndeploy:\n  stage: deploy\n  image: alpine:latest\n  script:\n    - echo \"Deploying to production\"\n    - kubectl set image deployment/my-app my-app=my-app:$CI_COMMIT_SHA\n  only:\n    - main\n```\n\n## Jenkins Pipeline\n\n```groovy\n// Jenkinsfile\npipeline {\n    agent any\n    \n    stages {\n        stage('Checkout') {\n            steps {\n                checkout scm\n            }\n        }\n        \n        stage('Test') {\n            steps {\n                sh 'npm ci'\n                sh 'npm test'\n            }\n        }\n        \n        stage('Build') {\n            steps {\n                sh 'npm run build'\n                sh 'docker build -t my-app .'\n            }\n        }\n        \n        stage('Deploy') {\n            steps {\n                sh 'kubectl apply -f k8s/'\n            }\n        }\n    }\n    \n    post {\n        always {\n            cleanWs()\n        }\n    }\n}\n```\n\n## 最佳实践\n\n1. **自动化流程的所有阶段**\n2. **使用并行任务执行**\n3. **配置构建状态通知**\n4. **使用缓存加速构建**\n5. **实施安全扫描**\n6. **配置回滚策略**\n7. **监控pipeline性能**\n\n## 监控和指标\n\n```yaml\n# prometheus-ci-metrics.yml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: ci-metrics\ndata:\n  ci-metrics.yml: |\n    - job_name: 'jenkins'\n      static_configs:\n        - targets: ['jenkins:8080']\n      metrics_path: /prometheus\n```\n\n## 结论\n\nCI/CD是现代DevOps实践的关键组成部分，确保快速可靠的软件交付。",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

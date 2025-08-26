@@ -367,12 +367,10 @@ export function Notifications() {
   // subscribe to realtime notifications (prevent multiple connections)
   useEffect(() => {
     if (!userId) return;
-    // Для Socket.IO используем тот же домен, что и для API, но с правильным протоколом
-    const socketUrl = API_CONFIG.baseURL 
-      ? API_CONFIG.baseURL.replace('https://', 'wss://').replace('http://', 'ws://')
-      : undefined;
+    // Используем WebSocket URL из конфигурации
+    const socketUrl = API_CONFIG.wsURL;
     
-    const s = io(socketUrl || undefined, {
+    const s = io(socketUrl, {
       withCredentials: true,
       transports: ['websocket', 'polling'],
       forceNew: true,

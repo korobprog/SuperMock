@@ -50,7 +50,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: postgresql://supermock:krishna1284@postgres:5432/supermock?sslmode=disable
+      DATABASE_URL: postgresql://${POSTGRES_USER:-supermock}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-supermock}?schema=public&sslmode=disable
       DATABASE_URL_SECONDARY: ""
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       FRONTEND_URL: ${FRONTEND_URL}
@@ -97,6 +97,7 @@ services:
       - traefik.http.routers.supermock-backend.entrypoints=web,websecure
       - traefik.http.routers.supermock-backend.tls=true
       - traefik.http.services.supermock-backend.loadbalancer.server.port=3000
+      - traefik.docker.network=traefik-network
 
   # TURN Server для WebRTC
   turn:
@@ -170,6 +171,7 @@ services:
       - traefik.http.routers.supermock-frontend.entrypoints=web,websecure
       - traefik.http.routers.supermock-frontend.tls=true
       - traefik.http.services.supermock-frontend.loadbalancer.server.port=8080
+      - traefik.docker.network=traefik-network
 
 volumes:
   postgres_data:

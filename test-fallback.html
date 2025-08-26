@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Fallback</title>
+</head>
+<body>
+    <h1>🧪 Тест Fallback логики</h1>
+    
+    <div id="results"></div>
+    
+    <script>
+        // Тестируем fallback функцию
+        const getDemoToolsForProfession = (profession) => {
+            const professionTools = {
+                frontend: ['JavaScript', 'React', 'TypeScript', 'Vue.js'],
+                backend: ['Node.js', 'Python', 'Java', 'Go'],
+                fullstack: ['JavaScript', 'React', 'Node.js', 'TypeScript'],
+                mobile: ['React Native', 'Flutter', 'Swift', 'Kotlin'],
+                devops: ['Docker', 'Kubernetes', 'AWS', 'Linux'],
+                data: ['Python', 'SQL', 'Pandas', 'TensorFlow'],
+            };
+            
+            return professionTools[profession || 'frontend'] || professionTools.frontend;
+        };
+
+        // Тестируем разные профессии
+        const tests = [
+            { profession: 'frontend', expected: ['JavaScript', 'React', 'TypeScript', 'Vue.js'] },
+            { profession: 'backend', expected: ['Node.js', 'Python', 'Java', 'Go'] },
+            { profession: 'fullstack', expected: ['JavaScript', 'React', 'Node.js', 'TypeScript'] },
+            { profession: undefined, expected: ['JavaScript', 'React', 'TypeScript', 'Vue.js'] },
+        ];
+
+        const results = document.getElementById('results');
+        
+        tests.forEach(test => {
+            const result = getDemoToolsForProfession(test.profession);
+            const isCorrect = JSON.stringify(result) === JSON.stringify(test.expected);
+            
+            const div = document.createElement('div');
+            div.style.padding = '10px';
+            div.style.margin = '5px';
+            div.style.border = '1px solid #ccc';
+            div.style.backgroundColor = isCorrect ? '#d4edda' : '#f8d7da';
+            
+            div.innerHTML = `
+                <strong>Профессия:</strong> ${test.profession || 'undefined'}<br>
+                <strong>Результат:</strong> ${JSON.stringify(result)}<br>
+                <strong>Ожидалось:</strong> ${JSON.stringify(test.expected)}<br>
+                <strong>Статус:</strong> ${isCorrect ? '✅ Правильно' : '❌ Ошибка'}
+            `;
+            
+            results.appendChild(div);
+        });
+
+        // Тестируем dev режим
+        const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const devDiv = document.createElement('div');
+        devDiv.style.padding = '10px';
+        devDiv.style.margin = '5px';
+        devDiv.style.border = '1px solid #007bff';
+        devDiv.style.backgroundColor = '#d1ecf1';
+        devDiv.innerHTML = `
+            <strong>Dev режим:</strong> ${isDev ? '✅ Да' : '❌ Нет'}<br>
+            <strong>Hostname:</strong> ${window.location.hostname}<br>
+            <strong>Port:</strong> ${window.location.port}
+        `;
+        results.appendChild(devDiv);
+    </script>
+</body>
+</html>

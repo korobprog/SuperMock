@@ -1,0 +1,95 @@
+{
+  "profession": "product-manager",
+  "language": "es",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Preguntas de Entrevista",
+      "count": 134,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Tareas Técnicas",
+      "count": 67,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Diseño de Sistemas",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Preguntas Conductuales",
+      "count": 89,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algoritmos y Estructuras de Datos",
+      "count": 56,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Mejores Prácticas",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Estrategia de Producto: De la Idea al Lanzamiento",
+      "description": "Guía completa para desarrollar estrategia de producto",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.8,
+      "reads": 1234,
+      "tags": ["Estrategia de Producto", "MVP", "Roadmap", "Analítica"],
+      "content": "# Estrategia de Producto: De la Idea al Lanzamiento\n\n## Definición del Producto\n\n### Visión y Misión\n\n```markdown\n## Visión\nCrear una plataforma que ayude a millones de personas a gestionar eficazmente sus finanzas y alcanzar objetivos financieros.\n\n## Misión\nProporcionar herramientas simples y comprensibles para planificación de presupuesto, seguimiento de gastos e inversión.\n\n## Audiencia Objetivo\n- Primaria: Personas 25-45 años con ingresos $30k-$100k\n- Secundaria: Estudiantes y jubilados\n- Geografía: EE.UU., Europa, Asia\n```\n\n### Análisis de Mercado\n\n```markdown\n## Análisis Competitivo\n\n### Competidores Directos\n1. **Mint** - Líder del mercado, 20M+ usuarios\n   - Fortalezas: Integración bancaria, automatización\n   - Debilidades: Interfaz compleja, anuncios\n\n2. **YNAB** - Segmento premium\n   - Fortalezas: Soporte de calidad, educación\n   - Debilidades: Alto precio, complejidad\n\n## Tamaño del Mercado (TAM, SAM, SOM)\n- TAM: $12B (todas las apps de gestión financiera)\n- SAM: $3B (apps de finanzas personales)\n- SOM: $300M (nuestra cuota en 3 años)\n```\n\n## MVP y Roadmap\n\n### MVP (Producto Mínimo Viable)\n\n```markdown\n## Funciones MVP\n\n### Debe Tener\n- [ ] Registro y autenticación\n- [ ] Agregar ingresos y gastos\n- [ ] Categorización de transacciones\n- [ ] Reportes básicos (mes/año)\n- [ ] Establecer objetivos financieros\n\n### Debería Tener\n- [ ] Exportar datos a CSV\n- [ ] Notificaciones de límite de presupuesto\n- [ ] Versión móvil\n\n### Podría Tener\n- [ ] Integración bancaria\n- [ ] Portafolio de inversión\n- [ ] Funciones sociales\n\n### No Tendrá\n- [ ] Criptomonedas\n- [ ] Reportes fiscales\n- [ ] Cuentas empresariales\n```\n\n### Roadmap de Producto\n\n```markdown\n## Roadmap 2024\n\n### Q1: Lanzamiento MVP\n- Desarrollo MVP\n- Pruebas beta (100 usuarios)\n- Lanzamiento App Store/Google Play\n\n### Q2: Crecimiento\n- Integración bancaria\n- Analítica avanzada\n- Pruebas A/B\n\n### Q3: Monetización\n- Suscripción premium\n- Modelo publicitario\n- Programas de asociación\n\n### Q4: Escala\n- Expansión internacional\n- API para desarrolladores\n- Soluciones empresariales\n```\n\n## Métricas y KPI\n\n```markdown\n## Métricas Clave\n\n### Métricas de Usuario\n- DAU (Usuarios Activos Diarios): 10,000\n- MAU (Usuarios Activos Mensuales): 100,000\n- Tasa de Retención (Día 7): 40%\n- Tasa de Retención (Día 30): 20%\n\n### Métricas de Negocio\n- MRR (Ingresos Recurrentes Mensuales): $50,000\n- CAC (Costo de Adquisición de Cliente): $15\n- LTV (Valor de Vida del Cliente): $150\n- Tasa de Abandono: 5%\n\n### Métricas de Producto\n- Tiempo hasta Valor: < 5 minutos\n- Tasa de Adopción de Funciones: 60%\n- Puntuación NPS: 45\n- Calificación App Store: 4.5+\n```\n\n## Conclusión\n\nLa estrategia de producto exitosa requiere equilibrio entre visión, datos y ejecución. Es importante medir y ajustar constantemente el enfoque basado en retroalimentación de usuarios.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Analítica de Producto: Métricas y Dashboards",
+      "description": "Guía práctica de analítica de producto",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.7,
+      "reads": 987,
+      "tags": ["Analítica", "Métricas", "Dashboards", "SQL"],
+      "content": "# Analítica de Producto: Métricas y Dashboards\n\n## Métricas Clave\n\n### Métricas de Usuario\n\n```sql\n-- Usuarios Activos Diarios (DAU)\nSELECT \n  DATE(created_at) as fecha,\n  COUNT(DISTINCT user_id) as dau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE(created_at)\nORDER BY fecha DESC;\n\n-- Usuarios Activos Mensuales (MAU)\nSELECT \n  DATE_TRUNC('month', created_at) as mes,\n  COUNT(DISTINCT user_id) as mau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE_TRUNC('month', created_at)\nORDER BY mes DESC;\n\n-- Tasa de Retención\nWITH user_activity AS (\n  SELECT \n    user_id,\n    DATE(created_at) as fecha_actividad,\n    DATE_TRUNC('week', created_at) as semana\n  FROM user_events\n  WHERE event_type = 'login'\n),\ncohorts AS (\n  SELECT \n    user_id,\n    MIN(semana) as semana_cohorte\n  FROM user_activity\n  GROUP BY user_id\n)\nSELECT \n  c.semana_cohorte,\n  COUNT(DISTINCT c.user_id) as tamaño_cohorte,\n  COUNT(DISTINCT CASE WHEN ua.semana = c.semana_cohorte + INTERVAL '1 week' THEN ua.user_id END) as semana_1,\n  COUNT(DISTINCT CASE WHEN ua.semana = c.semana_cohorte + INTERVAL '2 weeks' THEN ua.user_id END) as semana_2\nFROM cohorts c\nLEFT JOIN user_activity ua ON c.user_id = ua.user_id\nGROUP BY c.semana_cohorte\nORDER BY c.semana_cohorte;\n```\n\n### Métricas de Negocio\n\n```sql\n-- Ingresos Recurrentes Mensuales (MRR)\nSELECT \n  DATE_TRUNC('month', subscription_date) as mes,\n  SUM(monthly_amount) as mrr\nFROM subscriptions\nWHERE status = 'active'\nGROUP BY DATE_TRUNC('month', subscription_date)\nORDER BY mes DESC;\n\n-- Costo de Adquisición de Cliente (CAC)\nSELECT \n  DATE_TRUNC('month', acquisition_date) as mes,\n  SUM(marketing_spend) / COUNT(DISTINCT user_id) as cac\nFROM user_acquisitions\nGROUP BY DATE_TRUNC('month', acquisition_date)\nORDER BY mes DESC;\n\n-- Valor de Vida del Cliente (LTV)\nSELECT \n  user_id,\n  SUM(purchase_amount) as gasto_total,\n  COUNT(DISTINCT purchase_date) as número_compras,\n  AVG(purchase_amount) as compra_promedio\nFROM user_purchases\nGROUP BY user_id\nORDER BY gasto_total DESC;\n```\n\n## Dashboards\n\n### Dashboard Principal\n\n```markdown\n## Dashboard Diario de Producto\n\n### Usuarios\n- DAU: 12,345 (+5.2% vs ayer)\n- Nuevos Usuarios: 1,234 (+12.1% vs ayer)\n- Sesiones Activas: 45,678 (+3.4% vs ayer)\n\n### Compromiso\n- Duración de Sesión: 8m 32s (+2.1% vs ayer)\n- Páginas por Sesión: 4.2 (+1.8% vs ayer)\n- Tasa de Rebote: 23.4% (-1.2% vs ayer)\n\n### Conversión\n- Tasa de Registro: 15.2% (+0.8% vs ayer)\n- Tasa de Compra: 3.4% (+0.3% vs ayer)\n- Ingresos: $12,345 (+8.7% vs ayer)\n\n### Métricas Técnicas\n- Tasa de Error: 0.12% (-0.02% vs ayer)\n- Tiempo de Carga: 1.8s (+0.1s vs ayer)\n- Tiempo de Respuesta API: 245ms (+5ms vs ayer)\n```\n\n## Conclusión\n\nLa analítica de producto efectiva ayuda a tomar decisiones basadas en datos y rastrear el progreso hacia los objetivos. Es importante enfocarse en métricas que realmente impacten los resultados del negocio.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "Pruebas A/B de Hipótesis de Producto",
+      "description": "Metodología para realizar pruebas A/B para decisiones de producto",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 18,
+      "rating": 4.6,
+      "reads": 756,
+      "tags": ["Pruebas A/B", "Hipótesis", "Estadística", "Decisiones de Producto"],
+      "content": "# Pruebas A/B de Hipótesis de Producto\n\n## Formulación de Hipótesis\n\n### Estructura de Hipótesis\n\n```markdown\n## Formato de Hipótesis\n\n### Problema\nLos usuarios no pueden encontrar rápidamente la función necesaria en la aplicación.\n\n### Hipótesis\nSi movemos el botón \"Nuevo Pedido\" a la parte superior de la pantalla, el número de pedidos aumentará en 15%.\n\n### Justificación\n- El botón será más visible\n- Disminuirá el número de clics\n- Mejorará la experiencia del usuario\n\n### Métricas\n- Primaria: Número de pedidos\n- Secundaria: Tiempo hasta primer pedido, Tasa de Rebote\n- Guardrail: Conversión general, Ingresos\n```\n\n### Ejemplos de Hipótesis\n\n```markdown\n## Ejemplos de Hipótesis de Producto\n\n### Onboarding\n**Hipótesis**: Si agregamos una barra de progreso al onboarding, la tasa de finalización aumentará en 20%.\n**Métricas**: Tasa de finalización, Tiempo para completar, Puntos de abandono\n\n### Precios\n**Hipótesis**: Si mostramos descuento anual de 20% en lugar de suscripción mensual, ARPU aumentará en 25%.\n**Métricas**: ARPU, Tasa de conversión, Tasa de abandono\n\n### Descubrimiento de Funciones\n**Hipótesis**: Si agregamos tooltips para nuevas funciones, la tasa de adopción aumentará en 30%.\n**Métricas**: Adopción de funciones, Compromiso del usuario, Tickets de soporte\n```\n\n## Planificación de Experimentos\n\n### Cálculo de Tamaño de Muestra\n\n```python\nimport scipy.stats as stats\nimport numpy as np\n\n# Parámetros para cálculo\nconversion_baseline = 0.05  # 5%\nefecto_minimo_detectable = 0.01  # 1% (20% aumento relativo)\nalpha = 0.05  # 5% nivel de significancia\npower = 0.8  # 80% potencia\n\n# Cálculo de tamaño de muestra\nz_alpha = stats.norm.ppf(1 - alpha/2)\nz_beta = stats.norm.ppf(power)\n\ntamaño_muestra = (2 * (z_alpha + z_beta)**2 * conversion_baseline * (1 - conversion_baseline)) / (efecto_minimo_detectable**2)\n\nprint(f'Tamaño de muestra por grupo: {int(tamaño_muestra)}')\nprint(f'Tamaño total de muestra: {int(tamaño_muestra * 2)}')\nprint(f'Duración del experimento (con 1000 usuarios/día): {int(tamaño_muestra * 2 / 1000)} días')\n```\n\n### Diseño de Experimentos\n\n```markdown\n## Plan de Experimento\n\n### Objetivo\nAumentar la conversión a suscripción premium en 15%.\n\n### Hipótesis\nSi mostramos prueba social (reseñas de usuarios) en la página de suscripción, la conversión aumentará.\n\n### Diseño\n- **Grupo Control (A)**: Página de suscripción estándar\n- **Grupo Prueba (B)**: Página con reseñas de usuarios\n\n### Distribución\n- 50% usuarios → grupo A\n- 50% usuarios → grupo B\n\n### Duración\n- Mínimo: 2 semanas\n- Objetivo: 4 semanas\n- Máximo: 6 semanas\n\n### Criterios de Parada\n- Significancia estadística p < 0.05\n- Tamaño mínimo de muestra alcanzado\n- Seguridad: conversión no cayó más de 5%\n```\n\n## Análisis de Resultados\n\n```python\nimport pandas as pd\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# Datos del experimento\nresultados = pd.DataFrame({\n    'grupo': ['A', 'A', 'B', 'B'] * 1000,\n    'convertido': [0, 1, 0, 1] * 1000,\n    'user_id': range(4000)\n})\n\n# Agregación de resultados\nresumen_experimento = resultados.groupby('grupo').agg({\n    'user_id': 'count',\n    'convertido': 'sum'\n}).rename(columns={'user_id': 'usuarios', 'convertido': 'conversiones'})\n\nresumen_experimento['tasa_conversion'] = resumen_experimento['conversiones'] / resumen_experimento['usuarios']\n\nprint(resumen_experimento)\n\n# Prueba estadística\nconversiones_a = resumen_experimento.loc['A', 'conversiones']\nusuarios_a = resumen_experimento.loc['A', 'usuarios']\nconversiones_b = resumen_experimento.loc['B', 'conversiones']\nusuarios_b = resumen_experimento.loc['B', 'usuarios']\n\nz_stat, p_valor = proportions_ztest(\n    [conversiones_a, conversiones_b],\n    [usuarios_a, usuarios_b]\n)\n\nprint(f'Estadística Z: {z_stat:.4f}')\nprint(f'Valor p: {p_valor:.4f}')\nprint(f'Estadísticamente significativo: {p_valor < 0.05}')\n\n# Cálculo del efecto\ntasa_control = conversiones_a / usuarios_a\ntasa_tratamiento = conversiones_b / usuarios_b\nmejora_relativa = (tasa_tratamiento - tasa_control) / tasa_control * 100\n\nprint(f'Mejora relativa: {mejora_relativa:.2f}%')\n```\n\n## Conclusión\n\nLas pruebas A/B son una herramienta poderosa para validar decisiones de producto. Es importante formular correctamente las hipótesis, planificar experimentos e interpretar resultados.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

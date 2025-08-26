@@ -23,6 +23,33 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 export async function detectUserLanguage(): Promise<SupportedLanguage> {
   console.log('🔍 Starting language detection...');
 
+  // В dev режиме используем максимально быстрый fallback
+  if (import.meta.env.DEV) {
+    console.log('🔧 Dev mode detected, using instant fallback');
+    
+    // 1. Проверяем сохраненный язык
+    const savedLanguage = localStorage.getItem('Super Mock-language');
+    if (
+      savedLanguage &&
+      SUPPORTED_LANGUAGES.includes(savedLanguage as SupportedLanguage)
+    ) {
+      console.log('🔤 Language detected from localStorage in dev mode:', savedLanguage);
+      return savedLanguage as SupportedLanguage;
+    }
+    
+    // 2. Проверяем браузер
+    const browserLang = getBrowserLanguage();
+    if (browserLang) {
+      console.log('🔤 Language detected from browser in dev mode:', browserLang);
+      return browserLang;
+    }
+    
+    // 3. Мгновенный fallback на русский
+    console.log('🔤 Using instant fallback language in dev mode: ru');
+    return 'ru';
+  }
+
+  // Production режим - полное определение языка
   // 1. Проверяем сохраненный язык
   const savedLanguage = localStorage.getItem('Super Mock-language');
   if (
@@ -50,7 +77,7 @@ export async function detectUserLanguage(): Promise<SupportedLanguage> {
   }
   console.log('🌐 No valid language found in browser settings');
 
-  // 4. Пробуем IP-геолокацию (необязательно)
+  // 4. Пробуем IP-геолокацию (только в production)
   try {
     const ipLang = await getLanguageByIP();
     if (ipLang) {
@@ -131,24 +158,32 @@ async function getLanguageByIP(): Promise<SupportedLanguage | null> {
   try {
     console.log('🌍 Attempting to detect language by IP...');
 
-    // Используем бесплатное API для определения страны по IP
-    const response = await fetch('https://ipapi.co/json/', {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
-    });
+    // Создаем AbortController для таймаута
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд таймаут
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+    try {
+      // Используем бесплатное API для определения страны по IP
+      const response = await fetch('https://ipapi.co/json/', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+        signal: controller.signal,
+      });
 
-    const data = await response.json();
-    const countryCode = data.country_code?.toLowerCase();
+      clearTimeout(timeoutId); // Очищаем таймаут если запрос завершился успешно
 
-    console.log('🌍 IP-based country detected:', countryCode);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-    if (!countryCode) return null;
+      const data = await response.json();
+      const countryCode = data.country_code?.toLowerCase();
+
+      console.log('🌍 IP-based country detected:', countryCode);
+
+      if (!countryCode) return null;
 
     // Сопоставляем коды стран с языками
     const countryToLanguage: { [key: string]: SupportedLanguage } = {
@@ -216,7 +251,17 @@ async function getLanguageByIP(): Promise<SupportedLanguage | null> {
       mo: 'zh',
     };
 
-    return countryToLanguage[countryCode] || null;
+          return countryToLanguage[countryCode] || null;
+    } catch (fetchError) {
+      clearTimeout(timeoutId); // Очищаем таймаут в случае ошибки
+      
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        console.warn('IP language detection timed out after 5 seconds');
+      } else {
+        console.warn('Failed to get language by IP:', fetchError);
+      }
+      return null;
+    }
   } catch (error) {
     console.warn('Failed to get language by IP:', error);
     return null;

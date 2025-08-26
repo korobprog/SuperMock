@@ -10,6 +10,7 @@ import {
   Eye,
   EyeOff,
   Info,
+  Wrench,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +46,7 @@ import { OpenRouterInfoModal } from '@/components/ui/openrouter-info-modal';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
 import { LanguageSelector } from '@/components/ui/language-selector';
 import { MediaTest } from '@/components/ui/media-test';
+import { UserToolsDisplay } from '@/components/ui/user-tools-display';
 import {
   apiSaveUserSettings,
   apiGetProfile,
@@ -60,6 +62,7 @@ export function Profile() {
     setUserSettings,
     userId,
     telegramUser,
+    selectedTools,
   } = useAppStore();
 
   const [apiKey, setApiKey] = useState(userSettings.openRouterApiKey || '');
@@ -126,6 +129,9 @@ export function Profile() {
   const [profileLanguage, setProfileLanguage] = useState<string>('ru');
   const [profileProfession, setProfileProfession] =
     useState<string>('frontend');
+  
+  // Получаем профессию из store
+  const { profession: storeProfession, setProfession } = useAppStore();
 
   // Настройка полноэкранного режима в Telegram Mini Apps
   useTelegramFullscreen();
@@ -146,8 +152,14 @@ export function Profile() {
     setQuestionsLevel(userSettings.questionsLevel);
     setUseAIGeneration(userSettings.useAIGeneration);
     setQuestionsCount(userSettings.questionsCount);
+    
+    // Устанавливаем профессию из store, если она есть
+    if (storeProfession && !profileProfession) {
+      setProfileProfession(storeProfession);
+    }
+    
     setIsLoading(false);
-  }, [userSettings]);
+  }, [userSettings, storeProfession, profileProfession]);
 
   // Загрузка профиля (язык, профессия)
   useEffect(() => {
@@ -169,6 +181,13 @@ export function Profile() {
     loadProfile();
   }, [userId]);
 
+  // Синхронизируем с store
+  useEffect(() => {
+    if (storeProfession && storeProfession !== profileProfession) {
+      setProfileProfession(storeProfession);
+    }
+  }, [storeProfession, profileProfession]);
+
   const handleSaveSettings = async () => {
     setIsSaving(true);
 
@@ -183,6 +202,23 @@ export function Profile() {
         questionsLevel,
         questionsCount,
       });
+
+      // В dev режиме сохраняем локально без вызова API
+      if (import.meta.env.DEV) {
+        console.log('🔧 Dev mode: saving settings locally');
+        
+        setUserSettings({
+          openRouterApiKey: apiKey || null,
+          stackblitzApiKey: stackblitzKey || null,
+          preferredModel,
+          questionsLevel,
+          useAIGeneration,
+          questionsCount,
+        });
+
+        toast.success(t('profile.settingsSaved'));
+        return;
+      }
 
       const response = await apiSaveUserSettings({
         userId: userId || 0,
@@ -208,7 +244,22 @@ export function Profile() {
       toast.success(t('profile.settingsSaved'));
     } catch (error) {
       console.error('Error saving settings:', error);
-      toast.error(t('profile.saveError'));
+      
+      // В dev режиме все равно сохраняем локально при ошибке
+      if (import.meta.env.DEV) {
+        console.log('🔧 Dev mode: saving settings locally (fallback)');
+        setUserSettings({
+          openRouterApiKey: apiKey || null,
+          stackblitzApiKey: stackblitzKey || null,
+          preferredModel,
+          questionsLevel,
+          useAIGeneration,
+          questionsCount,
+        });
+        toast.success(t('profile.settingsSaved'));
+      } else {
+        toast.error(t('profile.saveError'));
+      }
     } finally {
       setIsSaving(false);
     }
@@ -217,19 +268,25 @@ export function Profile() {
   const handleProfessionChange = async (newProfession: string) => {
     setProfileProfession(newProfession);
     
+    // Обновляем профессию в store
+    setProfession(newProfession);
+    
     // Сохраняем профессию в профиль пользователя
+    // В dev режиме сохраняем локально без вызова API
+    if (import.meta.env.DEV) {
+      console.log('🔧 Dev mode: saving profession locally');
+      return;
+    }
+    
     try {
       await apiSaveProfile({
         userId: userId || 0,
         profession: newProfession,
       });
-      
-      // Перенаправляем на главную страницу
-      navigate('/');
+      // Остаемся на странице профиля, обновим инструменты автоматически
     } catch (error) {
       console.error('Error saving profession:', error);
-      // Даже если сохранение не удалось, перенаправляем на главную
-      navigate('/');
+      // Остаемся на странице, чтобы показать ошибку/повторить попытку
     }
   };
 
@@ -441,12 +498,55 @@ export function Profile() {
 
               {profileLanguage && profileProfession && (
                 <Button
-                  onClick={() => navigate('/time')}
+                  onClick={() => {
+                    if (!selectedTools || selectedTools.length === 0) {
+                      toast.error(
+                        t('tools.selectToolsFirst')
+                      );
+                      return;
+                    }
+                    navigate('/time');
+                  }}
                   variant="secondary"
                   className="w-full"
                 >
                   {t('profile.goToInterview')}
                 </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Инструменты пользователя */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wrench className="h-5 w-5" />
+                {t('tools.selectTools')}
+                {profileProfession && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({professions.find(p => p.id === profileProfession)?.name || profileProfession})
+                  </span>
+                )}
+              </CardTitle>
+              <CardDescription>
+                {t('tools.selectToolsDescription')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userId && profileProfession ? (
+                <UserToolsDisplay
+                  userId={userId}
+                  profession={profileProfession}
+                />
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p className="text-sm">
+                    {!profileProfession 
+                      ? t('tools.selectProfessionFirst')
+                      : t('tools.loadingTools')
+                    }
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>

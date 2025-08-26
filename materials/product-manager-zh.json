@@ -1,0 +1,95 @@
+{
+  "profession": "product-manager",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 134,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 67,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 89,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法与数据结构",
+      "count": 56,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "产品策略：从想法到发布",
+      "description": "开发产品策略的完整指南",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.8,
+      "reads": 1234,
+      "tags": ["产品策略", "MVP", "路线图", "分析"],
+      "content": "# 产品策略：从想法到发布\n\n## 产品定义\n\n### 愿景和使命\n\n```markdown\n## 愿景\n创建一个帮助数百万人有效管理财务并实现财务目标的平台。\n\n## 使命\n为预算规划、支出跟踪和投资提供简单易懂的工具。\n\n## 目标用户\n- 主要：25-45岁，收入$30k-$100k的人群\n- 次要：学生和退休人员\n- 地理：美国、欧洲、亚洲\n```\n\n### 市场分析\n\n```markdown\n## 竞争分析\n\n### 直接竞争对手\n1. **Mint** - 市场领导者，20M+用户\n   - 优势：银行集成、自动化\n   - 劣势：复杂界面、广告\n\n2. **YNAB** - 高端市场\n   - 优势：优质支持、教育\n   - 劣势：高价格、复杂性\n\n## 市场规模（TAM、SAM、SOM）\n- TAM：$12B（所有财务管理应用）\n- SAM：$3B（个人财务应用）\n- SOM：$300M（我们3年内的份额）\n```\n\n## MVP和路线图\n\n### MVP（最小可行产品）\n\n```markdown\n## MVP功能\n\n### 必须有\n- [ ] 注册和认证\n- [ ] 添加收入和支出\n- [ ] 交易分类\n- [ ] 基础报告（月/年）\n- [ ] 设置财务目标\n\n### 应该有\n- [ ] 数据导出到CSV\n- [ ] 预算限制通知\n- [ ] 移动版本\n\n### 可能有\n- [ ] 银行集成\n- [ ] 投资组合\n- [ ] 社交功能\n\n### 不会有\n- [ ] 加密货币\n- [ ] 税务报告\n- [ ] 商业账户\n```\n\n### 产品路线图\n\n```markdown\n## 2024年路线图\n\n### Q1：MVP发布\n- MVP开发\n- 测试版测试（100用户）\n- App Store/Google Play发布\n\n### Q2：增长\n- 银行集成\n- 高级分析\n- A/B测试\n\n### Q3：变现\n- 高级订阅\n- 广告模式\n- 合作伙伴计划\n\n### Q4：扩展\n- 国际扩张\n- 开发者API\n- 企业解决方案\n```\n\n## 指标和KPI\n\n```markdown\n## 关键指标\n\n### 用户指标\n- DAU（日活跃用户）：10,000\n- MAU（月活跃用户）：100,000\n- 留存率（第7天）：40%\n- 留存率（第30天）：20%\n\n### 业务指标\n- MRR（月经常性收入）：$50,000\n- CAC（客户获取成本）：$15\n- LTV（客户生命周期价值）：$150\n- 流失率：5%\n\n### 产品指标\n- 价值实现时间：< 5分钟\n- 功能采用率：60%\n- NPS评分：45\n- App Store评分：4.5+\n```\n\n## 结论\n\n成功的产品策略需要在愿景、数据和执行之间取得平衡。持续测量方法并根据用户反馈调整很重要。",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "产品分析：指标和仪表板",
+      "description": "产品分析的实用指南",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.7,
+      "reads": 987,
+      "tags": ["分析", "指标", "仪表板", "SQL"],
+      "content": "# 产品分析：指标和仪表板\n\n## 关键指标\n\n### 用户指标\n\n```sql\n-- 日活跃用户（DAU）\nSELECT \n  DATE(created_at) as 日期,\n  COUNT(DISTINCT user_id) as dau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE(created_at)\nORDER BY 日期 DESC;\n\n-- 月活跃用户（MAU）\nSELECT \n  DATE_TRUNC('month', created_at) as 月份,\n  COUNT(DISTINCT user_id) as mau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE_TRUNC('month', created_at)\nORDER BY 月份 DESC;\n\n-- 留存率\nWITH user_activity AS (\n  SELECT \n    user_id,\n    DATE(created_at) as 活动日期,\n    DATE_TRUNC('week', created_at) as 周\n  FROM user_events\n  WHERE event_type = 'login'\n),\ncohorts AS (\n  SELECT \n    user_id,\n    MIN(周) as 群组周\n  FROM user_activity\n  GROUP BY user_id\n)\nSELECT \n  c.群组周,\n  COUNT(DISTINCT c.user_id) as 群组大小,\n  COUNT(DISTINCT CASE WHEN ua.周 = c.群组周 + INTERVAL '1 week' THEN ua.user_id END) as 第1周,\n  COUNT(DISTINCT CASE WHEN ua.周 = c.群组周 + INTERVAL '2 weeks' THEN ua.user_id END) as 第2周\nFROM cohorts c\nLEFT JOIN user_activity ua ON c.user_id = ua.user_id\nGROUP BY c.群组周\nORDER BY c.群组周;\n```\n\n### 业务指标\n\n```sql\n-- 月经常性收入（MRR）\nSELECT \n  DATE_TRUNC('month', subscription_date) as 月份,\n  SUM(monthly_amount) as mrr\nFROM subscriptions\nWHERE status = 'active'\nGROUP BY DATE_TRUNC('month', subscription_date)\nORDER BY 月份 DESC;\n\n-- 客户获取成本（CAC）\nSELECT \n  DATE_TRUNC('month', acquisition_date) as 月份,\n  SUM(marketing_spend) / COUNT(DISTINCT user_id) as cac\nFROM user_acquisitions\nGROUP BY DATE_TRUNC('month', acquisition_date)\nORDER BY 月份 DESC;\n\n-- 客户生命周期价值（LTV）\nSELECT \n  user_id,\n  SUM(purchase_amount) as 总支出,\n  COUNT(DISTINCT purchase_date) as 购买次数,\n  AVG(purchase_amount) as 平均购买\nFROM user_purchases\nGROUP BY user_id\nORDER BY 总支出 DESC;\n```\n\n## 仪表板\n\n### 主仪表板\n\n```markdown\n## 每日产品仪表板\n\n### 用户\n- DAU：12,345（比昨天+5.2%）\n- 新用户：1,234（比昨天+12.1%）\n- 活跃会话：45,678（比昨天+3.4%）\n\n### 参与度\n- 会话时长：8分32秒（比昨天+2.1%）\n- 每次会话页面数：4.2（比昨天+1.8%）\n- 跳出率：23.4%（比昨天-1.2%）\n\n### 转化\n- 注册率：15.2%（比昨天+0.8%）\n- 购买率：3.4%（比昨天+0.3%）\n- 收入：$12,345（比昨天+8.7%）\n\n### 技术指标\n- 错误率：0.12%（比昨天-0.02%）\n- 页面加载时间：1.8秒（比昨天+0.1秒）\n- API响应时间：245毫秒（比昨天+5毫秒）\n```\n\n## 结论\n\n有效的产品分析有助于基于数据的决策并跟踪目标进展。专注于真正影响业务结果的指标很重要。",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "产品假设的A/B测试",
+      "description": "为产品决策进行A/B测试的方法论",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 18,
+      "rating": 4.6,
+      "reads": 756,
+      "tags": ["A/B测试", "假设", "统计", "产品决策"],
+      "content": "# 产品假设的A/B测试\n\n## 假设制定\n\n### 假设结构\n\n```markdown\n## 假设格式\n\n### 问题\n用户无法在应用中快速找到所需功能。\n\n### 假设\n如果我们将\"新订单\"按钮移到屏幕顶部，订单数量将增加15%。\n\n### 理由\n- 按钮将更显眼\n- 点击次数将减少\n- 用户体验将改善\n\n### 指标\n- 主要：订单数量\n- 次要：首次订单时间、跳出率\n- 护栏：总体转化率、收入\n```\n\n### 假设示例\n\n```markdown\n## 产品假设示例\n\n### 引导流程\n**假设**：如果我们在引导流程中添加进度条，完成率将增加20%。\n**指标**：完成率、完成时间、放弃点\n\n### 定价\n**假设**：如果我们显示20%年折扣而不是月订阅，ARPU将增加25%。\n**指标**：ARPU、转化率、流失率\n\n### 功能发现\n**假设**：如果我们为新功能添加提示，功能采用率将增加30%。\n**指标**：功能采用、用户参与、支持工单\n```\n\n## 实验规划\n\n### 计算样本大小\n\n```python\nimport scipy.stats as stats\nimport numpy as np\n\n# 计算参数\n基线转化率 = 0.05  # 5%\n最小效应 = 0.01  # 1%（20%相对增长）\nalpha = 0.05  # 5%显著性水平\npower = 0.8  # 80%功效\n\n# 计算样本大小\nz_alpha = stats.norm.ppf(1 - alpha/2)\nz_beta = stats.norm.ppf(power)\n\n样本大小 = (2 * (z_alpha + z_beta)**2 * 基线转化率 * (1 - 基线转化率)) / (最小效应**2)\n\nprint(f'每组样本大小：{int(样本大小)}')\nprint(f'总样本大小：{int(样本大小 * 2)}')\nprint(f'实验持续时间（每天1000用户）：{int(样本大小 * 2 / 1000)}天')\n```\n\n### 实验设计\n\n```markdown\n## 实验计划\n\n### 目标\n将高级订阅转化率提高15%。\n\n### 假设\n如果我们在订阅页面显示社交证明（用户评价），转化率将增加。\n\n### 设计\n- **对照组（A）**：标准订阅页面\n- **测试组（B）**：带用户评价的页面\n\n### 分配\n- 50%用户 → A组\n- 50%用户 → B组\n\n### 持续时间\n- 最少：2周\n- 目标：4周\n- 最多：6周\n\n### 停止标准\n- 统计显著性 p < 0.05\n- 达到最小样本大小\n- 安全：转化率下降不超过5%\n```\n\n## 结果分析\n\n```python\nimport pandas as pd\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# 实验数据\n结果 = pd.DataFrame({\n    '组别': ['A', 'A', 'B', 'B'] * 1000,\n    '转化': [0, 1, 0, 1] * 1000,\n    'user_id': range(4000)\n})\n\n# 结果汇总\n实验汇总 = 结果.groupby('组别').agg({\n    'user_id': 'count',\n    '转化': 'sum'\n}).rename(columns={'user_id': '用户数', '转化': '转化数'})\n\n实验汇总['转化率'] = 实验汇总['转化数'] / 实验汇总['用户数']\n\nprint(实验汇总)\n\n# 统计检验\n转化数_a = 实验汇总.loc['A', '转化数']\n用户数_a = 实验汇总.loc['A', '用户数']\n转化数_b = 实验汇总.loc['B', '转化数']\n用户数_b = 实验汇总.loc['B', '用户数']\n\nz_stat, p值 = proportions_ztest(\n    [转化数_a, 转化数_b],\n    [用户数_a, 用户数_b]\n)\n\nprint(f'Z统计量：{z_stat:.4f}')\nprint(f'P值：{p值:.4f}')\nprint(f'统计显著：{p值 < 0.05}')\n\n# 效应计算\n对照组率 = 转化数_a / 用户数_a\n处理组率 = 转化数_b / 用户数_b\n相对改善 = (处理组率 - 对照组率) / 对照组率 * 100\n\nprint(f'相对改善：{相对改善:.2f}%')\n```\n\n## 结论\n\nA/B测试是验证产品决策的强大工具。正确制定假设、规划实验和解释结果很重要。",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

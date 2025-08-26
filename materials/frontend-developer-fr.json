@@ -1,0 +1,97 @@
+{
+  "profession": "frontend-developer",
+  "language": "fr",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Questions d'entretien",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Tâches techniques",
+      "count": 89,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Conception de systèmes",
+      "count": 34,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Questions comportementales",
+      "count": 67,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithmes et structures de données",
+      "count": 123,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Meilleures pratiques",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Top 50 questions d'entretien JavaScript",
+      "description": "Les questions d'entretien JavaScript les plus courantes avec des réponses détaillées et des exemples de code",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 15,
+      "rating": 4.8,
+      "reads": 1247,
+      "tags": ["JavaScript", "Bases", "ES6+", "Entretien"],
+      "content": "# Top 50 questions d'entretien JavaScript\n\n## 1. Qu'est-ce que le hoisting en JavaScript ?\n\nLe hoisting est un mécanisme de JavaScript où les déclarations de variables et de fonctions sont déplacées en haut de leur portée.\n\n```javascript\nconsole.log(x); // undefined\nvar x = 5;\n\n// Interprété comme :\nvar x;\nconsole.log(x); // undefined\nx = 5;\n```\n\n## 2. Différence entre var, let et const\n\n- **var** : portée de fonction, hoistée\n- **let** : portée de bloc, non hoistée\n- **const** : portée de bloc, non hoistée, ne peut pas être réassignée\n\n```javascript\nfunction exemple() {\n  var x = 1;\n  if (true) {\n    var x = 2; // même variable\n  }\n  console.log(x); // 2\n}\n\nfunction exemple2() {\n  let x = 1;\n  if (true) {\n    let x = 2; // nouvelle variable\n  }\n  console.log(x); // 1\n}\n```\n\n## 3. Qu'est-ce qu'une closure ?\n\nUne closure est une fonction qui a accès aux variables de sa portée externe.\n\n```javascript\nfunction createCounter() {\n  let count = 0;\n  return function() {\n    return ++count;\n  };\n}\n\nconst counter = createCounter();\nconsole.log(counter()); // 1\nconsole.log(counter()); // 2\n```\n\n## 4. Event Loop en JavaScript\n\nL'Event Loop permet à JavaScript d'exécuter des opérations asynchrones.\n\n```javascript\nconsole.log('1');\nsetTimeout(() => console.log('2'), 0);\nPromise.resolve().then(() => console.log('3'));\nconsole.log('4');\n\n// Sortie : 1, 4, 3, 2\n```",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "React Hooks : guide complet",
+      "description": "Analyse approfondie de tous les hooks React avec des exemples d'utilisation et des meilleures pratiques",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 25,
+      "rating": 4.9,
+      "reads": 892,
+      "tags": ["React", "Hooks", "Frontend", "useState", "useEffect"],
+      "content": "# React Hooks : guide complet\n\n## Introduction\n\nLes Hooks ont été introduits dans React 16.8 et permettent d'utiliser l'état et d'autres fonctionnalités de React dans des composants fonctionnels.\n\n## useState\n\nHook de base pour gérer l'état.\n\n```jsx\nimport React, { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  return (\n    <div>\n      <p>Compteur : {count}</p>\n      <button onClick={() => setCount(count + 1)}>\n        Incrémenter\n      </button>\n    </div>\n  );\n}\n```\n\n## useEffect\n\nHook pour exécuter des effets secondaires.\n\n```jsx\nimport React, { useState, useEffect } from 'react';\n\nfunction UserProfile({ userId }) {\n  const [user, setUser] = useState(null);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    async function fetchUser() {\n      try {\n        const response = await fetch(`/api/users/${userId}`);\n        const userData = await response.json();\n        setUser(userData);\n      } catch (error) {\n        console.error('Erreur de chargement de l\u2019utilisateur :', error);\n      } finally {\n        setLoading(false);\n      }\n    }\n    fetchUser();\n  }, [userId]);\n```\n\n## useMemo / useCallback\n\nUtilisez-les pour mémoïser des valeurs et des fonctions coûteuses afin d'éviter des rerenders inutiles.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "TypeScript : types avancés",
+      "description": "Approfondissement du système de types de TypeScript avec des exemples pratiques",
+      "category": "interview-questions",
+      "difficulty": "advanced",
+      "readTime": 18,
+      "rating": 4.7,
+      "reads": 234,
+      "tags": ["TypeScript", "Types", "Frontend", "Génériques"],
+      "content": "# TypeScript : types avancés\n\n## Introduction\n\nTypeScript offre un système de types puissant qui aide à écrire un code plus fiable.\n\n## Types conditionnels\n\n```typescript\ntype NonNullable<T> = T extends null | undefined ? never : T;\n```\n\n## Types mappés et utilitaires\n\nMontrez comment utiliser `Partial`, `Required`, `Pick`, `Omit`, etc.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}
+
+

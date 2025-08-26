@@ -7,6 +7,11 @@ export const API_CONFIG = {
       ? import.meta.env.VITE_API_URL || 'https://api.supermock.ru'
       : '', // В dev режиме используем относительные пути для proxy
 
+  // WebSocket URL для dev режима
+  wsURL: import.meta.env.DEV 
+    ? 'ws://localhost:3000' // В dev режиме подключаемся к локальному серверу
+    : (import.meta.env.VITE_API_URL || 'https://api.supermock.ru').replace('https://', 'wss://').replace('http://', 'ws://'),
+
   // Полные пути к API endpoints
   endpoints: {
     init: '/api/init',

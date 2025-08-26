@@ -187,7 +187,11 @@ export async function apiGetEnhancedSlots(params: {
 }
 
 export async function apiGetSession(sessionId: string, userId?: string) {
-  const url = new URL(createApiUrl(`/api/session/${sessionId}`));
+  // Always provide a base to avoid Invalid URL when createApiUrl returns a relative path
+  const url = new URL(
+    createApiUrl(`/api/session/${sessionId}`),
+    window.location.origin
+  );
   if (userId) {
     url.searchParams.append('userId', userId);
   }
@@ -499,8 +503,11 @@ export async function apiValidateTelegramAuth(
 }
 
 // Проверка заполненных данных пользователя
-export async function apiCheckUserData(userId: number) {
-  const res = await fetch(createApiUrl(`/api/user-data-check/${userId}`), {
+export async function apiCheckUserData(userId: number, profession?: string) {
+  const base = createApiUrl(`/api/user-data-check/${userId}`);
+  const url = new URL(base, window.location.origin);
+  if (profession) url.searchParams.set('profession', profession);
+  const res = await fetch(url.toString(), {
     credentials: 'include',
   });
   if (!res.ok) {

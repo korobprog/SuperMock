@@ -10,6 +10,10 @@ import { getTelegramWebApp } from '@/lib/utils';
 import { useTelegramFullscreen } from '@/hooks/use-telegram-fullscreen';
 import { apiInit, apiSaveProfile } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
+import { 
+  getActiveDevTestAccount, 
+  isDevTestAccountsEnabled 
+} from '@/lib/dev-test-account';
 
 const languages = [
   { id: 'ru', name: 'Русский', flag: '🇷🇺' },
@@ -24,8 +28,6 @@ export function LanguageSelection() {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const setLanguage = useAppStore((s) => s.setLanguage);
   const setUserId = useAppStore((s) => s.setUserId);
-  const role = useAppStore((s) => s.role);
-  const profession = useAppStore((s) => s.profession);
   const navigate = useNavigate();
   const { t } = useAppTranslation();
   const { i18n } = useTranslation();
@@ -34,6 +36,12 @@ export function LanguageSelection() {
   useTelegramFullscreen();
 
   useEffect(() => {
+    // В dev режиме пропускаем автоопределение языка
+    if (import.meta.env.DEV) {
+      console.log('🔧 Dev mode: skipping auto language detection');
+      return;
+    }
+
     const tg = getTelegramWebApp();
 
     // Автоопределение языка из Telegram
@@ -82,8 +90,20 @@ export function LanguageSelection() {
         telegramUser: telegramUser,
       });
 
-      // Handle different scenarios - prioritize Telegram Login Widget user
-      if (telegramUser) {
+      // Handle different scenarios - prioritize test accounts in dev mode
+      if (isDevTestAccountsEnabled()) {
+        const testAccount = getActiveDevTestAccount();
+        if (testAccount) {
+          console.log('✅ Using dev test account:', testAccount);
+          user = {
+            id: testAccount.userId,
+            first_name: testAccount.telegramUser.first_name,
+            username: testAccount.telegramUser.username,
+            language_code: selectedLanguage,
+          };
+          initData = 'demo_hash_12345'; // Используем специальный хеш для демо режима
+        }
+      } else if (telegramUser) {
         // Use Telegram Login Widget user if available (highest priority)
         console.log(
           '✅ Using authenticated Telegram user from store:',
@@ -100,32 +120,43 @@ export function LanguageSelection() {
         // Use Telegram WebApp user if available
         console.log('✅ Using Telegram WebApp user:', user);
         // Keep existing user and initData
-      } else if (import.meta.env.DEV) {
-        // Demo mode only in development when no Telegram user is available
-        console.log('🎭 Using demo mode');
-        user = {
-          id: 12345678,
-          first_name: 'Demo User',
-          username: 'demo_user',
-          language_code: selectedLanguage,
-        };
-        initData = 'demo_hash_12345';
       } else {
-        // In production, redirect to profile if no authentication
-        console.warn(
-          'No authentication available in production; redirecting to profile.'
-        );
-        navigate('/profile');
+        // Если нет авторизации, перенаправляем на главную страницу
+        console.warn('Нет авторизации, требуется вход через Telegram');
+        navigate('/');
         return;
       }
 
       // Если все еще нет пользователя, показываем сообщение об ошибке
       if (!user) {
         console.error('❌ No user data available for initialization');
+        
+        // В dev режиме или с демо аккаунтом создаем демо пользователя
+        if (import.meta.env.DEV || isDevTestAccountsEnabled()) {
+          console.log('🔧 Dev/demo mode: creating demo user for initialization');
+          const demoUserId = Math.floor(Math.random() * 1000000) + 1000000;
+          setUserId(demoUserId);
+          // Перенаправляем на выбор времени
+          navigate('/time');
+          return;
+        }
+        
         // Можно показать toast или alert пользователю
         alert('Пожалуйста, войдите через Telegram для продолжения');
         navigate('/profile');
         return;
+      }
+
+      // В dev режиме или с демо аккаунтом пропускаем API вызов
+      if ((import.meta.env.DEV || isDevTestAccountsEnabled()) && isDevTestAccountsEnabled()) {
+        const testAccount = getActiveDevTestAccount();
+        if (testAccount) {
+          console.log('🔧 Dev/demo mode: skipping API call, using test account');
+          setUserId(testAccount.userId);
+          // Перенаправляем на выбор времени
+          navigate('/time');
+          return;
+        }
       }
 
       console.log('📡 Calling apiInit with:', {
@@ -153,6 +184,19 @@ export function LanguageSelection() {
         navigate('/time');
       } catch (error) {
         console.error('❌ Failed to initialize user:', error);
+        
+        // В dev режиме или с демо аккаунтом продолжаем без backend
+        if ((import.meta.env.DEV || isDevTestAccountsEnabled()) && isDevTestAccountsEnabled()) {
+          const testAccount = getActiveDevTestAccount();
+          if (testAccount) {
+            console.log('🔧 Dev/demo mode: continuing without backend initialization');
+            setUserId(testAccount.userId);
+            // Перенаправляем на выбор времени
+            navigate('/time');
+            return;
+          }
+        }
+        
         alert(`Ошибка инициализации: ${error.message}`);
         // Перенаправляем на профиль для повторной аутентификации
         navigate('/profile');

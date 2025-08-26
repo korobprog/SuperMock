@@ -1,0 +1,95 @@
+{
+  "profession": "product-manager",
+  "language": "fr",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "Questions d'Entretien",
+      "count": 134,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "Tâches Techniques",
+      "count": 67,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "Conception Système",
+      "count": 45,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "Questions Comportementales",
+      "count": 89,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "Algorithmes & Structures",
+      "count": 56,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "Bonnes Pratiques",
+      "count": 78,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "Stratégie Produit: De l'Idée au Lancement",
+      "description": "Guide complet pour développer des stratégies produit",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.8,
+      "reads": 1234,
+      "tags": ["Stratégie Produit", "MVP", "Roadmap", "Analytics"],
+      "content": "# Stratégie Produit: De l'Idée au Lancement\n\n## Définition Produit\n\n### Vision et Mission\n\n```markdown\n## Vision\nCréer une plateforme qui aide des millions de personnes à gérer efficacement leurs finances et atteindre leurs objectifs financiers.\n\n## Mission\nFournir des outils simples et compréhensibles pour la planification budgétaire, le suivi des dépenses et les investissements.\n\n## Public Cible\n- Primaire: Personnes 25-45 ans avec revenus $30k-$100k\n- Secondaire: Étudiants et retraités\n- Géographie: USA, Europe, Asie\n```\n\n### Analyse de Marché\n\n```markdown\n## Analyse Concurrentielle\n\n### Concurrents Directs\n1. **Mint** - Leader du marché, 20M+ utilisateurs\n   - Forces: Intégration bancaire, automatisation\n   - Faiblesses: Interface complexe, publicités\n\n2. **YNAB** - Segment premium\n   - Forces: Support qualité, éducation\n   - Faiblesses: Prix élevé, complexité\n\n## Taille de Marché (TAM, SAM, SOM)\n- TAM: $12B (toutes les apps de gestion financière)\n- SAM: $3B (apps de finances personnelles)\n- SOM: $300M (notre part dans 3 ans)\n```\n\n## MVP et Roadmap\n\n### MVP (Produit Minimum Viable)\n\n```markdown\n## Fonctionnalités MVP\n\n### Doit avoir\n- [ ] Inscription et authentification\n- [ ] Ajout de revenus et dépenses\n- [ ] Catégorisation des transactions\n- [ ] Rapports de base (mois/année)\n- [ ] Définition d'objectifs financiers\n\n### Devrait avoir\n- [ ] Export de données vers CSV\n- [ ] Notifications de limite budgétaire\n- [ ] Version mobile\n\n### Pourrait avoir\n- [ ] Intégration bancaire\n- [ ] Portfolio d'investissement\n- [ ] Fonctionnalités sociales\n\n### N'aura pas\n- [ ] Cryptomonnaies\n- [ ] Rapports fiscaux\n- [ ] Comptes professionnels\n```\n\n### Roadmap Produit\n\n```markdown\n## Roadmap 2024\n\n### Q1: Lancement MVP\n- Développement MVP\n- Tests bêta (100 utilisateurs)\n- Lancement App Store/Google Play\n\n### Q2: Croissance\n- Intégration bancaire\n- Analytics avancées\n- Tests A/B\n\n### Q3: Monétisation\n- Abonnement premium\n- Modèle publicitaire\n- Programmes de partenariat\n\n### Q4: Évolutivité\n- Expansion internationale\n- API pour développeurs\n- Solutions entreprise\n```\n\n## Métriques et KPI\n\n```markdown\n## Métriques Clés\n\n### Métriques Utilisateurs\n- DAU (Utilisateurs actifs quotidiens): 10,000\n- MAU (Utilisateurs actifs mensuels): 100,000\n- Taux de rétention (Jour 7): 40%\n- Taux de rétention (Jour 30): 20%\n\n### Métriques Business\n- MRR (Revenus récurrents mensuels): $50,000\n- CAC (Coût d'acquisition client): $15\n- LTV (Valeur vie client): $150\n- Taux de désabonnement: 5%\n\n### Métriques Produit\n- Time to Value: < 5 minutes\n- Taux d'adoption des fonctionnalités: 60%\n- Score NPS: 45\n- Note App Store: 4.5+\n```\n\n## Conclusion\n\nUne stratégie produit réussie nécessite un équilibre entre vision, données et exécution. Il est important de mesurer continuellement l'approche et de l'ajuster basé sur les retours utilisateurs.",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Analytics Produit: Métriques et Tableaux de Bord",
+      "description": "Guide pratique pour l'analytics produit",
+      "category": "technical-tasks",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.7,
+      "reads": 987,
+      "tags": ["Analytics", "Métriques", "Dashboards", "SQL"],
+      "content": "# Analytics Produit: Métriques et Tableaux de Bord\n\n## Métriques Clés\n\n### Métriques Utilisateurs\n\n```sql\n-- Utilisateurs actifs quotidiens (DAU)\nSELECT \n  DATE(created_at) as date,\n  COUNT(DISTINCT user_id) as dau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE(created_at)\nORDER BY date DESC;\n\n-- Utilisateurs actifs mensuels (MAU)\nSELECT \n  DATE_TRUNC('month', created_at) as mois,\n  COUNT(DISTINCT user_id) as mau\nFROM user_events\nWHERE event_type IN ('login', 'feature_use', 'purchase')\nGROUP BY DATE_TRUNC('month', created_at)\nORDER BY mois DESC;\n\n-- Taux de rétention\nWITH user_activity AS (\n  SELECT \n    user_id,\n    DATE(created_at) as date_activite,\n    DATE_TRUNC('week', created_at) as semaine\n  FROM user_events\n  WHERE event_type = 'login'\n),\ncohorts AS (\n  SELECT \n    user_id,\n    MIN(semaine) as cohort_semaine\n  FROM user_activity\n  GROUP BY user_id\n)\nSELECT \n  c.cohort_semaine,\n  COUNT(DISTINCT c.user_id) as taille_cohort,\n  COUNT(DISTINCT CASE WHEN ua.semaine = c.cohort_semaine + INTERVAL '1 week' THEN ua.user_id END) as semaine_1,\n  COUNT(DISTINCT CASE WHEN ua.semaine = c.cohort_semaine + INTERVAL '2 weeks' THEN ua.user_id END) as semaine_2\nFROM cohorts c\nLEFT JOIN user_activity ua ON c.user_id = ua.user_id\nGROUP BY c.cohort_semaine\nORDER BY c.cohort_semaine;\n```\n\n### Métriques Business\n\n```sql\n-- Revenus récurrents mensuels (MRR)\nSELECT \n  DATE_TRUNC('month', subscription_date) as mois,\n  SUM(monthly_amount) as mrr\nFROM subscriptions\nWHERE status = 'active'\nGROUP BY DATE_TRUNC('month', subscription_date)\nORDER BY mois DESC;\n\n-- Coût d'acquisition client (CAC)\nSELECT \n  DATE_TRUNC('month', acquisition_date) as mois,\n  SUM(marketing_spend) / COUNT(DISTINCT user_id) as cac\nFROM user_acquisitions\nGROUP BY DATE_TRUNC('month', acquisition_date)\nORDER BY mois DESC;\n\n-- Valeur vie client (LTV)\nSELECT \n  user_id,\n  SUM(purchase_amount) as depenses_totales,\n  COUNT(DISTINCT purchase_date) as nombre_achats,\n  AVG(purchase_amount) as achat_moyen\nFROM user_purchases\nGROUP BY user_id\nORDER BY depenses_totales DESC;\n```\n\n## Tableaux de Bord\n\n### Dashboard Principal\n\n```markdown\n## Dashboard Produit Quotidien\n\n### Utilisateurs\n- DAU: 12,345 (+5.2% vs hier)\n- Nouveaux utilisateurs: 1,234 (+12.1% vs hier)\n- Sessions actives: 45,678 (+3.4% vs hier)\n\n### Engagement\n- Durée de session: 8m 32s (+2.1% vs hier)\n- Pages par session: 4.2 (+1.8% vs hier)\n- Taux de rebond: 23.4% (-1.2% vs hier)\n\n### Conversion\n- Taux d'inscription: 15.2% (+0.8% vs hier)\n- Taux d'achat: 3.4% (+0.3% vs hier)\n- Revenus: $12,345 (+8.7% vs hier)\n\n### Métriques Techniques\n- Taux d'erreur: 0.12% (-0.02% vs hier)\n- Temps de chargement: 1.8s (+0.1s vs hier)\n- Temps de réponse API: 245ms (+5ms vs hier)\n```\n\n## Conclusion\n\nL'analytics produit efficace aide à prendre des décisions basées sur les données et à suivre les progrès vers les objectifs. Il est important de se concentrer sur les métriques qui impactent réellement les résultats business.",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "Tests A/B d'Hypothèses Produit",
+      "description": "Méthodologie pour conduire des tests A/B pour les décisions produit",
+      "category": "best-practices",
+      "difficulty": "advanced",
+      "readTime": 18,
+      "rating": 4.6,
+      "reads": 756,
+      "tags": ["Tests A/B", "Hypothèses", "Statistiques", "Décisions Produit"],
+      "content": "# Tests A/B d'Hypothèses Produit\n\n## Formulation d'Hypothèses\n\n### Structure d'Hypothèse\n\n```markdown\n## Format d'Hypothèse\n\n### Problème\nLes utilisateurs ne peuvent pas trouver rapidement la fonctionnalité nécessaire dans l'app.\n\n### Hypothèse\nSi nous déplaçons le bouton \"Nouvelle commande\" vers le haut de l'écran, le nombre de commandes augmentera de 15%.\n\n### Justification\n- Le bouton sera plus visible\n- Le nombre de clics diminuera\n- L'expérience utilisateur s'améliorera\n\n### Métriques\n- Primaire: Nombre de commandes\n- Secondaire: Temps jusqu'à première commande, taux de rebond\n- Garde-fou: Conversion globale, revenus\n```\n\n### Exemples d'Hypothèses\n\n```markdown\n## Exemples d'Hypothèses Produit\n\n### Onboarding\n**Hypothèse**: Si nous ajoutons une barre de progression à l'onboarding, le taux de completion augmentera de 20%.\n**Métriques**: Taux de completion, temps jusqu'à completion, points d'abandon\n\n### Pricing\n**Hypothèse**: Si nous montrons 20% de réduction annuelle au lieu d'abonnement mensuel, l'ARPU augmentera de 25%.\n**Métriques**: ARPU, taux de conversion, taux de désabonnement\n\n### Découverte de Fonctionnalités\n**Hypothèse**: Si nous ajoutons des tooltips pour les nouvelles fonctionnalités, le taux d'adoption augmentera de 30%.\n**Métriques**: Taux d'adoption, engagement utilisateur, tickets support\n```\n\n## Planification d'Expérience\n\n### Calcul de la Taille d'Échantillon\n\n```python\nimport scipy.stats as stats\nimport numpy as np\n\n# Paramètres pour le calcul\ntaux_conversion_base = 0.05  # 5%\neffet_minimal = 0.01  # 1% (20% d'augmentation relative)\nalpha = 0.05  # 5% niveau de signification\npower = 0.8  # 80% puissance\n\n# Calculer la taille d'échantillon\nz_alpha = stats.norm.ppf(1 - alpha/2)\nz_beta = stats.norm.ppf(power)\n\ntaille_echantillon = (2 * (z_alpha + z_beta)**2 * taux_conversion_base * (1 - taux_conversion_base)) / (effet_minimal**2)\n\nprint(f'Taille d\\'échantillon par groupe: {int(taille_echantillon)}')\nprint(f'Taille d'échantillon totale: {int(taille_echantillon * 2)}')\nprint(f'Durée d'expérience (avec 1000 utilisateurs/jour): {int(taille_echantillon * 2 / 1000)} jours')\n```\n\n### Design d'Expérience\n\n```markdown\n## Plan d'Expérience\n\n### Objectif\nAugmenter la conversion d'abonnement premium de 15%.\n\n### Hypothèse\nSi nous montrons des preuves sociales (avis utilisateurs) sur la page d'abonnement, la conversion augmentera.\n\n### Design\n- **Groupe contrôle (A)**: Page d'abonnement standard\n- **Groupe test (B)**: Page avec avis utilisateurs\n\n### Répartition\n- 50% utilisateurs → Groupe A\n- 50% utilisateurs → Groupe B\n\n### Durée\n- Minimum: 2 semaines\n- Objectif: 4 semaines\n- Maximum: 6 semaines\n\n### Critères d'arrêt\n- Significativité statistique p < 0.05\n- Taille d'échantillon minimale atteinte\n- Sécurité: Conversion pas diminuée de plus de 5%\n```\n\n## Analyse des Résultats\n\n```python\nimport pandas as pd\nfrom scipy.stats import chi2_contingency, proportions_ztest\n\n# Données d'expérience\nresultats = pd.DataFrame({\n    'groupe': ['A', 'A', 'B', 'B'] * 1000,\n    'converti': [0, 1, 0, 1] * 1000,\n    'user_id': range(4000)\n})\n\n# Agrégation des résultats\nresume_experience = resultats.groupby('groupe').agg({\n    'user_id': 'count',\n    'converti': 'sum'\n}).rename(columns={'user_id': 'utilisateurs', 'converti': 'conversions'})\n\nresume_experience['taux_conversion'] = resume_experience['conversions'] / resume_experience['utilisateurs']\n\nprint(resume_experience)\n\n# Test statistique\nconversions_a = resume_experience.loc['A', 'conversions']\nutilisateurs_a = resume_experience.loc['A', 'utilisateurs']\nconversions_b = resume_experience.loc['B', 'conversions']\nutilisateurs_b = resume_experience.loc['B', 'utilisateurs']\n\nz_stat, p_value = proportions_ztest(\n    [conversions_a, conversions_b],\n    [utilisateurs_a, utilisateurs_b]\n)\n\nprint(f'Statistique Z: {z_stat:.4f}')\nprint(f'P-valeur: {p_value:.4f}')\nprint(f'Statistiquement significatif: {p_value < 0.05}')\n\n# Calcul de l'effet\ntaux_controle = conversions_a / utilisateurs_a\ntaux_traitement = conversions_b / utilisateurs_b\namelioration_relative = (taux_traitement - taux_controle) / taux_controle * 100\n\nprint(f'Amélioration relative: {amelioration_relative:.2f}%')\n```\n\n## Conclusion\n\nLes tests A/B sont un outil puissant pour valider les décisions produit. Il est important de formuler correctement les hypothèses, planifier les expériences et interpréter les résultats.",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

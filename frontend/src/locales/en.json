@@ -340,6 +340,10 @@
     "failedToLoadTools": "Failed to load tools",
     "failedToSaveTools": "Failed to save tools",
     "userTools": "User tools",
+    "selectToolsDescription": "Select tools that you use in your work. This will help find suitable interview partners.",
+    "selectProfessionFirst": "First select a profession to see available tools",
+    "loadingTools": "Loading tools...",
+    "selectToolsFirst": "Please select tools for the chosen profession",
     "categories": {
       "frameworks": "Frameworks",
       "languages": "Programming Languages",

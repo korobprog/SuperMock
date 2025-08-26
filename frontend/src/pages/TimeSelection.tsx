@@ -269,8 +269,10 @@ export function TimeSelection() {
   // Анализ слотов и рекомендации с добавлением информации о времени
   const slotAnalysis = useMemo((): SlotAnalysis[] => {
     return timeSlots.map((slot) => {
-      const candidateCount = candidateCounts[slot.time] || 0;
-      const interviewerCount = interviewerCounts[slot.time] || 0;
+      // ВАЖНО: candidateCounts содержит КОЛ-ВО ИНТЕРВЬЮЕРОВ (т.к. грузим role=candidate → oppositeRole)
+      //        interviewerCounts содержит КОЛ-ВО КАНДИДАТОВ (role=interviewer → oppositeRole)
+      const interviewerCount = candidateCounts[slot.time] || 0; // доступные интервьюеры
+      const candidateCount = interviewerCounts[slot.time] || 0; // доступные кандидаты
 
       // Определяем загрузку слота
       const totalUsers = candidateCount + interviewerCount;
@@ -319,6 +321,25 @@ export function TimeSelection() {
     const now = DateTime.now().setZone(timezone);
     const currentHour = now.hour;
 
+    // Разделяем слоты на имеющие доступных партнеров и без
+    const partnerCount = (s: SlotAnalysis) =>
+      mode === 'candidate' ? s.interviewerCount : s.candidateCount;
+    const withPartners = slotAnalysis.filter((s) => partnerCount(s) > 0);
+    const withoutPartners = slotAnalysis.filter((s) => partnerCount(s) === 0);
+
+    // Если во всех слотах 0 доступных партнеров — выбрать ближайшее будущее время
+    if (withPartners.length === 0) {
+      const base = slotAnalysis;
+      const nearest = [...base]
+        .filter((s) => parseInt(s.time.split(':')[0]) >= currentHour)
+        .sort((a, b) => parseInt(a.time.split(':')[0]) - parseInt(b.time.split(':')[0]))[0]
+        || [...base].sort((a, b) => parseInt(a.time.split(':')[0]) - parseInt(b.time.split(':')[0]))[0];
+      return nearest || null;
+    }
+
+    // Иначе работаем только с теми слотами, где есть партнеры
+    const pool = withPartners;
+
     // Определяем оптимальные временные окна для разных ролей
     const getOptimalTimeWindows = () => {
       if (mode === 'candidate') {
@@ -341,11 +362,11 @@ export function TimeSelection() {
     const optimalWindows = getOptimalTimeWindows();
 
     // Фильтруем слоты по времени суток и рекомендациям
-    const highRecommendations = slotAnalysis.filter(
+    const highRecommendations = pool.filter(
       (s) => s.recommendation === 'high'
     );
 
-    const mediumRecommendations = slotAnalysis.filter(
+    const mediumRecommendations = pool.filter(
       (s) => s.recommendation === 'medium'
     );
 
@@ -426,7 +447,7 @@ export function TimeSelection() {
     }
 
     // Приоритет 5: Первый доступный слот в ближайшее время
-    const nearSlots = slotAnalysis.filter((s) => {
+    const nearSlots = pool.filter((s) => {
       const slotHour = parseInt(s.time.split(':')[0]);
       return slotHour >= currentHour && slotHour <= currentHour + 4;
     });
@@ -437,7 +458,7 @@ export function TimeSelection() {
       )[0];
     }
 
-    return slotAnalysis[0]; // Возвращаем первый доступный слот
+    return pool[0]; // Возвращаем первый доступный из пула
   }, [slotAnalysis, mode, timezone]);
 
   // Автоматически показываем информационное окно при первом посещении для конкретного пользователя
@@ -525,10 +546,12 @@ export function TimeSelection() {
       setInterviewerCounts(interviewerMap);
 
       // Устанавливаем данные для текущего режима
+      // Для режима "candidate" показываем количество ИНТЕРВЬЮЕРОВ → используем данные из candidateRes
+      // Для режима "interviewer" показываем количество КАНДИДАТОВ → используем данные из interviewerRes
       if (mode === 'candidate') {
-        setSlotCounts(interviewerMap);
-      } else {
         setSlotCounts(candidateMap);
+      } else {
+        setSlotCounts(interviewerMap);
       }
     } catch (error) {
       console.error('Failed to load slot counts:', error);

@@ -1,0 +1,95 @@
+{
+  "profession": "ux-ui-designer",
+  "language": "zh",
+  "categories": [
+    {
+      "id": "interview-questions",
+      "name": "面试问题",
+      "count": 156,
+      "icon": "💬",
+      "color": "bg-blue-100 text-blue-800"
+    },
+    {
+      "id": "technical-tasks",
+      "name": "技术任务",
+      "count": 98,
+      "icon": "⚡",
+      "color": "bg-green-100 text-green-800"
+    },
+    {
+      "id": "system-design",
+      "name": "系统设计",
+      "count": 34,
+      "icon": "🏗️",
+      "color": "bg-purple-100 text-purple-800"
+    },
+    {
+      "id": "behavioral",
+      "name": "行为问题",
+      "count": 78,
+      "icon": "🧠",
+      "color": "bg-orange-100 text-orange-800"
+    },
+    {
+      "id": "algorithms",
+      "name": "算法和数据结构",
+      "count": 67,
+      "icon": "📊",
+      "color": "bg-red-100 text-red-800"
+    },
+    {
+      "id": "best-practices",
+      "name": "最佳实践",
+      "count": 89,
+      "icon": "⭐",
+      "color": "bg-yellow-100 text-yellow-800"
+    }
+  ],
+  "materials": [
+    {
+      "id": 1,
+      "title": "UX/UI设计基础：原则和方法论",
+      "description": "UX/UI设计的基本原则和现代方法论",
+      "category": "interview-questions",
+      "difficulty": "intermediate",
+      "readTime": 25,
+      "rating": 4.8,
+      "reads": 2345,
+      "tags": ["UX", "UI", "设计", "原则", "方法论"],
+      "content": "# UX/UI设计基础\n\n## UX/UI设计简介\n\nUX/UI设计是创建提供优秀用户体验的用户界面的过程。\n\n## 核心原则\n\n1. **以用户为中心的方法**\n2. **简单性和清晰性**\n3. **一致性**\n4. **可访问性**\n5. **响应性**\n\n## 方法论\n\n- 设计思维\n- 精益UX\n- 敏捷UX\n- 以人为中心的设计",
+      "isNew": false,
+      "isPopular": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "原型设计和测试",
+      "description": "创建原型和UX/UI测试方法",
+      "category": "best-practices",
+      "difficulty": "intermediate",
+      "readTime": 20,
+      "rating": 4.7,
+      "reads": 1876,
+      "tags": ["原型设计", "测试", "UX", "UI", "Figma"],
+      "content": "# 原型设计和测试\n\n## 原型类型\n\n- 纸质原型\n- 数字原型\n- 交互式原型\n\n## 工具\n\n- Figma\n- Sketch\n- Adobe XD\n- InVision\n\n## 测试方法\n\n- 可用性测试\n- A/B测试\n- 眼动追踪\n- 分析",
+      "isNew": true,
+      "isPopular": true,
+      "createdAt": "2024-01-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "title": "设计系统",
+      "description": "为可扩展项目创建和维护设计系统",
+      "category": "system-design",
+      "difficulty": "advanced",
+      "readTime": 30,
+      "rating": 4.6,
+      "reads": 1456,
+      "tags": ["设计系统", "组件", "扩展", "Figma", "Storybook"],
+      "content": "# 设计系统\n\n## 什么是设计系统\n\n设计系统是相互关联的组件、指南和原则的集合。\n\n## 结构\n\n- 设计令牌\n- 基础组件\n- 复杂组件\n- 模板\n\n## 工具\n\n- Figma\n- Storybook\n- Zeroheight\n- Abstract",
+      "isNew": true,
+      "isPopular": false,
+      "createdAt": "2024-01-20T00:00:00Z"
+    }
+  ]
+}

@@ -14,6 +14,7 @@ import {
   detectUserLanguage,
   saveAndApplyLanguage,
 } from '@/lib/language-detection';
+import { getActiveDevTestAccount } from '@/lib/dev-test-account';
 
 export function ProfessionSelection() {
   const [selectedProfession, setSelectedProfession] = useState<string | null>(
@@ -35,6 +36,14 @@ export function ProfessionSelection() {
       try {
         // Если язык уже определен в store и совпадает с i18n, ничего не делаем
         if (currentLanguage && i18n.language === currentLanguage) {
+          setIsLanguageDetected(true);
+          return;
+        }
+
+        // В dev режиме используем мгновенный fallback
+        if (import.meta.env.DEV) {
+          console.log('🔧 Dev mode: using instant language fallback');
+          saveAndApplyLanguage('ru', i18n, setLanguage);
           setIsLanguageDetected(true);
           return;
         }
@@ -154,30 +163,57 @@ export function ProfessionSelection() {
 
   const handleNext = async () => {
     if (selectedProfession) {
+      console.log('🎯 Starting profession selection process...');
       setProfession(selectedProfession);
 
-      // В dev режиме создаем локальный userId если его нет
+      // Проверяем демо аккаунт
+      const demoAccount = getActiveDevTestAccount();
+      
+      // В dev режиме или с демо аккаунтом создаем локальный userId если его нет
       let currentUserId = userId;
-      if (!currentUserId && import.meta.env.DEV) {
-        const localId = Math.floor(Math.random() * 1000000) + 1000000; // Генерируем ID от 1000000
+      if (!currentUserId && (import.meta.env.DEV || demoAccount)) {
+        const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
         setUserId(localId);
         currentUserId = localId;
-        console.log('🎭 Generated local userId for dev mode:', localId);
+        console.log('🎭 Generated local userId for dev/demo mode:', localId);
       }
 
+      console.log('🔍 Current userId:', currentUserId);
+
+      // Всегда пытаемся сохранить в базу данных, но не блокируем навигацию
       if (currentUserId) {
         try {
-          await apiSaveProfile({
+          console.log('💾 Saving profession to database:', selectedProfession);
+          
+          // Добавляем таймаут для API вызова
+          const savePromise = apiSaveProfile({
             userId: currentUserId,
             profession: selectedProfession,
           });
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Save profile timeout')), 5000)
+          );
+          
+          await Promise.race([savePromise, timeoutPromise]);
+          console.log('✅ Profession saved successfully to database');
         } catch (e) {
-          console.warn('Failed to save profession to profile:', e);
+          console.warn('⚠️ Failed to save profession to database:', e);
+          console.log('💾 Saving profession locally as fallback');
+          // В случае ошибки сохраняем локально
+          setProfession(selectedProfession);
         }
+      } else {
+        console.log('💾 No userId available, saving profession locally only');
+        setProfession(selectedProfession);
       }
 
-      // Перенаправляем на выбор языка
+      // Всегда перенаправляем на выбор языка, независимо от результата сохранения
+      console.log('🚀 Navigating to /language');
+      console.log('📊 Final state - userId:', currentUserId, 'profession:', selectedProfession);
       navigate('/language');
+    } else {
+      console.warn('❌ No profession selected');
     }
   };
 
@@ -236,14 +272,20 @@ export function ProfessionSelection() {
                 description={profession.description}
                 tags={profession.tags}
                 selected={selectedProfession === profession.id}
-                onClick={() => setSelectedProfession(profession.id)}
+                onClick={() => {
+                  console.log('🎯 Profession selected:', profession.id);
+                  setSelectedProfession(profession.id);
+                }}
               />
 
               {/* Next Button appears under selected card */}
               {selectedProfession === profession.id && (
                 <div className="mt-4 mb-6">
                   <Button
-                    onClick={handleNext}
+                    onClick={() => {
+                      console.log('🔘 Next button clicked for profession:', profession.id);
+                      handleNext();
+                    }}
                     className="w-full h-12 text-base font-medium bg-gradient-to-r from-primary to-primary hover:shadow-[0_4px_20px_hsl(var(--primary)/30%)] transition-all duration-300"
                   >
                     {t('navigation.next')}

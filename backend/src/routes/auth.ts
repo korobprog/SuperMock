@@ -8,7 +8,7 @@ const router = express.Router();
 import { body, validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import passport from 'passport';
-import { User } from '../models/UserModel'; // Импортируем модель пользователя из UserModel
+import { getCurrentUserModel } from '../models/UserModel'; // Импортируем функцию для получения модели
 import { auth, JWT_SECRET } from '../middleware/auth';
 import { FRONTEND_PORT, FRONTEND_URL } from '../config/app'; // Импортируем FRONTEND_PORT и FRONTEND_URL из конфигурации
 import { PrismaClient } from '@prisma/client';
@@ -49,7 +49,8 @@ router.post(
 
       // Проверяем, существует ли пользователь с таким email
       console.log('Проверка существования пользователя с email:', email);
-      let user = await User.findOne({ email });
+      const User = getCurrentUserModel();
+    let user = await User.findOne({ email });
       if (user) {
         console.log('Пользователь с таким email уже существует');
         res
@@ -124,7 +125,8 @@ router.post(
       const { email, password } = req.body;
 
       // Ищем пользователя по email
-      const user = await User.findOne({ email });
+      const User = getCurrentUserModel();
+    const user = await User.findOne({ email });
       if (!user) {
         res.status(400).json({ message: 'Неверные учетные данные' });
         return;
@@ -172,6 +174,7 @@ router.get('/user', auth, (async (req: Request, res: Response) => {
     console.log('Cookies:', req.cookies);
     console.log('Параметры запроса:', req.query);
     console.log('Тело запроса:', req.body);
+    const User = getCurrentUserModel();
     console.log('Используемая модель пользователя:', User.name || 'Неизвестно');
     console.log('USE_MONGODB:', process.env.USE_MONGODB);
     console.log('MONGO_URI установлен:', process.env.MONGO_URI ? 'Да' : 'Нет');
@@ -441,43 +444,69 @@ router.get(
   (async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req.params;
+      const USE_MONGODB = process.env.USE_MONGODB === 'true';
       
       console.log('=== ПРОВЕРКА ДАННЫХ ПОЛЬЗОВАТЕЛЯ ===');
       console.log('Проверяем данные для пользователя:', userId);
+      console.log('USE_MONGODB:', USE_MONGODB);
 
-      // Проверяем наличие профессии в таблице preferences
-      const preferences = await prisma.preference.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        take: 1,
-      });
+      if (USE_MONGODB) {
+        // Проверяем наличие профессии в таблице preferences
+        const preferences = await prisma.preference.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        });
 
-      // Проверяем наличие инструментов в таблице userTools
-      const userTools = await prisma.userTool.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-      });
+        // Проверяем наличие инструментов в таблице userTools
+        const userTools = await prisma.userTool.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+        });
 
-      const hasProfession = preferences.length > 0;
-      const hasTools = userTools.length > 0;
-      
-      // Получаем последнюю профессию и инструменты
-      const lastPreference = preferences[0];
-      const profession = lastPreference?.profession || null;
-      const tools = userTools.map(tool => tool.toolName);
+        const hasProfession = preferences.length > 0;
+        const hasTools = userTools.length > 0;
+        
+        // Получаем последнюю профессию и инструменты
+        const lastPreference = preferences[0];
+        const profession = lastPreference?.profession || null;
+        const tools = userTools.map(tool => tool.toolName);
 
-      console.log('Результаты проверки:');
-      console.log('- Есть профессия:', hasProfession);
-      console.log('- Есть инструменты:', hasTools);
-      console.log('- Профессия:', profession);
-      console.log('- Количество инструментов:', tools.length);
+        console.log('Результаты проверки (MongoDB):');
+        console.log('- Есть профессия:', hasProfession);
+        console.log('- Есть инструменты:', hasTools);
+        console.log('- Профессия:', profession);
+        console.log('- Количество инструментов:', tools.length);
 
-      res.json({
-        hasProfession,
-        hasTools,
-        profession,
-        tools,
-      });
+        res.json({
+          hasProfession,
+          hasTools,
+          profession,
+          tools,
+        });
+      } else {
+        // Для InMemoryUser возвращаем базовые данные
+        console.log('Используется InMemoryUser - возвращаем базовые данные');
+        
+        // В dev режиме с демо пользователем возвращаем заполненные данные
+        const hasProfession = true;
+        const hasTools = true;
+        const profession = 'Frontend Developer'; // Базовая профессия для демо
+        const tools = ['JavaScript', 'React', 'TypeScript']; // Базовые инструменты для демо
+
+        console.log('Результаты проверки (InMemory):');
+        console.log('- Есть профессия:', hasProfession);
+        console.log('- Есть инструменты:', hasTools);
+        console.log('- Профессия:', profession);
+        console.log('- Количество инструментов:', tools.length);
+
+        res.json({
+          hasProfession,
+          hasTools,
+          profession,
+          tools,
+        });
+      }
     } catch (error) {
       console.error('Ошибка при проверке данных пользователя:', error);
       res.status(500).json({ 
