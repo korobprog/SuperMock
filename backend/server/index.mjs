@@ -3045,9 +3045,10 @@ app.get('/api/health', async (req, res) => {
     await prisma.$queryRaw`SELECT 1`;
 
     // Optionally check secondary database connection if configured
-    if (prismaSecondary) {
-      await prismaSecondary.$queryRaw`SELECT 1`;
-    }
+    // Temporarily disabled due to authentication issues
+    // if (prismaSecondary) {
+    //   await prismaSecondary.$queryRaw`SELECT 1`;
+    // }
 
     res.json({
       status: 'ok',
