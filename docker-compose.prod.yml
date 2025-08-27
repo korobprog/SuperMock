@@ -11,7 +11,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-supermock}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     networks:
       - supermock-network
     healthcheck:
@@ -28,11 +28,11 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
-      - redis_data:/data
+      - ./data/redis:/data
     networks:
       - supermock-network
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ['CMD-SHELL', 'redis-cli ping || exit 1']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -50,7 +50,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-supermock}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-supermock}?schema=public&sslmode=disable
+      DATABASE_URL: postgresql://${POSTGRES_USER:-supermock}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-supermock}?schema=public
       DATABASE_URL_SECONDARY: ""
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       FRONTEND_URL: ${FRONTEND_URL}
@@ -93,9 +93,10 @@ services:
       start_period: 40s
     labels:
       - traefik.enable=true
-      - traefik.http.routers.supermock-backend.rule=Host(`api.supermock.ru`) && (PathPrefix(`/api`) || PathPrefix(`/socket.io`))
+      - traefik.http.routers.supermock-backend.rule=Host(`api.supermock.ru`) || Host(`217.198.6.238`) && PathPrefix(`/api`)
       - traefik.http.routers.supermock-backend.entrypoints=web,websecure
       - traefik.http.routers.supermock-backend.tls=true
+      - traefik.http.routers.supermock-backend.tls.certresolver=letsencrypt
       - traefik.http.services.supermock-backend.loadbalancer.server.port=3000
       - traefik.docker.network=traefik-network
 
@@ -123,8 +124,12 @@ services:
       - --max-port=49200
       - --listening-ip=0.0.0.0
       - --external-ip=217.198.6.238
-      - --no-tls
-      - --no-dtls
+      - --cert=/etc/ssl/certs/turn.crt
+      - --pkey=/etc/ssl/private/turn.key
+      - --tls-listening-port=5349
+      - --dtls-listening-port=5349
+    volumes:
+      - ./certs:/etc/ssl
     networks:
       - supermock-network
 
@@ -146,19 +151,6 @@ services:
         VITE_ENABLE_DEMO_MODE: ${VITE_ENABLE_DEMO_MODE:-1}
     container_name: supermock-frontend
     restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      VITE_API_URL: ${VITE_API_URL}
-      VITE_TELEGRAM_BOT_NAME: ${VITE_TELEGRAM_BOT_NAME}
-      VITE_TELEGRAM_BOT_ID: ${VITE_TELEGRAM_BOT_ID}
-      VITE_JITSI_URL: ${VITE_JITSI_URL}
-      VITE_STUN_URLS: ${VITE_STUN_URLS}
-      VITE_TURN_URL: ${VITE_TURN_URL}
-      VITE_TURN_USERNAME: ${VITE_TURN_USERNAME}
-      VITE_TURN_PASSWORD: ${VITE_TURN_PASSWORD}
-      ENABLE_DEMO_MODE: ${ENABLE_DEMO_MODE:-1}
-      VITE_ENABLE_DEMO_MODE: ${VITE_ENABLE_DEMO_MODE:-1}
     networks:
       - supermock-network
       - traefik-network
@@ -167,17 +159,12 @@ services:
         condition: service_healthy
     labels:
       - traefik.enable=true
-      - traefik.http.routers.supermock-frontend.rule=Host(`supermock.ru`)
+      - traefik.http.routers.supermock-frontend.rule=Host(`supermock.ru`) || Host(`217.198.6.238`)
       - traefik.http.routers.supermock-frontend.entrypoints=web,websecure
       - traefik.http.routers.supermock-frontend.tls=true
+      - traefik.http.routers.supermock-frontend.tls.certresolver=letsencrypt
       - traefik.http.services.supermock-frontend.loadbalancer.server.port=8080
       - traefik.docker.network=traefik-network
-
-volumes:
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
 
 networks:
   supermock-network:
