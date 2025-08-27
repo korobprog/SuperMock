@@ -9,6 +9,7 @@ import { DateTime } from 'luxon';
 import crypto from 'crypto';
 import path from 'path';
 import TelegramNotificationService from './telegram-notifications.mjs';
+// import { AIAnalysisService } from '../src/services/aiAnalysisService.js';
 
 dotenv.config();
 
@@ -119,8 +120,16 @@ console.log('🔧 CORS Debug:', {
 
 const io = new SocketIOServer(server, {
   cors: {
-    ...corsOptions,
-    origin: '*', // Временно разрешаем все источники для отладки WebSocket
+    origin: [
+      'https://supermock.ru',
+      'https://www.supermock.ru',
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'http://localhost:3000',
+      'http://localhost:3001',
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   },
   transports: ['polling', 'websocket'],
   allowEIO3: true,
@@ -744,8 +753,14 @@ app.post('/api/profile', async (req, res) => {
     // Ensure user exists and update language
     const user = await prisma.user.upsert({
       where: { id: uid },
-      update: { language: language || undefined },
-      create: { id: uid, tgId: String(userId), language: language || 'ru' },
+      update: { 
+        language: language || undefined,
+      },
+      create: { 
+        id: uid, 
+        tgId: String(userId), 
+        language: language || 'ru',
+      },
       select: { id: true, language: true },
     });
 
@@ -792,6 +807,13 @@ app.post('/api/user-tools', async (req, res) => {
 
   try {
     const uid = String(userId);
+
+    // Ensure user exists
+    await prisma.user.upsert({
+      where: { id: uid },
+      update: {},
+      create: { id: uid, tgId: uid, language: 'ru' },
+    });
 
     // Удаляем существующие инструменты для данной профессии
     await prisma.userTool.deleteMany({
@@ -1955,6 +1977,37 @@ app.get('/api/sessions/:id', async (req, res) => {
   }
 });
 
+// Create session (rewritten to Prisma)
+app.post('/api/sessions', async (req, res) => {
+  try {
+    const { candidateUserId, interviewerUserId, profession, language, slotUtc, jitsiRoom } = req.body;
+    
+    if (!candidateUserId || !interviewerUserId) {
+      return res.status(400).json({ error: 'candidateUserId and interviewerUserId are required' });
+    }
+
+    const sessionId = generateId('session');
+    const session = await prisma.session.create({
+      data: {
+        id: sessionId,
+        candidateUserId: String(candidateUserId),
+        interviewerUserId: String(interviewerUserId),
+        profession: profession || null,
+        language: language || null,
+        slotUtc: slotUtc || null,
+        jitsiRoom: jitsiRoom || `Super Mock_${sessionId}`,
+        status: 'scheduled',
+      },
+    });
+
+    console.log('Created session:', sessionId);
+    res.status(201).json({ session });
+  } catch (err) {
+    console.error('Error creating session:', err);
+    res.status(500).json({ error: 'Failed to create session' });
+  }
+});
+
 // Feedback (rewritten to Prisma)
 app.post('/api/feedback', async (req, res) => {
   const { sessionId, fromUserId, toUserId, rating, comments } = req.body || {};
@@ -2044,6 +2097,69 @@ app.post('/api/sessions/:id/feedback', async (req, res) => {
         recommendations: recommendations || null,
       },
     });
+
+    // 🤖 AI АНАЛИЗ ФИДБЕКА (асинхронно, не блокируем ответ)
+    if (comments && comments.trim().length > 10) {
+      setImmediate(async () => {
+        try {
+          console.log(`🤖 Starting AI analysis for feedback ${feedback.id}`);
+          
+          // Получаем информацию о пользователе и сессии для анализа
+          const targetUserId = isInterviewer ? session.candidateUserId : session.interviewerUserId;
+          const profession = session.profession || 'Developer';
+          const userLanguage = 'ru'; // TODO: получить из настроек пользователя
+          
+          // Проверяем что targetUserId существует
+          if (!targetUserId) {
+            console.log('❌ No target user ID found for AI analysis');
+            return;
+          }
+          
+          // Запускаем AI анализ асинхронно (не ждем результата)
+          const aiService = new AIAnalysisService();
+          
+          try {
+            const analysis = await aiService.analyzeFeedback(
+              feedback.id,
+              comments,
+              ratings ? JSON.parse(ratings) : {},
+              profession,
+              userLanguage,
+              targetUserId
+            );
+            
+            console.log(`✅ AI analysis completed for feedback ${feedback.id}`);
+            
+            // Сохраняем анализ в базу данных
+            await prisma.feedbackAnalysis.create({
+              data: {
+                feedbackId: feedback.id,
+                userId: targetUserId,
+                weaknesses: analysis.weaknesses,
+                strengths: analysis.strengths,
+                skillLevels: analysis.skillLevels,
+                communicationScore: analysis.communicationScore,
+                technicalScore: analysis.technicalScore,
+                overallReadiness: analysis.overallReadiness,
+                suggestions: analysis.suggestions,
+                uniquenessScore: analysis.uniquenessScore,
+                summary: analysis.summary,
+              },
+            });
+            
+            console.log(`✅ AI analysis saved to database for feedback ${feedback.id}`);
+          } catch (aiError) {
+            console.error('❌ AI analysis failed:', aiError);
+            // Не блокируем основной процесс при ошибке AI
+          } finally {
+            await aiService.disconnect();
+          }
+        } catch (aiSetupError) {
+          console.error('❌ AI analysis setup failed:', aiSetupError);
+          // Продолжаем выполнение без AI анализа
+        }
+      });
+    }
 
     // Отправляем уведомление в Telegram бот
     try {
@@ -2804,14 +2920,14 @@ app.get('/api/user-data-check/:userId', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Check if user has profession preferences
-    const preferences = await prisma.preference.findFirst({
+    // Check if user has profession in preferences
+    const userPreference = await prisma.preference.findFirst({
       where: { userId: String(userId) },
-      orderBy: { createdAt: 'desc' },
+      select: { profession: true },
     });
 
     // Determine target profession for tools check
-    const targetProfession = professionFilter || preferences?.profession || undefined;
+    const targetProfession = professionFilter || userPreference?.profession || undefined;
 
     // Check if user has tools (optionally per profession)
     const tools = await prisma.userTool.findMany({
@@ -2823,9 +2939,9 @@ app.get('/api/user-data-check/:userId', async (req, res) => {
     });
 
     res.json({
-      hasProfession: !!preferences?.profession,
+      hasProfession: !!userPreference?.profession,
       hasTools: tools.length > 0,
-      profession: preferences?.profession || null,
+      profession: userPreference?.profession || null,
       tools: tools.map((t) => t.toolName) || [],
     });
   } catch (error) {
@@ -3164,8 +3280,12 @@ io.on('connection', (socket) => {
     console.log('[socket] connected', {
       id: socket.id,
       query: socket.handshake?.query || {},
+      origin: socket.handshake?.headers?.origin,
+      userAgent: socket.handshake?.headers?.['user-agent'],
     });
-  } catch {}
+  } catch (error) {
+    console.error('[socket] connection error:', error);
+  }
   // Optional: authenticate userId via query param (for notifications)
   const { userId } = socket.handshake.query || {};
   if (userId) {

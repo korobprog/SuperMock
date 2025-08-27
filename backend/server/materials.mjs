@@ -119,48 +119,114 @@ router.get('/materials', async (req, res) => {
   }
 });
 
-// Получить конкретный материал по ID
-router.get('/materials/:id', async (req, res) => {
+// Получить популярные материалы
+router.get('/materials/popular', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { language = 'ru' } = req.query;
+    const { profession, language = 'ru', limit = 10 } = req.query;
 
-    const material = await prisma.material.findUnique({
-      where: { id: parseInt(id) },
+    const where = {
+      isPopular: true
+    };
+    
+    if (profession) {
+      where.profession = profession;
+    }
+
+    const materials = await prisma.material.findMany({
+      where,
       include: {
         translations: {
           where: {
             language: language
           }
         }
-      }
+      },
+      orderBy: {
+        reads: 'desc'
+      },
+      take: parseInt(limit)
     });
 
-    if (!material) {
-      return res.status(404).json({ error: 'Material not found' });
-    }
-
-    const translation = material.translations[0];
-    
-    res.json({
-      id: material.id,
-      profession: material.profession,
-      category: material.category,
-      difficulty: material.difficulty,
-      readTime: material.readTime,
-      rating: material.rating,
-      reads: material.reads,
-      tags: material.tags,
-      isNew: material.isNew,
-      isPopular: material.isPopular,
-      createdAt: material.createdAt,
-      title: translation?.title || '',
-      description: translation?.description || '',
-      content: translation?.content || ''
+    const formattedMaterials = materials.map(material => {
+      const translation = material.translations[0];
+      return {
+        id: material.id,
+        profession: material.profession,
+        category: material.category,
+        difficulty: material.difficulty,
+        readTime: material.readTime,
+        rating: material.rating,
+        reads: material.reads,
+        tags: material.tags,
+        isNew: material.isNew,
+        isPopular: material.isPopular,
+        createdAt: material.createdAt,
+        title: translation?.title || '',
+        description: translation?.description || '',
+        content: translation?.content || ''
+      };
     });
+
+    res.json(formattedMaterials);
 
   } catch (error) {
-    console.error('Error fetching material:', error);
+    console.error('Error fetching popular materials:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Получить новые материалы
+router.get('/materials/new', async (req, res) => {
+  try {
+    const { profession, language = 'ru', limit = 10 } = req.query;
+
+    const where = {
+      isNew: true
+    };
+    
+    if (profession) {
+      where.profession = profession;
+    }
+
+    const materials = await prisma.material.findMany({
+      where,
+      include: {
+        translations: {
+          where: {
+            language: language
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: parseInt(limit)
+    });
+
+    const formattedMaterials = materials.map(material => {
+      const translation = material.translations[0];
+      return {
+        id: material.id,
+        profession: material.profession,
+        category: material.category,
+        difficulty: material.difficulty,
+        readTime: material.readTime,
+        rating: material.rating,
+        reads: material.reads,
+        tags: material.tags,
+        isNew: material.isNew,
+        isPopular: material.isPopular,
+        createdAt: material.createdAt,
+        title: translation?.title || '',
+        description: translation?.description || '',
+        content: translation?.content || ''
+      };
+    });
+
+    res.json(formattedMaterials);
+
+  } catch (error) {
+    console.error('Error fetching new materials:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -270,112 +336,48 @@ router.get('/materials/categories', async (req, res) => {
   }
 });
 
-// Получить популярные материалы
-router.get('/materials/popular', async (req, res) => {
+// Получить конкретный материал по ID
+router.get('/materials/:id', async (req, res) => {
   try {
-    const { profession, language = 'ru', limit = 10 } = req.query;
+    const { id } = req.params;
+    const { language = 'ru' } = req.query;
 
-    const where = {
-      isPopular: true
-    };
-    
-    if (profession) {
-      where.profession = profession;
-    }
-
-    const materials = await prisma.material.findMany({
-      where,
+    const material = await prisma.material.findUnique({
+      where: { id: parseInt(id) },
       include: {
         translations: {
           where: {
             language: language
           }
         }
-      },
-      orderBy: {
-        reads: 'desc'
-      },
-      take: parseInt(limit)
+      }
     });
 
-    const formattedMaterials = materials.map(material => {
-      const translation = material.translations[0];
-      return {
-        id: material.id,
-        profession: material.profession,
-        category: material.category,
-        difficulty: material.difficulty,
-        readTime: material.readTime,
-        rating: material.rating,
-        reads: material.reads,
-        tags: material.tags,
-        isNew: material.isNew,
-        isPopular: material.isPopular,
-        createdAt: material.createdAt,
-        title: translation?.title || '',
-        description: translation?.description || ''
-      };
-    });
-
-    res.json(formattedMaterials);
-
-  } catch (error) {
-    console.error('Error fetching popular materials:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Получить новые материалы
-router.get('/materials/new', async (req, res) => {
-  try {
-    const { profession, language = 'ru', limit = 10 } = req.query;
-
-    const where = {
-      isNew: true
-    };
-    
-    if (profession) {
-      where.profession = profession;
+    if (!material) {
+      return res.status(404).json({ error: 'Material not found' });
     }
 
-    const materials = await prisma.material.findMany({
-      where,
-      include: {
-        translations: {
-          where: {
-            language: language
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: parseInt(limit)
+    const translation = material.translations[0];
+    
+    res.json({
+      id: material.id,
+      profession: material.profession,
+      category: material.category,
+      difficulty: material.difficulty,
+      readTime: material.readTime,
+      rating: material.rating,
+      reads: material.reads,
+      tags: material.tags,
+      isNew: material.isNew,
+      isPopular: material.isPopular,
+      createdAt: material.createdAt,
+      title: translation?.title || '',
+      description: translation?.description || '',
+      content: translation?.content || ''
     });
-
-    const formattedMaterials = materials.map(material => {
-      const translation = material.translations[0];
-      return {
-        id: material.id,
-        profession: material.profession,
-        category: material.category,
-        difficulty: material.difficulty,
-        readTime: material.readTime,
-        rating: material.rating,
-        reads: material.reads,
-        tags: material.tags,
-        isNew: material.isNew,
-        isPopular: material.isPopular,
-        createdAt: material.createdAt,
-        title: translation?.title || '',
-        description: translation?.description || ''
-      };
-    });
-
-    res.json(formattedMaterials);
 
   } catch (error) {
-    console.error('Error fetching new materials:', error);
+    console.error('Error fetching material:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
