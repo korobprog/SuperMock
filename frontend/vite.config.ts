@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     root: __dirname,
+    publicDir: path.resolve(__dirname, '../public'), // Указываем путь к папке public
     server: {
       host: useLocalhost ? '127.0.0.1' : '0.0.0.0', // Принудительно используем 127.0.0.1 для production
       port: 5173,

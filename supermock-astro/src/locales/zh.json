@@ -1,0 +1,124 @@
+{
+  "nav": {
+    "home": "首页",
+    "features": "功能",
+    "about": "关于",
+    "contact": "联系",
+    "login": "登录"
+  },
+  "hero": {
+    "title": {
+      "line1": "为面试",
+      "line2": "做准备",
+      "line3": "使用",
+      "languages": "6种语言"
+    },
+    "description": "Super Mock - 使用6种语言进行面试的AI平台，具有独特的候选人和面试官匹配功能。10+职业，分步学习材料和创新培训师。",
+    "buttons": {
+      "telegram": "🚀 开始学习",
+      "app": "💻 打开应用"
+    }
+  },
+  "features": {
+    "title": "平台功能",
+    "subtitle": "10+职业，6种语言，AI分析和创新培训师",
+    "cards": {
+      "professions": {
+        "title": "10+职业",
+        "description": "前端，后端，全栈，移动端，DevOps，QA，UX/UI设计师，数据分析师，数据科学家，产品经理"
+      },
+      "languages": {
+        "title": "6种面试语言",
+        "description": "使用英语，俄语，西班牙语，法语，德语和中文进行面试"
+      },
+      "materials": {
+        "title": "分步材料",
+        "description": "完整的学习材料库：基础知识，高级主题，实践任务"
+      },
+      "trainers": {
+        "title": "创新培训师",
+        "description": "实践作业：编程，理论，算法，带AI提示和进度跟踪"
+      },
+      "ai": {
+        "title": "AI匹配",
+        "description": "根据语言，技术，职业和工具智能匹配候选人和面试官"
+      },
+      "projects": {
+        "title": "与同事的模拟项目",
+        "description": "在真实项目中学习团队合作。协作开发，代码审查和敏捷方法"
+      }
+    }
+  },
+  "professions": {
+    "title": "10+面试职业",
+    "subtitle": "每个职业都在自己的技术栈中进行面试",
+    "flow": {
+      "professions": "职业",
+      "languages": "面试语言",
+      "interviews": "模拟面试",
+      "ai": "AI分析和处理",
+      "learning": "学习和强化",
+      "return": "新面试"
+    },
+    "interviewTypes": {
+      "webrtc": "WebRTC视频通话",
+      "coding": "实时编程",
+      "communication": "面试官-候选人沟通"
+    },
+    "aiAnalysis": {
+      "performance": "表现分析",
+      "skills": "技能评估",
+      "feedback": "详细反馈"
+    },
+    "learning": {
+      "materials": "个人材料",
+      "trainers": "互动培训师",
+      "progress": "进度跟踪"
+    },
+    "return": {
+      "skills": "改进的技能",
+      "confidence": "增强的信心",
+      "targeting": "针对性准备"
+    }
+  },
+  "about": {
+    "title": "关于Super Mock项目",
+    "description1": "Super Mock是一个创新的平台，使用6种语言进行面试，具有独特的候选人和面试官AI匹配功能。我们结合了多语言，人工智能和现代通信技术，创建了一个适应每个参与者语言，技术，职业和工具的工具。",
+    "description2": "我们的平台支持10+职业，具有完整的准备周期：从分步学习材料到创新培训师，具有个性化AI分析和技能发展建议。",
+    "stats": {
+      "professions": "职业",
+      "languages": "面试语言",
+      "interviews": "已进行面试",
+      "success": "候选人成功率"
+    }
+  },
+  "contact": {
+    "title": "开始在10+职业中学习",
+    "subtitle": "加入具有AI匹配和培训师的多语言社区",
+    "email": "电子邮件",
+    "website": "网站",
+    "telegram": "Telegram机器人"
+  },
+  "footer": {
+    "description": "用于面试准备的AI助手，具有Telegram集成和视频通话",
+    "product": "产品",
+    "support": "支持",
+    "social": "社交网络",
+    "links": {
+      "tech": "技术",
+      "about": "关于我们",
+      "contacts": "联系",
+      "docs": "文档",
+      "faq": "常见问题"
+    },
+    "copyright": "版权所有。"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "zh": "中文"
+  }
+}

@@ -4,6 +4,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+Lading/supermock-ai-interview/node_modules/
+data/
 
 # Environment files
 .env
@@ -144,3 +146,7 @@ __tests__/
 
 # Vite
 vite.config.ts.timestamp-*
+
+# Gemini CLI configuration
+.gemini-config.json
+gemini.sh

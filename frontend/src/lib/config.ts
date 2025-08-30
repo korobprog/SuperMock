@@ -3,14 +3,14 @@ export const API_CONFIG = {
   // В production используем полный URL к API серверу
   // В development используем относительные пути (через Vite proxy)
   baseURL:
-    import.meta.env.PROD && !import.meta.env.VITE_API_URL?.includes('127.0.0.1')
-      ? import.meta.env.VITE_API_URL || 'https://api.supermock.ru'
+    import.meta.env.PROD 
+      ? (import.meta.env.VITE_API_URL || 'https://api.supermock.ru')
       : '', // В dev режиме используем относительные пути для proxy
 
   // WebSocket URL для dev режима
   wsURL: import.meta.env.DEV 
     ? 'ws://localhost:3000' // В dev режиме подключаемся к локальному серверу
-    : (import.meta.env.VITE_API_URL || 'https://api.supermock.ru').replace('https://', 'wss://').replace('http://', 'ws://'),
+    : 'wss://supermock.ru', // В production подключаемся к API серверу
 
   // Полные пути к API endpoints
   endpoints: {
@@ -126,6 +126,32 @@ export const ICE_CONFIG: RTCConfiguration = {
 
 // Хелпер для создания полного URL к API
 export function createApiUrl(endpoint: string): string {
+  // Проверяем, находимся ли мы на продакшн домене
+  const isProductionDomain = window.location.hostname === 'supermock.ru' || 
+                            window.location.hostname === 'www.supermock.ru' ||
+                            window.location.hostname === 'api.supermock.ru';
+  
+  // Добавляем отладочную информацию
+  console.log('🔧 createApiUrl debug:', {
+    isDev: import.meta.env.DEV,
+    isProd: import.meta.env.PROD,
+    isProductionDomain,
+    hostname: window.location.hostname,
+    viteApiUrl: import.meta.env.VITE_API_URL,
+    apiConfigBaseUrl: API_CONFIG.baseURL,
+    endpoint
+  });
+
+  // Если мы на продакшн домене, всегда используем продакшн API
+  if (isProductionDomain) {
+    const base = 'https://supermock.ru';
+    const path = endpoint.trim().startsWith('/') ? endpoint.trim() : `/${endpoint.trim()}`;
+    const result = `${base}${path}`;
+    
+    console.log('🔧 createApiUrl (PROD DOMAIN):', { endpoint, base, path, result });
+    return result;
+  }
+
   // В development режиме всегда используем относительные пути для proxy
   if (import.meta.env.DEV) {
     const path = endpoint.trim().startsWith('/') ? endpoint.trim() : `/${endpoint.trim()}`;
@@ -133,18 +159,15 @@ export function createApiUrl(endpoint: string): string {
     return path;
   }
 
-  const rawBase = API_CONFIG.baseURL || '';
-  const rawEndpoint = endpoint || '';
-
-  // Normalize and trim to avoid malformed URLs like "http://host /api/..."
-  const base = rawBase.trim().replace(/\/$/, '');
-  const path = rawEndpoint.trim().startsWith('/')
-    ? rawEndpoint.trim()
-    : `/${rawEndpoint.trim()}`;
-
-  const result = base && !path.startsWith('http') ? `${base}${path}` : path;
+  // В production всегда используем полный HTTPS URL
+  const base = API_CONFIG.baseURL || 'https://supermock.ru';
+  const path = endpoint.trim().startsWith('/') ? endpoint.trim() : `/${endpoint.trim()}`;
   
-  console.log('🔧 createApiUrl (PROD):', { endpoint, base, path, result });
+  // Убеждаемся, что используем HTTPS
+  const secureBase = base.replace('http://', 'https://');
+  const result = `${secureBase}${path}`;
+  
+  console.log('🔧 createApiUrl (PROD):', { endpoint, base: secureBase, path, result });
   
   return result;
 }

@@ -7,7 +7,7 @@ import { Logo } from '@/components/ui/logo';
 import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
 import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
 import { useAppTranslation } from '@/lib/i18n';
-import { apiSaveUserTools } from '@/lib/api';
+import { apiSaveUserTools, apiGetUserTools } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
 import {
   getProfessionTools,
@@ -18,11 +18,13 @@ import {
   detectUserLanguage,
   saveAndApplyLanguage,
 } from '@/lib/language-detection';
+import { getActiveDevTestAccount } from '@/lib/dev-test-account';
 
 export function ToolSelection() {
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
   const [isLanguageDetected, setIsLanguageDetected] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingTools, setIsLoadingTools] = useState(true);
   const [searchParams] = useSearchParams();
 
   const setSelectedToolsStore = useAppStore((s) => s.setSelectedTools);
@@ -35,6 +37,25 @@ export function ToolSelection() {
 
   const navigate = useNavigate();
   const { t } = useAppTranslation();
+
+  // Проверяем наличие параметра profession в URL или профессии в store
+  useEffect(() => {
+    const professionFromUrl = searchParams.get('profession');
+    const professionFromStore = profession;
+    
+    // Если нет профессии ни в URL, ни в store, перенаправляем на выбор профессии
+    if (!professionFromUrl && !professionFromStore) {
+      console.log('❌ No profession parameter in URL or store, redirecting to /profession');
+      navigate('/profession');
+      return;
+    }
+    
+    // Если есть профессия в URL, но нет в store, устанавливаем её
+    if (professionFromUrl && !professionFromStore) {
+      console.log('💾 Setting profession from URL:', professionFromUrl);
+      setProfession(professionFromUrl);
+    }
+  }, [searchParams, navigate, profession, setProfession]);
 
   // Определяем, откуда пришёл пользователь
   const isFromProfile = searchParams.get('from') === 'profile';
@@ -76,6 +97,36 @@ export function ToolSelection() {
     }
   }, [profession, isLanguageDetected, navigate]);
 
+  // Загружаем сохраненные инструменты при наличии userId и profession
+  useEffect(() => {
+    async function loadSavedTools() {
+      if (!userId || !profession) {
+        setIsLoadingTools(false);
+        return;
+      }
+
+      try {
+        console.log('🔍 Loading saved tools for:', { userId, profession });
+        const response = await apiGetUserTools(userId, profession);
+        console.log('✅ Loaded saved tools response:', response);
+        
+        if (response && response.tools && response.tools.length > 0) {
+          const toolNames = response.tools.map(tool => tool.toolName);
+          console.log('✅ Extracted tool names:', toolNames);
+          setSelectedTools(toolNames);
+          setSelectedToolsStore(toolNames);
+        }
+      } catch (error) {
+        console.warn('Failed to load saved tools:', error);
+        // Если не удалось загрузить, используем пустой массив
+      } finally {
+        setIsLoadingTools(false);
+      }
+    }
+
+    loadSavedTools();
+  }, [userId, profession, setSelectedToolsStore]);
+
   const professionData = profession ? PROFESSIONS_DATA[profession] : null;
   const availableTools = professionData?.tools || [];
   const popularCombinations = professionData
@@ -88,38 +139,52 @@ export function ToolSelection() {
     setIsSaving(true);
 
     try {
-      // Сохраняем в store
+      // Сразу сохраняем в store
       setSelectedToolsStore(selectedTools);
 
-      // В dev режиме создаем локальный userId если его нет
+      // Проверяем демо аккаунт
+      const demoAccount = getActiveDevTestAccount();
+      
+      // В dev режиме или с демо аккаунтом создаем локальный userId если его нет
       let currentUserId = userId;
-      if (!currentUserId && import.meta.env.DEV) {
-        const localId = Math.floor(Math.random() * 1000000) + 1000000;
+      if ((!currentUserId || currentUserId === 0) && (import.meta.env.DEV || demoAccount)) {
+        const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
         setUserId(localId);
         currentUserId = localId;
-        console.log('🎭 Generated local userId for dev mode:', localId);
+        console.log('🎭 Generated local userId for dev/demo mode:', localId);
       }
 
-      // Сохраняем в базу данных
+      // Пытаемся сохранить в базу данных, но не блокируем навигацию
       if (currentUserId && profession) {
         try {
           console.log('💾 Saving tools to database:', selectedTools);
-          await apiSaveUserTools({
+          
+          // Добавляем таймаут для API вызова
+          const savePromise = apiSaveUserTools({
             userId: currentUserId,
             profession,
             tools: selectedTools,
           });
-          console.log('✅ Tools saved successfully');
-          setSelectedToolsStore(selectedTools);
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Save tools timeout')), 3000)
+          );
+          
+          await Promise.race([savePromise, timeoutPromise]);
+          console.log('✅ Tools saved successfully to database');
         } catch (e) {
-          console.warn('Failed to save tools to database:', e);
-          // В случае ошибки все равно сохраняем локально
-          setSelectedToolsStore(selectedTools);
+          console.warn('⚠️ Failed to save tools to database:', e);
+          console.log('💾 Continuing with local save only');
         }
+      } else {
+        console.log('💾 No userId or profession available, continuing with local save only');
       }
 
-      // Возвращаемся в профиль
-      navigate('/profile');
+      // Перенаправляем на настройку API ключа
+      console.log('🚀 Navigating to /api-key-setup');
+      setTimeout(() => {
+        navigate('/api-key-setup');
+      }, 100);
     } catch (error) {
       console.error('Failed to save tools:', error);
     } finally {
@@ -133,38 +198,52 @@ export function ToolSelection() {
     setIsSaving(true);
 
     try {
-      // Сохраняем в store
+      // Сразу сохраняем в store
       setSelectedToolsStore(selectedTools);
 
-      // В dev режиме создаем локальный userId если его нет
+      // Проверяем демо аккаунт
+      const demoAccount = getActiveDevTestAccount();
+      
+      // В dev режиме или с демо аккаунтом создаем локальный userId если его нет
       let currentUserId = userId;
-      if (!currentUserId && import.meta.env.DEV) {
-        const localId = Math.floor(Math.random() * 1000000) + 1000000;
+      if ((!currentUserId || currentUserId === 0) && (import.meta.env.DEV || demoAccount)) {
+        const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
         setUserId(localId);
         currentUserId = localId;
-        console.log('🎭 Generated local userId for dev mode:', localId);
+        console.log('🎭 Generated local userId for dev/demo mode:', localId);
       }
 
-      // Сохраняем в базу данных
+      // Пытаемся сохранить в базу данных, но не блокируем навигацию
       if (currentUserId && profession) {
         try {
           console.log('💾 Saving tools to database:', selectedTools);
-          await apiSaveUserTools({
+          
+          // Добавляем таймаут для API вызова
+          const savePromise = apiSaveUserTools({
             userId: currentUserId,
             profession,
             tools: selectedTools,
           });
-          console.log('✅ Tools saved successfully');
-          setSelectedToolsStore(selectedTools);
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Save tools timeout')), 3000)
+          );
+          
+          await Promise.race([savePromise, timeoutPromise]);
+          console.log('✅ Tools saved successfully to database');
         } catch (e) {
-          console.warn('Failed to save tools to database:', e);
-          // В случае ошибки все равно сохраняем локально
-          setSelectedToolsStore(selectedTools);
+          console.warn('⚠️ Failed to save tools to database:', e);
+          console.log('💾 Continuing with local save only');
         }
+      } else {
+        console.log('💾 No userId or profession available, continuing with local save only');
       }
 
-      // Перенаправляем на страницу времени
-      navigate('/time');
+      // Всегда перенаправляем на страницу времени
+      console.log('🚀 Navigating to /time');
+      setTimeout(() => {
+        navigate('/time');
+      }, 100);
     } catch (error) {
       console.error('Failed to save tools:', error);
     } finally {
@@ -192,8 +271,8 @@ export function ToolSelection() {
     );
   }
 
-  // Если профессия не выбрана, показываем загрузку
-  if (!profession || !professionData) {
+  // Если профессия не выбрана или загружаются инструменты, показываем загрузку
+  if (!profession || !professionData || isLoadingTools) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-4 flex items-center justify-center">
         <div className="text-center">

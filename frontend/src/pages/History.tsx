@@ -67,9 +67,18 @@ export function History() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (!userId || userId === 0) {
+      // Проверяем, есть ли telegramUser в store, даже если userId еще не установлен
+      const telegramUser = useAppStore.getState().telegramUser;
+      
+      if ((!userId || userId === 0) && !telegramUser) {
         console.log('Пользователь не авторизован, перенаправляем на главную');
         navigate('/');
+        return;
+      }
+      
+      // Если есть telegramUser, но нет userId, ждем немного
+      if (telegramUser && (!userId || userId === 0)) {
+        console.log('Telegram user есть, но userId еще не установлен, ждем...');
         return;
       }
 
@@ -85,7 +94,7 @@ export function History() {
     };
 
     fetchHistory();
-  }, [userId]);
+  }, [userId, navigate, t]);
 
   const formatDate = (dateStr: string) => {
     try {

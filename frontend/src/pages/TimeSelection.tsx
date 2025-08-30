@@ -94,6 +94,29 @@ export function TimeSelection() {
   const role = useAppStore((s) => s.role);
   const lastRole = useAppStore((s) => s.lastRole);
   const telegramUser = useAppStore((s) => s.telegramUser);
+  const navigate = useNavigate();
+
+  // Проверяем авторизацию пользователя
+  useEffect(() => {
+    if (!userId || userId === 0) {
+      console.log('❌ User not authenticated, redirecting to /');
+      navigate('/');
+      return;
+    }
+  }, [userId, navigate]);
+
+  // Проверяем наличие необходимых данных для перехода на time
+  useEffect(() => {
+    const profession = useAppStore.getState().profession;
+    const language = useAppStore.getState().language;
+    const selectedTools = useAppStore.getState().selectedTools;
+    
+    if (!profession || !language || selectedTools.length === 0) {
+      console.log('❌ Missing required data for time selection, redirecting to /');
+      navigate('/');
+      return;
+    }
+  }, [navigate]);
   
   // Отладочная информация для lastRole
   useEffect(() => {
@@ -106,7 +129,6 @@ export function TimeSelection() {
   const language = useAppStore((s) => s.language);
   const selectedTools = useAppStore((s) => s.selectedTools);
   const setSession = useAppStore((s) => s.setSession);
-  const navigate = useNavigate();
   const { t } = useAppTranslation();
   const { light, success, warning, error } = useHapticFeedback();
   const [slotCounts, setSlotCounts] = useState<Record<string, number>>({});
@@ -564,16 +586,35 @@ export function TimeSelection() {
   }, [mode, profession, language, timezone]);
 
   const handleSlotToggle = (slotId: string) => {
+    console.log('🎯 handleSlotToggle called:', {
+      slotId,
+      currentSelectedSlots: selectedSlots,
+      newSelectedSlots: [slotId]
+    });
     light(); // Легкая вибрация при выборе слота
     setSelectedSlots([slotId]); // Выбираем только один слот
   };
 
   const handleNext = async () => {
-    if (!userId) {
+    console.log('🎯 handleNext called:', {
+      userId,
+      selectedSlots,
+      selectedSlotsLength: selectedSlots.length,
+      mode,
+      profession,
+      language,
+      selectedTools
+    });
+    
+    if (!userId || userId === 0) {
+      console.error('❌ No userId - user not authenticated');
       error(); // Вибрация ошибки
+      // Перенаправляем на главную страницу для авторизации
+      navigate('/');
       return;
     }
     if (selectedSlots.length === 0) {
+      console.error('❌ No selected slots');
       warning(); // Вибрация предупреждения
       return;
     }

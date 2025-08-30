@@ -95,17 +95,25 @@ const Index = () => {
             // Сохраняем и устанавливаем пользователя
             saveTelegramUser(telegramUser);
             setTelegramUser(telegramUser);
+            // Явно устанавливаем userId для немедленного использования
+            // Используем setTimeout для избежания race condition
+            setTimeout(() => {
+              setUserId(telegramUser.id);
+            }, 0);
           } else {
             // Проверяем тестовый аккаунт в development режиме
             if (isDevTestAccountsEnabled()) {
               const testAccount = getActiveDevTestAccount();
               if (testAccount) {
-                console.log('Dev test account detected:', testAccount);
-                setTelegramUser(testAccount.telegramUser);
+                              console.log('Dev test account detected:', testAccount);
+              setTelegramUser(testAccount.telegramUser);
+              // Используем setTimeout для избежания race condition
+              setTimeout(() => {
                 setUserId(testAccount.userId);
                 setRole(testAccount.role);
                 setProfession(testAccount.profession);
                 setLanguage(testAccount.language);
+              }, 0);
                 return; // Не загружаем сохраненного пользователя если есть тестовый аккаунт
               }
             }
@@ -115,6 +123,11 @@ const Index = () => {
             if (savedTelegramUser) {
               console.log('Загружен сохраненный пользователь Telegram:', savedTelegramUser);
               setTelegramUser(savedTelegramUser);
+              // Явно устанавливаем userId для немедленного использования
+              // Используем setTimeout для избежания race condition
+              setTimeout(() => {
+                setUserId(savedTelegramUser.id);
+              }, 0);
             } else {
               console.log('Нет сохраненного пользователя Telegram');
               // Очищаем userId если нет авторизации
@@ -144,7 +157,7 @@ const Index = () => {
     }
 
     initializeApp();
-  }, [i18n, setLanguage, setTelegramUser, setUserId]);
+  }, [i18n, setLanguage]);
 
   const handleLogout = () => {
     // Очищаем данные Telegram при выходе

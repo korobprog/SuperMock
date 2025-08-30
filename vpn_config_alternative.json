@@ -1,0 +1,40 @@
+{
+  "servers": [
+    {
+      "name": "VPN Server - AES-128-GCM",
+      "type": "shadowsocks",
+      "address": "45.147.183.137",
+      "port": 8000,
+      "password": "hzL6pN",
+      "method": "aes-128-gcm",
+      "plugin": "",
+      "pluginOpts": "",
+      "udp": true,
+      "tcp": true
+    },
+    {
+      "name": "VPN Server - ChaCha20",
+      "type": "shadowsocks",
+      "address": "45.147.183.137",
+      "port": 8000,
+      "password": "hzL6pN",
+      "method": "chacha20-poly1305",
+      "plugin": "",
+      "pluginOpts": "",
+      "udp": true,
+      "tcp": true
+    },
+    {
+      "name": "VPN Server - AES-256-CFB",
+      "type": "shadowsocks",
+      "address": "45.147.183.137",
+      "port": 8000,
+      "password": "hzL6pN",
+      "method": "aes-256-cfb",
+      "plugin": "",
+      "pluginOpts": "",
+      "udp": true,
+      "tcp": true
+    }
+  ]
+}

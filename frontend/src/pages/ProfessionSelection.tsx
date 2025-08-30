@@ -26,6 +26,7 @@ export function ProfessionSelection() {
   const userId = useAppStore((s) => s.userId);
   const setLanguage = useAppStore((s) => s.setLanguage);
   const currentLanguage = useAppStore((s) => s.language);
+  const currentProfession = useAppStore((s) => s.profession);
   const navigate = useNavigate();
   const { t } = useAppTranslation();
   const { i18n } = useTranslation();
@@ -62,6 +63,15 @@ export function ProfessionSelection() {
 
     ensureLanguageIsSet();
   }, [i18n, setLanguage, currentLanguage]);
+
+  // Проверяем, есть ли уже профессия у пользователя
+  useEffect(() => {
+    if (isLanguageDetected && currentProfession) {
+      console.log('🎯 User already has profession:', currentProfession);
+      // Если есть профессия, но нет инструментов, идем на выбор инструментов
+      navigate(`/tools?profession=${encodeURIComponent(currentProfession)}`);
+    }
+  }, [isLanguageDetected, currentProfession, navigate]);
 
   const professions = [
     {
@@ -164,6 +174,8 @@ export function ProfessionSelection() {
   const handleNext = async () => {
     if (selectedProfession) {
       console.log('🎯 Starting profession selection process...');
+      
+      // Сразу сохраняем профессию в store
       setProfession(selectedProfession);
 
       // Проверяем демо аккаунт
@@ -171,7 +183,7 @@ export function ProfessionSelection() {
       
       // В dev режиме или с демо аккаунтом создаем локальный userId если его нет
       let currentUserId = userId;
-      if (!currentUserId && (import.meta.env.DEV || demoAccount)) {
+      if ((!currentUserId || currentUserId === 0) && (import.meta.env.DEV || demoAccount)) {
         const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
         setUserId(localId);
         currentUserId = localId;
@@ -180,7 +192,7 @@ export function ProfessionSelection() {
 
       console.log('🔍 Current userId:', currentUserId);
 
-      // Всегда пытаемся сохранить в базу данных, но не блокируем навигацию
+      // Пытаемся сохранить в базу данных, но не блокируем навигацию при ошибке
       if (currentUserId) {
         try {
           console.log('💾 Saving profession to database:', selectedProfession);
@@ -192,26 +204,28 @@ export function ProfessionSelection() {
           });
           
           const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Save profile timeout')), 5000)
+            setTimeout(() => reject(new Error('Save profile timeout')), 3000) // Уменьшаем таймаут до 3 секунд
           );
           
           await Promise.race([savePromise, timeoutPromise]);
           console.log('✅ Profession saved successfully to database');
         } catch (e) {
           console.warn('⚠️ Failed to save profession to database:', e);
-          console.log('💾 Saving profession locally as fallback');
-          // В случае ошибки сохраняем локально
-          setProfession(selectedProfession);
+          console.log('💾 Continuing with local save only');
+          // В случае ошибки продолжаем с локальным сохранением
         }
       } else {
-        console.log('💾 No userId available, saving profession locally only');
-        setProfession(selectedProfession);
+        console.log('💾 No userId available, continuing with local save only');
       }
 
       // Всегда перенаправляем на выбор языка, независимо от результата сохранения
       console.log('🚀 Navigating to /language');
       console.log('📊 Final state - userId:', currentUserId, 'profession:', selectedProfession);
-      navigate('/language');
+      
+      // Добавляем небольшую задержку для стабильности
+      setTimeout(() => {
+        navigate('/language');
+      }, 100);
     } else {
       console.warn('❌ No profession selected');
     }

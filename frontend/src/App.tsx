@@ -23,6 +23,8 @@ import { Calendar } from './pages/Calendar';
 import { Roadmap } from './pages/Roadmap';
 
 import { LanguageSelection } from './pages/LanguageSelection';
+import { ToolSelection } from './pages/ToolSelection';
+import { ApiKeySetup } from './pages/ApiKeySetup';
 import { TimeSelection } from './pages/TimeSelection';
 import { Interview } from './pages/Interview';
 import { InterviewFeedback } from './pages/InterviewFeedback';
@@ -86,6 +88,8 @@ function AppContent() {
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/roadmap" element={<Roadmap />} />
         <Route path="/language" element={<LanguageSelection />} />
+        <Route path="/tools" element={<ToolSelection />} />
+        <Route path="/api-key-setup" element={<ApiKeySetup />} />
         <Route path="/time" element={<TimeSelection />} />
         <Route path="/interview" element={<Interview />} />
         <Route path="/feedback" element={<InterviewFeedback />} />

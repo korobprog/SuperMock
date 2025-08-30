@@ -93,10 +93,11 @@ services:
       start_period: 40s
     labels:
       - traefik.enable=true
-      - traefik.http.routers.supermock-backend.rule=Host(`api.supermock.ru`) || Host(`217.198.6.238`) && PathPrefix(`/api`)
-      - traefik.http.routers.supermock-backend.entrypoints=web,websecure
+      - traefik.http.routers.supermock-backend.rule=Host(`supermock.ru`) && PathPrefix(`/api`)
+      - traefik.http.routers.supermock-backend.entrypoints=websecure
       - traefik.http.routers.supermock-backend.tls=true
       - traefik.http.routers.supermock-backend.tls.certresolver=letsencrypt
+      - traefik.http.routers.supermock-backend.priority=100
       - traefik.http.services.supermock-backend.loadbalancer.server.port=3000
       - traefik.docker.network=traefik-network
 
@@ -105,31 +106,10 @@ services:
     image: coturn/coturn:latest
     container_name: supermock-turn
     restart: unless-stopped
-    env_file:
-      - .env
     ports:
       - '3478:3478/udp'
       - '3478:3478/tcp'
-      - '5349:5349/tcp'
-    command:
-      - -n
-      - --log-file=stdout
-      - --fingerprint
-      - --use-auth-secret
-      - --realm=${TURN_REALM:-supermock.ru}
-      - --static-auth-secret=${TURN_AUTH_SECRET:-supermock_turn_secret_2024_very_long_and_secure_key_for_webrtc}
-      - --no-multicast-peers
-      - --no-cli
-      - --min-port=49160
-      - --max-port=49200
-      - --listening-ip=0.0.0.0
-      - --external-ip=217.198.6.238
-      - --cert=/etc/ssl/certs/turn.crt
-      - --pkey=/etc/ssl/private/turn.key
-      - --tls-listening-port=5349
-      - --dtls-listening-port=5349
-    volumes:
-      - ./certs:/etc/ssl
+    command: ["-n", "--realm=supermock.ru", "--static-auth-secret=supermock_turn_secret_2024_very_long_and_secure_key_for_webrtc", "--listening-ip=0.0.0.0", "--external-ip=217.198.6.238", "--min-port=49160", "--max-port=49200"]
     networks:
       - supermock-network
 
@@ -151,6 +131,8 @@ services:
         VITE_ENABLE_DEMO_MODE: ${VITE_ENABLE_DEMO_MODE:-1}
     container_name: supermock-frontend
     restart: unless-stopped
+    ports:
+      - "8081:8080"
     networks:
       - supermock-network
       - traefik-network
@@ -159,8 +141,8 @@ services:
         condition: service_healthy
     labels:
       - traefik.enable=true
-      - traefik.http.routers.supermock-frontend.rule=Host(`supermock.ru`) || Host(`217.198.6.238`)
-      - traefik.http.routers.supermock-frontend.entrypoints=web,websecure
+      - traefik.http.routers.supermock-frontend.rule=Host(`supermock.ru`)
+      - traefik.http.routers.supermock-frontend.entrypoints=websecure
       - traefik.http.routers.supermock-frontend.tls=true
       - traefik.http.routers.supermock-frontend.tls.certresolver=letsencrypt
       - traefik.http.services.supermock-frontend.loadbalancer.server.port=8080

@@ -12,9 +12,14 @@ router.get(
       const userId = String(req.query.userId || '');
       const profession = String(req.query.profession || '');
 
+      console.log('🔍 GET /api/user-tools called with:', { userId, profession });
+
       if (!userId) {
+        console.log('❌ Missing userId');
         return res.status(400).json({ error: 'Missing userId' });
       }
+
+      console.log('🔍 Searching for tools with query:', { userId, profession });
 
       const items = await prisma.userTool.findMany({
         where: {
@@ -25,9 +30,11 @@ router.get(
         select: { id: true, toolName: true, category: true },
       });
 
+      console.log('✅ Found tools:', items);
+
       res.json({ tools: items });
     } catch (err) {
-      console.error('Error in GET /api/user-tools:', err);
+      console.error('❌ Error in GET /api/user-tools:', err);
       res.status(500).json({ error: 'Failed to load user tools' });
     }
   }) as RequestHandler

@@ -40,6 +40,7 @@ import notificationRoutes from './routes/notifications';
 import initRoutes from './routes/init';
 import slotsRoutes from './routes/slots';
 import preferencesRoutes from './routes/preferences';
+import userSettingsRoutes from './routes/userSettings';
 
 // Инициализация приложения Express
 const app = express();
@@ -129,6 +130,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/init', initRoutes);
 app.use('/api/slots', slotsRoutes);
 app.use('/api/preferences', preferencesRoutes);
+app.use('/api/user-settings', userSettingsRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/user-tools', userToolsRoutes);
 app.use('/api/materials', materialsRoutes);

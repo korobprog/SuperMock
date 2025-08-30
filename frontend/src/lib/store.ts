@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { apiGetUserSettings, apiSaveUserSettings } from './api';
+import { apiGetUserSettings, apiSaveUserSettings, apiCheckUserData } from './api';
 import { TelegramUser } from './telegram-auth';
 
 type Role = 'interviewer' | 'candidate' | null;
@@ -40,6 +40,7 @@ export type AppState = {
   setUserId: (id: number) => void;
   setTelegramUser: (user: TelegramUser | null) => void;
   loadUserSettings: (userId: number) => Promise<void>;
+  loadUserData: (userId: number) => Promise<void>;
   setRole: (role: Role) => void;
   setProfession: (p: string) => void;
   setLanguage: (lng: string) => void;
@@ -97,21 +98,30 @@ export const useAppStore = create<AppState>()(
         questionsCount: 10,
       },
       setUserId: (id) => {
+        console.log('🔧 setUserId called with:', id, 'Type:', typeof id);
         set({ userId: id });
-        // Автоматически загружаем настройки пользователя при установке userId
+        console.log('🔧 userId set in store to:', id);
+        // Автоматически загружаем данные пользователя при установке userId
         if (id > 0) {
           const store = useAppStore.getState();
-          store.loadUserSettings(id).catch(() => {
+          store.loadUserData(id).catch(() => {
             // Silent error handling
           });
         }
       },
       setTelegramUser: (user) => {
+        console.log('🔧 setTelegramUser called with:', user);
         set({ telegramUser: user });
         // Если пользователь Telegram установлен, используем его ID как userId
         if (user) {
-          const store = useAppStore.getState();
-          store.setUserId(user.id);
+          console.log('🔧 Setting userId from telegramUser:', user.id);
+          // Используем setTimeout для избежания race condition
+          setTimeout(() => {
+            const store = useAppStore.getState();
+            console.log('🔧 About to set userId:', user.id, 'Current state:', store.userId);
+            store.setUserId(user.id);
+            console.log('🔧 userId set to:', user.id, 'New state:', useAppStore.getState().userId);
+          }, 0);
         }
       },
       loadUserSettings: async (userId) => {
@@ -121,6 +131,34 @@ export const useAppStore = create<AppState>()(
             userSettings: { ...state.userSettings, ...settings },
           }));
         } catch (error) {
+          // Не показываем ошибку пользователю, просто используем дефолтные настройки
+        }
+      },
+      loadUserData: async (userId) => {
+        try {
+          console.log('🔍 Loading user data for userId:', userId);
+          
+          // Загружаем настройки пользователя
+          const settings = await apiGetUserSettings(userId);
+          set((state) => ({
+            userSettings: { ...state.userSettings, ...settings },
+          }));
+          
+          // Загружаем данные пользователя (профессия, язык, инструменты)
+          const userData = await apiCheckUserData(userId);
+          console.log('📊 Loaded user data:', userData);
+          
+          if (userData.hasProfession && userData.profession) {
+            set({ profession: userData.profession });
+          }
+          
+          if (userData.tools && userData.tools.length > 0) {
+            set({ selectedTools: userData.tools });
+          }
+          
+          console.log('✅ User data loaded successfully');
+        } catch (error) {
+          console.warn('⚠️ Failed to load user data:', error);
           // Не показываем ошибку пользователю, просто используем дефолтные настройки
         }
       },

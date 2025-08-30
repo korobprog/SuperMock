@@ -5,7 +5,7 @@ import { io, Socket } from 'socket.io-client';
 
 // Используем переменную окружения для URL бэкенда
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+  import.meta.env.VITE_API_URL || 'http://localhost:8081';
 
 // Определяем тип для контекста
 interface SocketContextType {

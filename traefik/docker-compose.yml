@@ -14,11 +14,7 @@ services:
       - ./acme:/etc/traefik/acme
     networks:
       - traefik-network
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.traefik.entrypoints=websecure'
-      - 'traefik.http.routers.traefik.tls.certresolver=letsencrypt'
-      - 'traefik.http.services.traefik.loadbalancer.server.port=8080'
+    # No labels needed for Traefik itself
 
 networks:
   traefik-network:

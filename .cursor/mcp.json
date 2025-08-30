@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "gemini": {
+      "command": "npx",
+      "args": ["-y", "@google/gemini-cli"],
+      "env": {
+        "GEMINI_API_KEY": "AIzaSyCl_HsmvqXNd7J-PT-mgVwQfx_Agh9kCuo",
+        "GEMINI_MODEL": "gemini-1.5-flash"
+      }
+    }
+  }
+}

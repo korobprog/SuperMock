@@ -1,0 +1,124 @@
+{
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login"
+  },
+  "hero": {
+    "title": {
+      "line1": "Prepare for",
+      "line2": "interview",
+      "line3": "in",
+      "languages": "6 languages"
+    },
+    "description": "Super Mock - AI platform for conducting interviews in 6 languages with unique candidate and interviewer matching. 10+ professions, step-by-step learning materials and innovative trainers.",
+    "buttons": {
+      "telegram": "🚀 Start Learning",
+      "app": "💻 Open App"
+    }
+  },
+  "features": {
+    "title": "Platform Features",
+    "subtitle": "10+ professions, 6 languages, AI analysis and innovative trainers",
+    "cards": {
+      "professions": {
+        "title": "10+ Professions",
+        "description": "Frontend, Backend, Fullstack, Mobile, DevOps, QA, UX/UI Designer, Data Analyst, Data Scientist, Product Manager"
+      },
+      "languages": {
+        "title": "6 Interview Languages",
+        "description": "Conduct interviews in English, Russian, Spanish, French, German and Chinese"
+      },
+      "materials": {
+        "title": "Step-by-step Materials",
+        "description": "Complete library of learning materials: basics, advanced topics, practical tasks"
+      },
+      "trainers": {
+        "title": "Innovative Trainers",
+        "description": "Practical assignments: coding, theory, algorithms with AI hints and progress tracking"
+      },
+      "ai": {
+        "title": "AI Matching",
+        "description": "Smart matching of candidates and interviewers by language, technologies, profession and tools"
+      },
+      "projects": {
+        "title": "Mock Projects with Colleagues",
+        "description": "Learn teamwork in real projects. Collaborative development, code review and agile methodologies"
+      }
+    }
+  },
+  "professions": {
+    "title": "10+ Professions for Interviews",
+    "subtitle": "Each profession goes through interviews in its own technology stack",
+    "flow": {
+      "professions": "Professions",
+      "languages": "Interview Languages",
+      "interviews": "Mock Interviews",
+      "ai": "AI Analysis and Processing",
+      "learning": "Learning and Reinforcement",
+      "return": "New Interviews"
+    },
+    "interviewTypes": {
+      "webrtc": "WebRTC Video Calls",
+      "coding": "Real-time Coding",
+      "communication": "Interviewer-Candidate Communication"
+    },
+    "aiAnalysis": {
+      "performance": "Performance Analysis",
+      "skills": "Skills Assessment",
+      "feedback": "Detailed Feedback"
+    },
+    "learning": {
+      "materials": "Personal Materials",
+      "trainers": "Interactive Trainers",
+      "progress": "Progress Tracking"
+    },
+    "return": {
+      "skills": "Improved Skills",
+      "confidence": "Increased Confidence",
+      "targeting": "Targeted Preparation"
+    }
+  },
+  "about": {
+    "title": "About Super Mock Project",
+    "description1": "Super Mock is an innovative platform for conducting interviews in 6 languages with unique AI matching of candidates and interviewers. We have combined multilingualism, artificial intelligence and modern communication technologies to create a tool that adapts to the language, technologies, profession and tools of each participant.",
+    "description2": "Our platform supports 10+ professions with a complete preparation cycle: from step-by-step learning materials to innovative trainers, with personalized AI analysis and skill development recommendations.",
+    "stats": {
+      "professions": "Professions",
+      "languages": "Interview Languages",
+      "interviews": "Interviews Conducted",
+      "success": "Candidate Success Rate"
+    }
+  },
+  "contact": {
+    "title": "Start Learning on 10+ Professions",
+    "subtitle": "Join the multilingual community with AI matching and trainers",
+    "email": "Email",
+    "website": "Website",
+    "telegram": "Telegram Bot"
+  },
+  "footer": {
+    "description": "AI assistant for interview preparation with Telegram integration and video calls",
+    "product": "Product",
+    "support": "Support",
+    "social": "Social Networks",
+    "links": {
+      "tech": "Technologies",
+      "about": "About Us",
+      "contacts": "Contacts",
+      "docs": "Documentation",
+      "faq": "FAQ"
+    },
+    "copyright": "All rights reserved."
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "zh": "中文"
+  }
+}

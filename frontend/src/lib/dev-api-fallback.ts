@@ -74,7 +74,55 @@ export const DEMO_DATA = {
         read: false,
       }
     ]
-  }
+  },
+  
+  materials: {
+    materials: [
+      {
+        id: 1,
+        title: 'Основы React Hooks',
+        description: 'Изучите useState, useEffect и другие хуки',
+        category: 'frontend',
+        difficulty: 'beginner',
+        readTime: 15,
+        rating: 4.5,
+        tags: ['react', 'hooks', 'javascript'],
+        url: 'https://react.dev/learn/hooks',
+        language: 'ru'
+      },
+      {
+        id: 2,
+        title: 'TypeScript для начинающих',
+        description: 'Основы типизации в TypeScript',
+        category: 'frontend',
+        difficulty: 'beginner',
+        readTime: 20,
+        rating: 4.8,
+        tags: ['typescript', 'javascript', 'typing'],
+        url: 'https://www.typescriptlang.org/docs/',
+        language: 'ru'
+      },
+      {
+        id: 3,
+        title: 'Алгоритмы и структуры данных',
+        description: 'Базовые алгоритмы для собеседований',
+        category: 'algorithms',
+        difficulty: 'intermediate',
+        readTime: 30,
+        rating: 4.2,
+        tags: ['algorithms', 'data-structures', 'interview'],
+        url: 'https://leetcode.com/',
+        language: 'ru'
+      }
+    ]
+  },
+  
+  categories: [
+    { id: 1, name: 'frontend', displayName: 'Frontend' },
+    { id: 2, name: 'backend', displayName: 'Backend' },
+    { id: 3, name: 'algorithms', displayName: 'Алгоритмы' },
+    { id: 4, name: 'system-design', displayName: 'Системный дизайн' }
+  ]
 };
 
 /**

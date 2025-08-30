@@ -1,0 +1,124 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "features": "Funktionen",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "login": "Anmelden"
+  },
+  "hero": {
+    "title": {
+      "line1": "Bereiten Sie sich auf das",
+      "line2": "Vorstellungsgespräch",
+      "line3": "in",
+      "languages": "6 Sprachen"
+    },
+    "description": "Super Mock - KI-Plattform für die Durchführung von Interviews in 6 Sprachen mit einzigartiger Zuordnung von Kandidaten und Interviewern. 10+ Berufe, schrittweise Lernmaterialien und innovative Trainer.",
+    "buttons": {
+      "telegram": "🚀 Mit dem Lernen beginnen",
+      "app": "💻 App öffnen"
+    }
+  },
+  "features": {
+    "title": "Plattform-Funktionen",
+    "subtitle": "10+ Berufe, 6 Sprachen, KI-Analyse und innovative Trainer",
+    "cards": {
+      "professions": {
+        "title": "10+ Berufe",
+        "description": "Frontend, Backend, Fullstack, Mobile, DevOps, QA, UX/UI Designer, Data Analyst, Data Scientist, Product Manager"
+      },
+      "languages": {
+        "title": "6 Interview-Sprachen",
+        "description": "Führen Sie Interviews auf Englisch, Russisch, Spanisch, Französisch, Deutsch und Chinesisch durch"
+      },
+      "materials": {
+        "title": "Schrittweise Materialien",
+        "description": "Vollständige Bibliothek von Lernmaterialien: Grundlagen, fortgeschrittene Themen, praktische Aufgaben"
+      },
+      "trainers": {
+        "title": "Innovative Trainer",
+        "description": "Praktische Aufgaben: Programmierung, Theorie, Algorithmen mit KI-Hinweisen und Fortschrittsverfolgung"
+      },
+      "ai": {
+        "title": "KI-Zuordnung",
+        "description": "Intelligente Zuordnung von Kandidaten und Interviewern nach Sprache, Technologien, Beruf und Werkzeugen"
+      },
+      "projects": {
+        "title": "Mock-Projekte mit Kollegen",
+        "description": "Lernen Sie Teamarbeit in echten Projekten. Kollaborative Entwicklung, Code-Review und agile Methoden"
+      }
+    }
+  },
+  "professions": {
+    "title": "10+ Berufe für Interviews",
+    "subtitle": "Jeder Beruf durchläuft Interviews in seinem eigenen Technologie-Stack",
+    "flow": {
+      "professions": "Berufe",
+      "languages": "Interview-Sprachen",
+      "interviews": "Mock-Interviews",
+      "ai": "KI-Analyse und -Verarbeitung",
+      "learning": "Lernen und Verstärkung",
+      "return": "Neue Interviews"
+    },
+    "interviewTypes": {
+      "webrtc": "WebRTC-Videoanrufe",
+      "coding": "Echtzeit-Programmierung",
+      "communication": "Interviewer-Kandidat-Kommunikation"
+    },
+    "aiAnalysis": {
+      "performance": "Leistungsanalyse",
+      "skills": "Fähigkeitsbewertung",
+      "feedback": "Detailliertes Feedback"
+    },
+    "learning": {
+      "materials": "Persönliche Materialien",
+      "trainers": "Interaktive Trainer",
+      "progress": "Fortschrittsverfolgung"
+    },
+    "return": {
+      "skills": "Verbesserte Fähigkeiten",
+      "confidence": "Erhöhtes Selbstvertrauen",
+      "targeting": "Zielgerichtete Vorbereitung"
+    }
+  },
+  "about": {
+    "title": "Über das Super Mock-Projekt",
+    "description1": "Super Mock ist eine innovative Plattform für die Durchführung von Interviews in 6 Sprachen mit einzigartiger KI-Zuordnung von Kandidaten und Interviewern. Wir haben Mehrsprachigkeit, künstliche Intelligenz und moderne Kommunikationstechnologien kombiniert, um ein Tool zu schaffen, das sich an die Sprache, Technologien, den Beruf und die Werkzeuge jedes Teilnehmers anpasst.",
+    "description2": "Unsere Plattform unterstützt 10+ Berufe mit einem vollständigen Vorbereitungszyklus: von schrittweisen Lernmaterialien bis hin zu innovativen Trainern, mit personalisierter KI-Analyse und Empfehlungen zur Fähigkeitsentwicklung.",
+    "stats": {
+      "professions": "Berufe",
+      "languages": "Interview-Sprachen",
+      "interviews": "Durchgeführte Interviews",
+      "success": "Kandidatenerfolgsrate"
+    }
+  },
+  "contact": {
+    "title": "Beginnen Sie mit dem Lernen in 10+ Berufen",
+    "subtitle": "Treten Sie der mehrsprachigen Community mit KI-Zuordnung und Trainern bei",
+    "email": "E-Mail",
+    "website": "Website",
+    "telegram": "Telegram-Bot"
+  },
+  "footer": {
+    "description": "KI-Assistent für Interviewvorbereitung mit Telegram-Integration und Videoanrufen",
+    "product": "Produkt",
+    "support": "Support",
+    "social": "Soziale Netzwerke",
+    "links": {
+      "tech": "Technologien",
+      "about": "Über uns",
+      "contacts": "Kontakte",
+      "docs": "Dokumentation",
+      "faq": "FAQ"
+    },
+    "copyright": "Alle Rechte vorbehalten."
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "zh": "中文"
+  }
+}

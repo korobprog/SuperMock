@@ -105,6 +105,16 @@ export function Profile() {
     }
   }, [showApiKey, isApiKeyMasked, userSettings.openRouterApiKey]);
 
+  // Обработчик переключения видимости API ключа
+  const handleToggleApiKeyVisibility = () => {
+    if (isApiKeyMasked) {
+      setShowApiKey(!showApiKey);
+    } else {
+      // Если ключ не замаскирован (пользователь вводит новый), просто переключаем тип поля
+      setShowApiKey(!showApiKey);
+    }
+  };
+
   // Профиль: язык и профессия
   const languages = [
     { id: 'ru', name: 'Русский' },
@@ -143,9 +153,11 @@ export function Profile() {
       // Если есть сохраненный ключ, показываем точки
       setApiKey('••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••');
       setIsApiKeyMasked(true);
+      setShowApiKey(false); // Скрываем ключ по умолчанию
     } else {
       setApiKey('');
       setIsApiKeyMasked(false);
+      setShowApiKey(false);
     }
     setStackblitzKey(userSettings.stackblitzApiKey || '');
     setPreferredModel(userSettings.preferredModel);
@@ -720,9 +732,10 @@ export function Profile() {
                       }}
                       onFocus={() => {
                         // При фокусе на замаскированном поле очищаем его для ввода нового ключа
-                        if (isApiKeyMasked) {
+                        if (isApiKeyMasked && !showApiKey) {
                           setApiKey('');
                           setIsApiKeyMasked(false);
+                          setShowApiKey(false);
                         }
                       }}
                       className="pr-10"
@@ -732,7 +745,7 @@ export function Profile() {
                       variant="ghost"
                       size="icon"
                       className="absolute right-0 top-0 h-full px-3"
-                      onClick={() => setShowApiKey((v) => !v)}
+                      onClick={handleToggleApiKeyVisibility}
                     >
                       {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
                     </Button>

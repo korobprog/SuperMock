@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .log {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .connect { background: #4CAF50; color: white; }
+        .disconnect { background: #f44336; color: white; }
+        .test { background: #2196F3; color: white; }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    
+    <div>
+        <button class="connect" onclick="connect()">Connect</button>
+        <button class="disconnect" onclick="disconnect()">Disconnect</button>
+        <button class="test" onclick="testJoinRoom()">Test Join Room</button>
+        <button class="test" onclick="testChatMessage()">Test Chat Message</button>
+    </div>
+    
+    <div class="log" id="log"></div>
+
+    <script>
+        let socket = null;
+        const log = document.getElementById('log');
+        
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function connect() {
+            addLog('Attempting to connect to WebSocket...', 'info');
+            
+            const socketUrl = 'wss://api.supermock.ru';
+            addLog(`Connecting to: ${socketUrl}`, 'info');
+            
+            socket = io(socketUrl, {
+                transports: ['websocket', 'polling'],
+                withCredentials: true,
+                query: { userId: 'test-user-123' }
+            });
+            
+            socket.on('connect', () => {
+                addLog('✅ Connected to WebSocket!', 'success');
+                addLog(`Socket ID: ${socket.id}`, 'info');
+            });
+            
+            socket.on('disconnect', (reason) => {
+                addLog(`❌ Disconnected: ${reason}`, 'error');
+            });
+            
+            socket.on('connect_error', (error) => {
+                addLog(`❌ Connection error: ${error.message}`, 'error');
+            });
+            
+            socket.on('error', (error) => {
+                addLog(`❌ Socket error: ${error}`, 'error');
+            });
+            
+            socket.on('joined', (data) => {
+                addLog(`✅ Joined room: ${JSON.stringify(data)}`, 'success');
+            });
+            
+            socket.on('join_denied', (data) => {
+                addLog(`❌ Join denied: ${JSON.stringify(data)}`, 'error');
+            });
+            
+            socket.on('chat_message', (data) => {
+                addLog(`📨 Chat message: ${JSON.stringify(data)}`, 'info');
+            });
+            
+            socket.on('presence_update', (data) => {
+                addLog(`👥 Presence update: ${JSON.stringify(data)}`, 'info');
+            });
+        }
+        
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                addLog('Disconnected from WebSocket', 'info');
+            }
+        }
+        
+        function testJoinRoom() {
+            if (!socket || !socket.connected) {
+                addLog('❌ Not connected to WebSocket', 'error');
+                return;
+            }
+            
+            const sessionId = 'session_z8kr1jps_metsrov3';
+            const userId = 'test-user-1';
+            
+            addLog(`Testing join_room: sessionId=${sessionId}, userId=${userId}`, 'info');
+            socket.emit('join_room', { sessionId, userId });
+        }
+        
+        function testChatMessage() {
+            if (!socket || !socket.connected) {
+                addLog('❌ Not connected to WebSocket', 'error');
+                return;
+            }
+            
+            const sessionId = 'session_z8kr1jps_metsrov3';
+            const message = 'Test message from WebSocket test page';
+            const user = 'Test User';
+            
+            addLog(`Testing chat_message: ${message}`, 'info');
+            socket.emit('chat_message', { sessionId, user, message });
+        }
+        
+        // Auto-connect on page load
+        window.addEventListener('load', () => {
+            addLog('Page loaded, ready to test WebSocket', 'info');
+        });
+    </script>
+</body>
+</html>

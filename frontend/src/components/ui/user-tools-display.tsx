@@ -52,6 +52,9 @@ export function UserToolsDisplay({
   useEffect(() => {
     if (userId) {
       loadUserTools();
+    } else {
+      // Если нет userId, не показываем loading
+      setLoading(false);
     }
   }, [userId, profession]);
 
@@ -71,7 +74,13 @@ export function UserToolsDisplay({
     }
 
     try {
-      const response = await apiGetUserTools(userId, profession);
+      // Добавляем таймаут для API вызова
+      const apiPromise = apiGetUserTools(userId, profession);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('API timeout')), 5000)
+      );
+      
+      const response = await Promise.race([apiPromise, timeoutPromise]);
       const tools = response.tools.map((t) => t.toolName);
       setUserTools(tools);
       setSelectedTools(tools);
@@ -127,11 +136,17 @@ export function UserToolsDisplay({
     }
 
     try {
-      await apiSaveUserTools({
+      // Добавляем таймаут для API вызова
+      const apiPromise = apiSaveUserTools({
         userId,
         profession,
         tools: selectedTools,
       });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Save timeout')), 5000)
+      );
+      
+      await Promise.race([apiPromise, timeoutPromise]);
 
       setUserTools(selectedTools);
       setIsEditing(false);
@@ -159,12 +174,23 @@ export function UserToolsDisplay({
     setError(null);
   };
 
-  if (loading) {
+  if (loading && userId) {
     return (
       <div className={className}>
         <div className="flex items-center justify-center py-4">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
           <span className="ml-2 text-muted-foreground">{t('tools.loading')}</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Если нет userId, показываем сообщение о необходимости авторизации
+  if (!userId) {
+    return (
+      <div className={className}>
+        <div className="text-center py-4 text-muted-foreground">
+          <p className="text-sm">{t('tools.loginRequired')}</p>
         </div>
       </div>
     );

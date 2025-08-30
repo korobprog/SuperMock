@@ -1,0 +1,239 @@
+# Docker Compose для тестового окружения test.supermock.ru
+# Использует тестовый бот SuperMockTest_bot
+
+services:
+  # База данных PostgreSQL для тестов
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: supermock-test-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: supermock_test
+      POSTGRES_USER: supermock_test
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_TEST}
+    volumes:
+      - ./data/test/postgres:/var/lib/postgresql/data
+      - ./backend/prisma/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - supermock-test-network
+    ports:
+      - "5433:5432"  # Внешний порт 5433 чтобы не конфликтовать с основной БД
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U supermock_test']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis для кэширования и сессий (тест)
+  redis-test:
+    image: redis:7-alpine
+    container_name: supermock-test-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - ./data/test/redis:/data
+    networks:
+      - supermock-test-network
+    ports:
+      - "6380:6379"  # Внешний порт 6380 чтобы не конфликтовать
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli ping || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API (тестовая версия)
+  backend-test:
+    image: supermock-test-backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: supermock-test-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # 🗄️ База данных
+      DATABASE_URL: postgresql://supermock_test:${POSTGRES_PASSWORD_TEST}@postgres-test:5432/supermock_test?schema=public
+      
+      # 🤖 ТЕСТОВЫЙ ТЕЛЕГРАМ БОТ SuperMockTest_bot
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN_TEST}
+      TELEGRAM_BOT_ID: ${TELEGRAM_BOT_ID_TEST}
+      TELEGRAM_BOT_NAME: ${TELEGRAM_BOT_NAME_TEST}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME_TEST}
+      
+      # 🌐 Тестовые URL
+      FRONTEND_URL: "https://test.supermock.ru"
+      BACKEND_URL: "https://test.supermock.ru"
+      CORS_ORIGIN: "https://test.supermock.ru"
+      
+      # 🔄 Redis
+      REDIS_URL: redis://redis-test:6379
+      
+      # 🔐 Секреты (используем тестовые)
+      SESSION_SECRET: ${SESSION_SECRET_TEST}
+      JWT_SECRET: ${JWT_SECRET_TEST}
+      
+      # 📝 Логирование
+      LOG_LEVEL: debug
+      
+      # ⚙️ Настройки сервера
+      WORKERS: 1  # Для тестов достаточно 1 воркера
+      REQUEST_TIMEOUT: 30000
+      SOCKET_TIMEOUT: 60000
+      ENABLE_DEMO_MODE: 1
+      
+      # 🎥 WebRTC (тестовые настройки)
+      TURN_REALM: test.supermock.ru
+      TURN_AUTH_SECRET: ${TURN_AUTH_SECRET_TEST}
+      TURN_SERVER_HOST: test.supermock.ru
+      
+      # 🔗 Webhook URL для тестового бота
+      TELEGRAM_WEBHOOK_URL: "https://test.supermock.ru/webhook/telegram"
+    volumes:
+      - ./backend/prisma:/app/prisma
+      - ./logs/test/backend:/app/logs
+    networks:
+      - supermock-test-network
+    ports:
+      - "3001:3000"  # Внешний порт 3001 для тестов
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://localhost:3000/api/health',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-test-api.rule=Host(`api.test.supermock.ru`)"
+      - "traefik.http.routers.backend-test-api.entrypoints=web,websecure"
+      - "traefik.http.routers.backend-test-api.tls=true"
+      - "traefik.http.routers.backend-test-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.backend-test-api.priority=100"
+      - "traefik.http.services.backend-test-api.loadbalancer.server.port=3000"
+
+  # Frontend (тестовая версия)
+  frontend-test:
+    image: supermock-test-frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        # 🌐 Тестовые переменные окружения
+        VITE_API_URL: "https://api.test.supermock.ru"
+        VITE_JITSI_URL: "https://jitsi.supermock.ru"
+        
+        # 🤖 Тестовый бот
+        VITE_TELEGRAM_BOT_NAME: ${TELEGRAM_BOT_NAME_TEST}
+        VITE_TELEGRAM_BOT_ID: ${TELEGRAM_BOT_ID_TEST}
+        
+        # 🎥 WebRTC настройки для тестов
+        VITE_STUN_URLS: "stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302"
+        VITE_TURN_URL: "turn:test.supermock.ru:3478"
+        VITE_TURN_USERNAME: "supermock_test"
+        VITE_TURN_PASSWORD: ${TURN_PASSWORD_TEST}
+        
+        VITE_ENABLE_DEMO_MODE: "1"
+    container_name: supermock-test-frontend
+    restart: unless-stopped
+    networks:
+      - supermock-test-network
+    depends_on:
+      backend-test:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:8080/']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-test-main.rule=Host(`test.supermock.ru`)"
+      - "traefik.http.routers.frontend-test-main.entrypoints=web,websecure"
+      - "traefik.http.routers.frontend-test-main.tls=true"
+      - "traefik.http.routers.frontend-test-main.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.frontend-test-main.priority=50"
+      - "traefik.http.services.frontend-test-main.loadbalancer.server.port=8080"
+
+  # TURN Server для WebRTC (тестовая версия)
+  turn-test:
+    image: coturn/coturn:latest
+    container_name: supermock-test-turn
+    restart: unless-stopped
+    ports:
+      - "3479:3478/udp"  # Другой порт для тестов
+      - "3479:3478/tcp"
+      - "5350:5349/tcp"
+    command:
+      - -n
+      - --log-file=stdout
+      - --fingerprint
+      - --use-auth-secret
+      - --realm=test.supermock.ru
+      - --static-auth-secret=${TURN_AUTH_SECRET_TEST}
+      - --no-multicast-peers
+      - --no-cli
+      - --min-port=49300  # Другой диапазон портов
+      - --max-port=49350
+      - --listening-ip=0.0.0.0
+      - --external-ip=${EXTERNAL_IP}  # IP сервера
+      - --no-tls
+      - --no-dtls
+    networks:
+      - supermock-test-network
+
+  # Traefik для проксирования и SSL (тестовая версия)
+  traefik-test:
+    image: traefik:v3.0
+    container_name: supermock-test-traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@supermock.ru"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--log.level=DEBUG"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--accesslog.format=json"
+    ports:
+      - "80:80"    # HTTP
+      - "443:443"  # HTTPS
+      - "8080:8080" # Traefik Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/test/traefik:/letsencrypt
+      - ./logs/test/traefik:/var/log/traefik
+    networks:
+      - supermock-test-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.test.supermock.ru`)"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.service=api@internal"
+
+# Сеть для тестового окружения
+networks:
+  supermock-test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.23.0.0/16

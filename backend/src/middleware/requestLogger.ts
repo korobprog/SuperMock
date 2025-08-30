@@ -14,7 +14,15 @@ export function requestLogger(
   next: NextFunction
 ): void {
   // Логируем базовую информацию о запросе
-  logger.info(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log(`🌐 Request: ${req.method} ${req.url}`);
+  console.log('🌐 Request details:', {
+    method: req.method,
+    url: req.url,
+    origin: req.get('Origin'),
+    host: req.get('Host'),
+    query: req.query,
+    body: req.body,
+  });
 
   // В режиме отладки логируем дополнительную информацию
   logger.debug('Детали запроса', {

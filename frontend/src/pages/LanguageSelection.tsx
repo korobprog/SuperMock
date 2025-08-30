@@ -31,9 +31,20 @@ export function LanguageSelection() {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
   const { i18n } = useTranslation();
+  const userId = useAppStore.getState().userId;
 
   // Настройка полноэкранного режима в Telegram Mini Apps
   useTelegramFullscreen();
+
+  // Проверяем наличие параметра profession в URL
+  useEffect(() => {
+    const professionFromUrl = new URLSearchParams(window.location.search).get('profession');
+    if (!professionFromUrl) {
+      console.log('❌ No profession parameter in URL, redirecting to /profession');
+      navigate('/profession');
+      return;
+    }
+  }, [navigate]);
 
   useEffect(() => {
     // В dev режиме пропускаем автоопределение языка
@@ -67,140 +78,87 @@ export function LanguageSelection() {
 
   const handleNext = async () => {
     if (selectedLanguage) {
+      console.log('🌍 Language selected:', selectedLanguage);
+      
+      // Сразу сохраняем язык в store
       setLanguage(selectedLanguage);
-      // Изменяем язык интерфейса
       i18n.changeLanguage(selectedLanguage);
 
-      const tg = getTelegramWebApp();
-      let user = tg?.initDataUnsafe?.user || null;
-      let initData = tg?.initData || null;
-
-      // Check if user is authenticated via Telegram Login Widget
-      const telegramUser = useAppStore.getState().telegramUser;
-
-      // Debug information
-      console.log('🔍 Debug info:', {
-        isDev: import.meta.env.DEV,
-        hasTg: !!tg,
-        hasUser: !!user,
-        hasInitData: !!initData,
-        hasTelegramUser: !!telegramUser,
-        tg: tg,
-        user: user,
-        telegramUser: telegramUser,
-      });
-
-      // Handle different scenarios - prioritize test accounts in dev mode
-      if (isDevTestAccountsEnabled()) {
-        const testAccount = getActiveDevTestAccount();
-        if (testAccount) {
-          console.log('✅ Using dev test account:', testAccount);
-          user = {
-            id: testAccount.userId,
-            first_name: testAccount.telegramUser.first_name,
-            username: testAccount.telegramUser.username,
-            language_code: selectedLanguage,
-          };
-          initData = 'demo_hash_12345'; // Используем специальный хеш для демо режима
-        }
-      } else if (telegramUser) {
-        // Use Telegram Login Widget user if available (highest priority)
-        console.log(
-          '✅ Using authenticated Telegram user from store:',
-          telegramUser
-        );
-        user = {
-          id: telegramUser.id,
-          first_name: telegramUser.first_name,
-          username: telegramUser.username,
-          language_code: selectedLanguage,
-        };
-        initData = 'present';
-      } else if (tg && user) {
-        // Use Telegram WebApp user if available
-        console.log('✅ Using Telegram WebApp user:', user);
-        // Keep existing user and initData
-      } else {
-        // Если нет авторизации, перенаправляем на главную страницу
-        console.warn('Нет авторизации, требуется вход через Telegram');
-        navigate('/');
-        return;
+      // Проверяем демо аккаунт
+      const demoAccount = getActiveDevTestAccount();
+      
+      // В dev режиме или с демо аккаунтом создаем локальный userId если его нет
+      let currentUserId = userId;
+      if ((!currentUserId || currentUserId === 0) && (import.meta.env.DEV || demoAccount)) {
+        const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
+        setUserId(localId);
+        currentUserId = localId;
+        console.log('🎭 Generated local userId for dev/demo mode:', localId);
       }
 
-      // Если все еще нет пользователя, показываем сообщение об ошибке
-      if (!user) {
-        console.error('❌ No user data available for initialization');
-        
-        // В dev режиме или с демо аккаунтом создаем демо пользователя
-        if (import.meta.env.DEV || isDevTestAccountsEnabled()) {
-          console.log('🔧 Dev/demo mode: creating demo user for initialization');
-          const demoUserId = Math.floor(Math.random() * 1000000) + 1000000;
-          setUserId(demoUserId);
-          // Перенаправляем на выбор времени
-          navigate('/time');
-          return;
-        }
-        
-        // Можно показать toast или alert пользователю
-        alert('Пожалуйста, войдите через Telegram для продолжения');
-        navigate('/profile');
-        return;
-      }
-
-      // В dev режиме или с демо аккаунтом пропускаем API вызов
-      if ((import.meta.env.DEV || isDevTestAccountsEnabled()) && isDevTestAccountsEnabled()) {
-        const testAccount = getActiveDevTestAccount();
-        if (testAccount) {
-          console.log('🔧 Dev/demo mode: skipping API call, using test account');
-          setUserId(testAccount.userId);
-          // Перенаправляем на выбор времени
-          navigate('/time');
-          return;
-        }
-      }
-
-      console.log('📡 Calling apiInit with:', {
-        tg: user,
-        language: selectedLanguage,
-        initData,
-      });
-
-      try {
-        const data = await apiInit({
-          tg: user,
-          language: selectedLanguage,
-          initData: initData,
-        });
-        setUserId(data.user.id);
+      // Пытаемся инициализировать пользователя через API, но не блокируем навигацию
+      if (currentUserId) {
         try {
-          await apiSaveProfile({
-            userId: data.user.id,
-            language: selectedLanguage,
-          });
-        } catch (e) {
-          console.warn('Failed to save language in profile:', e);
-        }
-        // Перенаправляем на выбор времени
-        navigate('/time');
-      } catch (error) {
-        console.error('❌ Failed to initialize user:', error);
-        
-        // В dev режиме или с демо аккаунтом продолжаем без backend
-        if ((import.meta.env.DEV || isDevTestAccountsEnabled()) && isDevTestAccountsEnabled()) {
-          const testAccount = getActiveDevTestAccount();
-          if (testAccount) {
-            console.log('🔧 Dev/demo mode: continuing without backend initialization');
-            setUserId(testAccount.userId);
-            // Перенаправляем на выбор времени
-            navigate('/time');
-            return;
+          console.log('📡 Attempting to initialize user via API...');
+          
+          const tg = getTelegramWebApp();
+          let user = tg?.initDataUnsafe?.user || null;
+          let initData = tg?.initData || null;
+
+          // Handle different scenarios
+          if (demoAccount) {
+            user = {
+              id: demoAccount.userId,
+              first_name: demoAccount.telegramUser.first_name,
+              username: demoAccount.telegramUser.username,
+              language_code: selectedLanguage,
+            };
+            initData = 'demo_hash_12345';
+          } else if (useAppStore.getState().telegramUser) {
+            const telegramUser = useAppStore.getState().telegramUser;
+            user = {
+              id: telegramUser.id,
+              first_name: telegramUser.first_name,
+              username: telegramUser.username,
+              language_code: selectedLanguage,
+            };
+            initData = 'present';
           }
+
+          if (user) {
+            const data = await apiInit({
+              tg: user,
+              language: selectedLanguage,
+              initData: initData || '',
+            });
+            setUserId(data.user.id);
+            
+            // Пытаемся сохранить профиль, но не блокируем при ошибке
+            try {
+              await apiSaveProfile({
+                userId: data.user.id,
+                language: selectedLanguage,
+              });
+            } catch (e) {
+              console.warn('Failed to save language in profile:', e);
+            }
+          }
+        } catch (error) {
+          console.warn('⚠️ Failed to initialize user via API:', error);
+          console.log('💾 Continuing with local initialization');
         }
-        
-        alert(`Ошибка инициализации: ${error.message}`);
-        // Перенаправляем на профиль для повторной аутентификации
-        navigate('/profile');
       }
+
+      // Всегда перенаправляем на выбор инструментов
+      console.log('🚀 Navigating to /tools');
+      const currentProfession = useAppStore.getState().profession;
+      if (currentProfession) {
+        navigate(`/tools?profession=${currentProfession}`);
+      } else {
+        navigate('/tools');
+      }
+    } else {
+      console.warn('❌ No language selected');
     }
   };
 

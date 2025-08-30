@@ -110,10 +110,11 @@ router.post(
           // Используем setImmediate чтобы не блокировать ответ пользователю
           setImmediate(async () => {
             try {
-              // Анализируем фидбек
+              // Анализируем фидбек (включая ratings и comments)
               const analysis = await aiService.analyzeFeedback(
                 parseInt(feedback.id) || 0,
                 comments,
+                ratings || {},  // 📊 Теперь передаем рейтинги!
                 profession,
                 userLanguage,
                 targetUserId

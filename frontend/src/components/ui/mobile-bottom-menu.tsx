@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAppTranslation } from '@/lib/i18n';
 import { useHapticFeedback } from '@/lib/haptic-feedback';
 import { useUserDataCheck } from '@/hooks/use-user-data-check';
+import { useOnboardingStatus } from '@/hooks/use-onboarding-status';
 import { useAppStore } from '@/lib/store';
 
 export function MobileBottomMenu() {
@@ -12,12 +13,15 @@ export function MobileBottomMenu() {
   const { t } = useAppTranslation();
   const { light } = useHapticFeedback();
   const { isDataComplete } = useUserDataCheck();
+  const { isComplete: isOnboardingComplete } = useOnboardingStatus();
   
   // Получаем данные из store
   const profession = useAppStore((s) => s.profession);
   const language = useAppStore((s) => s.language);
   const selectedTools = useAppStore((s) => s.selectedTools);
   const userId = useAppStore((s) => s.userId);
+  const userSettings = useAppStore((s) => s.userSettings);
+  const hasApiKey = !!userSettings.openRouterApiKey;
 
   const isHomeActive = location.pathname === '/';
   const isProfileActive = location.pathname === '/profile';
@@ -38,25 +42,39 @@ export function MobileBottomMenu() {
     console.log('  - selectedTools:', selectedTools);
     console.log('  - selectedTools.length:', selectedTools.length);
     console.log('  - userId:', userId);
+    console.log('  - isOnboardingComplete:', isOnboardingComplete);
+    console.log('  - hasApiKey:', hasApiKey);
+    
+    // Если onboarding завершен, идем сразу на время
+    if (isOnboardingComplete) {
+      console.log('🚀 Onboarding завершен, прямой переход на /time');
+      navigate('/time');
+      return;
+    }
     
     // Проверяем, есть ли профессия и язык
-    const hasProfessionAndLanguage = profession && language && language !== 'ru';
+    const hasProfessionAndLanguage = profession && language;
     
     console.log('  - hasProfessionAndLanguage:', hasProfessionAndLanguage);
     console.log('  - hasProfessionAndLanguage && selectedTools.length > 0:', hasProfessionAndLanguage && selectedTools.length > 0);
     
+    // Если есть профессия, язык и инструменты, но нет API ключа, идем на настройку API
+    if (hasProfessionAndLanguage && selectedTools.length > 0 && !hasApiKey) {
+      console.log('🔑 Переход на /api-key-setup: нужен API ключ');
+      navigate('/api-key-setup');
+    }
     // Если есть профессия, язык и инструменты, идем сразу на время
-    if (hasProfessionAndLanguage && selectedTools.length > 0) {
+    else if (hasProfessionAndLanguage && selectedTools.length > 0) {
       console.log('🚀 Прямой переход на /time: профессия и язык настроены');
       navigate('/time');
     }
     // Если есть профессия и язык, но нет инструментов, идем на выбор инструментов
     else if (hasProfessionAndLanguage && selectedTools.length === 0) {
       console.log('🔧 Переход на /tools: профессия и язык есть, нужны инструменты');
-      navigate('/tools');
+      navigate(`/tools?profession=${profession}`);
     }
     // Если есть профессия, но нет языка, идем на выбор языка
-    else if (profession && (!language || language === 'ru')) {
+    else if (profession && !language) {
       console.log('🌍 Переход на /language: профессия есть, нужен язык');
       navigate('/language');
     }

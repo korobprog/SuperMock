@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { aiNotificationService } from './aiNotificationService';
 
 // 🌍 ТИПЫ ДЛЯ AI АНАЛИЗА
 export interface SkillLevel {
@@ -84,7 +85,10 @@ const ANALYSIS_PROMPTS = {
 }`,
     user: `Проанализируй фидбек с технического собеседования для позиции "{profession}":
 
-"{comments}"
+{comments}
+
+УЧТИ ВСЕ ДАННЫЕ: используй и числовые рейтинги, и текстовые комментарии для полного анализа.
+Числовые оценки помогают понять уровень, текст - детали и контекст.
 
 Верни анализ в JSON формате согласно инструкции.`
   },
@@ -118,7 +122,10 @@ Response format:
 }`,
     user: `Analyze feedback from technical interview for "{profession}" position:
 
-"{comments}"
+{comments}
+
+CONSIDER ALL DATA: use both numerical ratings and text comments for complete analysis.
+Numerical scores help understand level, text provides details and context.
 
 Return analysis in JSON format according to instructions.`
   },
@@ -152,7 +159,10 @@ Formato de respuesta:
 }`,
     user: `Analiza comentarios de entrevista técnica para posición "{profession}":
 
-"{comments}"
+{comments}
+
+CONSIDERA TODOS LOS DATOS: usa tanto calificaciones numéricas como comentarios de texto para análisis completo.
+Las puntuaciones numéricas ayudan a entender el nivel, el texto proporciona detalles y contexto.
 
 Devuelve análisis en formato JSON según instrucciones.`
   },
@@ -186,7 +196,10 @@ Antwortformat:
 }`,
     user: `Analysiere Feedback aus technischem Interview für Position "{profession}":
 
-"{comments}"
+{comments}
+
+BERÜCKSICHTIGE ALLE DATEN: verwende sowohl numerische Bewertungen als auch Textkommentare für vollständige Analyse.
+Numerische Bewertungen helfen das Niveau zu verstehen, Text liefert Details und Kontext.
 
 Gib Analyse im JSON-Format zurück gemäß Anweisungen.`
   },
@@ -220,7 +233,10 @@ Format de réponse:
 }`,
     user: `Analyse les commentaires d'entretien technique pour poste "{profession}":
 
-"{comments}"
+{comments}
+
+CONSIDÈRE TOUTES LES DONNÉES: utilise les évaluations numériques et les commentaires texte pour une analyse complète.
+Les scores numériques aident à comprendre le niveau, le texte fournit détails et contexte.
 
 Retourne l'analyse au format JSON selon les instructions.`
   },
@@ -254,7 +270,10 @@ Retourne l'analyse au format JSON selon les instructions.`
 }`,
     user: `分析"{profession}"职位的技术面试反馈：
 
-"{comments}"
+{comments}
+
+考虑所有数据：使用数字评分和文本评论进行完整分析。
+数字分数帮助理解水平，文本提供细节和上下文。
 
 按照指示返回JSON格式的分析。`
   }
@@ -407,6 +426,7 @@ export class AIAnalysisService {
   async analyzeFeedback(
     feedbackId: number,
     comments: string,
+    ratings: Record<string, number> = {},
     profession: string,
     userLanguage: string = 'ru',
     userId: string
@@ -420,13 +440,37 @@ export class AIAnalysisService {
         throw new Error('OpenRouter API ключ не найден в настройках пользователя');
       }
 
+      // 🔔 Получаем дополнительные данные пользователя для уведомлений
+      let userProfile = null;
+      try {
+        userProfile = await this.prisma.user.findUnique({
+          where: { id: userId },
+          select: { language: true, profession: true }
+        });
+      } catch (error) {
+        console.warn('Could not fetch user profile for notifications:', error);
+      }
+
+      // Используем данные из профиля, если они не переданы напрямую
+      const effectiveLanguage = userLanguage || userProfile?.language || 'ru';
+      const effectiveProfession = profession || userProfile?.profession || 'frontend';
+
       // 🌍 Получаем мультиязычные промпты
       const langPrompts = ANALYSIS_PROMPTS[userLanguage as keyof typeof ANALYSIS_PROMPTS] || ANALYSIS_PROMPTS.ru;
       
+      // 📊 Формируем структурированные данные фидбека
+      const ratingsText = Object.keys(ratings).length > 0 
+        ? `Числовые рейтинги (1-10): ${Object.entries(ratings).map(([key, value]) => `${key}: ${value}`).join(', ')}`
+        : 'Числовые рейтинги не предоставлены';
+      
+      const feedbackData = `${ratingsText}
+
+Текстовые комментарии: ${comments || 'Комментарии отсутствуют'}`;
+
       const systemPrompt = langPrompts.system;
       const userPrompt = langPrompts.user
         .replace('{profession}', profession)
-        .replace('{comments}', comments);
+        .replace('{comments}', feedbackData);
 
       const response = await this.makeOpenRouterRequest({
         model: userSettings.preferredModel,
@@ -444,6 +488,24 @@ export class AIAnalysisService {
       try {
         const analysis = JSON.parse(content) as FeedbackAnalysis;
         console.log(`✅ AI analysis completed for feedback ${feedbackId}`);
+        
+        // 🔔 АВТОМАТИЧЕСКИЕ AI-УВЕДОМЛЕНИЯ (асинхронно, не блокируем возврат)
+        setImmediate(async () => {
+          try {
+            console.log(`🔔 Scheduling AI notifications for user ${userId} (lang: ${effectiveLanguage}, profession: ${effectiveProfession})`);
+            await aiNotificationService.processAIAnalysisNotifications(
+              userId, 
+              analysis, 
+              effectiveLanguage, 
+              effectiveProfession
+            );
+            console.log(`✅ AI notifications scheduled successfully for user ${userId}`);
+          } catch (notificationError) {
+            console.error('Error scheduling AI notifications:', notificationError);
+            // Не блокируем основной процесс при ошибке уведомлений
+          }
+        });
+        
         return analysis;
       } catch (parseError) {
         console.error('Failed to parse AI analysis:', parseError, content);

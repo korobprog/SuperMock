@@ -1,0 +1,39 @@
+# Cursor AI Agent Configuration
+
+## Project Context
+This is a full-stack web application built with:
+- Frontend: React/TypeScript with Vite
+- Backend: Node.js/Express with TypeScript
+- Database: PostgreSQL with Prisma ORM
+- Package Manager: pnpm
+- Deployment: Docker with Kubernetes
+
+## Code Style & Standards
+- Use TypeScript for all new code
+- Follow ESLint and Prettier configurations
+- Use functional components with hooks in React
+- Implement proper error handling and logging
+- Write meaningful commit messages
+- Use pnpm for package management
+
+## Architecture Guidelines
+- Keep components small and focused
+- Use proper TypeScript types and interfaces
+- Implement proper API error handling
+- Follow RESTful API design principles
+- Use environment variables for configuration
+- Implement proper security measures
+
+## Development Workflow
+- Test code before committing
+- Update documentation when adding features
+- Use meaningful variable and function names
+- Comment complex logic
+- Follow the existing project structure
+
+## Specific Instructions
+- Always use pnpm instead of npm
+- Check existing code patterns before implementing new features
+- Maintain consistency with existing codebase
+- Consider performance implications
+- Implement proper loading states and error boundaries

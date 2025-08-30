@@ -182,47 +182,26 @@ deploy_full() {
     step "🚀 Full Application Deployment"
     enhanced_sync "Full application sync"
     
-    # Сначала проверяем состояние базы данных
-    info "Checking database health before deployment..."
-    local db_healthy=false
-    if run_remote "cd '${DEST}' && docker compose -f '${COMPOSE_FILE}' exec -T postgres psql -U supermock -d supermock -c 'SELECT 1;' >/dev/null 2>&1" "Database health check" 1; then
-        db_healthy=true
-        success "Database is healthy"
-    else
-        warning "Database is not accessible, will need to recreate"
-    fi
+    # Убеждаемся, что PostgreSQL запущен
+    run_remote "cd '${DEST}' && docker compose -f '${COMPOSE_FILE}' up -d postgres" "Ensuring PostgreSQL is running" 1
+    
+    # Ждем немного для запуска PostgreSQL
+    sleep 5
     
     # Создаем сеть Traefik
     run_remote "cd '${DEST}' && \
         echo '-- Creating traefik network if needed --' && \
         docker network inspect traefik-network >/dev/null 2>&1 || docker network create traefik-network" "Creating Traefik network"
     
-    # Безопасный деплой с проверками
-    if $db_healthy; then
-        # База здорова - обновляем сервисы без пересоздания БД
-        run_remote "cd '${DEST}' && \
-            echo '-- Building services (preserving database) --' && \
-            docker compose -f '${COMPOSE_FILE}' build --pull frontend backend && \
-            echo '-- Restarting services safely --' && \
-            docker compose -f '${COMPOSE_FILE}' up -d --no-recreate postgres redis && \
-            docker compose -f '${COMPOSE_FILE}' up -d backend frontend turn && \
-            echo '-- Waiting for services to be healthy --' && \
-            sleep 15" "Safe deployment (preserving database)"
-    else
-        # База недоступна - полное пересоздание с восстановлением
-        warning "Performing full deployment with database recreation"
-        run_remote "cd '${DEST}' && \
-            echo '-- Building all services --' && \
-            docker compose -f '${COMPOSE_FILE}' build --pull && \
-            echo '-- Starting all services --' && \
-            docker compose -f '${COMPOSE_FILE}' up -d && \
-            echo '-- Waiting for PostgreSQL to be ready --' && \
-            sleep 10 && \
-            echo '-- Setting up database schema --' && \
-            docker compose -f '${COMPOSE_FILE}' exec -T backend pnpm exec prisma db push --accept-data-loss && \
-            echo '-- Waiting for all services to be healthy --' && \
-            sleep 15" "Full deployment with database setup"
-    fi
+    # Простой деплой - всегда пытаемся сохранить базу данных
+    run_remote "cd '${DEST}' && \
+        echo '-- Building services --' && \
+        docker compose -f '${COMPOSE_FILE}' build --pull frontend backend && \
+        echo '-- Restarting services safely --' && \
+        docker compose -f '${COMPOSE_FILE}' up -d --no-recreate postgres redis && \
+        docker compose -f '${COMPOSE_FILE}' up -d backend frontend turn && \
+        echo '-- Waiting for services to be healthy --' && \
+        sleep 15" "Safe deployment (preserving database)"
     
     comprehensive_health_check
 }
@@ -231,30 +210,15 @@ deploy_backend() {
     step "🔧 Backend Deployment"
     enhanced_sync "Backend sync"
     
-    # Проверяем состояние базы данных перед обновлением backend
-    info "Checking database connectivity..."
-    if ! run_remote "cd '${DEST}' && docker compose -f '${COMPOSE_FILE}' exec -T postgres psql -U supermock -d supermock -c 'SELECT 1;' >/dev/null 2>&1" "Database connectivity check" 1; then
-        warning "Database not accessible, ensuring it's running..."
-        run_remote "cd '${DEST}' && docker compose -f '${COMPOSE_FILE}' up -d postgres && sleep 10" "Starting PostgreSQL"
-        
-        # Проверяем нужна ли схема
-        if ! run_remote "cd '${DEST}' && docker compose -f '${COMPOSE_FILE}' exec -T postgres psql -U supermock -d supermock -c '\dt' | grep -q 'User'" "Schema check" 1; then
-            info "Database schema missing, creating..."
-            run_remote "cd '${DEST}' && docker compose -f '${COMPOSE_FILE}' exec -T backend pnpm exec prisma db push --accept-data-loss" "Creating database schema"
-        fi
-    fi
+    # Убеждаемся, что PostgreSQL запущен
+    run_remote "cd '${DEST}' && docker compose -f '${COMPOSE_FILE}' up -d postgres" "Ensuring PostgreSQL is running" 1
+    sleep 5
     
     run_remote "cd '${DEST}' && \
         docker compose -f '${COMPOSE_FILE}' build --pull backend && \
         docker compose -f '${COMPOSE_FILE}' up -d --no-deps backend && \
-        echo 'Waiting for backend to be healthy...' && \
-        for i in {1..60}; do \
-            if docker exec supermock-backend sh -lc 'wget -qO- http://127.0.0.1:3000/api/health >/dev/null 2>&1'; then \
-                echo 'Backend is healthy!'; break; \
-            else \
-                echo 'Waiting for backend... (\$i/60)'; sleep 2; \
-            fi; \
-        done" "Backend build and deploy"
+        echo 'Waiting for backend to start...' && \
+        sleep 10" "Backend build and deploy"
     
     check_service_health "Backend API" "https://$BACKEND_DOMAIN/api/health"
 }

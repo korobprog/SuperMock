@@ -17,7 +17,7 @@ import { useAppStore } from '@/lib/store';
 import { ParticipantStatus } from './participant-status';
 import { CompactLanguageSelector } from './compact-language-selector';
 import { io, Socket } from 'socket.io-client';
-import { createApiUrl } from '@/lib/config';
+import { API_CONFIG } from '@/lib/config';
 
 interface ChatMessage {
   id: string;
