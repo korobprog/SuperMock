@@ -3,9 +3,9 @@
 set -Eeuo pipefail
 
 # ============================================================================
-# SuperMock Production Deploy Script v2.0
+# SuperMock Multi-Domain Production Deploy Script v3.0
 # ============================================================================
-# Enhanced deployment script with better error handling, logging, and features
+# Enhanced deployment script for multi-domain architecture with Traefik
 # Usage: 
 #   SERVER=217.198.6.238 DEST=/opt/mockmate bash scripts/deploy-quick.sh
 #   bash scripts/deploy-quick.sh --help
@@ -23,15 +23,17 @@ NC='\033[0m' # No Color
 SERVER="${SERVER:-217.198.6.238}"
 USER_="${USER_:-root}"
 DEST="${DEST:-/opt/mockmate}"
-COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
+COMPOSE_FILE="${COMPOSE_FILE:-traefik-multi.yml}"
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/timeweb_vps_key}"
 LOG_FILE="${LOG_FILE:-deploy-$(date +%Y%m%d-%H%M%S).log}"
 TIMEOUT="${TIMEOUT:-300}"
 RETRY_COUNT="${RETRY_COUNT:-3}"
 
-# Domains for testing
-FRONTEND_DOMAIN="${FRONTEND_DOMAIN:-supermock.ru}"
-BACKEND_DOMAIN="${BACKEND_DOMAIN:-api.supermock.ru}"
+# Multi-domain configuration
+LANDING_DOMAIN="${LANDING_DOMAIN:-supermock.ru}"
+APP_DOMAIN="${APP_DOMAIN:-app.supermock.ru}"
+API_DOMAIN="${API_DOMAIN:-api.supermock.ru}"
+TRAEFIK_DASHBOARD_DOMAIN="${TRAEFIK_DASHBOARD_DOMAIN:-traefik.supermock.ru}"
 
 # Enhanced helper functions
 print() { printf "%s\n" "$*"; }
@@ -95,23 +97,23 @@ validate_connection() {
     success "SSH connection validated"
 }
 
-# Enhanced sync function
+# Enhanced sync function for multi-domain
 enhanced_sync() {
     local description="${1:-Full sync}"
     step "$description"
     
     info "Syncing from $(pwd) to ${USER_}@${SERVER}:${DEST}"
     
-rsync -az \
-  --delete \
+    rsync -az \
+        --delete \
         --progress \
         --human-readable \
-  --exclude='.git' \
-  --exclude='.github' \
-  --exclude='.pnpm-store' \
-  --exclude='**/node_modules' \
-  --exclude='**/.next' \
-  --exclude='**/dist' \
+        --exclude='.git' \
+        --exclude='.github' \
+        --exclude='.pnpm-store' \
+        --exclude='**/node_modules' \
+        --exclude='**/.next' \
+        --exclude='**/dist' \
         --exclude='*.log' \
         --exclude='.env.local' \
         -e "ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no" \
@@ -125,8 +127,6 @@ rsync -az \
         return 1
     fi
 }
-
-# Переменные для функций установлены ниже
 
 # Enhanced remote execution with retry and timeout
 run_remote() {
@@ -157,7 +157,7 @@ run_remote() {
     done
 }
 
-# Service health checks
+# Multi-domain health checks
 check_service_health() {
     local service="$1"
     local url="$2"
@@ -166,7 +166,7 @@ check_service_health() {
     info "Checking $service health..."
     
     local http_code
-    http_code=$(curl -s -w "%{http_code}" -o /dev/null --connect-timeout 10 --max-time 30 "$url" 2>/dev/null || echo "000")
+    http_code=$(curl -s -w "%{http_code}" -o /dev/null --connect-timeout 10 --max-time 30 -k "$url" 2>/dev/null || echo "000")
     
     if [[ "$http_code" == "$expected" ]]; then
         success "$service is healthy (HTTP $http_code)"
@@ -177,9 +177,9 @@ check_service_health() {
     fi
 }
 
-# Deploy functions
+# Deploy functions for multi-domain
 deploy_full() {
-    step "🚀 Full Application Deployment"
+    step "🚀 Full Multi-Domain Application Deployment"
     enhanced_sync "Full application sync"
     
     # Убеждаемся, что PostgreSQL запущен
@@ -188,26 +188,25 @@ deploy_full() {
     # Ждем немного для запуска PostgreSQL
     sleep 5
     
-    # Создаем сеть Traefik
+    # Создаем сеть если нужно
     run_remote "cd '${DEST}' && \
-        echo '-- Creating traefik network if needed --' && \
-        docker network inspect traefik-network >/dev/null 2>&1 || docker network create traefik-network" "Creating Traefik network"
+        echo '-- Creating supermock-network if needed --' && \
+        docker network inspect supermock-network >/dev/null 2>&1 || docker network create supermock-network" "Creating network"
     
-    # Простой деплой - всегда пытаемся сохранить базу данных
+    # Полный деплой multi-domain архитектуры
     run_remote "cd '${DEST}' && \
-        echo '-- Building services --' && \
-        docker compose -f '${COMPOSE_FILE}' build --pull frontend backend && \
-        echo '-- Restarting services safely --' && \
-        docker compose -f '${COMPOSE_FILE}' up -d --no-recreate postgres redis && \
-        docker compose -f '${COMPOSE_FILE}' up -d backend frontend turn && \
+        echo '-- Building all services --' && \
+        docker compose -f '${COMPOSE_FILE}' build --pull && \
+        echo '-- Starting all services --' && \
+        docker compose -f '${COMPOSE_FILE}' up -d && \
         echo '-- Waiting for services to be healthy --' && \
-        sleep 15" "Safe deployment (preserving database)"
+        sleep 20" "Multi-domain deployment"
     
     comprehensive_health_check
 }
 
 deploy_backend() {
-    step "🔧 Backend Deployment"
+    step "🔧 Backend API Deployment"
     enhanced_sync "Backend sync"
     
     # Убеждаемся, что PostgreSQL запущен
@@ -220,14 +219,14 @@ deploy_backend() {
         echo 'Waiting for backend to start...' && \
         sleep 10" "Backend build and deploy"
     
-    check_service_health "Backend API" "https://$BACKEND_DOMAIN/api/health"
+    check_service_health "Backend API" "https://$API_DOMAIN/api/health"
 }
 
-deploy_frontend() {
-    step "🎨 Frontend Deployment"
-    enhanced_sync "Frontend sync"
+deploy_frontend_app() {
+    step "🎨 Frontend App Deployment (app.supermock.ru)"
+    enhanced_sync "Frontend app sync"
     
-    # Убеждаемся что backend работает (frontend зависит от него)
+    # Убеждаемся что backend работает
     info "Checking backend dependency..."
     if ! run_remote "cd '${DEST}' && docker exec supermock-backend sh -lc 'wget -qO- http://127.0.0.1:3000/api/health >/dev/null 2>&1'" "Backend availability check" 1; then
         warning "Backend not responding, starting it first..."
@@ -241,17 +240,41 @@ deploy_frontend() {
     fi
     
     run_remote "cd '${DEST}' && \
-        docker compose -f '${COMPOSE_FILE}' build --no-cache frontend && \
-        docker compose -f '${COMPOSE_FILE}' up -d --no-deps frontend && \
-        echo 'Waiting for frontend to be ready...' && \
-        sleep 10 && \
-        docker exec supermock-frontend sh -lc 'wget -qO- http://127.0.0.1:8080/ >/dev/null 2>&1 && echo Frontend_OK || echo Frontend_FAIL'" "Frontend build and deploy"
+        docker compose -f '${COMPOSE_FILE}' build --no-cache frontend-app && \
+        docker compose -f '${COMPOSE_FILE}' up -d --no-deps frontend-app && \
+        echo 'Waiting for frontend-app to be ready...' && \
+        sleep 10" "Frontend app build and deploy"
     
-    check_service_health "Frontend" "https://$FRONTEND_DOMAIN"
+    check_service_health "Frontend App" "https://$APP_DOMAIN"
+}
+
+deploy_frontend_landing() {
+    step "🏠 Landing Page Deployment (supermock.ru)"
+    enhanced_sync "Frontend landing sync"
+    
+    run_remote "cd '${DEST}' && \
+        docker compose -f '${COMPOSE_FILE}' build --no-cache frontend-landing && \
+        docker compose -f '${COMPOSE_FILE}' up -d --no-deps frontend-landing && \
+        echo 'Waiting for frontend-landing to be ready...' && \
+        sleep 10" "Frontend landing build and deploy"
+    
+    check_service_health "Landing Page" "https://$LANDING_DOMAIN"
+}
+
+deploy_traefik() {
+    step "🌐 Traefik Deployment"
+    enhanced_sync "Traefik sync"
+    
+    run_remote "cd '${DEST}' && \
+        docker compose -f '${COMPOSE_FILE}' up -d --no-deps traefik && \
+        echo 'Waiting for Traefik to be ready...' && \
+        sleep 10" "Traefik deployment"
+    
+    check_service_health "Traefik Dashboard" "http://$SERVER:8081"
 }
 
 comprehensive_health_check() {
-    step "🏥 Comprehensive Health Check"
+    step "🏥 Multi-Domain Health Check"
     
     # Container status
     info "Checking container status..."
@@ -262,39 +285,39 @@ comprehensive_health_check() {
     run_remote "\
         echo '-- Backend internal health --' && \
         docker exec supermock-backend sh -lc 'wget -qO- http://127.0.0.1:3000/api/health' 2>/dev/null && echo 'Backend internal OK' || echo 'Backend internal FAIL' && \
-        echo '-- Frontend internal health --' && \
-        docker exec supermock-frontend sh -lc 'wget -qO- http://127.0.0.1:8080/health' 2>/dev/null && echo 'Frontend internal OK' || echo 'Frontend internal FAIL' && \
-        echo '-- Frontend → Backend proxy --' && \
-        docker exec supermock-frontend sh -lc 'wget -qO- http://127.0.0.1:8080/api/health' 2>/dev/null && echo 'Frontend proxy OK' || echo 'Frontend proxy FAIL'" "Internal health checks"
+        echo '-- Frontend-app internal health --' && \
+        docker exec supermock-frontend-app sh -lc 'wget -qO- http://127.0.0.1:8080/health' 2>/dev/null && echo 'Frontend-app internal OK' || echo 'Frontend-app internal FAIL' && \
+        echo '-- Frontend-landing internal health --' && \
+        docker exec supermock-frontend-landing sh -lc 'wget -qO- http://127.0.0.1:80/health' 2>/dev/null && echo 'Frontend-landing internal OK' || echo 'Frontend-landing internal FAIL'" "Internal health checks"
     
-    # External health checks
+    # External health checks for all domains
     info "External health checks..."
-    if check_service_health "Frontend" "https://$FRONTEND_DOMAIN"; then
-        success "Frontend externally accessible"
+    
+    if check_service_health "Landing Page" "https://$LANDING_DOMAIN"; then
+        success "Landing page externally accessible"
     else
-        error "Frontend not accessible externally"
+        error "Landing page not accessible externally"
     fi
     
-    if check_service_health "Backend API" "https://$BACKEND_DOMAIN/api/health"; then
+    if check_service_health "Frontend App" "https://$APP_DOMAIN"; then
+        success "Frontend app externally accessible"
+    else
+        error "Frontend app not accessible externally"
+    fi
+    
+    if check_service_health "Backend API" "https://$API_DOMAIN/api/health"; then
         success "Backend API externally accessible"
     else
         error "Backend API not accessible externally"
     fi
     
-    success "Health check completed"
-}
-
-check_turn_server() {
-    step "🌐 TURN Server Check"
+    if check_service_health "Traefik Dashboard" "http://$SERVER:8081"; then
+        success "Traefik dashboard accessible"
+    else
+        error "Traefik dashboard not accessible"
+    fi
     
-    run_remote "cd '${DEST}' && \
-        echo '-- TURN container status --' && \
-        docker ps | grep -i turn || echo 'TURN container not found' && \
-        echo '-- TURN container logs (last 20 lines) --' && \
-        docker logs --tail=20 supermock-turn 2>&1 || echo 'TURN logs unavailable' && \
-        echo '-- Port connectivity tests --' && \
-        timeout 3 bash -c '</dev/tcp/127.0.0.1/3478' && echo '3478/tcp OK' || echo '3478/tcp FAIL' && \
-        timeout 3 bash -c '</dev/tcp/127.0.0.1/5349' && echo '5349/tcp OK' || echo '5349/tcp FAIL'" "TURN server check"
+    success "Multi-domain health check completed"
 }
 
 show_environment() {
@@ -308,7 +331,7 @@ show_environment() {
 }
 
 full_diagnostic() {
-    step "🔍 Full System Diagnostic"
+    step "🔍 Full Multi-Domain System Diagnostic"
     
     run_remote "cd '${DEST}' && \
         echo '=== SYSTEM INFO ===' && \
@@ -323,22 +346,28 @@ full_diagnostic() {
         echo '-- Docker Networks --' && docker network ls && \
         echo && echo '=== SERVICE LOGS ===' && \
         echo '-- Backend Logs (last 15 lines) --' && docker logs supermock-backend --tail=15 2>&1 && \
-        echo '-- Frontend Logs (last 15 lines) --' && docker logs supermock-frontend --tail=15 2>&1 && \
-        echo '-- Traefik Logs (last 15 lines) --' && docker logs traefik --tail=15 2>&1 && \
+        echo '-- Frontend-App Logs (last 15 lines) --' && docker logs supermock-frontend-app --tail=15 2>&1 && \
+        echo '-- Frontend-Landing Logs (last 15 lines) --' && docker logs supermock-frontend-landing --tail=15 2>&1 && \
+        echo '-- Traefik Logs (last 15 lines) --' && docker logs supermock-traefik --tail=15 2>&1 && \
         echo && echo '=== NETWORK STATUS ===' && \
-        echo '-- Open Ports --' && ss -tlnp | grep -E ':(80|443|3000|3478|5349|8080)' && \
-        echo '-- Traefik Network Inspect --' && docker network inspect traefik-network | grep -A3 -B3 supermock || echo 'No supermock containers in traefik network' && \
+        echo '-- Open Ports --' && ss -tlnp | grep -E ':(80|443|3000|8081)' && \
+        echo '-- Supermock Network Inspect --' && docker network inspect supermock-network | grep -A3 -B3 supermock || echo 'No supermock containers in network' && \
+        echo && echo '=== DOMAIN STATUS ===' && \
+        echo '-- DNS Resolution --' && \
+        for domain in $LANDING_DOMAIN $APP_DOMAIN $API_DOMAIN; do \
+            echo \"\$domain: \$(dig +short \$domain | head -1 || echo 'DNS resolution failed')\"; \
+        done && \
         echo && echo '=== END DIAGNOSTIC ==='" "Full diagnostic"
 }
 
 quick_restart() {
-    step "🔄 Quick Service Restart"
+    step "🔄 Quick Multi-Domain Service Restart"
     
     run_remote "cd '${DEST}' && \
         echo '-- Restarting all services --' && \
         docker compose -f '${COMPOSE_FILE}' restart && \
         echo '-- Waiting for services to stabilize --' && \
-        sleep 10 && \
+        sleep 15 && \
         docker compose -f '${COMPOSE_FILE}' ps" "Quick restart"
 }
 
@@ -374,8 +403,50 @@ fix_database() {
     fi
 }
 
+# SSL certificate management
+manage_ssl() {
+    step "🔒 SSL Certificate Management"
+    
+    print "SSL Certificate Options:"
+    print "  1) Check current certificates"
+    print "  2) Generate self-signed certificates"
+    print "  3) Setup Let's Encrypt certificates"
+    printf "\n${YELLOW}Choice [1-3]:${NC} "
+    read -r ssl_choice
+    
+    case "${ssl_choice}" in
+        1)
+            run_remote "cd '${DEST}' && \
+                echo '-- Checking SSL certificates --' && \
+                ls -la nginx/ssl/live/*/ 2>/dev/null || echo 'No SSL certificates found' && \
+                echo '-- Traefik certificates --' && \
+                docker exec supermock-traefik ls -la /letsencrypt/ 2>/dev/null || echo 'No Traefik certificates found'" "SSL certificate check"
+            ;;
+        2)
+            run_remote "cd '${DEST}' && \
+                echo '-- Generating self-signed certificates --' && \
+                mkdir -p nginx/ssl/live/{$LANDING_DOMAIN,$APP_DOMAIN,$API_DOMAIN} && \
+                for domain in $LANDING_DOMAIN $APP_DOMAIN $API_DOMAIN; do \
+                    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                        -keyout nginx/ssl/live/\$domain/privkey.pem \
+                        -out nginx/ssl/live/\$domain/fullchain.pem \
+                        -subj \"/CN=\$domain\"; \
+                done && \
+                echo 'Self-signed certificates generated'" "Self-signed certificate generation"
+            ;;
+        3)
+            info "Let's Encrypt certificates are automatically managed by Traefik"
+            info "Make sure your domains point to this server and run:"
+            info "  docker compose -f traefik-multi.yml up -d"
+            ;;
+        *)
+            error "Invalid choice"
+            ;;
+    esac
+}
+
 # Pre-flight checks and main execution
-info "Starting SuperMock Deploy Script v2.0"
+info "Starting SuperMock Multi-Domain Deploy Script v3.0"
 log "Deploy started by $(whoami) at $(date)"
 validate_ssh_key
 validate_connection
@@ -387,8 +458,10 @@ if [[ "${1:-}" =~ ^[0-9]+$ ]]; then
     case "${choice}" in
       1) deploy_full; exit 0 ;;
       2) deploy_backend; exit 0 ;;
-      3) deploy_frontend; exit 0 ;;
-      4) 
+      3) deploy_frontend_app; exit 0 ;;
+      4) deploy_frontend_landing; exit 0 ;;
+      5) deploy_traefik; exit 0 ;;
+      6) 
         step "📊 Database Update"
         run_remote "cd '${DEST}' && \
             echo '-- Running Prisma migrations --' && \
@@ -397,12 +470,12 @@ if [[ "${1:-}" =~ ^[0-9]+$ ]]; then
             echo '-- Generating Prisma client --' && \
             docker compose -f '${COMPOSE_FILE}' exec -T backend pnpm exec prisma generate" "Database migration"
         exit 0 ;;
-      5) comprehensive_health_check; exit 0 ;;
-      6) check_turn_server; exit 0 ;;
-      7) show_environment; exit 0 ;;
-      8) full_diagnostic; exit 0 ;;
-      9) quick_restart; exit 0 ;;
-      10) fix_database; exit 0 ;;
+      7) comprehensive_health_check; exit 0 ;;
+      8) show_environment; exit 0 ;;
+      9) full_diagnostic; exit 0 ;;
+      10) quick_restart; exit 0 ;;
+      11) fix_database; exit 0 ;;
+      12) manage_ssl; exit 0 ;;
       0) exit 0 ;;
       *) error "Invalid choice: $choice"; exit 1 ;;
     esac
@@ -410,24 +483,27 @@ fi
 
 # Main loop
 while true; do
-    step "🚀 SuperMock Deploy Console"
+    step "🚀 SuperMock Multi-Domain Deploy Console"
     print "${PURPLE}Deploy target:${NC} ${USER_}@${SERVER}:${DEST}"
     print "${PURPLE}SSH Key:${NC} ${SSH_KEY}"
     print "${PURPLE}Log File:${NC} ${LOG_FILE}"
+    print "${PURPLE}Compose File:${NC} ${COMPOSE_FILE}"
     print ""
     print "Select deployment action:"
-    print "  ${GREEN}1)${NC} 🚀 Full Deploy (Sync + Build all + Up + Tests)"
-    print "  ${GREEN}2)${NC} 🔧 Backend only (Sync + Build + Up)"
-    print "  ${GREEN}3)${NC} 🎨 Frontend only (Sync + Build + Up)"
-    print "  ${GREEN}4)${NC} 📊 Database update (Prisma migrate)"
-    print "  ${GREEN}5)${NC} ❤️  Health check (all services)"
-    print "  ${GREEN}6)${NC} 🌐 TURN server check"
-    print "  ${GREEN}7)${NC} 🔑 Show environment variables"
-    print "  ${GREEN}8)${NC} 🔍 Full diagnostic (logs + status)"
-    print "  ${GREEN}9)${NC} 🔄 Quick restart all services"
-    print "  ${YELLOW}10)${NC} 🔧 Fix database (recreate with schema)"
+    print "  ${GREEN}1)${NC} 🚀 Full Deploy (All services + Multi-domain)"
+    print "  ${GREEN}2)${NC} 🔧 Backend API only (api.supermock.ru)"
+    print "  ${GREEN}3)${NC} 🎨 Frontend App only (app.supermock.ru)"
+    print "  ${GREEN}4)${NC} 🏠 Landing Page only (supermock.ru)"
+    print "  ${GREEN}5)${NC} 🌐 Traefik only (Reverse proxy)"
+    print "  ${GREEN}6)${NC} 📊 Database update (Prisma migrate)"
+    print "  ${GREEN}7)${NC} ❤️  Health check (all domains)"
+    print "  ${GREEN}8)${NC} 🔑 Show environment variables"
+    print "  ${GREEN}9)${NC} 🔍 Full diagnostic (logs + status)"
+    print "  ${GREEN}10)${NC} 🔄 Quick restart all services"
+    print "  ${YELLOW}11)${NC} 🔧 Fix database (recreate with schema)"
+    print "  ${YELLOW}12)${NC} 🔒 SSL certificate management"
     print "  ${RED}0)${NC} 🚪 Exit"
-    printf "\n${YELLOW}Choice [1-10, 0]:${NC} "
+    printf "\n${YELLOW}Choice [1-12, 0]:${NC} "
     read -r choice
 
 case "${choice}" in
@@ -435,9 +511,13 @@ case "${choice}" in
     ;;
   2) deploy_backend
     ;;
-  3) deploy_frontend
+  3) deploy_frontend_app
     ;;
-  4) 
+  4) deploy_frontend_landing
+    ;;
+  5) deploy_traefik
+    ;;
+  6) 
     step "📊 Database Update"
     run_remote "cd '${DEST}' && \
         echo '-- Running Prisma migrations --' && \
@@ -446,17 +526,17 @@ case "${choice}" in
         echo '-- Generating Prisma client --' && \
         docker compose -f '${COMPOSE_FILE}' exec -T backend pnpm exec prisma generate" "Database migration"
     ;;
-  5) comprehensive_health_check
+  7) comprehensive_health_check
     ;;
-  6) check_turn_server
+  8) show_environment
     ;;
-  7) show_environment
+  9) full_diagnostic
     ;;
-  8) full_diagnostic
+  10) quick_restart
     ;;
-  9) quick_restart
+  11) fix_database
     ;;
-  10) fix_database
+  12) manage_ssl
     ;;
   0) 
     success "Goodbye! 👋"
@@ -465,7 +545,7 @@ case "${choice}" in
     ;;
   *) 
     error "Invalid choice: $choice"
-    warning "Please select a number between 0-10"
+    warning "Please select a number between 0-12"
     ;;
 esac
 

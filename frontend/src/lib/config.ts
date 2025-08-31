@@ -10,7 +10,7 @@ export const API_CONFIG = {
   // WebSocket URL для dev режима
   wsURL: import.meta.env.DEV 
     ? 'ws://localhost:3000' // В dev режиме подключаемся к локальному серверу
-    : 'wss://supermock.ru', // В production подключаемся к API серверу
+    : 'wss://app.supermock.ru', // В production подключаемся к приложению
 
   // Полные пути к API endpoints
   endpoints: {

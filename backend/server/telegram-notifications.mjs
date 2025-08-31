@@ -12,7 +12,7 @@ class TelegramNotificationService {
       process.env.VITE_TELEGRAM_BOT_NAME ||
       'SuperMock_bot';
     this.baseUrl = `https://api.telegram.org/bot${this.botToken}`;
-    this.frontendUrl = process.env.FRONTEND_URL || 'https://supermock.ru';
+    this.frontendUrl = process.env.FRONTEND_URL || 'https://app.supermock.ru';
   }
 
   /**
@@ -499,7 +499,7 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
               {
                 text: '🚀 Открыть SuperMock',
                 web_app: {
-                  url: `${this.frontendUrl}`,
+                  url: 'https://app.supermock.ru',
                 },
               },
             ],
@@ -578,7 +578,7 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
             {
               text: '🚀 Открыть SuperMock',
               web_app: {
-                url: `${this.frontendUrl}`,
+                url: 'https://app.supermock.ru',
               },
             },
           ],

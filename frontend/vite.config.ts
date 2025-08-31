@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 import dns from 'node:dns';
@@ -9,6 +9,9 @@ dns.setDefaultResultOrder('verbatim');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
+  // Загружаем переменные окружения из корневого файла
+  const env = loadEnv(mode, '../', '');
+  
   // Определяем, нужно ли использовать 127.0.0.1
   const useLocalhost =
     process.env.NODE_ENV === 'production' || mode === 'production';
@@ -18,6 +21,7 @@ export default defineConfig(({ mode }) => {
     NODE_ENV: process.env.NODE_ENV,
     useLocalhost,
     host: useLocalhost ? '127.0.0.1' : '0.0.0.0',
+    envKeys: Object.keys(env).filter(key => key.startsWith('VITE_')),
   });
 
   return {
@@ -71,6 +75,18 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
+    },
+    define: {
+      // Передаем переменные окружения в приложение
+      'import.meta.env.VITE_TELEGRAM_BOT_NAME': JSON.stringify(env.VITE_TELEGRAM_BOT_NAME),
+      'import.meta.env.VITE_TELEGRAM_BOT_ID': JSON.stringify(env.VITE_TELEGRAM_BOT_ID),
+      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
+      'import.meta.env.VITE_JITSI_URL': JSON.stringify(env.VITE_JITSI_URL),
+      'import.meta.env.VITE_STUN_URLS': JSON.stringify(env.VITE_STUN_URLS),
+      'import.meta.env.VITE_TURN_URL': JSON.stringify(env.VITE_TURN_URL),
+      'import.meta.env.VITE_TURN_USERNAME': JSON.stringify(env.VITE_TURN_USERNAME),
+      'import.meta.env.VITE_TURN_PASSWORD': JSON.stringify(env.VITE_TURN_PASSWORD),
+      'import.meta.env.VITE_ENABLE_DEV_TEST_ACCOUNTS': JSON.stringify(env.VITE_ENABLE_DEV_TEST_ACCOUNTS),
     },
     build: {
       outDir: 'dist',

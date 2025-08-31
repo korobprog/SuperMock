@@ -145,13 +145,13 @@ export function ToolSelection() {
       // Проверяем демо аккаунт
       const demoAccount = getActiveDevTestAccount();
       
-      // В dev режиме или с демо аккаунтом создаем локальный userId если его нет
+      // Создаем локальный userId если его нет (для всех новых пользователей)
       let currentUserId = userId;
-      if ((!currentUserId || currentUserId === 0) && (import.meta.env.DEV || demoAccount)) {
+      if (!currentUserId || currentUserId === 0) {
         const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
         setUserId(localId);
         currentUserId = localId;
-        console.log('🎭 Generated local userId for dev/demo mode:', localId);
+        console.log('🎭 Generated local userId for new user:', localId);
       }
 
       // Пытаемся сохранить в базу данных, но не блокируем навигацию
@@ -204,13 +204,13 @@ export function ToolSelection() {
       // Проверяем демо аккаунт
       const demoAccount = getActiveDevTestAccount();
       
-      // В dev режиме или с демо аккаунтом создаем локальный userId если его нет
+      // Создаем локальный userId если его нет (для всех новых пользователей)
       let currentUserId = userId;
-      if ((!currentUserId || currentUserId === 0) && (import.meta.env.DEV || demoAccount)) {
+      if (!currentUserId || currentUserId === 0) {
         const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
         setUserId(localId);
         currentUserId = localId;
-        console.log('🎭 Generated local userId for dev/demo mode:', localId);
+        console.log('🎭 Generated local userId for new user:', localId);
       }
 
       // Пытаемся сохранить в базу данных, но не блокируем навигацию

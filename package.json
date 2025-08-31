@@ -14,7 +14,7 @@
     "dev:frontend": "cross-env NODE_ENV=development VITE_API_URL=http://localhost:3000 pnpm exec vite --config frontend/vite.config.ts",
     "build": "pnpm exec vite build --config frontend/vite.config.ts",
     "build:frontend": "pnpm exec vite build --config frontend/vite.config.ts",
-    "dev": "pnpm exec concurrently -n backend,frontend -c green,cyan \"pnpm dev:backend\" \"pnpm dev:frontend\"",
+    "dev": "bash scripts/start-dev.sh",
     "dev:stop": "pnpm exec bash scripts/stop-dev.sh",
     "deploy:interactive": "pnpm exec bash -c 'SERVER=217.198.6.238 DEST=/opt/mockmate SSH_KEY=$HOME/.ssh/timeweb_vps_key bash scripts/deploy-quick.sh'",
     "deploy:full": "pnpm exec bash -c 'SERVER=217.198.6.238 DEST=/opt/mockmate SSH_KEY=$HOME/.ssh/timeweb_vps_key INTERACTIVE=0 bash scripts/deploy-quick.sh'",
@@ -25,6 +25,7 @@
     "prod:build:backend": "pnpm exec docker compose -f docker-compose.prod.yml build --pull backend && pnpm exec docker compose -f docker-compose.prod.yml up -d backend",
     "prod:build:frontend": "pnpm exec docker compose -f docker-compose.prod.yml build --pull frontend && pnpm exec docker compose -f docker-compose.prod.yml up -d frontend",
     "deploy:backend": "pnpm exec bash -c 'SERVER=217.198.6.238 DEST=/opt/mockmate SSH_KEY=$HOME/.ssh/timeweb_vps_key bash scripts/deploy-quick.sh 2'",
+    "deploy:multi": "pnpm exec bash -c 'SERVER=217.198.6.238 DEST=/opt/mockmate SSH_KEY=$HOME/.ssh/timeweb_vps_key bash scripts/deploy-multi-domain.sh'",
     "deploy:frontend": "pnpm exec bash -c 'SERVER=217.198.6.238 DEST=/opt/mockmate SSH_KEY=$HOME/.ssh/timeweb_vps_key bash scripts/deploy-quick.sh 3'",
     "deploy:health": "pnpm exec bash -c 'SERVER=217.198.6.238 DEST=/opt/mockmate SSH_KEY=$HOME/.ssh/timeweb_vps_key bash scripts/deploy-quick.sh 5'",
     "deploy:diagnostic": "pnpm exec bash -c 'SERVER=217.198.6.238 DEST=/opt/mockmate SSH_KEY=$HOME/.ssh/timeweb_vps_key bash scripts/deploy-quick.sh 8'"

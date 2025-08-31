@@ -7,7 +7,7 @@ import { Logo } from '@/components/ui/logo';
 import { ArrowLeft } from 'lucide-react';
 import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
 import { useAppTranslation } from '@/lib/i18n';
-import { apiSaveProfile } from '@/lib/api';
+import { apiSaveProfile, apiInit } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
 import {
@@ -181,16 +181,33 @@ export function ProfessionSelection() {
       // Проверяем демо аккаунт
       const demoAccount = getActiveDevTestAccount();
       
-      // В dev режиме или с демо аккаунтом создаем локальный userId если его нет
+      // Создаем локальный userId если его нет (для всех новых пользователей)
       let currentUserId = userId;
-      if ((!currentUserId || currentUserId === 0) && (import.meta.env.DEV || demoAccount)) {
+      if (!currentUserId || currentUserId === 0) {
         const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
         setUserId(localId);
         currentUserId = localId;
-        console.log('🎭 Generated local userId for dev/demo mode:', localId);
+        console.log('🎭 Generated local userId for new user:', localId);
       }
 
       console.log('🔍 Current userId:', currentUserId);
+
+      // Пытаемся инициализировать пользователя через API, если есть telegramUser
+      const telegramUser = useAppStore.getState().telegramUser;
+      if (telegramUser && currentUserId) {
+        try {
+          console.log('📡 Initializing user via API...');
+          const data = await apiInit({
+            tg: telegramUser,
+            language: currentLanguage || 'ru',
+            initData: 'present',
+          });
+          console.log('✅ User initialized via API:', data);
+        } catch (error) {
+          console.warn('⚠️ Failed to initialize user via API:', error);
+          console.log('💾 Continuing with local initialization');
+        }
+      }
 
       // Пытаемся сохранить в базу данных, но не блокируем навигацию при ошибке
       if (currentUserId) {

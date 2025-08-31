@@ -125,6 +125,28 @@ export function hideTelegramMainButton() {
   }
 }
 
+// Показывает кнопку "About Company" в Telegram WebApp
+export function showAboutCompanyButton() {
+  const tg = getTelegramWebApp();
+  if (tg?.MainButton) {
+    const mainButton = tg.MainButton;
+    mainButton.setText('About Company');
+    mainButton.show();
+    mainButton.onClick(() => {
+      // Открываем информацию о компании внутри Telegram Mini App
+      window.location.href = 'https://supermock.ru';
+    });
+  }
+}
+
+// Скрывает кнопку "About Company" в Telegram WebApp
+export function hideAboutCompanyButton() {
+  const tg = getTelegramWebApp();
+  if (tg?.MainButton) {
+    tg.MainButton.hide();
+  }
+}
+
 // Настраивает полноэкранный режим в Telegram Mini Apps
 export function setupTelegramFullscreen() {
   const tg = getTelegramWebApp();
@@ -168,6 +190,9 @@ export function setupTelegramFullscreen() {
         button_text_color: '#ffffff',
       });
     }
+
+    // Показываем кнопку "About Company" в Telegram WebApp
+    showAboutCompanyButton();
 
     // Добавляем обработчики событий полноэкранного режима (только для поддерживаемых версий)
     if (majorVersion >= 8 && tg.onEvent) {
