@@ -49,7 +49,6 @@ jobs:
           pnpm install --frozen-lockfile
           cd frontend && pnpm install --frozen-lockfile
           cd ../backend && pnpm install --frozen-lockfile
-          cd ../Lading/supermock-ai-interview && pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
         run: cd backend && pnpm exec prisma generate
@@ -60,8 +59,7 @@ jobs:
       - name: Build backend
         run: cd backend && pnpm run build
 
-      - name: Build landing
-        run: cd Lading/supermock-ai-interview && pnpm run build
+
 
       - name: Run tests
         run: |
@@ -75,7 +73,6 @@ jobs:
           path: |
             frontend/dist
             backend/dist
-            Lading/supermock-ai-interview/dist
           key: ${{ runner.os }}-build-${{ github.sha }}
 
   # Создание Docker образов
@@ -85,49 +82,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
 
-      - name: Check submodule status
-        run: |
-          echo "=== Проверяем статус submodules ==="
-          git submodule status
-          echo "=== Проверяем .gitmodules ==="
-          if [ -f ".gitmodules" ]; then
-            cat .gitmodules
-          else
-            echo "❌ .gitmodules не найден!"
-          fi
-          echo "=== Пытаемся обновить submodules ==="
-          git submodule update --init --recursive
-          echo "=== Проверяем после обновления ==="
-          ls -la Lading/supermock-ai-interview/ || echo "Папка все еще не найдена"
+
 
       - name: Debug file structure
         run: |
           echo "=== Проверяем структуру файлов ==="
           ls -la
-          echo "=== Проверяем папку Lading ==="
-          if [ -d "Lading" ]; then
-            ls -la Lading/
-            echo "=== Проверяем папку supermock-ai-interview ==="
-            if [ -d "Lading/supermock-ai-interview" ]; then
-              ls -la Lading/supermock-ai-interview/
-              echo "=== Проверяем Dockerfile ==="
-              if [ -f "Lading/supermock-ai-interview/Dockerfile" ]; then
-                ls -la Lading/supermock-ai-interview/Dockerfile
-                echo "=== Содержимое Dockerfile ==="
-                head -5 Lading/supermock-ai-interview/Dockerfile
-              else
-                echo "❌ Dockerfile не найден!"
-              fi
-            else
-              echo "❌ Папка supermock-ai-interview не найдена!"
-            fi
-          else
-            echo "❌ Папка Lading не найдена!"
-          fi
+          echo "=== Проверяем frontend ==="
+          ls -la frontend/
+          echo "=== Проверяем backend ==="
+          ls -la backend/
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -152,16 +117,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build landing image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Lading/supermock-ai-interview/Dockerfile
-          push: false
-          tags: supermock-frontend-landing:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Save Docker images
         uses: actions/upload-artifact@v4
         with:
@@ -169,7 +124,6 @@ jobs:
           path: |
             supermock-backend:latest
             supermock-frontend-app:latest
-            supermock-frontend-landing:latest
 
   # Деплой на production сервер
   deploy-production:
@@ -179,9 +133,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
 
       - name: Download Docker images
         uses: actions/download-artifact@v4
@@ -201,7 +152,6 @@ jobs:
             docker-compose.prod-multi.yml \
             frontend/ \
             backend/ \
-            Lading/ \
             scripts/ \
             media/ \
             materials/ \
@@ -236,7 +186,7 @@ jobs:
               BACKUP_NAME="backup-$(date +%Y%m%d-%H%M%S).tar.gz"
               tar -czf "$BACKUP_NAME" \
                 docker-compose.prod-multi.yml \
-                frontend/ backend/ Lading/ \
+                frontend/ backend/ \
                 2>/dev/null || echo "Предупреждение: не удалось создать резервную копию"
               echo "✅ Резервная копия создана: $BACKUP_NAME"
             fi

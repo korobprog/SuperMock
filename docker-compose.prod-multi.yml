@@ -131,32 +131,7 @@ services:
       - traefik.http.routers.supermock-frontend-app.tls.certresolver=letsencrypt
       - traefik.http.services.supermock-frontend-app.loadbalancer.server.port=8080
 
-  # Лендинг (supermock.ru)
-  frontend-landing:
-    build:
-      context: .
-      dockerfile: Lading/supermock-ai-interview/Dockerfile
-    container_name: supermock-frontend-landing
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - ./Lading/supermock-ai-interview:/app/Lading/supermock-ai-interview
-      - frontend_landing_node_modules:/app/node_modules
-    networks:
-      - supermock-network
-    restart: unless-stopped
-    labels:
-      - traefik.enable=true
-      # HTTP to HTTPS redirect
-      - traefik.http.routers.supermock-frontend-landing-http.rule=Host(`supermock.ru`)
-      - traefik.http.routers.supermock-frontend-landing-http.entrypoints=web
-      - traefik.http.routers.supermock-frontend-landing-http.middlewares=redirect-to-https
-      # HTTPS
-      - traefik.http.routers.supermock-frontend-landing.rule=Host(`supermock.ru`)
-      - traefik.http.routers.supermock-frontend-landing.entrypoints=websecure
-      - traefik.http.routers.supermock-frontend-landing.tls=true
-      - traefik.http.routers.supermock-frontend-landing.tls.certresolver=letsencrypt
-      - traefik.http.services.supermock-frontend-landing.loadbalancer.server.port=80
+
 
   # Traefik для автоматического SSL и маршрутизации
   traefik:
@@ -192,7 +167,6 @@ volumes:
   traefik_certs:
   backend_node_modules:
   frontend_app_node_modules:
-  frontend_landing_node_modules:
 
 networks:
   supermock-network:
