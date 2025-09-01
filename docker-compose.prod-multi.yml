@@ -160,12 +160,7 @@ services:
       - traefik.enable=true
       - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
       - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
-      # Роутер для supermock.ru - возвращает ошибку
-      - traefik.http.routers.supermock-main.rule=Host(`supermock.ru`)
-      - traefik.http.routers.supermock-main.entrypoints=websecure
-      - traefik.http.routers.supermock-main.tls=true
-      - traefik.http.routers.supermock-main.tls.certresolver=letsencrypt
-      - traefik.http.routers.supermock-main.service=noop@internal
+
 
 volumes:
   postgres_data:
