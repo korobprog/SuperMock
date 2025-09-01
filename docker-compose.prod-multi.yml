@@ -133,6 +133,26 @@ services:
 
 
 
+  # Простой сервис для редиректа supermock.ru -> app.supermock.ru
+  redirect-service:
+    image: nginx:alpine
+    container_name: supermock-redirect
+    command: >
+      sh -c "echo 'server { listen 80; server_name supermock.ru; return 301 https://app.supermock.ru\$request_uri; }' > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    networks:
+      - supermock-network
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.redirect.rule=Host(`supermock.ru`)
+      - traefik.http.routers.redirect.entrypoints=web
+      - traefik.http.routers.redirect.middlewares=redirect-to-https
+      - traefik.http.routers.redirect-https.rule=Host(`supermock.ru`)
+      - traefik.http.routers.redirect-https.entrypoints=websecure
+      - traefik.http.routers.redirect-https.tls=true
+      - traefik.http.routers.redirect-https.tls.certresolver=letsencrypt
+      - traefik.http.services.redirect.loadbalancer.server.port=80
+
   # Traefik для автоматического SSL и маршрутизации
   traefik:
     image: traefik:v2.10
@@ -164,12 +184,7 @@ services:
       - traefik.enable=true
       - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
       - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
-      # Роутер для supermock.ru - редирект на app.supermock.ru
-      - traefik.http.routers.main.rule=Host(`supermock.ru`)
-      - traefik.http.routers.main.entrypoints=web
-      - traefik.http.routers.main.middlewares=redirect-to-app
-      - traefik.http.middlewares.redirect-to-app.redirectregex.regex=^https?://supermock.ru(.*)
-      - traefik.http.middlewares.redirect-to-app.redirectregex.replacement=https://app.supermock.ru$${1}
+
 
 
 volumes:
