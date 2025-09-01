@@ -210,10 +210,10 @@ export const useAppStore = create<AppState>()(
 
         // Асинхронно сохраняем в БД
         const currentUserId = get().userId;
-        const normalizedUserId = Number(currentUserId) || 0;
+        const normalizedUserId = typeof currentUserId === 'string' ? (parseInt(currentUserId, 10) || 0) : (currentUserId ?? 0);
         
         apiSaveUserSettings({
-          userId: normalizedUserId as number,
+          userId: normalizedUserId,
           ...settings,
         }).catch(() => {
           // Не показываем ошибку пользователю, данные уже сохранены в localStorage
