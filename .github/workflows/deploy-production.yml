@@ -75,69 +75,14 @@ jobs:
             backend/dist
           key: ${{ runner.os }}-build-${{ github.sha }}
 
-  # Создание Docker образов
-  build-docker-images:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-
-
-      - name: Debug file structure
-        run: |
-          echo "=== Проверяем структуру файлов ==="
-          ls -la
-          echo "=== Проверяем frontend ==="
-          ls -la frontend/
-          echo "=== Проверяем backend ==="
-          ls -la backend/
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build backend image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./backend/Dockerfile
-          push: false
-          tags: supermock-backend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build frontend app image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./frontend/Dockerfile
-          push: false
-          tags: supermock-frontend-app:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Save Docker images
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-images
-          path: |
-            supermock-backend:latest
-            supermock-frontend-app:latest
-
   # Деплой на production сервер
   deploy-production:
-    needs: build-docker-images
+    needs: build-and-test
     runs-on: ubuntu-latest
     environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Download Docker images
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-images
 
       - name: Create deployment archive
         run: |
