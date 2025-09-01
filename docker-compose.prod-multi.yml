@@ -166,17 +166,13 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.email=admin@supermock.ru"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencrypt.acme.server=https://acme-v02.api.letsencrypt.org/directory"
       - "--log.level=INFO"
-      - "--accesslog=true"
-      - "--accesslog.filepath=/var/log/traefik/access.log"
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_certs:/letsencrypt
-      - traefik_logs:/var/log/traefik
     networks:
       - supermock-network
     restart: unless-stopped
@@ -191,7 +187,6 @@ volumes:
   postgres_data:
   redis_data:
   traefik_certs:
-  traefik_logs:
   backend_node_modules:
   frontend_app_node_modules:
 
