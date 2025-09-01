@@ -65,7 +65,7 @@ export function Profile() {
     selectedTools,
   } = useAppStore();
 
-  const [apiKey, setApiKey] = useState(userSettings.openRouterApiKey || '');
+  const [apiKey, setApiKey] = useState(userSettings.openrouterApiKey || '');
   const [stackblitzKey, setStackblitzKey] = useState(
     userSettings.stackblitzApiKey || ''
   );
@@ -99,11 +99,11 @@ export function Profile() {
     const MASKED =
       '••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••';
     if (showApiKey) {
-      setApiKey(userSettings.openRouterApiKey || '');
+      setApiKey(userSettings.openrouterApiKey || '');
     } else {
       setApiKey(MASKED);
     }
-  }, [showApiKey, isApiKeyMasked, userSettings.openRouterApiKey]);
+  }, [showApiKey, isApiKeyMasked, userSettings.openrouterApiKey]);
 
   // Обработчик переключения видимости API ключа
   const handleToggleApiKeyVisibility = () => {
@@ -148,7 +148,7 @@ export function Profile() {
 
   // Синхронизируем состояние компонента с настройками из store
   useEffect(() => {
-    const savedApiKey = userSettings.openRouterApiKey || '';
+    const savedApiKey = userSettings.openrouterApiKey || '';
     if (savedApiKey) {
       // Если есть сохраненный ключ, показываем точки
       setApiKey('••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••');
@@ -162,7 +162,7 @@ export function Profile() {
     setStackblitzKey(userSettings.stackblitzApiKey || '');
     setPreferredModel(userSettings.preferredModel);
     setQuestionsLevel(userSettings.questionsLevel);
-            setUseAiGeneration(userSettings.useAiGeneration);
+    setUseAiGeneration(userSettings.useAiGeneration);
     setQuestionsCount(userSettings.questionsCount);
     
     // Устанавливаем профессию из store, если она есть
@@ -220,11 +220,11 @@ export function Profile() {
         console.log('🔧 Dev mode: saving settings locally');
         
         setUserSettings({
-          openRouterApiKey: apiKey || null,
+          openrouterApiKey: apiKey || null,
           stackblitzApiKey: stackblitzKey || null,
           preferredModel,
           questionsLevel: questionsLevel as 'junior' | 'middle' | 'senior',
-          useAIGeneration,
+          useAiGeneration,
           questionsCount,
         });
 
@@ -234,22 +234,22 @@ export function Profile() {
 
       const response = await apiSaveUserSettings({
         userId: userId || 0,
-        openRouterApiKey: apiKey || null,
+        openrouterApiKey: apiKey || null,
         stackblitzApiKey: stackblitzKey || null,
         preferredModel,
         questionsLevel: questionsLevel as 'junior' | 'middle' | 'senior',
-        useAIGeneration,
+        useAiGeneration,
         questionsCount,
       });
 
       console.log('Settings saved successfully:', response);
 
       setUserSettings({
-        openRouterApiKey: apiKey || null,
+        openrouterApiKey: apiKey || null,
         stackblitzApiKey: stackblitzKey || null,
         preferredModel,
         questionsLevel: questionsLevel as 'junior' | 'middle' | 'senior',
-        useAIGeneration,
+        useAiGeneration,
         questionsCount,
       });
 
@@ -261,11 +261,11 @@ export function Profile() {
       if (import.meta.env.DEV) {
         console.log('🔧 Dev mode: saving settings locally (fallback)');
         setUserSettings({
-          openRouterApiKey: apiKey || null,
+          openrouterApiKey: apiKey || null,
           stackblitzApiKey: stackblitzKey || null,
           preferredModel,
           questionsLevel: questionsLevel as 'junior' | 'middle' | 'senior',
-          useAIGeneration,
+          useAiGeneration,
           questionsCount,
         });
         toast.success(t('profile.settingsSaved'));
@@ -306,7 +306,7 @@ export function Profile() {
     // Определяем реальное значение API ключа для тестирования
     const realApiKey =
       isApiKeyMasked && apiKey.includes('••••')
-        ? userSettings.openRouterApiKey // Используем сохраненный ключ
+        ? userSettings.openrouterApiKey // Используем сохраненный ключ
         : apiKey; // Используем введенный ключ
 
     if (!realApiKey) {
@@ -343,7 +343,7 @@ export function Profile() {
 
   // Используем «эффективный» ключ: сохраненный (когда поле замаскировано) или введенный пользователем
   const effectiveApiKey =
-    (isApiKeyMasked ? userSettings.openRouterApiKey || '' : apiKey) || '';
+    (isApiKeyMasked ? userSettings.openrouterApiKey || '' : apiKey) || '';
   const hasValidApiKey = !!effectiveApiKey && validateApiKey(effectiveApiKey);
 
   if (isLoading) {
@@ -805,8 +805,8 @@ export function Profile() {
     </div>
     <Switch
       id="ai-generation"
-      checked={useAIGeneration && hasValidApiKey}
-      onCheckedChange={setUseAIGeneration}
+      checked={useAiGeneration && hasValidApiKey}
+      onCheckedChange={setUseAiGeneration}
       disabled={!hasValidApiKey}
     />
   </div>

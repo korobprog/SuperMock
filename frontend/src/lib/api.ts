@@ -421,7 +421,7 @@ export async function apiGetUserSettings(userId: number) {
 
 export async function apiSaveUserSettings(payload: {
   userId: number;
-  openRouterApiKey?: string | null;
+  openrouterApiKey?: string | null;
   stackblitzApiKey?: string | null;
   preferredModel?: string;
   questionsLevel?: 'junior' | 'middle' | 'senior';
