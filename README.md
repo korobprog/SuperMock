@@ -1,4 +1,4 @@
-# Super Mock - AI Interview Assistant
+# Super Mock - AI Interview Assistant V.01
 
 Super Mock - это AI-ассистент для подготовки к собеседованиям, интегрированный с Telegram.
 
