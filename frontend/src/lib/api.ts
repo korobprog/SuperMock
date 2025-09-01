@@ -425,7 +425,7 @@ export async function apiSaveUserSettings(payload: {
   stackblitzApiKey?: string | null;
   preferredModel?: string;
   questionsLevel?: 'junior' | 'middle' | 'senior';
-  useAIGeneration?: boolean;
+  useAiGeneration?: boolean;
   questionsCount?: number;
 }) {
   const res = await fetch(createApiUrl(API_CONFIG.endpoints.userSettings), {

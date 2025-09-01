@@ -6,12 +6,16 @@ import { TelegramUser } from './telegram-auth';
 type Role = 'interviewer' | 'candidate' | null;
 
 export interface UserSettings {
-  openRouterApiKey: string | null;
-  stackblitzApiKey: string | null;
+  id: number;
+  userId: string;
+  openrouterApiKey?: string;
   preferredModel: string;
-  questionsLevel: 'junior' | 'middle' | 'senior';
-  useAIGeneration: boolean;
+  questionsLevel: string;
+  useAiGeneration: boolean;
   questionsCount: number;
+  stackblitzApiKey?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface MediaSettings {
@@ -99,12 +103,16 @@ export const useAppStore = create<AppState>()(
       selectedTools: [], // Инициализируем пустым массивом
       demoMode: false, // Инициализируем режим демо как false
       userSettings: {
-        openRouterApiKey: null,
+        id: 0,
+        userId: '',
+        openrouterApiKey: null,
         stackblitzApiKey: null,
-        preferredModel: 'meta-llama/llama-3.1-8b-instruct',
+        preferredModel: 'openai/gpt-4o-mini',
         questionsLevel: 'middle',
-        useAIGeneration: false,
+        useAiGeneration: false,
         questionsCount: 10,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       setUserId: (id) => {
         console.log('🔧 setUserId called with:', id, 'Type:', typeof id);
@@ -212,7 +220,7 @@ export const useAppStore = create<AppState>()(
 
         // Асинхронно сохраняем в БД
         apiSaveUserSettings({
-          userId,
+          userId: Number(userId),
           ...settings,
         }).catch(() => {
           // Не показываем ошибку пользователю, данные уже сохранены в localStorage
@@ -242,7 +250,7 @@ export const useAppStore = create<AppState>()(
         }),
       clearAll: () =>
         set({
-          userId: getOrGenerateUserId(), // Генерируем новый userId вместо 0
+          userId: Number(getOrGenerateUserId()), // Генерируем новый userId вместо 0
           telegramUser: null,
           role: null,
           lastRole: null,
@@ -254,12 +262,16 @@ export const useAppStore = create<AppState>()(
           mediaSettings: null, // Очищаем медиа настройки при clearAll
           demoMode: false, // Очищаем режим демо при clearAll
           userSettings: {
-            openRouterApiKey: null,
+            id: 0,
+            userId: '',
+            openrouterApiKey: null,
             stackblitzApiKey: null,
             preferredModel: 'openai/gpt-4o-mini',
             questionsLevel: 'middle',
-            useAIGeneration: false,
+            useAiGeneration: false,
             questionsCount: 10,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           },
         }),
     }),
@@ -303,12 +315,16 @@ export const useAppStore = create<AppState>()(
             state.lastRole = null;
             state.selectedTools = []; // Очищаем инструменты при выходе
             state.userSettings = {
-              openRouterApiKey: null,
+              id: 0,
+              userId: '',
+              openrouterApiKey: null,
               stackblitzApiKey: null,
               preferredModel: 'openai/gpt-4o-mini',
               questionsLevel: 'middle',
-              useAIGeneration: false,
+              useAiGeneration: false,
               questionsCount: 10,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
             };
             // Очищаем флаги выхода
             sessionStorage.removeItem('just_logged_out');

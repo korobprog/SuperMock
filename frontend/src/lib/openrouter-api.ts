@@ -42,6 +42,7 @@ export interface SkillLevel {
 }
 
 export interface FeedbackAnalysis {
+  id?: string; // Добавляю недостающее поле id
   weaknesses: string[]; // ["algorithms", "system_design", "communication"]
   strengths: string[]; // ["javascript", "react", "teamwork"]  
   skillLevels: SkillLevel[]; // [{"skill": "react", "level": 7, "confidence": 0.9}]

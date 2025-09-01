@@ -9,6 +9,7 @@ export interface SkillLevel {
 }
 
 export interface FeedbackAnalysis {
+  id?: string; // Добавляю недостающее поле id
   weaknesses: string[]; // ["algorithms", "system_design", "communication"]
   strengths: string[]; // ["javascript", "react", "teamwork"]  
   skillLevels: SkillLevel[]; // [{"skill": "react", "level": 7, "confidence": 0.9}]
@@ -436,24 +437,13 @@ export class AIAnalysisService {
       
       // Получаем настройки пользователя
       const userSettings = await this.getUserSettings(userId);
-      if (!userSettings?.openrouterApiKey) {
+      if (!userSettings?.settings?.openrouterApiKey) {
         throw new Error('OpenRouter API ключ не найден в настройках пользователя');
       }
 
-      // 🔔 Получаем дополнительные данные пользователя для уведомлений
-      let userProfile = null;
-      try {
-        userProfile = await this.prisma.user.findUnique({
-          where: { id: userId },
-          select: { language: true, profession: true }
-        });
-      } catch (error) {
-        console.warn('Could not fetch user profile for notifications:', error);
-      }
-
-      // Используем данные из профиля, если они не переданы напрямую
-      const effectiveLanguage = userLanguage || userProfile?.language || 'ru';
-      const effectiveProfession = profession || userProfile?.profession || 'frontend';
+      // Получаем язык и профессию из preferences
+      const effectiveLanguage = userSettings.preferences?.language || 'ru';
+      const effectiveProfession = profession || userSettings.preferences?.profession || 'frontend';
 
       // 🌍 Получаем мультиязычные промпты
       const langPrompts = ANALYSIS_PROMPTS[userLanguage as keyof typeof ANALYSIS_PROMPTS] || ANALYSIS_PROMPTS.ru;
@@ -473,14 +463,14 @@ export class AIAnalysisService {
         .replace('{comments}', feedbackData);
 
       const response = await this.makeOpenRouterRequest({
-        model: userSettings.preferredModel,
+        model: userSettings.settings?.preferredModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
         max_tokens: 1500,
         temperature: 0.3, // низкая температура для более точного анализа
-      }, userSettings.openrouterApiKey);
+      }, userSettings.settings?.openrouterApiKey);
 
       const content = response.choices[0]?.message?.content || '';
       
@@ -542,7 +532,7 @@ export class AIAnalysisService {
       
       // Получаем настройки пользователя
       const userSettings = await this.getUserSettings(userId);
-      if (!userSettings?.openrouterApiKey) {
+      if (!userSettings?.settings?.openrouterApiKey) {
         throw new Error('OpenRouter API ключ не найден');
       }
 
@@ -558,14 +548,14 @@ export class AIAnalysisService {
         .replace('{overallReadiness}', analysis.overallReadiness.toString());
 
       const response = await this.makeOpenRouterRequest({
-        model: userSettings.preferredModel,
+        model: userSettings.settings?.preferredModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
         max_tokens: 1000,
         temperature: 0.4,
-      }, userSettings.openrouterApiKey);
+      }, userSettings.settings?.openrouterApiKey);
 
       const content = response.choices[0]?.message?.content || '';
       
@@ -625,14 +615,26 @@ export class AIAnalysisService {
    */
   private async getUserSettings(userId: string) {
     try {
-      const settings = await this.prisma.userSettings.findUnique({
+      // Получаем язык и профессию из preferences
+      const userPreferences = await this.prisma.preference.findFirst({
+        where: { userId },
+        select: { language: true, profession: true },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      // Получаем настройки API
+      const userSettings = await this.prisma.userSettings.findUnique({
         where: { userId },
         select: {
           openrouterApiKey: true,
           preferredModel: true,
         },
       });
-      return settings;
+
+      return {
+        preferences: userPreferences,
+        settings: userSettings
+      };
     } catch (error) {
       console.error('Error getting user settings:', error);
       return null;
@@ -671,11 +673,11 @@ export class AIAnalysisService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
+      const errorData = await response.json().catch(() => ({}));
       console.error('OpenRouter API error details:', errorData);
 
       const errorMessage =
-        errorData?.error?.message ||
+        (errorData as any)?.error?.message ||
         `HTTP ${response.status}: ${response.statusText}`;
 
       // Provide more specific error messages
@@ -694,7 +696,8 @@ export class AIAnalysisService {
       }
     }
 
-    return response.json();
+    const data = await response.json() as OpenRouterResponse;
+    return data;
   }
 
   /**

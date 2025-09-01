@@ -26,7 +26,7 @@ router.get(
           stackblitzApiKey: true,
           preferredModel: true,
           questionsLevel: true,
-          useAIGeneration: true,
+          useAiGeneration: true,
           questionsCount: true,
         },
       });
@@ -39,7 +39,7 @@ router.get(
           stackblitzApiKey: null,
           preferredModel: 'meta-llama/llama-3.1-8b-instruct',
           questionsLevel: 'middle',
-          useAIGeneration: false,
+          useAiGeneration: false,
           questionsCount: 10,
         };
         console.log('✅ Returning default settings:', defaultSettings);
@@ -69,7 +69,7 @@ router.post(
         stackblitzApiKey,
         preferredModel,
         questionsLevel,
-        useAIGeneration,
+        useAiGeneration,
         questionsCount,
       } = req.body;
 
@@ -94,7 +94,7 @@ router.post(
           stackblitzApiKey: stackblitzApiKey || null,
           preferredModel: preferredModel || 'meta-llama/llama-3.1-8b-instruct',
           questionsLevel: questionsLevel || 'middle',
-          useAIGeneration: useAIGeneration || false,
+          useAiGeneration: useAiGeneration || false,
           questionsCount: questionsCount || 10,
         },
         create: {
@@ -103,7 +103,7 @@ router.post(
           stackblitzApiKey: stackblitzApiKey || null,
           preferredModel: preferredModel || 'meta-llama/llama-3.1-8b-instruct',
           questionsLevel: questionsLevel || 'middle',
-          useAIGeneration: useAIGeneration || false,
+          useAiGeneration: useAiGeneration || false,
           questionsCount: questionsCount || 10,
         },
       });
