@@ -77,8 +77,8 @@ export function Profile() {
   const [questionsLevel, setQuestionsLevel] = useState(
     userSettings.questionsLevel
   );
-  const [useAIGeneration, setUseAIGeneration] = useState(
-    userSettings.useAIGeneration
+  const [useAiGeneration, setUseAiGeneration] = useState(
+    userSettings.useAiGeneration
   );
   const [questionsCount, setQuestionsCount] = useState(
     userSettings.questionsCount
@@ -162,7 +162,7 @@ export function Profile() {
     setStackblitzKey(userSettings.stackblitzApiKey || '');
     setPreferredModel(userSettings.preferredModel);
     setQuestionsLevel(userSettings.questionsLevel);
-    setUseAIGeneration(userSettings.useAIGeneration);
+            setUseAiGeneration(userSettings.useAiGeneration);
     setQuestionsCount(userSettings.questionsCount);
     
     // Устанавливаем профессию из store, если она есть
@@ -209,7 +209,7 @@ export function Profile() {
         hasApiKey: !!apiKey,
         apiKeyLength: apiKey.length,
         apiKeyPrefix: apiKey.substring(0, 10) + '...',
-        useAIGeneration,
+        useAiGeneration,
         preferredModel,
         questionsLevel,
         questionsCount,
@@ -223,7 +223,7 @@ export function Profile() {
           openRouterApiKey: apiKey || null,
           stackblitzApiKey: stackblitzKey || null,
           preferredModel,
-          questionsLevel,
+          questionsLevel: questionsLevel as 'junior' | 'middle' | 'senior',
           useAIGeneration,
           questionsCount,
         });
@@ -237,7 +237,7 @@ export function Profile() {
         openRouterApiKey: apiKey || null,
         stackblitzApiKey: stackblitzKey || null,
         preferredModel,
-        questionsLevel,
+        questionsLevel: questionsLevel as 'junior' | 'middle' | 'senior',
         useAIGeneration,
         questionsCount,
       });
@@ -248,7 +248,7 @@ export function Profile() {
         openRouterApiKey: apiKey || null,
         stackblitzApiKey: stackblitzKey || null,
         preferredModel,
-        questionsLevel,
+        questionsLevel: questionsLevel as 'junior' | 'middle' | 'senior',
         useAIGeneration,
         questionsCount,
       });
@@ -264,7 +264,7 @@ export function Profile() {
           openRouterApiKey: apiKey || null,
           stackblitzApiKey: stackblitzKey || null,
           preferredModel,
-          questionsLevel,
+          questionsLevel: questionsLevel as 'junior' | 'middle' | 'senior',
           useAIGeneration,
           questionsCount,
         });

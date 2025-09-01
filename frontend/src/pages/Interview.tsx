@@ -206,15 +206,15 @@ export function Interview() {
       // Debug logging
       console.log('Loading questions with settings:', {
         userId,
-        useAIGeneration: userSettings.useAIGeneration,
-        hasApiKey: !!userSettings.openRouterApiKey,
+        useAiGeneration: userSettings.useAiGeneration,
+                  hasApiKey: !!userSettings.openrouterApiKey,
         profession,
         role,
       });
 
-      const shouldUseAI =
-        userSettings.useAIGeneration &&
-        userSettings.openRouterApiKey &&
+              const shouldUseAI =
+          userSettings.useAiGeneration &&
+          userSettings.openrouterApiKey &&
         profession &&
         userId; // Add userId check
 
@@ -224,7 +224,7 @@ export function Interview() {
           console.log('Attempting to generate AI questions...');
 
           try {
-            const api = new OpenRouterAPI(userSettings.openRouterApiKey);
+            const api = new OpenRouterAPI(userSettings.openrouterApiKey);
 
             // Test connection first
             const isConnected = await api.testConnection();
@@ -1817,8 +1817,8 @@ export function Interview() {
                 <h3 className="font-medium text-foreground mb-3 flex items-center">
                   <MessageCircle size={16} className="mr-2" />
                   {t('interview.questions')}
-                  {userSettings.useAIGeneration &&
-                    userSettings.openRouterApiKey && (
+                  {userSettings.useAiGeneration &&
+                    userSettings.openrouterApiKey && (
                       <span className="ml-2 text-xs bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-2 py-1 rounded-full">
                         AI
                       </span>
@@ -1838,7 +1838,7 @@ export function Interview() {
                     <div className="flex items-center justify-center p-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                       <span className="ml-2 text-sm text-muted-foreground">
-                        {userSettings.useAIGeneration
+                        {userSettings.useAiGeneration
                           ? 'Генерируются вопросы...'
                           : 'Загрузка вопросов...'}
                       </span>

@@ -19,10 +19,17 @@ class InMemoryUser {
         this.googleId = userData.googleId;
         this.googleAccessToken = userData.googleAccessToken;
         this.googleRefreshToken = userData.googleRefreshToken;
+        this.tgId = userData.tgId;
     }
-    // Статический метод для поиска пользователя по email
+    // Статический метод для поиска пользователя по email или tgId
     static async findOne(query) {
-        return users.find((user) => user.email === query.email) || null;
+        if ('email' in query && query.email) {
+            return users.find((user) => user.email === query.email) || null;
+        }
+        else if ('tgId' in query && query.tgId) {
+            return users.find((user) => user.tgId === query.tgId) || null;
+        }
+        return null;
     }
     // Статический метод для поиска пользователя по googleId
     static async findByGoogleId(googleId) {

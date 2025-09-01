@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
 const passport_google_oauth20_1 = require("passport-google-oauth20");
-const UserModel_1 = require("../models/UserModel"); // Импортируем универсальную модель User
+const UserModel_1 = require("../models/UserModel"); // Импортируем функцию для получения модели
 const config_1 = __importDefault(require("../config"));
 const loggerService_1 = __importDefault(require("../services/loggerService"));
 // Настройка сериализации и десериализации пользователя
@@ -14,7 +14,8 @@ passport_1.default.serializeUser((user, done) => {
 });
 passport_1.default.deserializeUser(async (id, done) => {
     try {
-        const user = await UserModel_1.User.findById(id);
+        const User = (0, UserModel_1.getCurrentUserModel)();
+        const user = await User.findById(id);
         done(null, user);
     }
     catch (error) {
@@ -68,13 +69,14 @@ if (config_1.default.googleOAuth.enabled) {
             const email = profile.emails && profile.emails[0] && profile.emails[0].value
                 ? profile.emails[0].value
                 : `google_${profile.id}@example.com`;
+            const User = (0, UserModel_1.getCurrentUserModel)();
             // Ищем пользователя по email или googleId
-            let user = await UserModel_1.User.findOne({ email });
+            let user = await User.findOne({ email });
             // Если пользователь не найден по email, ищем по googleId
             if (!user) {
                 // Проверяем, есть ли метод findByGoogleId у модели User
-                if (typeof UserModel_1.User.findByGoogleId === 'function') {
-                    user = await UserModel_1.User.findByGoogleId(profile.id);
+                if (typeof User.findByGoogleId === 'function') {
+                    user = await User.findByGoogleId(profile.id);
                 }
                 else {
                     console.log('Метод findByGoogleId не найден в модели User');
@@ -90,7 +92,7 @@ if (config_1.default.googleOAuth.enabled) {
             }
             else {
                 // Создаем нового пользователя
-                user = new UserModel_1.User({
+                user = new User({
                     email,
                     password: 'google_oauth_user', // Пароль не используется для OAuth пользователей
                     googleId: profile.id,
