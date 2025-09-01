@@ -91,11 +91,25 @@ jobs:
           echo "=== Проверяем структуру файлов ==="
           ls -la
           echo "=== Проверяем папку Lading ==="
-          ls -la Lading/
-          echo "=== Проверяем Dockerfile ==="
-          ls -la Lading/supermock-ai-interview/Dockerfile
-          echo "=== Содержимое Dockerfile ==="
-          head -5 Lading/supermock-ai-interview/Dockerfile
+          if [ -d "Lading" ]; then
+            ls -la Lading/
+            echo "=== Проверяем папку supermock-ai-interview ==="
+            if [ -d "Lading/supermock-ai-interview" ]; then
+              ls -la Lading/supermock-ai-interview/
+              echo "=== Проверяем Dockerfile ==="
+              if [ -f "Lading/supermock-ai-interview/Dockerfile" ]; then
+                ls -la Lading/supermock-ai-interview/Dockerfile
+                echo "=== Содержимое Dockerfile ==="
+                head -5 Lading/supermock-ai-interview/Dockerfile
+              else
+                echo "❌ Dockerfile не найден!"
+              fi
+            else
+              echo "❌ Папка supermock-ai-interview не найдена!"
+            fi
+          else
+            echo "❌ Папка Lading не найдена!"
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
