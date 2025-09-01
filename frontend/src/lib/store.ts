@@ -213,6 +213,7 @@ export const useAppStore = create<AppState>()(
         const normalizedUserId = typeof currentUserId === 'string' ? (parseInt(currentUserId, 10) || 0) : (currentUserId ?? 0);
         
         apiSaveUserSettings({
+          // @ts-ignore
           userId: normalizedUserId,
           ...settings,
         }).catch(() => {

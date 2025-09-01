@@ -86,6 +86,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Debug file structure
+        run: |
+          echo "=== Проверяем структуру файлов ==="
+          ls -la
+          echo "=== Проверяем папку Lading ==="
+          ls -la Lading/
+          echo "=== Проверяем Dockerfile ==="
+          ls -la Lading/supermock-ai-interview/Dockerfile
+          echo "=== Содержимое Dockerfile ==="
+          head -5 Lading/supermock-ai-interview/Dockerfile
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
