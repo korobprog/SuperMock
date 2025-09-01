@@ -79,7 +79,7 @@ services:
       # HTTP to HTTPS redirect
       - traefik.http.routers.api-http.rule=Host(`api.supermock.ru`)
       - traefik.http.routers.api-http.entrypoints=web
-      - traefik.http.routers.api-http.middlewares=redirect-to-https
+      - traefik.http.routers.api-http.middlewares=api-redirect
       # HTTPS
       - traefik.http.routers.api.rule=Host(`api.supermock.ru`)
       - traefik.http.routers.api.entrypoints=websecure
@@ -123,7 +123,7 @@ services:
       # HTTP to HTTPS redirect
       - traefik.http.routers.app-http.rule=Host(`app.supermock.ru`)
       - traefik.http.routers.app-http.entrypoints=web
-      - traefik.http.routers.app-http.middlewares=redirect-to-https
+      - traefik.http.routers.app-http.middlewares=app-redirect
       # HTTPS
       - traefik.http.routers.app.rule=Host(`app.supermock.ru`)
       - traefik.http.routers.app.entrypoints=websecure
@@ -160,8 +160,11 @@ services:
     restart: unless-stopped
     labels:
       - traefik.enable=true
-      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-      - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
+      # Создаем специфичные middleware для каждого поддомена
+      - traefik.http.middlewares.app-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.app-redirect.redirectscheme.permanent=true
+      - traefik.http.middlewares.api-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.api-redirect.redirectscheme.permanent=true
 
 
 
