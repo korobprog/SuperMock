@@ -64,6 +64,56 @@ http:
         - backend-headers
         - websocket-headers
     
+    # App домен роутеры (app.supermock.ru)
+    supermock-app-frontend:
+      rule: Host(`app.supermock.ru`)
+      service: supermock-frontend-service
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+        - frontend-headers
+    
+    supermock-app-frontend-secure:
+      rule: Host(`app.supermock.ru`)
+      service: supermock-frontend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - frontend-headers
+    
+    supermock-app-backend:
+      rule: Host(`app.supermock.ru`) && PathPrefix(`/api`)
+      service: supermock-backend-service
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+        - backend-headers
+    
+    supermock-app-backend-secure:
+      rule: Host(`app.supermock.ru`) && PathPrefix(`/api`)
+      service: supermock-backend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - backend-headers
+    
+    supermock-app-websocket:
+      rule: Host(`app.supermock.ru`) && PathPrefix(`/socket.io`)
+      service: supermock-backend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - backend-headers
+        - websocket-headers
+    
     # Тестовые роутеры (если нужны)
     supermock-frontend-test:
       rule: Host(`test.supermock.ru`)
@@ -103,7 +153,7 @@ http:
     supermock-frontend-service:
       loadBalancer:
         servers:
-          - url: http://supermock-supermock-full-stack-yrvopu-frontend-1:8080
+          - url: http://supermock-frontend:8080
         passHostHeader: true
         healthCheck:
           path: /
@@ -113,7 +163,7 @@ http:
     supermock-backend-service:
       loadBalancer:
         servers:
-          - url: http://supermock-supermock-full-stack-yrvopu-backend-1:3000
+          - url: http://supermock-backend:3000
         passHostHeader: true
         healthCheck:
           path: /api/health
@@ -124,13 +174,13 @@ http:
     supermock-frontend-test-service:
       loadBalancer:
         servers:
-          - url: http://supermock-supermock-full-stack-yrvopu-frontend-1:8080
+          - url: http://supermock-frontend:8080
         passHostHeader: true
     
     supermock-backend-test-service:
       loadBalancer:
         servers:
-          - url: http://supermock-supermock-full-stack-yrvopu-backend-1:3000
+          - url: http://supermock-backend:3000
         passHostHeader: true
 
   middlewares:

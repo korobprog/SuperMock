@@ -71,6 +71,8 @@ const corsOptions = {
       'http://localhost:3001',
       'https://supermock.ru',
       'https://www.supermock.ru',
+      'https://app.supermock.ru',
+      'http://app.supermock.ru',
       'http://supermock.ru',
       'http://www.supermock.ru',
     ];
@@ -123,6 +125,8 @@ const io = new SocketIOServer(server, {
     origin: [
       'https://supermock.ru',
       'https://www.supermock.ru',
+      'https://app.supermock.ru',
+      'http://app.supermock.ru',
       'http://localhost:5173',
       'http://127.0.0.1:5173',
       'http://localhost:3000',
