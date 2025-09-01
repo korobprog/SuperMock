@@ -14,6 +14,13 @@ on:
         - production
         - staging
 
+# Добавляем специальные permissions для CI/CD
+permissions:
+  contents: write
+  packages: write
+  actions: write
+  deployments: write
+
 env:
   SERVER_IP: 217.198.6.238
   SERVER_PATH: /opt/mockmate
@@ -29,8 +36,7 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 8.15.0
+        # Убираем явное указание версии - используем из package.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
