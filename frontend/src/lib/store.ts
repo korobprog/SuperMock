@@ -209,18 +209,11 @@ export const useAppStore = create<AppState>()(
         }));
 
         // Автоматически пытаемся сохранить в БД
-        const currentState = get();
-        let userId = currentState.userId;
-
-        // Если нет userId, создаем локального пользователя (только в development)
-        if (!userId && import.meta.env.DEV) {
-          userId = generateLocalUserId();
-          set({ userId });
-        }
-
-        // Асинхронно сохраняем в БД
+        const currentUserId = get().userId;
+        const normalizedUserId: number = currentUserId || 0;
+        
         apiSaveUserSettings({
-          userId: Number(userId),
+          userId: normalizedUserId,
           ...settings,
         }).catch(() => {
           // Не показываем ошибку пользователю, данные уже сохранены в localStorage
@@ -250,7 +243,7 @@ export const useAppStore = create<AppState>()(
         }),
       clearAll: () =>
         set({
-          userId: Number(getOrGenerateUserId()), // Генерируем новый userId вместо 0
+          userId: getOrGenerateUserId(), // Генерируем новый userId вместо 0
           telegramUser: null,
           role: null,
           lastRole: null,
