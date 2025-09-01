@@ -102,11 +102,15 @@ jobs:
             materials/ \
             deploy/
 
-      - name: Upload deployment archive
-        uses: actions/upload-artifact@v4
+      - name: Upload deployment files
+        uses: appleboy/scp-action@v0.1.7
         with:
-          name: deployment-archive
-          path: deployment.tar.gz
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          source: "deployment.tar.gz"
+          target: "${{ secrets.DEPLOY_PATH }}"
 
       - name: Deploy to production server
         uses: appleboy/ssh-action@v1.0.3
