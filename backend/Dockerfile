@@ -12,7 +12,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lo
 
 # Copy backend sources
 COPY backend ./backend
-COPY backend/prisma ./backend/prisma
 
 # Generate Prisma client
 RUN pnpm exec prisma generate --schema backend/prisma/schema.prisma

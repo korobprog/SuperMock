@@ -213,7 +213,7 @@ export const useAppStore = create<AppState>()(
         const normalizedUserId = Number(currentUserId) || 0;
         
         apiSaveUserSettings({
-          userId: normalizedUserId,
+          userId: normalizedUserId as number,
           ...settings,
         }).catch(() => {
           // Не показываем ошибку пользователю, данные уже сохранены в localStorage
