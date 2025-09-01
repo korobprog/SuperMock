@@ -208,9 +208,9 @@ export const useAppStore = create<AppState>()(
           userSettings: { ...state.userSettings, ...settings },
         }));
 
-        // Автоматически пытаемся сохранить в БД
+        // Асинхронно сохраняем в БД
         const currentUserId = get().userId;
-        const normalizedUserId: number = currentUserId || 0;
+        const normalizedUserId = Number(currentUserId) || 0;
         
         apiSaveUserSettings({
           userId: normalizedUserId,
@@ -243,7 +243,7 @@ export const useAppStore = create<AppState>()(
         }),
       clearAll: () =>
         set({
-          userId: getOrGenerateUserId(), // Генерируем новый userId вместо 0
+          userId: Number(getOrGenerateUserId()) || 0, // Генерируем новый userId вместо 0
           telegramUser: null,
           role: null,
           lastRole: null,
@@ -302,7 +302,7 @@ export const useAppStore = create<AppState>()(
           if (isRecentlyLoggedOut) {
             // Если пользователь недавно вышел, очищаем все данные
             console.log('User recently logged out, clearing all data');
-            state.userId = getOrGenerateUserId(); // Генерируем новый userId вместо 0
+            state.userId = Number(getOrGenerateUserId()) || 0; // Генерируем новый userId вместо 0
             state.telegramUser = null;
             state.role = null;
             state.lastRole = null;
@@ -327,7 +327,7 @@ export const useAppStore = create<AppState>()(
 
           // Если нет userId (не авторизован через Telegram), создаем локального пользователя (только в development)
           if (!state.userId && !state.telegramUser && import.meta.env.DEV) {
-            const localUserId = generateLocalUserId();
+            const localUserId = Number(generateLocalUserId()) || 0;
             state.userId = localUserId;
             console.log('Initialized local user ID:', localUserId);
           }
