@@ -2038,6 +2038,28 @@ app.post('/api/sessions/:id/feedback', async (req, res) => {
       return res.status(400).json({ error: 'fromUserId and toUserId are required' });
     }
 
+    // Проверяем JWT токен, если он предоставлен
+    let verifiedUserId = null;
+    const authHeader = req.header('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const JWT_SECRET = process.env.JWT_SECRET || 'mock_interview_secret_key';
+        const token = authHeader.replace('Bearer ', '');
+        const decoded = jwt.verify(token, JWT_SECRET);
+        verifiedUserId = decoded.user.id;
+        console.log('🔧 JWT token verified for user:', verifiedUserId);
+      } catch (jwtError) {
+        console.log('🔧 JWT token verification failed:', jwtError.message);
+        // Не прерываем выполнение, если JWT недействителен
+      }
+    }
+
+    // Если JWT токен предоставлен, проверяем соответствие userId
+    if (verifiedUserId && String(verifiedUserId) !== String(fromUserId)) {
+      return res.status(403).json({ error: 'User ID mismatch' });
+    }
+
     // Проверяем существование сессии
     const session = await prisma.session.findUnique({
       where: { id: sessionId },
@@ -2676,15 +2698,34 @@ app.post('/api/telegram-auth', async (req, res) => {
       },
     });
 
-    res.json({
-      success: true,
+    // Создаем JWT токен для пользователя
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET || 'mock_interview_secret_key';
+    
+    const payload = {
       user: {
-        id: telegramData.id,
-        first_name: telegramData.first_name,
-        last_name: telegramData.last_name,
-        username: telegramData.username,
-        photo_url: telegramData.photo_url,
+        id: String(telegramData.id),
       },
+    };
+
+    jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' }, (err, token) => {
+      if (err) {
+        console.error('Error creating JWT token:', err);
+        res.status(500).json({ error: 'Failed to create token' });
+        return;
+      }
+      
+      res.json({
+        success: true,
+        user: {
+          id: telegramData.id,
+          first_name: telegramData.first_name,
+          last_name: telegramData.last_name,
+          username: telegramData.username,
+          photo_url: telegramData.photo_url,
+        },
+        token: token,
+      });
     });
   } catch (error) {
     console.error('Error validating Telegram auth:', error);

@@ -4,8 +4,6 @@ import {
   isTelegramFullscreen,
   exitTelegramFullscreen,
   isFullscreenSupported,
-  showAboutCompanyButton,
-  hideAboutCompanyButton,
 } from '@/lib/utils';
 
 /**
@@ -54,7 +52,5 @@ export function useTelegramFullscreen() {
     isFullscreen,
     isSupported,
     exitFullscreen: exitTelegramFullscreen,
-    showAboutCompany: showAboutCompanyButton,
-    hideAboutCompany: hideAboutCompanyButton,
   };
 }

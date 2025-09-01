@@ -125,27 +125,19 @@ export function hideTelegramMainButton() {
   }
 }
 
-// Показывает кнопку "About Company" в Telegram WebApp
-export function showAboutCompanyButton() {
+// Функция для открытия About Company в мини-апсе (используется в чате)
+// Эта функция предназначена для использования в Telegram Bot, когда пользователь
+// нажимает кнопку "About Company" в чате. Она открывает информацию о компании
+// внутри Telegram Mini App, а не в браузере.
+export function openAboutCompanyInMiniApp() {
   const tg = getTelegramWebApp();
-  if (tg?.MainButton) {
-    const mainButton = tg.MainButton;
-    mainButton.setText('About Company');
-    mainButton.show();
-    mainButton.onClick(() => {
-      // Открываем информацию о компании внутри Telegram Mini App
-      window.location.href = 'https://supermock.ru';
-    });
+  if (tg) {
+    // Открываем информацию о компании внутри Telegram Mini App
+    window.location.href = 'https://supermock.ru';
   }
 }
 
-// Скрывает кнопку "About Company" в Telegram WebApp
-export function hideAboutCompanyButton() {
-  const tg = getTelegramWebApp();
-  if (tg?.MainButton) {
-    tg.MainButton.hide();
-  }
-}
+
 
 // Настраивает полноэкранный режим в Telegram Mini Apps
 export function setupTelegramFullscreen() {
@@ -191,8 +183,7 @@ export function setupTelegramFullscreen() {
       });
     }
 
-    // Показываем кнопку "About Company" в Telegram WebApp
-    showAboutCompanyButton();
+    // Кнопка "About Company" убрана из WebApp, оставлена только в чате
 
     // Добавляем обработчики событий полноэкранного режима (только для поддерживаемых версий)
     if (majorVersion >= 8 && tg.onEvent) {

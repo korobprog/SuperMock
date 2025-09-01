@@ -74,10 +74,19 @@ function generateLocalUserId(): number {
   return localId;
 }
 
+// Функция для получения или генерации userId
+function getOrGenerateUserId(): number {
+  const existingId = localStorage.getItem('Super Mock-local-user-id');
+  if (existingId) {
+    return parseInt(existingId);
+  }
+  return generateLocalUserId();
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
-      userId: null,
+      userId: getOrGenerateUserId(), // Автоматически генерируем userId при инициализации
       telegramUser: null,
       role: null,
       lastRole: null,
@@ -99,12 +108,14 @@ export const useAppStore = create<AppState>()(
       },
       setUserId: (id) => {
         console.log('🔧 setUserId called with:', id, 'Type:', typeof id);
-        set({ userId: id });
-        console.log('🔧 userId set in store to:', id);
+        // Если передается 0 или null, генерируем новый ID
+        const finalId = id && id > 0 ? id : getOrGenerateUserId();
+        set({ userId: finalId });
+        console.log('🔧 userId set in store to:', finalId);
         // Автоматически загружаем данные пользователя при установке userId
-        if (id > 0) {
+        if (finalId > 0) {
           const store = useAppStore.getState();
-          store.loadUserData(id).catch(() => {
+          store.loadUserData(finalId).catch(() => {
             // Silent error handling
           });
         }
@@ -231,7 +242,7 @@ export const useAppStore = create<AppState>()(
         }),
       clearAll: () =>
         set({
-          userId: 0,
+          userId: getOrGenerateUserId(), // Генерируем новый userId вместо 0
           telegramUser: null,
           role: null,
           lastRole: null,
@@ -286,7 +297,7 @@ export const useAppStore = create<AppState>()(
           if (isRecentlyLoggedOut) {
             // Если пользователь недавно вышел, очищаем все данные
             console.log('User recently logged out, clearing all data');
-            state.userId = 0;
+            state.userId = getOrGenerateUserId(); // Генерируем новый userId вместо 0
             state.telegramUser = null;
             state.role = null;
             state.lastRole = null;

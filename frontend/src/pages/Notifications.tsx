@@ -31,6 +31,7 @@ import {
   Info,
   Copy,
   ExternalLink,
+  Star,
 } from 'lucide-react';
 import { MobileBottomMenu } from '@/components/ui/mobile-bottom-menu';
 import { CompactLanguageSelector } from '@/components/ui/compact-language-selector';
@@ -320,6 +321,8 @@ export function Notifications() {
         return <Video size={16} className="text-blue-600" />;
       case 'match':
         return <Users size={16} className="text-green-600" />;
+      case 'session_completed':
+        return <Star size={16} className="text-yellow-600" />;
       case 'system':
         return <Info size={16} className="text-gray-600" />;
       case 'error':
@@ -434,6 +437,10 @@ export function Notifications() {
       } else if (data.type === 'reminder' && data.sessionId) {
         // Переходим прямо в интервью для напоминания
         navigate(`/interview?sessionId=${data.sessionId}`);
+        success();
+      } else if (data.action === 'give_feedback' && data.sessionId) {
+        // Переходим на страницу истории для оставления фидбека
+        navigate(`/history?session=${data.sessionId}`);
         success();
       }
     } catch (err) {
@@ -650,6 +657,23 @@ export function Notifications() {
                               >
                                 <Video size={14} className="mr-2" />
                                 {t('notifications.joinInterview')}
+                              </Button>
+                            );
+                          }
+                          if (data?.action === 'give_feedback' && data?.sessionId) {
+                            return (
+                              <Button
+                                variant="default"
+                                size="sm"
+                                className="mb-3 telegram-desktop-fix bg-yellow-500 hover:bg-yellow-600 text-white"
+                                onClick={() =>
+                                  handleNotificationAction(
+                                    notification.actionData!
+                                  )
+                                }
+                              >
+                                <Star size={14} className="mr-2" />
+                                {t('history.giveFeedback') || 'Оставить фидбек'}
                               </Button>
                             );
                           }

@@ -16,6 +16,7 @@ config();
 async function setupWebhook() {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const domain = process.env.DOMAIN || 'supermock.ru';
+  const apiDomain = process.env.API_DOMAIN || 'api.supermock.ru';
 
   if (!botToken) {
     console.error('❌ TELEGRAM_BOT_TOKEN не настроен в .env файле');
@@ -23,10 +24,11 @@ async function setupWebhook() {
   }
 
   console.log("🔧 Настройка webhook'а для Telegram бота...");
-  console.log(`🌐 Домен: ${domain}`);
+  console.log(`🌐 Основной домен: ${domain}`);
+  console.log(`🔗 API домен: ${apiDomain}`);
   console.log(`🤖 Токен бота: ${botToken.substring(0, 10)}...`);
 
-  const webhookUrl = `https://${domain}/api/telegram-webhook`;
+  const webhookUrl = `https://${apiDomain}/api/telegram-webhook`;
 
   try {
     // Устанавливаем webhook

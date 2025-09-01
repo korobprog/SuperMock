@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -62,8 +62,29 @@ export function History() {
     name?: string;
   } | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useAppTranslation();
   const userId = useAppStore((s) => s.userId);
+  const setUserId = useAppStore((s) => s.setUserId);
+
+  // Функция для получения или генерации userId
+  const ensureUserId = (): number => {
+    if (userId && userId > 0) {
+      return userId;
+    }
+    
+    // Генерируем новый userId если его нет
+    const newUserId = Math.floor(Math.random() * 1000000) + 1000000;
+    setUserId(newUserId);
+    return newUserId;
+  };
+
+  // Убеждаемся, что userId установлен при загрузке компонента
+  useEffect(() => {
+    if (!userId || userId === 0) {
+      ensureUserId();
+    }
+  }, [userId, setUserId]);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -83,7 +104,8 @@ export function History() {
       }
 
       try {
-        const data = await apiHistory(userId);
+        const currentUserId = ensureUserId();
+        const data = await apiHistory(currentUserId);
         setHistoryData(data);
       } catch (err) {
         setError(t('history.failedToLoadHistory'));
@@ -94,7 +116,19 @@ export function History() {
     };
 
     fetchHistory();
-  }, [userId, navigate, t]);
+  }, [userId, navigate, t, setUserId]);
+
+  // Обработка параметра session из URL для автоматического открытия фидбека
+  useEffect(() => {
+    const sessionId = searchParams.get('session');
+    if (sessionId && historyData && !showFeedbackModal) {
+      const session = historyData.sessions.find(s => s.id === sessionId);
+      if (session && canGiveFeedback(session)) {
+        console.log('🔧 Auto-opening feedback modal for session:', sessionId);
+        handleGiveFeedback(session);
+      }
+    }
+  }, [searchParams, historyData, showFeedbackModal]);
 
   const formatDate = (dateStr: string) => {
     try {
@@ -120,7 +154,8 @@ export function History() {
   };
 
   const getUserRole = (session: Session) => {
-    return session.interviewer_user_id === userId ? 'interviewer' : 'candidate';
+    const currentUserId = ensureUserId();
+    return session.interviewer_user_id === currentUserId ? 'interviewer' : 'candidate';
   };
 
   const getUserTools = (session: Session) => {
@@ -151,11 +186,12 @@ export function History() {
 
   // Check if user can give feedback for a session
   const canGiveFeedback = (session: Session) => {
-    if (!userId || session.status !== 'completed') return false;
+    if (session.status !== 'completed') return false;
 
+    const currentUserId = ensureUserId();
     const sessionFeedbacks = getSessionFeedbacks(session.id);
     const hasGivenFeedback = sessionFeedbacks.some(
-      (f) => f.from_user_id === userId
+      (f) => f.from_user_id === currentUserId
     );
 
     return !hasGivenFeedback;
@@ -163,10 +199,10 @@ export function History() {
 
   // Handle feedback button click
   const handleGiveFeedback = (session: Session) => {
-    if (!userId) return;
+    const currentUserId = ensureUserId();
 
     // Determine target user (simplified - in real app you'd get this from session data)
-    const isInterviewer = session.interviewer_user_id === userId;
+    const isInterviewer = session.interviewer_user_id === currentUserId;
     const targetUserId = isInterviewer
       ? session.candidate_user_id
       : session.interviewer_user_id;
@@ -184,24 +220,37 @@ export function History() {
     rating: number;
     comments: string;
   }) => {
-    if (!selectedSession || !userId || !targetUser) return;
+    console.log('🔧 handleFeedbackSubmit called with:', { feedback, selectedSession, userId, targetUser });
+    
+    if (!selectedSession || !targetUser) {
+      console.error('🔧 Missing required data for feedback submission');
+      return;
+    }
+
+    // Убеждаемся, что userId установлен
+    const currentUserId = ensureUserId();
+    console.log('🔧 Using userId for feedback:', currentUserId);
 
     setIsSubmittingFeedback(true);
     try {
-      // 🤖 Используем расширенный API с AI анализом
-      await apiEnhancedFeedback({
+      const payload = {
         sessionId: selectedSession.id,
-        fromUserId: userId,
+        fromUserId: currentUserId,
         toUserId: targetUser.id,
         ratings: { overall: feedback.rating }, // конвертируем простой rating в объект
         comments: feedback.comments,
         recommendations: '' // пока пустое
-      });
+      };
+      
+      console.log('🔧 Submitting feedback with payload:', payload);
+      
+      // 🤖 Используем расширенный API с AI анализом
+      await apiEnhancedFeedback(payload);
 
       console.log('✅ Feedback sent with AI analysis enabled (from History)');
 
       // Refresh history data
-      const data = await apiHistory(userId);
+      const data = await apiHistory(currentUserId);
       setHistoryData(data);
 
       // Close modal
@@ -210,6 +259,8 @@ export function History() {
       setTargetUser(null);
     } catch (error) {
       console.error('Failed to submit feedback:', error);
+      // Показываем ошибку пользователю
+      alert(`Ошибка отправки фидбека: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
     } finally {
       setIsSubmittingFeedback(false);
     }

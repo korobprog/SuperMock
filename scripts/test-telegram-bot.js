@@ -77,7 +77,7 @@ async function testBot() {
 
     // 3. Проверяем API эндпоинты (если сервер запущен)
     console.log('\n3️⃣ Проверка API эндпоинтов...');
-    const baseUrl = process.env.API_URL || 'http://localhost:3001';
+    const baseUrl = process.env.API_URL || 'https://api.supermock.ru';
 
     try {
       const statusResponse = await fetch(`${baseUrl}/api/telegram-bot-status`);

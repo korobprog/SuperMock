@@ -13,6 +13,7 @@ class TelegramNotificationService {
       'SuperMock_bot';
     this.baseUrl = `https://api.telegram.org/bot${this.botToken}`;
     this.frontendUrl = process.env.FRONTEND_URL || 'https://app.supermock.ru';
+    this.logoPath = process.env.TELEGRAM_BOT_LOGO_PATH || '/home/korobprog/Документы/supermock/frontend/dist/logo_flag.gif';
   }
 
   /**
@@ -79,6 +80,55 @@ class TelegramNotificationService {
       }
     } catch (error) {
       console.error(`❌ Error sending Telegram message to ${chatId}:`, error);
+      return { success: false, reason: error.message };
+    }
+  }
+
+  /**
+   * Отправляет изображение пользователю через Telegram бот
+   */
+  async sendPhoto(chatId, photoPath, caption = '', options = {}) {
+    try {
+      if (!this.botToken) {
+        console.warn('Telegram bot token not configured');
+        return { success: false, reason: 'Bot token not configured' };
+      }
+
+      // Создаем FormData для отправки файла
+      const FormData = await import('form-data');
+      const form = new FormData();
+      form.append('chat_id', chatId);
+      form.append('photo', photoPath);
+      
+      if (caption) {
+        form.append('caption', caption);
+        form.append('parse_mode', 'HTML');
+      }
+
+      // Добавляем дополнительные опции
+      if (options.reply_markup) {
+        form.append('reply_markup', JSON.stringify(options.reply_markup));
+      }
+
+      const response = await fetch(`${this.baseUrl}/sendPhoto`, {
+        method: 'POST',
+        body: form,
+      });
+
+      const data = await response.json();
+
+      if (data.ok) {
+        console.log(`✅ Telegram photo sent to ${chatId}`);
+        return { success: true, messageId: data.result.message_id };
+      } else {
+        console.error(
+          `❌ Failed to send Telegram photo to ${chatId}:`,
+          data.description
+        );
+        return { success: false, reason: data.description };
+      }
+    } catch (error) {
+      console.error(`❌ Error sending Telegram photo to ${chatId}:`, error);
       return { success: false, reason: error.message };
     }
   }
@@ -468,12 +518,12 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
 
 🎯 <b>Как использовать бота:</b>
 
-1️⃣ <b>Нажмите кнопку START</b> - откроется приложение SuperMock
-2️⃣ <b>Выберите профессию</b> - укажите область, в которой хотите практиковаться
-3️⃣ <b>Выберите роль</b> - кандидат или интервьюер
-4️⃣ <b>Найдите собеседование</b> - система подберет подходящего партнера
-5️⃣ <b>Проведите собеседование</b> - используйте встроенную видеосвязь
-6️⃣ <b>Оставьте фидбек</b> - оцените партнера и получите оценку
+🎬 <b>Нажмите кнопку START</b> - откроется приложение SuperMock
+🎯 <b>Выберите профессию</b> - укажите область, в которой хотите практиковаться
+👤 <b>Выберите роль</b> - кандидат или интервьюер
+🔍 <b>Найдите собеседование</b> - система подберет подходящего партнера
+🎥 <b>Проведите собеседование</b> - используйте встроенную видеосвязь
+⭐ <b>Оставьте фидбек</b> - оцените партнера и получите оценку
 
 📋 <b>Доступные команды:</b>
 • /start - главное меню
@@ -556,30 +606,38 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
       }
 
       const welcomeMessage = `
-🚀 <b>Добро пожаловать в SuperMock!</b>
+🚀 <b>Welcome to SuperMock!</b>
 
-Привет, ${user.first_name || user.username || 'друг'}! 👋
+Hello, ${user.first_name || user.username || 'friend'}! 👋
 
-🎯 <b>SuperMock</b> - это платформа для практики собеседований с реальными людьми.
+🎯 <b>SuperMock</b> is a platform for practicing interviews with real people.
 
-📋 <b>Что вы можете делать:</b>
-• Найти собеседование по вашей профессии
-• Практиковаться в роли кандидата или интервьюера
-• Получать фидбек от партнеров
-• Отслеживать свой прогресс
+📋 <b>What you can do:</b>
+• Find interviews in your profession
+• Practice as a candidate or interviewer
+• Receive feedback from partners
+• Track your progress
 
-Нажмите кнопку <b>START</b> ниже, чтобы открыть приложение и начать практику! 🎉
+🏢 <b>About SuperMock:</b>
+SuperMock is an innovative platform that connects professionals for realistic interview practice. Our mission is to help people improve their interview skills through real conversations with peers in their industry.
+
+💡 <b>How it works:</b>
+1. Choose your profession and role (candidate or interviewer)
+2. Find a suitable partner for practice
+3. Conduct a realistic interview using our video platform
+4. Give and receive constructive feedback
+5. Track your progress and improve your skills
+
+Click the <b>Instructions</b> button below to learn how to conduct mock interviews! 🎉
       `.trim();
 
-      // Создаем большую кнопку START для открытия мини-приложения
+      // Создаем кнопку с инструкциями
       const keyboard = {
         keyboard: [
           [
             {
-              text: '🚀 Открыть SuperMock',
-              web_app: {
-                url: 'https://app.supermock.ru',
-              },
+              text: '📖 Instructions for Mock Interviews',
+              url: 'https://supermock.ru/instructions',
             },
           ],
         ],
@@ -593,29 +651,71 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
         inline_keyboard: [
           [
             {
-              text: '📊 Моя статистика',
+              text: '🚀 Open Application',
+              url: 'https://app.supermock.ru',
+            },
+          ],
+          [
+            {
+              text: '📊 My Statistics',
               callback_data: 'show_stats',
             },
           ],
           [
             {
-              text: '❓ Помощь',
+              text: '❓ Help',
               callback_data: 'help',
             },
           ],
         ],
       };
 
-      // Отправляем основное сообщение с большой кнопкой
-      await this.sendMessage(chatId, welcomeMessage, {
-        reply_markup: keyboard,
-      });
+      // Отправляем логотип с приветственным сообщением
+      const logoPath = this.logoPath;
+      const logoCaption = `
+🚀 <b>Welcome to SuperMock!</b>
+
+Hello, ${user.first_name || user.username || 'friend'}! 👋
+
+🎯 <b>SuperMock</b> is a platform for practicing interviews with real people.
+
+📋 <b>What you can do:</b>
+• Find interviews in your profession
+• Practice as a candidate or interviewer
+• Receive feedback from partners
+• Track your progress
+
+🏢 <b>About SuperMock:</b>
+SuperMock is an innovative platform that connects professionals for realistic interview practice. Our mission is to help people improve their interview skills through real conversations with peers in their industry.
+
+💡 <b>How it works:</b>
+1. Choose your profession and role (candidate or interviewer)
+2. Find a suitable partner for practice
+3. Conduct a realistic interview using our video platform
+4. Give and receive constructive feedback
+5. Track your progress and improve your skills
+
+Click the <b>Instructions</b> button below to learn how to conduct mock interviews! 🎉
+      `.trim();
+
+      // Проверяем существование файла логотипа
+      const fs = await import('fs');
+      if (fs.existsSync(logoPath)) {
+        await this.sendPhoto(chatId, logoPath, logoCaption, {
+          reply_markup: keyboard,
+        });
+      } else {
+        console.warn(`Logo file not found: ${logoPath}, sending text message instead`);
+        await this.sendMessage(chatId, logoCaption, {
+          reply_markup: keyboard,
+        });
+      }
 
       // Отправляем дополнительное сообщение с inline кнопками
       const additionalMessage = `
-📱 <b>Дополнительные возможности:</b>
+📱 <b>Additional Features:</b>
 
-Используйте кнопки ниже для быстрого доступа к функциям бота.
+After studying the instructions, use the buttons below for quick access to bot functions.
       `.trim();
 
       return await this.sendMessage(chatId, additionalMessage, {

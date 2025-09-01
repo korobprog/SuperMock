@@ -17,19 +17,28 @@ services:
     networks:
       - supermock-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-supermock}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Redis для кэширования и WebSocket
   redis:
     image: redis:7-alpine
     container_name: supermock-redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
-    volumes:
-      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-krishna1284}" --save 900 1 --save 300 10 --save 60 10000 --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
     networks:
       - supermock-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-krishna1284}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Backend API сервер
   backend:
@@ -56,15 +65,27 @@ services:
       - CORS_ORIGIN=https://app.supermock.ru
     volumes:
       - ./backend:/app/backend
-      - /app/node_modules
-    ports:
-      - "3000:3000"
+      - backend_node_modules:/app/node_modules
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - supermock-network
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.supermock-backend-http.rule=Host(`api.supermock.ru`)
+      - traefik.http.routers.supermock-backend-http.entrypoints=web
+      - traefik.http.routers.supermock-backend-http.middlewares=redirect-to-https
+      # HTTPS
+      - traefik.http.routers.supermock-backend.rule=Host(`api.supermock.ru`)
+      - traefik.http.routers.supermock-backend.entrypoints=websecure
+      - traefik.http.routers.supermock-backend.tls=true
+      - traefik.http.routers.supermock-backend.tls.certresolver=letsencrypt
+      - traefik.http.services.supermock-backend.loadbalancer.server.port=3000
 
   # Frontend приложение (app.supermock.ru)
   frontend-app:
@@ -93,10 +114,22 @@ services:
       - VITE_TURN_PASSWORD=${VITE_TURN_PASSWORD}
     volumes:
       - ./frontend:/app/frontend
-      - /app/node_modules
+      - frontend_app_node_modules:/app/node_modules
     networks:
       - supermock-network
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.supermock-frontend-app-http.rule=Host(`app.supermock.ru`)
+      - traefik.http.routers.supermock-frontend-app-http.entrypoints=web
+      - traefik.http.routers.supermock-frontend-app-http.middlewares=redirect-to-https
+      # HTTPS
+      - traefik.http.routers.supermock-frontend-app.rule=Host(`app.supermock.ru`)
+      - traefik.http.routers.supermock-frontend-app.entrypoints=websecure
+      - traefik.http.routers.supermock-frontend-app.tls=true
+      - traefik.http.routers.supermock-frontend-app.tls.certresolver=letsencrypt
+      - traefik.http.services.supermock-frontend-app.loadbalancer.server.port=8080
 
   # Лендинг (supermock.ru)
   frontend-landing:
@@ -108,36 +141,29 @@ services:
       - NODE_ENV=production
     volumes:
       - ./Lading/supermock-ai-interview:/app/Lading/supermock-ai-interview
-      - /app/node_modules
+      - frontend_landing_node_modules:/app/node_modules
     networks:
       - supermock-network
     restart: unless-stopped
-
-  # Nginx для маршрутизации
-  nginx:
-    image: nginx:alpine
-    container_name: supermock-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx-multi.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - nginx_logs:/var/log/nginx
-    depends_on:
-      - backend
-      - frontend-app
-      - frontend-landing
-    networks:
-      - supermock-network
-    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.supermock-frontend-landing-http.rule=Host(`supermock.ru`)
+      - traefik.http.routers.supermock-frontend-landing-http.entrypoints=web
+      - traefik.http.routers.supermock-frontend-landing-http.middlewares=redirect-to-https
+      # HTTPS
+      - traefik.http.routers.supermock-frontend-landing.rule=Host(`supermock.ru`)
+      - traefik.http.routers.supermock-frontend-landing.entrypoints=websecure
+      - traefik.http.routers.supermock-frontend-landing.tls=true
+      - traefik.http.routers.supermock-frontend-landing.tls.certresolver=letsencrypt
+      - traefik.http.services.supermock-frontend-landing.loadbalancer.server.port=80
 
   # Traefik для автоматического SSL и маршрутизации
   traefik:
     image: traefik:v2.10
     container_name: supermock-traefik
     command:
-      - "--api.insecure=true"
+      - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
@@ -145,21 +171,28 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.email=admin@supermock.ru"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--log.level=INFO"
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_certs:/letsencrypt
     networks:
       - supermock-network
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
 
 volumes:
   postgres_data:
   redis_data:
-  nginx_logs:
   traefik_certs:
+  backend_node_modules:
+  frontend_app_node_modules:
+  frontend_landing_node_modules:
 
 networks:
   supermock-network:

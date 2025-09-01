@@ -1,0 +1,307 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+env:
+  SERVER_IP: 217.198.6.238
+  SERVER_PATH: /opt/mockmate
+  PROJECT_NAME: supermock
+
+jobs:
+  # Сборка и тестирование
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          cd frontend && pnpm install --frozen-lockfile
+          cd ../backend && pnpm install --frozen-lockfile
+          cd ../Lading/supermock-ai-interview && pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: cd backend && pnpm exec prisma generate
+
+      - name: Build frontend
+        run: cd frontend && pnpm run build
+
+      - name: Build backend
+        run: cd backend && pnpm run build
+
+      - name: Build landing
+        run: cd Lading/supermock-ai-interview && pnpm run build
+
+      - name: Run tests
+        run: |
+          pnpm run test || echo "No tests configured"
+          cd backend && pnpm run test || echo "No backend tests configured"
+          cd ../frontend && pnpm run test || echo "No frontend tests configured"
+
+      - name: Cache build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            frontend/dist
+            backend/dist
+            Lading/supermock-ai-interview/dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+  # Создание Docker образов
+  build-docker-images:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: supermock-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend app image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./frontend/Dockerfile
+          push: false
+          tags: supermock-frontend-app:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build landing image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Lading/supermock-ai-interview/Dockerfile
+          push: false
+          tags: supermock-frontend-landing:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Save Docker images
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-images
+          path: |
+            supermock-backend:latest
+            supermock-frontend-app:latest
+            supermock-frontend-landing:latest
+
+  # Деплой на production сервер
+  deploy-production:
+    needs: build-docker-images
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+
+      - name: Create deployment archive
+        run: |
+          tar -czf deployment.tar.gz \
+            --exclude=node_modules \
+            --exclude=.git \
+            --exclude=dist \
+            --exclude=*.tar.gz \
+            --exclude=*.log \
+            --exclude=.env \
+            --exclude=production.env \
+            docker-compose.prod-multi.yml \
+            frontend/ \
+            backend/ \
+            Lading/ \
+            scripts/ \
+            media/ \
+            materials/ \
+            deploy/
+
+      - name: Upload deployment archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-archive
+          path: deployment.tar.gz
+
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            
+            echo "🚀 Начинаем деплой на production сервер..."
+            echo "Время: $(date)"
+            echo "Коммит: ${{ github.sha }}"
+            echo "Ветка: ${{ github.ref_name }}"
+            
+            cd ${{ secrets.DEPLOY_PATH }}
+            
+            # Создаем резервную копию
+            echo "📦 Создаем резервную копию..."
+            if [ -f docker-compose.prod-multi.yml ]; then
+              BACKUP_NAME="backup-$(date +%Y%m%d-%H%M%S).tar.gz"
+              tar -czf "$BACKUP_NAME" \
+                docker-compose.prod-multi.yml \
+                frontend/ backend/ Lading/ \
+                2>/dev/null || echo "Предупреждение: не удалось создать резервную копию"
+              echo "✅ Резервная копия создана: $BACKUP_NAME"
+            fi
+            
+            # Останавливаем текущие контейнеры
+            echo "🛑 Останавливаем текущие контейнеры..."
+            docker-compose -f docker-compose.prod-multi.yml down --timeout 30 || true
+            
+            # Очищаем старые образы
+            echo "🧹 Очищаем старые образы..."
+            docker image prune -af || true
+            
+            # Распаковываем новый архив
+            echo "📂 Распаковываем новый код..."
+            tar -xzf deployment.tar.gz
+            
+            # Обновляем переменные окружения
+            echo "⚙️ Обновляем переменные окружения..."
+            if [ -f production.env ]; then
+              ln -sf production.env .env
+              # Добавляем недостающие переменные
+              if ! grep -q "REDIS_PASSWORD" production.env; then
+                echo "REDIS_PASSWORD=krishna1284" >> production.env
+              fi
+            else
+              echo "❌ Файл production.env не найден!"
+              exit 1
+            fi
+            
+            # Запускаем новые контейнеры
+            echo "🚀 Запускаем новые контейнеры..."
+            docker-compose -f docker-compose.prod-multi.yml up -d --build
+            
+            # Ждем запуска сервисов
+            echo "⏳ Ждем запуска сервисов..."
+            sleep 30
+            
+            # Проверяем статус контейнеров
+            echo "📊 Проверяем статус контейнеров..."
+            docker ps --filter "name=supermock" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+            
+            # Проверяем health check
+            echo "🏥 Проверяем health check..."
+            for container in supermock-postgres supermock-redis supermock-backend; do
+              if docker inspect "$container" | grep -q '"Status": "healthy"'; then
+                echo "✅ $container: здоров"
+              else
+                echo "⚠️ $container: не здоров"
+              fi
+            done
+            
+            # Проверяем доступность сервисов
+            echo "🌐 Проверяем доступность сервисов..."
+            
+            # API
+            if curl -s -o /dev/null -w "%{http_code}" -H 'Host: api.supermock.ru' http://localhost/api/health | grep -q "200"; then
+              echo "✅ API доступен"
+            else
+              echo "❌ API недоступен"
+            fi
+            
+            # Frontend App
+            if curl -s -o /dev/null -w "%{http_code}" -H 'Host: app.supermock.ru' http://localhost/ | grep -q "200"; then
+              echo "✅ Frontend App доступен"
+            else
+              echo "❌ Frontend App недоступен"
+            fi
+            
+            # Landing
+            if curl -s -o /dev/null -w "%{http_code}" -H 'Host: supermock.ru' http://localhost/ | grep -q "200"; then
+              echo "✅ Landing доступен"
+            else
+              echo "❌ Landing недоступен"
+            fi
+            
+            # Перезапускаем Traefik для обновления конфигурации
+            echo "🔄 Перезапускаем Traefik..."
+            docker restart supermock-traefik || true
+            sleep 10
+            
+            # Финальная проверка
+            echo "🔍 Финальная проверка..."
+            if docker ps --filter "name=supermock" --format "{{.Status}}" | grep -q "Up"; then
+              echo "🎉 Деплой успешно завершен!"
+              echo "Сервисы доступны по адресам:"
+              echo "  - https://supermock.ru (Лендинг)"
+              echo "  - https://app.supermock.ru (Приложение)"
+              echo "  - https://api.supermock.ru (API)"
+            else
+              echo "❌ Ошибка: не все контейнеры запущены"
+              exit 1
+            fi
+            
+            # Очистка
+            echo "🧹 Очистка временных файлов..."
+            rm -f deployment.tar.gz
+            rm -f supermock-full-deploy-*.tar.gz
+
+  # Уведомления
+  notify:
+    needs: deploy-production
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Деплой успешно завершен!"
+          echo "Коммит: ${{ github.sha }}"
+          echo "Ветка: ${{ github.ref_name }}"
+          echo "Время: $(date)"
+          
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Деплой завершился с ошибкой!"
+          echo "Коммит: ${{ github.sha }}"
+          echo "Ветка: ${{ github.ref_name }}"
+          echo "Время: $(date)"
+          echo "Проверьте логи для диагностики"

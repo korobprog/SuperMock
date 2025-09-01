@@ -1,5 +1,6 @@
 import { createApiUrl, API_CONFIG } from './config';
 import type { TelegramUser } from './telegram-auth';
+import { useAppStore } from './store';
 
 export type InitPayload = {
   tg?: Partial<TelegramUser> | null;
@@ -285,14 +286,67 @@ export async function apiEnhancedFeedback(payload: {
   comments?: string;
   recommendations?: string;
 }) {
+  console.log('🔧 apiEnhancedFeedback called with payload:', payload);
+  
+  // Проверяем обязательные поля
+  if (!payload.fromUserId || !payload.toUserId) {
+    console.error('🔧 Missing required fields in payload:', payload);
+    throw new Error('fromUserId and toUserId are required');
+  }
+  
+  // Получаем токен для авторизации
+  const token = await getAuthToken();
+  
   const res = await fetch(createApiUrl(`/api/sessions/${payload.sessionId}/feedback`), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    },
     body: JSON.stringify(payload),
     credentials: 'include',
   });
-  if (!res.ok) throw new Error('Enhanced feedback failed');
-  return res.json();
+  
+  console.log('🔧 apiEnhancedFeedback response status:', res.status);
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('🔧 apiEnhancedFeedback error response:', errorText);
+    throw new Error(`Enhanced feedback failed: ${res.status} - ${errorText}`);
+  }
+  
+  const result = await res.json();
+  console.log('🔧 apiEnhancedFeedback success:', result);
+  return result;
+}
+
+// Функция для получения JWT токена для Telegram пользователя
+async function getAuthToken(): Promise<string | null> {
+  try {
+    const telegramUser = useAppStore.getState().telegramUser;
+    if (!telegramUser) {
+      console.log('🔧 No telegram user found, skipping token');
+      return null;
+    }
+
+    const res = await fetch(createApiUrl('/api/telegram-auth'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(telegramUser),
+      credentials: 'include',
+    });
+
+    if (!res.ok) {
+      console.log('🔧 Failed to get auth token:', res.status);
+      return null;
+    }
+
+    const data = await res.json();
+    return data.token || null;
+  } catch (error) {
+    console.error('🔧 Error getting auth token:', error);
+    return null;
+  }
 }
 
 export async function apiSaveQuestionRating(payload: {
