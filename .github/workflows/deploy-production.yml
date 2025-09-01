@@ -89,6 +89,21 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Check submodule status
+        run: |
+          echo "=== Проверяем статус submodules ==="
+          git submodule status
+          echo "=== Проверяем .gitmodules ==="
+          if [ -f ".gitmodules" ]; then
+            cat .gitmodules
+          else
+            echo "❌ .gitmodules не найден!"
+          fi
+          echo "=== Пытаемся обновить submodules ==="
+          git submodule update --init --recursive
+          echo "=== Проверяем после обновления ==="
+          ls -la Lading/supermock-ai-interview/ || echo "Папка все еще не найдена"
+
       - name: Debug file structure
         run: |
           echo "=== Проверяем структуру файлов ==="
