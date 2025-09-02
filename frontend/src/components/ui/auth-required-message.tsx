@@ -113,10 +113,71 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
             <button
               onClick={() => {
                 const tg = window.Telegram?.WebApp;
-                if (tg?.openTelegramLink) {
-                  tg.openTelegramLink(`https://t.me/${env.TELEGRAM_BOT_NAME || 'supermock_ai_bot'}?start=auth`);
+                if (!tg) {
+                  alert('Telegram WebApp не доступен');
+                  return;
+                }
+                
+                // В продакшн версии сначала запрашиваем доступ к данным
+                if (tg.initDataUnsafe?.user) {
+                  console.log('✅ User already authenticated:', tg.initDataUnsafe.user);
+                  // Пользователь уже авторизован, вызываем callback
+                  const user = tg.initDataUnsafe.user;
+                  const telegramUser: TelegramUser = {
+                    id: user.id,
+                    first_name: user.first_name,
+                    last_name: user.last_name || '',
+                    username: user.username || '',
+                    photo_url: user.photo_url || '',
+                    auth_date: Math.floor(Date.now() / 1000),
+                    hash: 'telegram_mini_apps_hash',
+                  };
+                  onAuth(telegramUser);
+                  return;
+                }
+                
+                // Запрашиваем доступ к данным пользователя
+                if ((tg as any).requestWriteAccess) {
+                  console.log('🔐 Requesting write access...');
+                  (tg as any).requestWriteAccess();
+                  
+                  // Показываем инструкции пользователю
+                  alert('Пожалуйста, разрешите доступ к данным в Telegram и вернитесь в приложение');
+                  
+                  // Проверяем авторизацию через интервалы
+                  const checkAuth = setInterval(() => {
+                    const currentTg = window.Telegram?.WebApp;
+                    if (currentTg?.initDataUnsafe?.user) {
+                      console.log('✅ User authenticated after write access:', currentTg.initDataUnsafe.user);
+                      clearInterval(checkAuth);
+                      
+                      const user = currentTg.initDataUnsafe.user;
+                      const telegramUser: TelegramUser = {
+                        id: user.id,
+                        first_name: user.first_name,
+                        last_name: user.last_name || '',
+                        username: user.username || '',
+                        photo_url: user.photo_url || '',
+                        auth_date: Math.floor(Date.now() / 1000),
+                        hash: 'telegram_mini_apps_hash',
+                      };
+                      
+                      onAuth(telegramUser);
+                    }
+                  }, 1000);
+                  
+                  // Останавливаем проверку через 30 секунд
+                  setTimeout(() => {
+                    clearInterval(checkAuth);
+                  }, 30000);
+                  
                 } else {
-                  window.open(`https://t.me/${env.TELEGRAM_BOT_NAME || 'supermock_ai_bot'}?start=auth`, '_blank');
+                  // Fallback: открываем бота
+                  if (tg.openTelegramLink) {
+                    tg.openTelegramLink(`https://t.me/${env.TELEGRAM_BOT_NAME || 'supermock_ai_bot'}?start=auth`);
+                  } else {
+                    window.open(`https://t.me/${env.TELEGRAM_BOT_NAME || 'supermock_ai_bot'}?start=auth`, '_blank');
+                  }
                 }
               }}
               className="w-full bg-[#0088cc] hover:bg-[#006fa0] text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"

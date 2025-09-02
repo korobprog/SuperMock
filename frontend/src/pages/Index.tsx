@@ -30,6 +30,8 @@ import {
 } from '@/lib/dev-test-account';
 import { TelegramQuickTest, TelegramProductionAuthTest } from '@/components/ui/telegram-production-test';
 import { TelegramLoginTest } from '@/components/ui/telegram-login-test';
+import { createApiUrl } from '@/lib/config';
+import { TelegramUser } from '@/lib/telegram-auth';
 
 const Index = () => {
   const [isLanguageDetected, setIsLanguageDetected] = useState(false);
@@ -49,23 +51,9 @@ const Index = () => {
         console.log('🚀 Starting app initialization...');
         
         // Определяем язык
-        let detectedLanguage: SupportedLanguage;
-        
-        if (import.meta.env.DEV) {
-          // В dev режиме используем мгновенный fallback
-          console.log('🔧 Dev mode: using instant language fallback');
-          detectedLanguage = 'ru';
-        } else {
-          // В production используем полное определение языка с таймаутом
-          const languagePromise = detectUserLanguage();
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Language detection timeout')), 10000)
-          );
-          
-          detectedLanguage = await Promise.race([languagePromise, timeoutPromise]) as SupportedLanguage;
-        }
-        
-        saveAndApplyLanguage(detectedLanguage, i18n, setLanguage);
+        const detectedLanguage = await detectUserLanguage();
+        setLanguage(detectedLanguage);
+        console.log('🌍 Language detected:', detectedLanguage);
 
         // Проверяем, не выходил ли пользователь только что
         const justLoggedOut = sessionStorage.getItem('just_logged_out');

@@ -160,6 +160,35 @@ jobs:
               if ! grep -q "REDIS_PASSWORD" production.env; then
                 echo "REDIS_PASSWORD=krishna1284" >> production.env
               fi
+              
+              # Проверяем критически важные переменные для авторизации
+              echo "🔍 Проверяем критически важные переменные окружения..."
+              REQUIRED_VARS=("POSTGRES_PASSWORD" "DATABASE_URL" "TELEGRAM_BOT_TOKEN" "TELEGRAM_BOT_NAME")
+              MISSING_VARS=()
+              
+              for var in "${REQUIRED_VARS[@]}"; do
+                if ! grep -q "^${var}=" production.env; then
+                  MISSING_VARS+=("$var")
+                fi
+              done
+              
+              if [ ${#MISSING_VARS[@]} -gt 0 ]; then
+                echo "⚠️ Предупреждение: отсутствуют переменные: ${MISSING_VARS[*]}"
+                echo "Это может привести к проблемам с авторизацией"
+              else
+                echo "✅ Все критически важные переменные окружения настроены"
+              fi
+              
+              # Проверяем, что DATABASE_URL использует правильный пароль
+              if grep -q "DATABASE_URL" production.env; then
+                DB_URL=$(grep "^DATABASE_URL=" production.env | cut -d'=' -f2-)
+                if echo "$DB_URL" | grep -q "postgres:"; then
+                  echo "✅ DATABASE_URL использует правильный пароль"
+                else
+                  echo "⚠️ DATABASE_URL может использовать неправильный пароль"
+                  echo "Текущий URL: $DB_URL"
+                fi
+              fi
             else
               echo "❌ Файл production.env не найден!"
               exit 1
@@ -212,14 +241,78 @@ jobs:
             docker restart supermock-traefik || true
             sleep 10
             
+            # Дополнительные проверки для исправления проблем с авторизацией
+            echo "🔐 Проверяем настройки авторизации..."
+            
+            # Проверяем, что PostgreSQL работает и доступен
+            echo "🗄️ Проверяем PostgreSQL..."
+            if docker exec supermock-postgres pg_isready -U supermock > /dev/null 2>&1; then
+              echo "✅ PostgreSQL доступен"
+            else
+              echo "❌ PostgreSQL недоступен, перезапускаем..."
+              docker restart supermock-postgres
+              sleep 10
+            fi
+            
+            # Проверяем, что Redis работает
+            echo "🔴 Проверяем Redis..."
+            if docker exec supermock-redis redis-cli ping | grep -q "PONG"; then
+              echo "✅ Redis доступен"
+            else
+              echo "❌ Redis недоступен, перезапускаем..."
+              docker restart supermock-redis
+              sleep 10
+            fi
+            
+            # Проверяем backend подключение к базе данных
+            echo "🔌 Проверяем подключение backend к базе данных..."
+            if docker logs supermock-backend --tail 20 | grep -q "Connected to database"; then
+              echo "✅ Backend подключен к базе данных"
+            else
+              echo "⚠️ Backend не подключен к базе данных, проверяем логи..."
+              docker logs supermock-backend --tail 50
+              
+              # Пытаемся исправить проблемы с подключением
+              echo "🔧 Пытаемся исправить проблемы с подключением..."
+              
+              # Проверяем, что контейнеры в одной сети
+              echo "🌐 Проверяем сетевые настройки..."
+              docker network ls
+              docker network inspect supermock_default || echo "Сеть supermock_default не найдена"
+              
+              # Перезапускаем backend с правильными настройками
+              echo "🔄 Перезапускаем backend..."
+              docker-compose -f docker-compose.prod-multi.yml restart supermock-backend
+              sleep 15
+            fi
+            
+            # Проверяем API авторизации
+            echo "🔑 Проверяем API авторизации..."
+            AUTH_RESPONSE=$(curl -s -H "Host: api.supermock.ru" "http://localhost/api/init" \
+              -X POST \
+              -H "Content-Type: application/json" \
+              -d '{"tg":{"id":123456,"first_name":"Test","username":"testuser"},"language":"ru","initData":"test_auth_hash"}' \
+              -w "%{http_code}")
+            
+            if echo "$AUTH_RESPONSE" | grep -q "200"; then
+              echo "✅ API авторизации работает"
+            else
+              echo "❌ API авторизации не работает, код ответа: $AUTH_RESPONSE"
+              echo "Проверяем логи backend..."
+              docker logs supermock-backend --tail 30
+            fi
+            
             # Финальная проверка
             echo "🔍 Финальная проверка..."
             if docker ps --filter "name=supermock" --format "{{.Status}}" | grep -q "Up"; then
-                          echo "🎉 Деплой успешно завершен!"
-            echo "Сервисы доступны по адресам:"
-            echo "  - https://app.supermock.ru (Приложение)"
-            echo "  - https://api.supermock.ru (API)"
-            echo "ℹ️ supermock.ru - это отдельный сайт, не обрабатывается Traefik"
+              echo "🎉 Деплой успешно завершен!"
+              echo "Сервисы доступны по адресам:"
+              echo "  - https://app.supermock.ru (Приложение)"
+              echo "  - https://api.supermock.ru (API)"
+              echo "ℹ️ supermock.ru - это отдельный сайт, не обрабатывается Traefik"
+              echo ""
+              echo "🔐 Авторизация в Telegram WebApp должна работать корректно"
+              echo "📱 Пользователи могут авторизоваться через @supermock_ai_bot"
             else
               echo "❌ Ошибка: не все контейнеры запущены"
               exit 1

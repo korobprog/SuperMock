@@ -39,6 +39,8 @@ const init_1 = __importDefault(require("./routes/init"));
 const slots_1 = __importDefault(require("./routes/slots"));
 const preferences_1 = __importDefault(require("./routes/preferences"));
 const userSettings_1 = __importDefault(require("./routes/userSettings"));
+const telegram_auth_1 = __importDefault(require("./routes/telegram-auth"));
+const files_1 = __importDefault(require("./routes/files"));
 // Инициализация приложения Express
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
@@ -120,11 +122,14 @@ app.use('/api/user-settings', userSettings_1.default);
 app.use('/api/history', history_1.default);
 app.use('/api/user-tools', userTools_1.default);
 app.use('/api/materials', materials_1.default);
+app.use('/api', telegram_auth_1.default);
 // Маршруты для health-check
 app.get('/health', healthCheck_1.healthCheck);
 app.get('/health/simple', healthCheck_1.simpleHealthCheck);
 // Обработка ошибок API
 app.use('/api', errorHandler_1.default.apiErrorHandler);
+// Маршрут для файлов (должен быть перед настройкой фронтенда)
+app.use('/', files_1.default);
 // Настройка фронтенда
 frontendService_1.default.setupFrontend(app, __dirname);
 // Обработка общих ошибок

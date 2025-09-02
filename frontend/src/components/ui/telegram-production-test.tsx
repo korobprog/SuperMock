@@ -470,44 +470,54 @@ export function TelegramProductionAuthTest({
         window.open(`https://t.me/${botName}?start=auth`, '_blank');
       }
       
-      // Показываем инструкции пользователю
-      setCheckResult('Пожалуйста, авторизуйтесь в боте @' + botName + ' и вернитесь в приложение');
-      
-      // Проверяем авторизацию через интервалы
-      const checkAuth = setInterval(() => {
-        const tg = window.Telegram?.WebApp;
-        if (tg?.initDataUnsafe?.user) {
-          console.log('✅ User authenticated after delay:', tg.initDataUnsafe.user);
+      // Запрашиваем доступ к данным пользователя
+      if ((tg as any).requestWriteAccess) {
+        console.log('🔐 Requesting write access...');
+        (tg as any).requestWriteAccess();
+        
+        // Показываем инструкции пользователю
+        setCheckResult('Пожалуйста, разрешите доступ к данным в Telegram и вернитесь в приложение');
+        
+        // Проверяем авторизацию через интервалы
+        const checkAuth = setInterval(() => {
+          const currentTg = window.Telegram?.WebApp;
+          if (currentTg?.initDataUnsafe?.user) {
+            console.log('✅ User authenticated after write access:', currentTg.initDataUnsafe.user);
+            clearInterval(checkAuth);
+            
+            const user = currentTg.initDataUnsafe.user;
+            const telegramUser: TelegramUser = {
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name || '',
+              username: user.username || '',
+              photo_url: user.photo_url || '',
+              auth_date: Math.floor(Date.now() / 1000),
+              hash: 'telegram_mini_apps_hash',
+            };
+            
+            setCheckResult('✅ Авторизация успешна! Пользователь: ' + user.first_name);
+            setAuthStep('success');
+            onAuth(telegramUser);
+          }
+        }, 1000);
+        
+        // Останавливаем проверку через 30 секунд
+        setTimeout(() => {
           clearInterval(checkAuth);
-          
-          const user = tg.initDataUnsafe.user;
-          const telegramUser: TelegramUser = {
-            id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name || '',
-            username: user.username || '',
-            photo_url: user.photo_url || '',
-            auth_date: Math.floor(Date.now() / 1000),
-            hash: 'telegram_mini_apps_hash',
-          };
-          
-          setCheckResult('✅ Авторизация успешна! Пользователь: ' + user.first_name);
-          setAuthStep('success');
-          
-          // Вызываем callback для установки пользователя в store
-          onAuth(telegramUser);
-        }
-      }, 2000);
-      
-      // Останавливаем проверку через 30 секунд
-      setTimeout(() => {
-        clearInterval(checkAuth);
-        if (authStep === 'authing') {
-          console.log('⏰ Auth timeout, resetting to initial state');
-          setAuthStep('initial');
-          setCheckResult('⏰ Таймаут авторизации. Попробуйте еще раз.');
-        }
-      }, 30000);
+          if (authStep === 'authing') {
+            console.log('⏰ Auth timeout, resetting to initial state');
+            setAuthStep('initial');
+            setCheckResult('⏰ Таймаут авторизации. Попробуйте еще раз.');
+          }
+        }, 30000);
+        
+      } else {
+        // Если requestWriteAccess не доступен, используем fallback
+        console.log('⚠️ requestWriteAccess не доступен, используем fallback для авторизации');
+        window.open(`https://t.me/${botName}?start=auth`, '_blank');
+        setCheckResult('Пожалуйста, авторизуйтесь в боте @' + botName + ' и вернитесь в приложение');
+      }
       
     } catch (error) {
       console.error('❌ Error during auth:', error);

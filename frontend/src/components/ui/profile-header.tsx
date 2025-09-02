@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { TelegramHeaderButton } from '@/components/ui/telegram-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bell, Settings, LogOut, User } from 'lucide-react';
-import { TelegramAuthButton } from './telegram-login';
+import { TelegramLoginWidget } from './telegram-login';
 import { TelegramUser } from '@/lib/telegram-auth';
 import { env } from '@/lib/env';
 import { createApiUrl } from '@/lib/config';

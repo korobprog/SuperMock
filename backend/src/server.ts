@@ -42,6 +42,7 @@ import slotsRoutes from './routes/slots';
 import preferencesRoutes from './routes/preferences';
 import userSettingsRoutes from './routes/userSettings';
 import telegramAuthRoutes from './routes/telegram-auth';
+import filesRoutes from './routes/files';
 
 // Инициализация приложения Express
 const app = express();
@@ -143,6 +144,9 @@ app.get('/health/simple', simpleHealthCheck);
 
 // Обработка ошибок API
 app.use('/api', errorHandler.apiErrorHandler);
+
+// Маршрут для файлов (должен быть перед настройкой фронтенда)
+app.use('/', filesRoutes);
 
 // Настройка фронтенда
 frontendService.setupFrontend(app, __dirname);
