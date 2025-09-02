@@ -14,8 +14,6 @@ import {
   Star,
   Menu,
   X,
-  ChevronUp,
-  ChevronDown,
   VideoOff,
   Mic,
   MicOff,
@@ -220,7 +218,7 @@ export function Interview() {
 
       if (shouldUseAI) {
         const prompt = getPromptForProfession(profession!);
-        if (prompt && userSettings.openRouterApiKey) {
+        if (prompt && userSettings.openrouterApiKey) {
           console.log('Attempting to generate AI questions...');
 
           try {
@@ -894,10 +892,39 @@ export function Interview() {
       const result = await apiCompleteSession(sessionId);
       console.log('Session completed:', result);
 
-      // 2. Set target user for feedback (simplified - in real app you'd get this from session data)
-      setTargetUser({ id: userId, name: 'Партнер' });
+      // 2. Get session data to determine target user for feedback
+      let targetUserId: number;
+      try {
+        const sessionData = await apiGetSession(sessionId, userId.toString());
+        console.log('🔧 Session data for feedback:', sessionData);
+        
+        // Определяем targetUserId на основе роли пользователя в сессии
+        if (sessionData.interviewerUserId === userId.toString()) {
+          // Текущий пользователь - интервьюер, фидбек для кандидата
+          targetUserId = parseInt(sessionData.candidateUserId);
+        } else if (sessionData.candidateUserId === userId.toString()) {
+          // Текущий пользователь - кандидат, фидбек для интервьюера
+          targetUserId = parseInt(sessionData.interviewerUserId);
+        } else {
+          // Fallback - используем userId как targetUserId
+          console.warn('🔧 Could not determine role in session, using fallback');
+          targetUserId = userId;
+        }
+        
+        console.log('🔧 Target user ID for feedback:', targetUserId);
+      } catch (sessionError) {
+        console.error('🔧 Failed to get session data for feedback:', sessionError);
+        // Fallback - используем userId как targetUserId
+        targetUserId = userId;
+      }
 
-      // 3. Show feedback modal
+      // 3. Set target user for feedback
+      setTargetUser({ 
+        id: targetUserId, 
+        name: targetUserId === userId ? 'Партнер' : 'Участник сессии' 
+      });
+
+      // 4. Show feedback modal
       setShowFeedbackModal(true);
       setShowExitConfirmDialog(false);
     } catch (error) {
@@ -915,7 +942,17 @@ export function Interview() {
     rating: number;
     comments: string;
   }) => {
-    if (!sessionId || !userId || !targetUser) return;
+    if (!sessionId || !userId || !targetUser) {
+      console.error('🔧 Missing required data for feedback submission:', { sessionId, userId, targetUser });
+      return;
+    }
+
+    // Дополнительная проверка targetUser.id
+    if (!targetUser.id || targetUser.id === 0) {
+      console.error('🔧 Target user ID is invalid:', targetUser.id);
+      alert('Ошибка: неверный ID получателя фидбека');
+      return;
+    }
 
     setIsSubmittingFeedback(true);
     try {

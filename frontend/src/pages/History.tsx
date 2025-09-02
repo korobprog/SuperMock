@@ -227,6 +227,13 @@ export function History() {
       return;
     }
 
+    // Дополнительная проверка targetUser.id
+    if (!targetUser.id || targetUser.id === 0) {
+      console.error('🔧 Target user ID is invalid:', targetUser.id);
+      alert('Ошибка: неверный ID получателя фидбека');
+      return;
+    }
+
     // Убеждаемся, что userId установлен
     const currentUserId = ensureUserId();
     console.log('🔧 Using userId for feedback:', currentUserId);
