@@ -294,7 +294,7 @@ router.get('/telegram-bot-check', async (req: Request, res: Response) => {
 
     // Проверяем доступность бота через Telegram API
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);
-    const data = await response.json();
+    const data = await response.json() as any;
 
     if (data.ok) {
       res.json({ 
