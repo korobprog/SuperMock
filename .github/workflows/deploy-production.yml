@@ -288,11 +288,30 @@ jobs:
             
             # Проверяем API авторизации
             echo "🔑 Проверяем API авторизации..."
-            AUTH_RESPONSE=$(curl -s -H "Host: api.supermock.ru" "http://localhost:3000/api/init" \
+            
+            # Даем backend больше времени на инициализацию
+            echo "⏳ Ждем полной инициализации backend..."
+            sleep 30
+            
+            # Проверяем, что backend отвечает на базовые запросы
+            echo "🔍 Проверяем базовую доступность backend..."
+            if curl -s --max-time 10 --connect-timeout 5 -H "Host: api.supermock.ru" "http://localhost:3000/api/health" > /dev/null 2>&1; then
+              echo "✅ Backend отвечает на health check"
+            else
+              echo "⚠️ Backend не отвечает на health check, проверяем логи..."
+              docker logs supermock-backend --tail 30
+              echo "🔄 Перезапускаем backend еще раз..."
+              docker restart supermock-backend
+              sleep 20
+            fi
+            
+            # Теперь проверяем API авторизации
+            echo "🔑 Проверяем API авторизации..."
+            AUTH_RESPONSE=$(curl -s --max-time 15 --connect-timeout 10 -H "Host: api.supermock.ru" "http://localhost:3000/api/init" \
               -X POST \
               -H "Content-Type: application/json" \
               -d '{"tg":{"id":123456,"first_name":"Test","username":"testuser"},"language":"ru","initData":"test_auth_hash"}' \
-              -w "%{http_code}")
+              -w "%{http_code}" 2>/dev/null || echo "000")
             
             if echo "$AUTH_RESPONSE" | grep -q "200"; then
               echo "✅ API авторизации работает"
@@ -304,17 +323,25 @@ jobs:
             
             # Финальная проверка
             echo "🔍 Финальная проверка..."
-            if docker ps --filter "name=supermock" --format "{{.Status}}" | grep -q "Up"; then
+            
+            # Проверяем статус всех контейнеров
+            CONTAINER_STATUS=$(docker ps --filter "name=supermock" --format "{{.Status}}" 2>/dev/null || echo "ERROR")
+            
+            if echo "$CONTAINER_STATUS" | grep -q "Up"; then
               echo "🎉 Деплой успешно завершен!"
               echo "Сервисы доступны по адресам:"
-              echo "  - https://app.supermock.ru (Приложение)"
-              echo "  - https://api.supermock.ru (API)"
+              echo "- https://app.supermock.ru (Приложение)"
+              echo "- https://api.supermock.ru (API)"
               echo "ℹ️ supermock.ru - это отдельный сайт, не обрабатывается Traefik"
               echo ""
               echo "🔐 Авторизация в Telegram WebApp должна работать корректно"
               echo "📱 Пользователи могут авторизоваться через @SuperMock_bot"
             else
               echo "❌ Ошибка: не все контейнеры запущены"
+              echo "📊 Статус контейнеров:"
+              docker ps --filter "name=supermock" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" || echo "Не удалось получить статус контейнеров"
+              echo "🔍 Логи backend:"
+              docker logs supermock-backend --tail 20 || echo "Не удалось получить логи backend"
               exit 1
             fi
             
