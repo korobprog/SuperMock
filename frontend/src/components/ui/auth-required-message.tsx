@@ -108,6 +108,28 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
             <p className="text-sm text-blue-600 p-3 bg-blue-100 rounded border">
               Для продолжения необходимо авторизоваться в Telegram
             </p>
+            
+            {/* Кнопка авторизации через Telegram WebApp */}
+            <button
+              onClick={() => {
+                const tg = window.Telegram?.WebApp;
+                if (tg?.openTelegramLink) {
+                  tg.openTelegramLink(`https://t.me/${env.TELEGRAM_BOT_NAME || 'supermock_ai_bot'}?start=auth`);
+                } else {
+                  window.open(`https://t.me/${env.TELEGRAM_BOT_NAME || 'supermock_ai_bot'}?start=auth`, '_blank');
+                }
+              }}
+              className="w-full bg-[#0088cc] hover:bg-[#006fa0] text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor">
+                <circle cx="120" cy="120" r="120" fill="#fff" />
+                <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+              </svg>
+              <span>Авторизоваться через Telegram</span>
+            </button>
+            
             {env.TELEGRAM_BOT_NAME ? (
               <TelegramLoginWidget
                 botName={env.TELEGRAM_BOT_NAME}

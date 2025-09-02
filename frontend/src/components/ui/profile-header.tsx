@@ -108,15 +108,22 @@ export function ProfileHeader() {
       if (initResponse.ok) {
         const initData = await initResponse.json();
         console.log('ProfileHeader: User initialized in database:', initData);
+        
+        // Устанавливаем пользователя в store (это также установит userId)
+        setTelegramUser(user);
+        
+        // Показываем уведомление об успешной авторизации
+        console.log('✅ User successfully authenticated and initialized');
       } else {
         console.error('ProfileHeader: Failed to initialize user in database');
+        // Даже если инициализация в БД не удалась, устанавливаем пользователя в store
+        setTelegramUser(user);
       }
     } catch (error) {
       console.error('ProfileHeader: Error initializing user:', error);
+      // Даже при ошибке устанавливаем пользователя в store
+      setTelegramUser(user);
     }
-    
-    // Устанавливаем пользователя в store (это также установит userId)
-    setTelegramUser(user);
   };
 
   // Определяем отображаемые данные пользователя

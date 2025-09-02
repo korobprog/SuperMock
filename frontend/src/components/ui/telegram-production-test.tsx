@@ -413,6 +413,7 @@ export function TelegramProductionAuthTest({
   const { telegramUser, userId } = useAppStore();
   const [isChecking, setIsChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<string>('');
+  const [authStep, setAuthStep] = useState<'initial' | 'authing' | 'success'>('initial');
 
   const checkAuthStatus = () => {
     setIsChecking(true);
@@ -454,6 +455,67 @@ export function TelegramProductionAuthTest({
     }, 1000);
   };
 
+  const handleTelegramAuth = () => {
+    setAuthStep('authing');
+    setCheckResult('Начинаем авторизацию через Telegram...');
+    
+    try {
+      const tg = window.Telegram?.WebApp;
+      
+      if (tg?.openTelegramLink) {
+        console.log('✅ Using WebApp API to open Telegram link');
+        tg.openTelegramLink(`https://t.me/${botName}?start=auth`);
+      } else {
+        console.log('⚠️ WebApp API not available, using fallback');
+        window.open(`https://t.me/${botName}?start=auth`, '_blank');
+      }
+      
+      // Показываем инструкции пользователю
+      setCheckResult('Пожалуйста, авторизуйтесь в боте @' + botName + ' и вернитесь в приложение');
+      
+      // Проверяем авторизацию через интервалы
+      const checkAuth = setInterval(() => {
+        const tg = window.Telegram?.WebApp;
+        if (tg?.initDataUnsafe?.user) {
+          console.log('✅ User authenticated after delay:', tg.initDataUnsafe.user);
+          clearInterval(checkAuth);
+          
+          const user = tg.initDataUnsafe.user;
+          const telegramUser: TelegramUser = {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name || '',
+            username: user.username || '',
+            photo_url: user.photo_url || '',
+            auth_date: Math.floor(Date.now() / 1000),
+            hash: 'telegram_mini_apps_hash',
+          };
+          
+          setCheckResult('✅ Авторизация успешна! Пользователь: ' + user.first_name);
+          setAuthStep('success');
+          
+          // Вызываем callback для установки пользователя в store
+          onAuth(telegramUser);
+        }
+      }, 2000);
+      
+      // Останавливаем проверку через 30 секунд
+      setTimeout(() => {
+        clearInterval(checkAuth);
+        if (authStep === 'authing') {
+          console.log('⏰ Auth timeout, resetting to initial state');
+          setAuthStep('initial');
+          setCheckResult('⏰ Таймаут авторизации. Попробуйте еще раз.');
+        }
+      }, 30000);
+      
+    } catch (error) {
+      console.error('❌ Error during auth:', error);
+      setAuthStep('initial');
+      setCheckResult('❌ Ошибка при авторизации: ' + error);
+    }
+  };
+
   const forceAuth = () => {
     if (telegramUser) {
       onAuth(telegramUser);
@@ -481,13 +543,39 @@ export function TelegramProductionAuthTest({
     <div className={`${className}`}>
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
         <h3 className="text-lg font-semibold text-blue-900 mb-2">
-          🧪 Тест авторизации в продакшн версии
+          🔐 Авторизация в Telegram
         </h3>
         <p className="text-sm text-blue-700 mb-3">
-          Этот компонент поможет диагностировать проблемы с авторизацией
+          Для доступа к платформе необходимо авторизоваться через Telegram бота
         </p>
         
-        <div className="space-y-2">
+        <div className="space-y-3">
+          <button
+            onClick={handleTelegramAuth}
+            disabled={authStep === 'authing'}
+            className="w-full px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] disabled:bg-gray-400 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+          >
+            {authStep === 'authing' ? (
+              <>
+                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Авторизация...</span>
+              </>
+            ) : (
+              <>
+                <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor">
+                  <circle cx="120" cy="120" r="120" fill="#fff" />
+                  <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                  <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                  <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+                </svg>
+                <span>Авторизоваться через Telegram</span>
+              </>
+            )}
+          </button>
+          
           <button
             onClick={checkAuthStatus}
             disabled={isChecking}
@@ -495,22 +583,13 @@ export function TelegramProductionAuthTest({
           >
             {isChecking ? 'Проверяем...' : 'Проверить статус авторизации'}
           </button>
-          
-          {telegramUser && (
-            <button
-              onClick={forceAuth}
-              className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium"
-            >
-              Принудительная авторизация
-            </button>
-          )}
         </div>
       </div>
 
       {/* Результаты проверки */}
       {checkResult && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Результаты проверки:</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Результаты:</h4>
           <div className="bg-white border border-gray-200 rounded p-3 max-h-64 overflow-y-auto">
             <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono">
               {checkResult}
