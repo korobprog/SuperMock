@@ -1,150 +1,265 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebSocket Test</title>
-    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <title>WebSocket Test - SuperMock Production</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .log {
-            background: #f5f5f5;
-            border: 1px solid #ddd;
-            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
             margin: 10px 0;
-            border-radius: 5px;
             max-height: 400px;
             overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
         }
-        .success { color: green; }
-        .error { color: red; }
-        .info { color: blue; }
+        .log-entry {
+            margin: 5px 0;
+            padding: 2px 0;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .warning { color: #ffc107; }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
         button {
             padding: 10px 20px;
-            margin: 5px;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 14px;
         }
-        .connect { background: #4CAF50; color: white; }
-        .disconnect { background: #f44336; color: white; }
-        .test { background: #2196F3; color: white; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.connected { background: #d4edda; color: #155724; }
+        .status.disconnected { background: #f8d7da; color: #721c24; }
+        .status.connecting { background: #fff3cd; color: #856404; }
     </style>
 </head>
 <body>
-    <h1>WebSocket Connection Test</h1>
-    
-    <div>
-        <button class="connect" onclick="connect()">Connect</button>
-        <button class="disconnect" onclick="disconnect()">Disconnect</button>
-        <button class="test" onclick="testJoinRoom()">Test Join Room</button>
-        <button class="test" onclick="testChatMessage()">Test Chat Message</button>
+    <div class="container">
+        <h1>🔌 WebSocket Test - SuperMock Production</h1>
+        <p>Тестирование WebSocket соединения для чата между участниками</p>
+        
+        <div class="form-group">
+            <label for="wsUrl">WebSocket URL:</label>
+            <select id="wsUrl">
+                <option value="wss://api.supermock.ru">wss://api.supermock.ru (Production)</option>
+                <option value="ws://localhost:3000">ws://localhost:3000 (Local)</option>
+                <option value="wss://app.supermock.ru">wss://app.supermock.ru (Frontend - не должно работать)</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="sessionId">Session ID (для тестирования):</label>
+            <input type="text" id="sessionId" value="test-session-123" placeholder="Введите ID сессии">
+        </div>
+        
+        <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" value="test-user-123" placeholder="Введите ID пользователя">
+        </div>
+        
+        <div class="controls">
+            <button class="btn-primary" onclick="connect()">🔌 Подключиться</button>
+            <button class="btn-danger" onclick="disconnect()">❌ Отключиться</button>
+            <button class="btn-success" onclick="testJoinRoom()">🚪 Присоединиться к комнате</button>
+            <button class="btn-warning" onclick="testChatMessage()">💬 Отправить тестовое сообщение</button>
+            <button class="btn-warning" onclick="clearLog()">🧹 Очистить лог</button>
+        </div>
+        
+        <div id="status" class="status disconnected">
+            ❌ Не подключено
+        </div>
+        
+        <h3>📋 Лог событий:</h3>
+        <div id="log" class="log"></div>
     </div>
-    
-    <div class="log" id="log"></div>
 
     <script>
         let socket = null;
-        const log = document.getElementById('log');
-        
+        let isConnected = false;
+
         function addLog(message, type = 'info') {
-            const div = document.createElement('div');
-            div.className = type;
-            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            log.appendChild(div);
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            log.appendChild(entry);
             log.scrollTop = log.scrollHeight;
         }
-        
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateStatus(status, message) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status ${status}`;
+            statusEl.innerHTML = message;
+        }
+
         function connect() {
-            addLog('Attempting to connect to WebSocket...', 'info');
+            const wsUrl = document.getElementById('wsUrl').value;
+            const userId = document.getElementById('userId').value;
             
-            const socketUrl = 'wss://api.supermock.ru';
-            addLog(`Connecting to: ${socketUrl}`, 'info');
+            addLog(`Попытка подключения к: ${wsUrl}`, 'info');
+            updateStatus('connecting', '🔄 Подключение...');
             
-            socket = io(socketUrl, {
-                transports: ['websocket', 'polling'],
-                withCredentials: true,
-                query: { userId: 'test-user-123' }
-            });
-            
-            socket.on('connect', () => {
-                addLog('✅ Connected to WebSocket!', 'success');
-                addLog(`Socket ID: ${socket.id}`, 'info');
-            });
-            
-            socket.on('disconnect', (reason) => {
-                addLog(`❌ Disconnected: ${reason}`, 'error');
-            });
-            
-            socket.on('connect_error', (error) => {
-                addLog(`❌ Connection error: ${error.message}`, 'error');
-            });
-            
-            socket.on('error', (error) => {
-                addLog(`❌ Socket error: ${error}`, 'error');
-            });
-            
-            socket.on('joined', (data) => {
-                addLog(`✅ Joined room: ${JSON.stringify(data)}`, 'success');
-            });
-            
-            socket.on('join_denied', (data) => {
-                addLog(`❌ Join denied: ${JSON.stringify(data)}`, 'error');
-            });
-            
-            socket.on('chat_message', (data) => {
-                addLog(`📨 Chat message: ${JSON.stringify(data)}`, 'info');
-            });
-            
-            socket.on('presence_update', (data) => {
-                addLog(`👥 Presence update: ${JSON.stringify(data)}`, 'info');
-            });
+            try {
+                socket = io(wsUrl, {
+                    transports: ['websocket', 'polling'],
+                    withCredentials: true,
+                    query: { userId: userId }
+                });
+                
+                socket.on('connect', () => {
+                    addLog('✅ Подключено к WebSocket!', 'success');
+                    addLog(`Socket ID: ${socket.id}`, 'info');
+                    addLog(`User ID: ${userId}`, 'info');
+                    isConnected = true;
+                    updateStatus('connected', '✅ Подключено');
+                });
+                
+                socket.on('disconnect', (reason) => {
+                    addLog(`❌ Отключено: ${reason}`, 'error');
+                    isConnected = false;
+                    updateStatus('disconnected', '❌ Не подключено');
+                });
+                
+                socket.on('connect_error', (error) => {
+                    addLog(`❌ Ошибка подключения: ${error.message}`, 'error');
+                    addLog(`Детали ошибки: ${JSON.stringify(error)}`, 'error');
+                    updateStatus('disconnected', '❌ Ошибка подключения');
+                });
+                
+                socket.on('error', (error) => {
+                    addLog(`❌ Ошибка Socket: ${error}`, 'error');
+                });
+                
+                socket.on('joined', (data) => {
+                    addLog(`✅ Присоединился к комнате: ${JSON.stringify(data)}`, 'success');
+                });
+                
+                socket.on('join_denied', (data) => {
+                    addLog(`❌ Отказано в присоединении: ${JSON.stringify(data)}`, 'error');
+                });
+                
+                socket.on('chat_message', (data) => {
+                    addLog(`📨 Сообщение чата: ${JSON.stringify(data)}`, 'info');
+                });
+                
+                socket.on('presence_update', (data) => {
+                    addLog(`👥 Обновление присутствия: ${JSON.stringify(data)}`, 'info');
+                });
+                
+            } catch (error) {
+                addLog(`❌ Ошибка при создании соединения: ${error.message}`, 'error');
+                updateStatus('disconnected', '❌ Ошибка создания соединения');
+            }
         }
         
         function disconnect() {
             if (socket) {
                 socket.disconnect();
                 socket = null;
-                addLog('Disconnected from WebSocket', 'info');
+                isConnected = false;
+                addLog('Отключено от WebSocket', 'info');
+                updateStatus('disconnected', '❌ Не подключено');
             }
         }
         
         function testJoinRoom() {
-            if (!socket || !socket.connected) {
-                addLog('❌ Not connected to WebSocket', 'error');
+            if (!socket || !isConnected) {
+                addLog('❌ Сначала подключитесь к WebSocket', 'error');
                 return;
             }
             
-            const sessionId = 'session_z8kr1jps_metsrov3';
-            const userId = 'test-user-1';
+            const sessionId = document.getElementById('sessionId').value;
+            const userId = document.getElementById('userId').value;
             
-            addLog(`Testing join_room: sessionId=${sessionId}, userId=${userId}`, 'info');
+            if (!sessionId || !userId) {
+                addLog('❌ Введите Session ID и User ID', 'error');
+                return;
+            }
+            
+            addLog(`🚪 Попытка присоединиться к комнате: ${sessionId}`, 'info');
             socket.emit('join_room', { sessionId, userId });
         }
         
         function testChatMessage() {
-            if (!socket || !socket.connected) {
-                addLog('❌ Not connected to WebSocket', 'error');
+            if (!socket || !isConnected) {
+                addLog('❌ Сначала подключитесь к WebSocket', 'error');
                 return;
             }
             
-            const sessionId = 'session_z8kr1jps_metsrov3';
-            const message = 'Test message from WebSocket test page';
-            const user = 'Test User';
+            const sessionId = document.getElementById('sessionId').value;
+            const userId = document.getElementById('userId').value;
             
-            addLog(`Testing chat_message: ${message}`, 'info');
-            socket.emit('chat_message', { sessionId, user, message });
+            if (!sessionId || !userId) {
+                addLog('❌ Введите Session ID и User ID', 'error');
+                return;
+            }
+            
+            const testMessage = `Тестовое сообщение от ${userId} в ${new Date().toLocaleTimeString()}`;
+            addLog(`💬 Отправка тестового сообщения: ${testMessage}`, 'info');
+            
+            socket.emit('chat_message', {
+                sessionId: sessionId,
+                user: `User-${userId}`,
+                message: testMessage
+            });
         }
         
-        // Auto-connect on page load
-        window.addEventListener('load', () => {
-            addLog('Page loaded, ready to test WebSocket', 'info');
-        });
+        // Автоматическое подключение при загрузке страницы
+        window.onload = function() {
+            addLog('🚀 Страница загружена, готов к тестированию WebSocket', 'info');
+            addLog('🔧 Выберите WebSocket URL и нажмите "Подключиться"', 'info');
+        };
     </script>
 </body>
 </html>

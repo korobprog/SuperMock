@@ -3328,6 +3328,7 @@ io.on('connection', (socket) => {
       query: socket.handshake?.query || {},
       origin: socket.handshake?.headers?.origin,
       userAgent: socket.handshake?.headers?.['user-agent'],
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error('[socket] connection error:', error);
@@ -3338,11 +3339,15 @@ io.on('connection', (socket) => {
     try {
       const uid = String(userId);
       socket.join(`user:${uid}`);
+      console.log('[socket] user joined personal room:', { userId: uid, socketId: socket.id });
     } catch {}
   }
+  
   socket.on('join_room', async ({ sessionId, userId }) => {
+    console.log('[socket] join_room attempt:', { sessionId, userId, socketId: socket.id });
     try {
       if (!sessionId || !userId) {
+        console.log('[socket] join_room denied: missing params', { sessionId, userId });
         socket.emit('join_denied', { reason: 'Missing sessionId or userId' });
         return;
       }
@@ -3350,6 +3355,7 @@ io.on('connection', (socket) => {
         where: { id: sessionId },
       });
       if (!session) {
+        console.log('[socket] join_room denied: session not found', { sessionId, userId });
         socket.emit('join_denied', { reason: 'Session not found' });
         return;
       }
@@ -3362,8 +3368,15 @@ io.on('connection', (socket) => {
       if (!allowed && devMode) {
         // In dev, allow joining known session to simplify testing across arbitrary IDs
         allowed = true;
+        console.log('[socket] dev mode: allowing access to session', { sessionId, userId });
       }
       if (!allowed) {
+        console.log('[socket] join_room denied: not a session participant', { 
+          sessionId, 
+          userId, 
+          candidateUserId: session.candidateUserId, 
+          interviewerUserId: session.interviewerUserId 
+        });
         socket.emit('join_denied', { reason: 'Not a session participant' });
         return;
       }
@@ -3374,6 +3387,8 @@ io.on('connection', (socket) => {
           sessionId,
           userId,
           members: members.size,
+          socketId: socket.id,
+          timestamp: new Date().toISOString(),
         });
         console.log('[WebRTC] Пользователь', userId, 'присоединился к сессии', sessionId, 'всего участников:', members.size);
       } catch {}
@@ -3384,6 +3399,7 @@ io.on('connection', (socket) => {
         joined: true,
       });
     } catch (e) {
+      console.error('[socket] join_room error:', e);
       socket.emit('join_denied', { reason: 'Internal error' });
     }
   });
@@ -3391,21 +3407,28 @@ io.on('connection', (socket) => {
   // Basic presence broadcasting within a session room
   socket.on('presence', ({ sessionId, userId, role }) => {
     if (!sessionId) return;
+    console.log('[socket] presence update:', { sessionId, userId, role, socketId: socket.id });
     io.to(sessionId).emit('presence_update', { userId, role, at: Date.now() });
   });
 
   socket.on('chat_message', async ({ sessionId, user, message }) => {
-    if (!sessionId || typeof message !== 'string' || !message.trim()) return;
+    console.log('[socket] chat_message received:', { sessionId, user, message: message?.substring(0, 50), socketId: socket.id });
+    if (!sessionId || typeof message !== 'string' || !message.trim()) {
+      console.log('[socket] chat_message invalid:', { sessionId, user, message, socketId: socket.id });
+      return;
+    }
     const safeUser = String(user || 'Партнер').slice(0, 50);
     const safeMsg = String(message).slice(0, 2000);
     const payload = { user: safeUser, message: safeMsg, at: Date.now() };
     try {
       const members = await io.in(sessionId).allSockets();
-      console.log('[socket] chat_message', {
+      console.log('[socket] chat_message broadcasting:', {
         sessionId,
         from: safeUser,
         len: safeMsg.length,
         members: members.size,
+        socketId: socket.id,
+        timestamp: new Date().toISOString(),
       });
     } catch {}
     io.to(sessionId).emit('chat_message', payload);
@@ -3481,8 +3504,16 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', (reason) => {
     try {
-      console.log('[socket] disconnected', { id: socket.id, reason });
-    } catch {}
+      console.log('[socket] disconnected', { 
+        id: socket.id, 
+        reason, 
+        userId: socket.handshake?.query?.userId,
+        timestamp: new Date().toISOString(),
+        origin: socket.handshake?.headers?.origin 
+      });
+    } catch (error) {
+      console.error('[socket] disconnect logging error:', error);
+    }
   });
 });
 

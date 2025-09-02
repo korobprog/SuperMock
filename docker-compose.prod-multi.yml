@@ -94,6 +94,7 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         VITE_API_URL: https://api.supermock.ru
+        VITE_WS_URL: wss://api.supermock.ru
         VITE_TELEGRAM_BOT_NAME: ${TELEGRAM_BOT_NAME}
         VITE_TELEGRAM_BOT_ID: ${TELEGRAM_BOT_ID}
         VITE_JITSI_URL: ${VITE_JITSI_URL:-https://meet.jit.si}
@@ -105,6 +106,7 @@ services:
     environment:
       - NODE_ENV=production
       - VITE_API_URL=https://api.supermock.ru
+      - VITE_WS_URL=wss://api.supermock.ru
       - VITE_TELEGRAM_BOT_NAME=${TELEGRAM_BOT_NAME}
       - VITE_TELEGRAM_BOT_ID=${TELEGRAM_BOT_ID}
       - VITE_JITSI_URL=${VITE_JITSI_URL:-https://meet.jit.si}
