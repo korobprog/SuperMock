@@ -87,7 +87,7 @@ router.get('/telegram-auth-callback', async (req: Request, res: Response) => {
     // Ищем пользователя по Telegram ID
     let user = await prisma.user.findFirst({
       where: {
-        telegramId: telegramUser.id,
+        tgId: telegramUser.id,
       },
     });
 
@@ -97,27 +97,28 @@ router.get('/telegram-auth-callback', async (req: Request, res: Response) => {
       user = await prisma.user.update({
         where: { id: user.id },
         data: {
-          telegramId: telegramUser.id,
+          tgId: telegramUser.id,
           firstName: telegramUser.first_name,
           lastName: telegramUser.last_name,
           username: telegramUser.username,
           photoUrl: telegramUser.photo_url,
-          lastTelegramAuth: new Date(),
         },
       });
     } else {
       // Создаем нового пользователя
       console.log('Creating new user with Telegram ID:', telegramUser.id);
+      
+      // Генерируем уникальный ID для пользователя
+      const userId = `user_${telegramUser.id}_${Date.now()}`;
+      
       user = await prisma.user.create({
         data: {
-          telegramId: telegramUser.id,
+          id: userId,
+          tgId: telegramUser.id,
           firstName: telegramUser.first_name,
           lastName: telegramUser.last_name,
           username: telegramUser.username,
           photoUrl: telegramUser.photo_url,
-          lastTelegramAuth: new Date(),
-          // Создаем уникальный email на основе Telegram ID
-          email: `telegram_${telegramUser.id}@supermock.ru`,
         },
       });
     }
@@ -131,7 +132,7 @@ router.get('/telegram-auth-callback', async (req: Request, res: Response) => {
     const token = jwt.sign(
       { 
         userId: user.id,
-        telegramId: telegramUser.id,
+        tgId: telegramUser.id,
         type: 'telegram'
       },
       JWT_SECRET,
@@ -208,7 +209,7 @@ router.post('/telegram-auth', async (req: Request, res: Response) => {
     // Ищем пользователя по Telegram ID
     let user = await prisma.user.findFirst({
       where: {
-        telegramId: telegramUser.id,
+        tgId: telegramUser.id,
       },
     });
 
@@ -218,27 +219,28 @@ router.post('/telegram-auth', async (req: Request, res: Response) => {
       user = await prisma.user.update({
         where: { id: user.id },
         data: {
-          telegramId: telegramUser.id,
+          tgId: telegramUser.id,
           firstName: telegramUser.first_name,
           lastName: telegramUser.last_name,
           username: telegramUser.username,
           photoUrl: telegramUser.photo_url,
-          lastTelegramAuth: new Date(),
         },
       });
     } else {
       // Создаем нового пользователя
       console.log('Creating new user with Telegram ID:', telegramUser.id);
+      
+      // Генерируем уникальный ID для пользователя
+      const userId = `user_${telegramUser.id}_${Date.now()}`;
+      
       user = await prisma.user.create({
         data: {
-          telegramId: telegramUser.id,
+          id: userId,
+          tgId: telegramUser.id,
           firstName: telegramUser.first_name,
           lastName: telegramUser.last_name,
           username: telegramUser.username,
           photoUrl: telegramUser.photo_url,
-          lastTelegramAuth: new Date(),
-          // Создаем уникальный email на основе Telegram ID
-          email: `telegram_${telegramUser.id}@supermock.ru`,
         },
       });
     }
@@ -252,7 +254,7 @@ router.post('/telegram-auth', async (req: Request, res: Response) => {
     const token = jwt.sign(
       { 
         userId: user.id,
-        telegramId: telegramUser.id,
+        tgId: telegramUser.id,
         type: 'telegram'
       },
       JWT_SECRET,
@@ -265,7 +267,7 @@ router.post('/telegram-auth', async (req: Request, res: Response) => {
       message: 'Авторизация через Telegram успешна',
       user: {
         id: user.id,
-        telegramId: telegramUser.id,
+        tgId: telegramUser.id,
         firstName: telegramUser.first_name,
         lastName: telegramUser.last_name,
         username: telegramUser.username,
