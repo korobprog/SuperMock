@@ -812,14 +812,14 @@ export function TelegramLoginWidget({
 
       console.log('TelegramLoginWidget: Script element created and appended');
 
-      // Проверяем загрузку через 2 секунды
+      // Проверяем загрузку через 3 секунды
       setTimeout(() => {
         const iframe = ref.current?.querySelector('iframe');
         const button = ref.current?.querySelector('button');
         const scriptElement = ref.current?.querySelector('script');
 
         console.log(
-          'TelegramLoginWidget: After 2s - iframe:',
+          'TelegramLoginWidget: After 3s - iframe:',
           iframe,
           'button:',
           button,
@@ -832,51 +832,91 @@ export function TelegramLoginWidget({
           console.warn('TelegramLoginWidget: Widget failed to load, showing fallback');
           if (ref.current) {
             ref.current.innerHTML = `
-              <button 
-                onclick="window.location.href='https://t.me/${botName}?start=auth'"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full h-12"
-              >
-                <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
-                  <circle cx="120" cy="120" r="120" fill="#fff" />
-                  <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
-                  <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
-                  <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
-                </svg>
-                Войти через Telegram
-              </button>
+              <div class="text-center p-4 border border-orange-200 bg-orange-50 rounded-lg">
+                <p class="text-sm text-orange-600 mb-3">Telegram виджет не загрузился</p>
+                <p class="text-xs text-orange-500 mb-3">Возможные причины:</p>
+                <ul class="text-xs text-orange-500 text-left mb-3">
+                  <li>• Домен не настроен в @BotFather (/setdomain)</li>
+                  <li>• Неправильный протокол (нужен HTTPS)</li>
+                  <li>• Блокировка браузером</li>
+                </ul>
+                <div class="space-y-2">
+                  <button 
+                    onclick="window.open('https://t.me/${botName}?start=auth', '_blank')"
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
+                      <circle cx="120" cy="120" r="120" fill="#fff" />
+                      <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                      <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                      <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+                    </svg>
+                    Открыть в Telegram
+                  </button>
+                  <button 
+                    onclick="window.location.reload()"
+                    class="inline-flex items-center justify-center gap-2 px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs transition-colors w-full"
+                  >
+                    🔄 Попробовать снова
+                  </button>
+                </div>
+              </div>
             `;
           }
+        } else {
+          console.log('✅ TelegramLoginWidget: Widget loaded successfully!');
+          if (iframe) {
+            console.log('  - iframe src:', iframe.getAttribute('src'));
+            console.log('  - iframe id:', iframe.getAttribute('id'));
+          }
         }
-      }, 2000);
+      }, 3000);
 
-      // Дополнительная проверка через 5 секунд
+      // Дополнительная проверка через 8 секунд
       setTimeout(() => {
         const iframe = ref.current?.querySelector('iframe');
         const button = ref.current?.querySelector('button');
         
         if (!iframe && !button) {
-          console.error('TelegramLoginWidget: Widget still not loaded after 5s, forcing fallback');
+          console.error('TelegramLoginWidget: Widget still not loaded after 8s, forcing fallback');
           if (ref.current) {
             ref.current.innerHTML = `
-              <div class="text-center">
-                <p class="text-sm text-gray-600 mb-3">Telegram виджет не загрузился</p>
-                <button 
-                  onclick="window.open('https://t.me/${botName}?start=auth', '_blank')"
-                  class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors"
-                >
-                  <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
-                    <circle cx="120" cy="120" r="120" fill="#fff" />
-                    <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
-                    <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
-                    <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
-                  </svg>
-                  Открыть в Telegram
-                </button>
+              <div class="text-center p-4 border border-red-200 bg-red-50 rounded-lg">
+                <p class="text-sm text-red-600 mb-3">Telegram виджет не загрузился после 8 секунд</p>
+                <p class="text-xs text-red-500 mb-3">Это означает, что домен не настроен в BotFather</p>
+                <div class="text-xs text-red-500 text-left mb-3 p-2 bg-red-100 rounded">
+                  <strong>Для исправления:</strong><br/>
+                  1. Откройте @BotFather в Telegram<br/>
+                  2. Выполните: <code>/setdomain</code><br/>
+                  3. Введите: <code>https://app.supermock.ru</code>
+                </div>
+                <div class="space-y-2">
+                  <button 
+                    onclick="window.open('https://t.me/${botName}?start=auth', '_blank')"
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
+                      <circle cx="120" cy="120" r="120" fill="#fff" />
+                      <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                      <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                      <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+                    </svg>
+                    Открыть в Telegram
+                  </button>
+                  <button 
+                    onclick="window.location.reload()"
+                    class="inline-flex items-center justify-center gap-2 px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs transition-colors w-full"
+                  >
+                    🔄 Попробовать снова
+                  </button>
+                </div>
               </div>
             `;
           }
+        } else {
+          console.log('✅ TelegramLoginWidget: Widget confirmed loaded after 8s');
         }
-      }, 5000);
+      }, 8000);
     }
   }, [botName, onAuth]);
 
