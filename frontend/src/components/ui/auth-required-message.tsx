@@ -102,7 +102,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
               Для продолжения необходимо авторизоваться в Telegram
             </p>
             {env.TELEGRAM_BOT_NAME ? (
-              <TelegramProductionLogin
+              <TelegramLoginWidget
                 botName={env.TELEGRAM_BOT_NAME}
                 onAuth={onAuth}
                 className="w-full"
@@ -142,25 +142,16 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
       </div>
       
       {env.TELEGRAM_BOT_NAME ? (
-        // В продакшене используем веб-версию для лучшей совместимости
-        import.meta.env.PROD ? (
-          <TelegramProductionLogin
-            botName={env.TELEGRAM_BOT_NAME}
-            onAuth={onAuth}
-            className="w-full"
-          />
-        ) : (
-          // В dev режиме используем обычный виджет
-          <TelegramLoginWidget
-            botName={env.TELEGRAM_BOT_NAME}
-            onAuth={onAuth}
-            className="w-full"
-          />
-        )
+        // Всегда используем обычный виджет для веб-авторизации
+        <TelegramLoginWidget
+          botName={env.TELEGRAM_BOT_NAME}
+          onAuth={onAuth}
+          className="w-full"
+        />
       ) : (
         // Fallback для продакшена когда переменные окружения не настроены
         import.meta.env.PROD ? (
-          <TelegramProductionLogin
+          <TelegramLoginWidget
             botName="supermock_ai_bot"
             onAuth={onAuth}
             className="w-full"
