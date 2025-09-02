@@ -193,27 +193,48 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
     (window as any).onTelegramAuth = (user: any) => {
       console.log('🌐 Telegram Login Widget callback received:', user);
       
-      if (user && user.id) {
-        console.log('✅ Web auth successful, processing user data...');
-        
-        // Преобразуем данные в нужный формат
-        const telegramUser: TelegramUser = {
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name || '',
-          username: user.username || '',
-          photo_url: user.photo_url || '',
-          auth_date: user.auth_date || Math.floor(Date.now() / 1000),
-          hash: user.hash || 'web_telegram_hash',
-        };
-        
-        console.log('🌐 Calling onAuth with user:', telegramUser);
-        onAuth(telegramUser);
-        setAuthStep('success');
-      } else {
-        console.error('❌ Invalid user data received from Telegram Login Widget:', user);
-        setAuthStep('initial');
-      }
+              if (user && user.id) {
+          console.log('✅ Web auth successful, processing user data...');
+          console.log('🌐 Raw user data from Telegram:', user);
+          
+          // Преобразуем данные в нужный формат
+          const telegramUser: TelegramUser = {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name || '',
+            username: user.username || '',
+            photo_url: user.photo_url || '',
+            auth_date: user.auth_date || Math.floor(Date.now() / 1000),
+            hash: user.hash || 'web_telegram_hash',
+          };
+          
+          console.log('🌐 Processed telegramUser:', telegramUser);
+          console.log('🌐 Calling onAuth with user:', telegramUser);
+          
+          // Вызываем onAuth и отслеживаем результат
+          try {
+            onAuth(telegramUser);
+            console.log('✅ onAuth called successfully');
+            
+            // Проверяем состояние store после вызова onAuth
+            setTimeout(() => {
+              const store = useAppStore.getState();
+              console.log('🔍 Store state after onAuth:', {
+                userId: store.userId,
+                telegramUser: store.telegramUser,
+                hasTelegramUser: !!store.telegramUser
+              });
+            }, 100);
+            
+            setAuthStep('success');
+          } catch (error) {
+            console.error('❌ Error in onAuth callback:', error);
+            setAuthStep('initial');
+          }
+        } else {
+          console.error('❌ Invalid user data received from Telegram Login Widget:', user);
+          setAuthStep('initial');
+        }
     };
     
     // Создаем Telegram Login Widget

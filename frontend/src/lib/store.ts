@@ -121,15 +121,34 @@ export const useAppStore = create<AppState>()(
       },
       setUserId: (id) => {
         console.log('🔧 setUserId called with:', id, 'Type:', typeof id);
+        
+        // Проверяем, есть ли уже telegramUser в store
+        const currentState = get();
+        const telegramUser = currentState.telegramUser;
+        
         // Если передается 0 или null, генерируем новый ID только в development
-        const finalId = id && id > 0 ? id : (import.meta.env.DEV ? getOrGenerateUserId() : 0);
+        let finalId = id && id > 0 ? id : 0;
+        
+        // Если ID не передан, но есть telegramUser, используем его ID
+        if (!finalId && telegramUser && telegramUser.id) {
+          finalId = telegramUser.id;
+          console.log('🔧 Using telegramUser.id as userId:', finalId);
+        }
+        
+        // В development режиме генерируем ID если ничего нет
+        if (!finalId && import.meta.env.DEV) {
+          finalId = getOrGenerateUserId();
+          console.log('🔧 Generated local userId in dev mode:', finalId);
+        }
+        
         set({ userId: finalId });
         console.log('🔧 userId set in store to:', finalId);
+        
         // Автоматически загружаем данные пользователя при установке userId
         if (finalId > 0) {
           const store = useAppStore.getState();
-          store.loadUserData(finalId).catch(() => {
-            // Silent error handling
+          store.loadUserData(finalId).catch((error) => {
+            console.warn('⚠️ Failed to load user data in setUserId:', error);
           });
         }
       },
@@ -137,15 +156,26 @@ export const useAppStore = create<AppState>()(
         console.log('🔧 setTelegramUser called with:', user);
         set({ telegramUser: user });
         // Если пользователь Telegram установлен, используем его ID как userId
-        if (user) {
+        if (user && user.id) {
           console.log('🔧 Setting userId from telegramUser:', user.id);
-          // Используем setTimeout для избежания race condition
+          // Устанавливаем userId сразу, без setTimeout
+          set((state) => ({ 
+            ...state, 
+            userId: user.id,
+            telegramUser: user 
+          }));
+          console.log('🔧 userId and telegramUser set in store to:', user.id);
+          
+          // Асинхронно загружаем данные пользователя
           setTimeout(() => {
             const store = useAppStore.getState();
-            console.log('🔧 About to set userId:', user.id, 'Current state:', store.userId);
-            store.setUserId(user.id);
-            console.log('🔧 userId set to:', user.id, 'New state:', useAppStore.getState().userId);
-          }, 0);
+            if (store.userId === user.id) {
+              console.log('🔧 Loading user data for userId:', user.id);
+              store.loadUserData(user.id).catch((error) => {
+                console.warn('⚠️ Failed to load user data after setTelegramUser:', error);
+              });
+            }
+          }, 100);
         }
       },
       loadUserSettings: async (userId) => {
