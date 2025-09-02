@@ -335,7 +335,7 @@ const Index = () => {
         {import.meta.env.PROD && (
           <div className="mt-6">
             <TelegramProductionAuthTest
-              botName="supermock_ai_bot"
+              botName="SuperMock_bot"
               onAuth={(user) => {
                 console.log('🔧 Index: Production auth received:', user);
                 setTelegramUser(user);

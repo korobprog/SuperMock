@@ -174,9 +174,9 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
                 } else {
                   // Fallback: открываем бота
                   if (tg.openTelegramLink) {
-                    tg.openTelegramLink(`https://t.me/${env.TELEGRAM_BOT_NAME || 'supermock_ai_bot'}?start=auth`);
-                  } else {
-                    window.open(`https://t.me/${env.TELEGRAM_BOT_NAME || 'supermock_ai_bot'}?start=auth`, '_blank');
+                                    tg.openTelegramLink(`https://t.me/${env.TELEGRAM_BOT_NAME || 'SuperMock_bot'}?start=auth`);
+              } else {
+                window.open(`https://t.me/${env.TELEGRAM_BOT_NAME || 'SuperMock_bot'}?start=auth`, '_blank');
                   }
                 }
               }}
@@ -242,7 +242,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
         // Fallback для продакшена когда переменные окружения не настроены
         import.meta.env.PROD ? (
           <TelegramLoginWidget
-            botName="supermock_ai_bot"
+            botName="SuperMock_bot"
             onAuth={onAuth}
             className="w-full"
           />
