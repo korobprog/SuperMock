@@ -11,6 +11,7 @@ import { TelegramUser } from '@/lib/telegram-auth';
 import { env } from '@/lib/env';
 import { createApiUrl } from '@/lib/config';
 import { LanguageSelector } from './language-selector';
+import { AuthRequiredMessage } from './auth-required-message';
 
 interface RealUser {
   id: string;
@@ -31,6 +32,12 @@ export function ProfileHeader() {
   useEffect(() => {
     const loadRealUser = async () => {
       if (!userId) {
+        setRealUser(null);
+        return;
+      }
+
+      // В продакшене не загружаем данные для локального пользователя
+      if (!import.meta.env.DEV && !telegramUser) {
         setRealUser(null);
         return;
       }
@@ -59,7 +66,7 @@ export function ProfileHeader() {
     };
 
     loadRealUser();
-  }, [userId]);
+  }, [userId, telegramUser]);
 
   const handleLogout = () => {
     // Очищаем все данные пользователя
@@ -75,10 +82,12 @@ export function ProfileHeader() {
     sessionStorage.setItem('just_logged_out', 'true');
     sessionStorage.setItem('logout_timestamp', Date.now().toString());
     
-    // Перезагружаем страницу для полной очистки
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    // В продакшене не перезагружаем страницу, просто очищаем состояние
+    if (import.meta.env.DEV) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    }
   };
 
   const handleTelegramAuth = async (user: TelegramUser) => {
@@ -120,15 +129,15 @@ export function ProfileHeader() {
         ? `${realUser.firstName} ${realUser.lastName}`
         : realUser.firstName
       : t('common.user')
-    : userId
+    : userId && import.meta.env.DEV
     ? `${t('common.user')} #${userId}`
-    : t('common.user');
+    : t('common.notAuthorized');
 
   const displayUsername = displayUser
     ? telegramUser
       ? telegramUser.username
       : realUser?.username
-    : userId
+    : userId && import.meta.env.DEV
     ? `ID: ${userId}`
     : null;
 
@@ -154,14 +163,16 @@ export function ProfileHeader() {
               <span className="text-sm text-gray-500">
                 {displayUsername
                   ? `@${displayUsername}`
-                  : `ID: ${userId || t('common.unknown')}`}
+                  : userId && import.meta.env.DEV
+                  ? `ID: ${userId}`
+                  : t('common.notAuthorized')}
               </span>
               <span className="text-xs text-gray-400">
                 {isLoading
                   ? t('common.loading')
                   : telegramUser
                   ? t('common.telegram')
-                  : userId
+                  : userId && import.meta.env.DEV
                   ? t('common.localUser')
                   : t('common.notAuthorized')}
               </span>
@@ -170,7 +181,7 @@ export function ProfileHeader() {
           <div className="flex items-center space-x-2">
             {/* Кнопки для веб-версии - скрыты на мобильных */}
             <div className="hidden md:flex items-center space-x-2">
-              {(telegramUser || userId) && (
+              {(telegramUser || (userId && import.meta.env.DEV)) && (
                 <>
                   <Button
                     variant="ghost"
@@ -199,7 +210,7 @@ export function ProfileHeader() {
             <LanguageSelector />
             
             {/* Кнопка выхода - показывается везде */}
-            {(telegramUser || userId) && (
+            {(telegramUser || (userId && import.meta.env.DEV)) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -216,18 +227,7 @@ export function ProfileHeader() {
         {/* Telegram Auth Button - показываем только если нет пользователя */}
         {!telegramUser && !userId && (
           <div className="mt-4">
-            {env.TELEGRAM_BOT_NAME ? (
-              <TelegramAuthButton
-                botName={env.TELEGRAM_BOT_NAME}
-                onAuth={handleTelegramAuth}
-                className="w-full"
-              />
-            ) : (
-              <div className="text-sm text-red-500 p-2 bg-red-50 rounded border">
-                Ошибка: VITE_TELEGRAM_BOT_NAME не настроен в переменных
-                окружения
-              </div>
-            )}
+            <AuthRequiredMessage onAuth={handleTelegramAuth} />
           </div>
         )}
       </div>

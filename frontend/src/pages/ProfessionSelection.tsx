@@ -175,19 +175,32 @@ export function ProfessionSelection() {
     if (selectedProfession) {
       console.log('🎯 Starting profession selection process...');
       
+      // Проверяем, что у нас есть авторизованный пользователь
+      if (!userId && !import.meta.env.DEV) {
+        console.log('🎭 Production mode: требуется авторизация через Telegram');
+        // Можно показать уведомление пользователю
+        return;
+      }
+      
       // Сразу сохраняем профессию в store
       setProfession(selectedProfession);
 
       // Проверяем демо аккаунт
       const demoAccount = getActiveDevTestAccount();
       
-      // Создаем локальный userId если его нет (для всех новых пользователей)
+      // Создаем локальный userId если его нет (только в development режиме)
       let currentUserId = userId;
       if (!currentUserId || currentUserId === 0) {
-        const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
-        setUserId(localId);
-        currentUserId = localId;
-        console.log('🎭 Generated local userId for new user:', localId);
+        if (import.meta.env.DEV) {
+          const localId = demoAccount ? demoAccount.userId : Math.floor(Math.random() * 1000000) + 1000000;
+          setUserId(localId);
+          currentUserId = localId;
+          console.log('🎭 Generated local userId for new user (dev mode):', localId);
+        } else {
+          console.log('🎭 Production mode: не создаем локального userId');
+          // В продакшене нужно авторизоваться через Telegram
+          return;
+        }
       }
 
       console.log('🔍 Current userId:', currentUserId);

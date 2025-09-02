@@ -75,7 +75,8 @@ const Index = () => {
           logoutTimestamp &&
           Date.now() - parseInt(logoutTimestamp) < 60 * 60 * 1000; // 1 час
 
-        if (!isRecentlyLoggedOut) {
+        // В продакшене всегда проверяем авторизацию, в development можно пропустить
+        if (!isRecentlyLoggedOut || !import.meta.env.DEV) {
           // Проверяем Telegram Mini Apps в первую очередь (более приоритетно)
           if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
             const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
@@ -100,40 +101,46 @@ const Index = () => {
             setTimeout(() => {
               setUserId(telegramUser.id);
             }, 0);
-          } else {
-            // Проверяем тестовый аккаунт в development режиме
-            if (isDevTestAccountsEnabled()) {
-              const testAccount = getActiveDevTestAccount();
-              if (testAccount) {
-                              console.log('Dev test account detected:', testAccount);
-              setTelegramUser(testAccount.telegramUser);
-              // Используем setTimeout для избежания race condition
-              setTimeout(() => {
-                setUserId(testAccount.userId);
-                setRole(testAccount.role);
-                setProfession(testAccount.profession);
-                setLanguage(testAccount.language);
-              }, 0);
-                return; // Не загружаем сохраненного пользователя если есть тестовый аккаунт
+                      } else {
+              // Проверяем тестовый аккаунт в development режиме
+              if (import.meta.env.DEV && isDevTestAccountsEnabled()) {
+                const testAccount = getActiveDevTestAccount();
+                if (testAccount) {
+                  console.log('Dev test account detected:', testAccount);
+                  setTelegramUser(testAccount.telegramUser);
+                  // Используем setTimeout для избежания race condition
+                  setTimeout(() => {
+                    setUserId(testAccount.userId);
+                    setRole(testAccount.role);
+                    setProfession(testAccount.profession);
+                    setLanguage(testAccount.language);
+                  }, 0);
+                  return; // Не загружаем сохраненного пользователя если есть тестовый аккаунт
+                }
+              }
+              
+              // Загружаем сохраненного пользователя Telegram из localStorage только если нет Telegram WebApp и тестового аккаунта
+              const savedTelegramUser = loadTelegramUser();
+              if (savedTelegramUser) {
+                console.log('Загружен сохраненный пользователь Telegram:', savedTelegramUser);
+                setTelegramUser(savedTelegramUser);
+                // Явно устанавливаем userId для немедленного использования
+                // Используем setTimeout для избежания race condition
+                setTimeout(() => {
+                  setUserId(savedTelegramUser.id);
+                }, 0);
+              } else {
+                console.log('Нет сохраненного пользователя Telegram');
+                // В продакшене не создаем локального пользователя
+                if (import.meta.env.DEV) {
+                  // В development режиме можно создать локального пользователя для тестирования
+                  console.log('Development mode: можно создать локального пользователя');
+                } else {
+                  console.log('Production mode: не создаем локального пользователя');
+                }
+                setUserId(0);
               }
             }
-            
-            // Загружаем сохраненного пользователя Telegram из localStorage только если нет Telegram WebApp и тестового аккаунта
-            const savedTelegramUser = loadTelegramUser();
-            if (savedTelegramUser) {
-              console.log('Загружен сохраненный пользователь Telegram:', savedTelegramUser);
-              setTelegramUser(savedTelegramUser);
-              // Явно устанавливаем userId для немедленного использования
-              // Используем setTimeout для избежания race condition
-              setTimeout(() => {
-                setUserId(savedTelegramUser.id);
-              }, 0);
-            } else {
-              console.log('Нет сохраненного пользователя Telegram');
-              // Очищаем userId если нет авторизации
-              setUserId(0);
-            }
-          }
         } else {
           // Очищаем флаги выхода
           sessionStorage.removeItem('just_logged_out');
@@ -145,6 +152,13 @@ const Index = () => {
           setUserId(0);
           localStorage.removeItem('Super Mock-storage');
           localStorage.removeItem('telegram_user');
+          
+          // В продакшене не создаем локального пользователя
+          if (!import.meta.env.DEV) {
+            console.log('Production mode: очищаем все данные пользователя');
+            setRole(null);
+            setProfession(null);
+          }
         }
 
         setIsLanguageDetected(true);
@@ -178,10 +192,12 @@ const Index = () => {
     // Принудительный выход из Telegram Mini Apps
     forceLogoutFromTelegram();
     
-    // Принудительно перезагружаем страницу для полной очистки состояния
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    // В продакшене не перезагружаем страницу, просто очищаем состояние
+    if (import.meta.env.DEV) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    }
   };
 
   // Показываем загрузку, пока определяется язык

@@ -80,6 +80,11 @@ function generateLocalUserId(): number {
 
 // Функция для получения или генерации userId
 function getOrGenerateUserId(): number {
+  // В продакшене не создаем локального пользователя
+  if (!import.meta.env.DEV) {
+    return 0;
+  }
+  
   const existingId = localStorage.getItem('Super Mock-local-user-id');
   if (existingId) {
     return parseInt(existingId);
@@ -116,8 +121,8 @@ export const useAppStore = create<AppState>()(
       },
       setUserId: (id) => {
         console.log('🔧 setUserId called with:', id, 'Type:', typeof id);
-        // Если передается 0 или null, генерируем новый ID
-        const finalId = id && id > 0 ? id : getOrGenerateUserId();
+        // Если передается 0 или null, генерируем новый ID только в development
+        const finalId = id && id > 0 ? id : (import.meta.env.DEV ? getOrGenerateUserId() : 0);
         set({ userId: finalId });
         console.log('🔧 userId set in store to:', finalId);
         // Автоматически загружаем данные пользователя при установке userId
@@ -244,7 +249,7 @@ export const useAppStore = create<AppState>()(
         }),
       clearAll: () =>
         set({
-          userId: Number(getOrGenerateUserId()) || 0, // Генерируем новый userId вместо 0
+          userId: import.meta.env.DEV ? (Number(getOrGenerateUserId()) || 0) : 0, // Генерируем новый userId только в development
           telegramUser: null,
           role: null,
           lastRole: null,
@@ -303,7 +308,7 @@ export const useAppStore = create<AppState>()(
           if (isRecentlyLoggedOut) {
             // Если пользователь недавно вышел, очищаем все данные
             console.log('User recently logged out, clearing all data');
-            state.userId = Number(getOrGenerateUserId()) || 0; // Генерируем новый userId вместо 0
+            state.userId = import.meta.env.DEV ? (Number(getOrGenerateUserId()) || 0) : 0; // Генерируем новый userId только в development
             state.telegramUser = null;
             state.role = null;
             state.lastRole = null;
@@ -331,6 +336,10 @@ export const useAppStore = create<AppState>()(
             const localUserId = Number(generateLocalUserId()) || 0;
             state.userId = localUserId;
             console.log('Initialized local user ID:', localUserId);
+          } else if (!state.userId && !state.telegramUser && !import.meta.env.DEV) {
+            // В продакшене не создаем локального пользователя
+            state.userId = 0;
+            console.log('Production mode: no local user created');
           }
         }
       },
