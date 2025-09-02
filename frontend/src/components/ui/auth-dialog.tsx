@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { TelegramLogin } from '@/components/ui/telegram-login';
+import { TelegramLogin, TelegramWebLogin } from '@/components/ui/telegram-login';
 import { useAppStore } from '@/lib/store';
 import {
   TelegramUser,
@@ -264,11 +264,21 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                   // Настоящая кнопка Telegram (показываем если есть имя бота)
                   <>
                     {console.log('🔧 Rendering real Telegram button')}
-                    <TelegramLogin
-                      botName={import.meta.env.VITE_TELEGRAM_BOT_NAME}
-                      onAuth={handleTelegramAuth}
-                      className="w-full"
-                    />
+                    {isProduction ? (
+                      // В продакшене используем веб-версию для лучшей совместимости
+                      <TelegramWebLogin
+                        botName={import.meta.env.VITE_TELEGRAM_BOT_NAME}
+                        onAuth={handleTelegramAuth}
+                        className="w-full"
+                      />
+                    ) : (
+                      // В dev режиме используем обычный виджет
+                      <TelegramLogin
+                        botName={import.meta.env.VITE_TELEGRAM_BOT_NAME}
+                        onAuth={handleTelegramAuth}
+                        className="w-full"
+                      />
+                    )}
                   </>
                 ) : (
                   // Если нет имени бота, показываем сообщение о недоступности

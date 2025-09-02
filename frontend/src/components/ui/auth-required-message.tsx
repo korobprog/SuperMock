@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppTranslation } from '@/lib/i18n';
-import { TelegramLoginWidget } from './telegram-login';
+import { TelegramLoginWidget, TelegramWebLogin } from './telegram-login';
 import { env } from '@/lib/env';
 import { TelegramUser } from '@/lib/telegram-auth';
 
@@ -126,11 +126,21 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
       </div>
       
       {env.TELEGRAM_BOT_NAME ? (
-        <TelegramLoginWidget
-          botName={env.TELEGRAM_BOT_NAME}
-          onAuth={onAuth}
-          className="w-full"
-        />
+        // В продакшене используем веб-версию для лучшей совместимости
+        import.meta.env.PROD ? (
+          <TelegramWebLogin
+            botName={env.TELEGRAM_BOT_NAME}
+            onAuth={onAuth}
+            className="w-full"
+          />
+        ) : (
+          // В dev режиме используем обычный виджет
+          <TelegramLoginWidget
+            botName={env.TELEGRAM_BOT_NAME}
+            onAuth={onAuth}
+            className="w-full"
+          />
+        )
       ) : (
         <div className="text-sm text-red-500 p-3 bg-red-50 rounded border">
           Ошибка: VITE_TELEGRAM_BOT_NAME не настроен в переменных окружения

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TelegramUser } from '@/lib/telegram-auth';
 import { getTelegramWebApp, isRunningInTelegram } from '@/lib/utils';
 import { env, getEnvVar } from '@/lib/env';
@@ -29,6 +29,8 @@ export function TelegramLogin({
   children,
 }: TelegramLoginProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [widgetLoaded, setWidgetLoaded] = useState(false);
+  const [fallbackMode, setFallbackMode] = useState(false);
 
   useEffect(() => {
     console.log('TelegramLogin: Initializing with botName:', botName);
@@ -139,8 +141,70 @@ export function TelegramLogin({
       console.log('TelegramLogin: Current origin:', currentOrigin);
       console.log('TelegramLogin: Bot name:', botName);
       console.log('TelegramLogin: Bot ID:', botId);
+
+      // Проверяем загрузку виджета через 3 секунды
+      setTimeout(() => {
+        const iframe = ref.current?.querySelector('iframe');
+        const button = ref.current?.querySelector('button');
+        
+        console.log('TelegramLogin: After 3s - iframe:', iframe, 'button:', button);
+        
+        if (iframe || button) {
+          console.log('TelegramLogin: Widget loaded successfully');
+          setWidgetLoaded(true);
+        } else {
+          console.warn('TelegramLogin: Widget failed to load, switching to fallback mode');
+          setFallbackMode(true);
+          if (ref.current) {
+            ref.current.innerHTML = `
+              <div class="text-center">
+                <p class="text-sm text-gray-600 mb-3">Telegram виджет не загрузился</p>
+                <button 
+                  onclick="window.open('https://t.me/${botName}?start=auth', '_blank')"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full h-12"
+                >
+                  <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
+                    <circle cx="120" cy="120" r="120" fill="#fff" />
+                    <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                    <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                    <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+                  </svg>
+                  Открыть в Telegram
+                </button>
+              </div>
+            `;
+          }
+        }
+      }, 3000);
+
+      // Дополнительная проверка через 6 секунд
+      setTimeout(() => {
+        if (!widgetLoaded && !fallbackMode) {
+          console.error('TelegramLogin: Widget still not loaded after 6s, forcing fallback');
+          setFallbackMode(true);
+          if (ref.current) {
+            ref.current.innerHTML = `
+              <div class="text-center">
+                <p class="text-sm text-gray-600 mb-3">Telegram виджет не загрузился</p>
+                <button 
+                  onclick="window.open('https://t.me/${botName}?start=auth', '_blank')"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full h-12"
+                >
+                  <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
+                    <circle cx="120" cy="120" r="120" fill="#fff" />
+                    <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                    <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                    <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+                  </svg>
+                  Открыть в Telegram
+                </button>
+              </div>
+            `;
+          }
+        }
+      }, 6000);
     }
-  }, [botName, onAuth]);
+  }, [botName, onAuth, widgetLoaded, fallbackMode]);
 
   return <div ref={ref} className={className} />;
 }
@@ -827,4 +891,175 @@ export function TelegramLoginWidget({
   }, [botName, onAuth]);
 
   return <div ref={ref} className={className} />;
+}
+
+// Новый компонент для веб-версии с прямой авторизацией
+export function TelegramWebLogin({
+  botName,
+  onAuth,
+  className = '',
+}: {
+  botName: string;
+  onAuth: (user: TelegramUser) => void;
+  className?: string;
+}) {
+  const handleWebLogin = () => {
+    console.log('TelegramWebLogin: Starting web auth for bot:', botName);
+    
+    try {
+      const botId = import.meta.env.VITE_TELEGRAM_BOT_ID;
+      const origin = window.location.origin;
+      
+      if (!botId) {
+        throw new Error('VITE_TELEGRAM_BOT_ID not configured');
+      }
+      
+      // Создаем URL для авторизации через Telegram OAuth
+      const authUrl = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${encodeURIComponent(origin)}&request_access=write&return_to=${encodeURIComponent(origin)}`;
+      
+      console.log('TelegramWebLogin: Opening auth URL:', authUrl);
+      
+      // Открываем popup для авторизации
+      const popup = window.open(
+        authUrl,
+        'telegram_auth',
+        'width=500,height=600,scrollbars=yes,resizable=yes,status=yes'
+      );
+      
+      if (!popup) {
+        throw new Error('Popup blocked by browser');
+      }
+      
+      // Слушаем сообщения от popup
+      const handleMessage = (event: MessageEvent) => {
+        console.log('TelegramWebLogin: Received message:', event);
+        
+        // Проверяем origin
+        if (event.origin !== 'https://oauth.telegram.org') {
+          console.log('TelegramWebLogin: Ignoring message from wrong origin:', event.origin);
+          return;
+        }
+        
+        try {
+          let authData = event.data;
+          
+          // Если данные приходят как строка, парсим их
+          if (typeof authData === 'string') {
+            authData = JSON.parse(authData);
+          }
+          
+          console.log('TelegramWebLogin: Parsed auth data:', authData);
+          
+          // Проверяем успешность авторизации
+          if (authData && authData.event === 'auth_result' && authData.result) {
+            const userData = authData.result;
+            
+            // Преобразуем данные в нужный формат
+            const telegramUser: TelegramUser = {
+              id: userData.id,
+              first_name: userData.first_name,
+              last_name: userData.last_name || '',
+              username: userData.username || '',
+              photo_url: userData.photo_url || '',
+              auth_date: userData.auth_date || Math.floor(Date.now() / 1000),
+              hash: userData.hash || 'web_oauth_hash',
+            };
+            
+            console.log('TelegramWebLogin: Auth successful:', telegramUser);
+            
+            // Закрываем popup
+            popup.close();
+            
+            // Удаляем обработчик сообщений
+            window.removeEventListener('message', handleMessage);
+            
+            // Вызываем callback
+            onAuth(telegramUser);
+            return;
+          }
+          
+          // Альтернативный формат данных
+          if (authData && authData.type === 'TELEGRAM_OAUTH_SUCCESS' && authData.user) {
+            const userData = authData.user;
+            
+            const telegramUser: TelegramUser = {
+              id: userData.id,
+              first_name: userData.first_name,
+              last_name: userData.last_name || '',
+              username: userData.username || '',
+              photo_url: userData.photo_url || '',
+              auth_date: userData.auth_date || Math.floor(Date.now() / 1000),
+              hash: userData.hash || 'web_oauth_hash',
+            };
+            
+            console.log('TelegramWebLogin: Auth successful (alternative):', telegramUser);
+            
+            popup.close();
+            window.removeEventListener('message', handleMessage);
+            onAuth(telegramUser);
+            return;
+          }
+          
+        } catch (error) {
+          console.error('TelegramWebLogin: Error processing auth data:', error);
+        }
+      };
+      
+      window.addEventListener('message', handleMessage);
+      
+      // Проверяем, закрылся ли popup
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+          console.log('TelegramWebLogin: Popup closed without auth');
+        }
+      }, 1000);
+      
+    } catch (error) {
+      console.error('TelegramWebLogin: Error during auth:', error);
+      
+      if (error instanceof Error) {
+        if (error.message.includes('VITE_TELEGRAM_BOT_ID')) {
+          alert('Ошибка конфигурации: ID бота не найден');
+        } else if (error.message.includes('Popup blocked')) {
+          alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+        } else {
+          alert(`Ошибка авторизации: ${error.message}`);
+        }
+      } else {
+        alert('Неизвестная ошибка при авторизации');
+      }
+    }
+  };
+  
+  return (
+    <button
+      onClick={handleWebLogin}
+      className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full h-12 ${className}`}
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 240 240"
+        fill="currentColor"
+        className="flex-shrink-0"
+      >
+        <circle cx="120" cy="120" r="120" fill="#fff" />
+        <path
+          d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80"
+          fill="#c8daea"
+        />
+        <path
+          d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035"
+          fill="#a9c9dd"
+        />
+        <path
+          d="M100.04 144.41l48.36 35.729c5.519 3.045 9.501 1.468 10.876-5.123l19.685-92.763c2.015-8.08-3.08-11.746-8.36-9.349l-115.59 44.571c-7.89 3.165-7.843 7.567-1.438 9.528l29.663 9.259 68.673-43.325c3.242-1.966 6.218-.91 3.776 1.258"
+          fill="#007acc"
+        />
+      </svg>
+      Войти через Telegram (Веб)
+    </button>
+  );
 }
