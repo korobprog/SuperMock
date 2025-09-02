@@ -15,6 +15,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
   const [isTelegramMiniApps, setIsTelegramMiniApps] = useState(false);
   const [miniAppUser, setMiniAppUser] = useState<any>(null);
   const { telegramUser, userId } = useAppStore();
+  const [authStep, setAuthStep] = useState<'initial' | 'authing' | 'instructions' | 'success'>('initial');
 
   useEffect(() => {
     // Проверяем, находимся ли мы в Telegram Mini Apps
@@ -41,37 +42,203 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
     checkTelegramMiniApps();
   }, []);
 
-  // Обработчик авторизации для Mini Apps
-  const handleMiniAppAuth = () => {
-    if (miniAppUser) {
-      console.log('🔧 AuthRequiredMessage: Processing Mini Apps user:', miniAppUser);
+  const handleTelegramAuth = async () => {
+    try {
+      setAuthStep('authing');
+      console.log('🚀 Starting Telegram WebApp authorization...');
       
-      // Преобразуем данные пользователя в нужный формат
-      const telegramUser: TelegramUser = {
-        id: miniAppUser.id,
-        first_name: miniAppUser.first_name,
-        last_name: miniAppUser.last_name || '',
-        username: miniAppUser.username || '',
-        photo_url: miniAppUser.photo_url || '',
-        auth_date: Math.floor(Date.now() / 1000),
-        hash: 'telegram_mini_apps_hash',
-      };
+      const tg = window.Telegram?.WebApp;
+      if (!tg) {
+        console.log('❌ Telegram WebApp not available');
+        setAuthStep('initial');
+        return;
+      }
+
+      // Получаем initDataRaw согласно документации Telegram Mini Apps
+      const initDataRaw = tg.initData;
+      console.log('🔑 initDataRaw:', initDataRaw);
       
-      onAuth(telegramUser);
-    } else {
-      console.log('🔧 AuthRequiredMessage: No Mini Apps user data available');
-      // Показываем сообщение о необходимости авторизации в Telegram
-      if (window.Telegram?.WebApp?.MainButton) {
-        // Используем MainButton для показа сообщения
-        window.Telegram.WebApp.MainButton.setText('Авторизация недоступна');
-        window.Telegram.WebApp.MainButton.show();
+      if (!initDataRaw) {
+        console.log('⚠️ initData отсутствует, запрашиваем доступ к данным...');
+        
+        // Запрашиваем доступ к данным пользователя
+        if ((tg as any).requestWriteAccess) {
+          console.log('✅ Запрашиваем доступ через requestWriteAccess');
+          (tg as any).requestWriteAccess();
+        } else {
+          console.log('⚠️ requestWriteAccess недоступен, открываем бота');
+          if (tg.openTelegramLink) {
+            tg.openTelegramLink(`https://t.me/${env.TELEGRAM_BOT_NAME || 'SuperMock_bot'}?start=auth`);
+          } else {
+            window.open(`https://t.me/${env.TELEGRAM_BOT_NAME || 'SuperMock_bot'}?start=auth`, '_blank');
+          }
+        }
+        
+        // Показываем инструкции пользователю
+        setAuthStep('instructions');
+        
+        // Проверяем авторизацию через интервалы
+        const checkAuth = setInterval(() => {
+          const currentTg = window.Telegram?.WebApp;
+          if (currentTg?.initData) {
+            console.log('✅ initData получен после запроса доступа:', currentTg.initData);
+            clearInterval(checkAuth);
+            // Повторно вызываем авторизацию с полученными данными
+            handleTelegramAuth();
+          }
+        }, 2000);
+        
+        // Останавливаем проверку через 30 секунд
+        setTimeout(() => {
+          clearInterval(checkAuth);
+          if (authStep === 'instructions') {
+            console.log('⏰ Auth timeout, resetting to initial state');
+            setAuthStep('initial');
+          }
+        }, 30000);
+        
+        return;
+      }
+
+      // Отправляем initDataRaw на сервер согласно документации
+      console.log('📤 Отправляем initDataRaw на сервер для авторизации...');
+      
+      const response = await fetch('/api/init', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `tma ${initDataRaw}` // Правильный заголовок согласно документации
+        },
+        body: JSON.stringify({
+          language: 'ru',
+          initData: initDataRaw
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Сервер успешно авторизовал пользователя:', data);
+      
+      if (data.user) {
+        // Используем данные от сервера
+        onAuth({
+          id: data.user.id,
+          first_name: data.user.first_name,
+          last_name: data.user.last_name || '',
+          username: data.user.username || '',
+          photo_url: data.user.photo_url || '',
+          auth_date: Math.floor(Date.now() / 1000),
+          hash: data.user.hash || 'telegram_mini_apps_hash',
+        });
+      } else if (tg.initDataUnsafe?.user) {
+        // Fallback на данные из WebApp
+        const user = tg.initDataUnsafe.user;
+        onAuth({
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name || '',
+          username: user.username || '',
+          photo_url: user.photo_url || '',
+          auth_date: Math.floor(Date.now() / 1000),
+          hash: 'telegram_mini_apps_hash',
+        });
+      }
+      
+      setAuthStep('success');
+      
+    } catch (error) {
+      console.error('❌ Ошибка авторизации:', error);
+      
+      // Fallback: используем данные из WebApp если сервер недоступен
+      const tg = window.Telegram?.WebApp;
+      if (tg?.initDataUnsafe?.user) {
+        console.log('🔄 Используем fallback авторизацию через WebApp');
+        const user = tg.initDataUnsafe.user;
+        onAuth({
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name || '',
+          username: user.username || '',
+          photo_url: user.photo_url || '',
+          auth_date: Math.floor(Date.now() / 1000),
+          hash: 'telegram_mini_apps_hash',
+        });
+        setAuthStep('success');
+      } else {
+        console.log('❌ Fallback авторизация не удалась');
+        setAuthStep('initial');
       }
     }
   };
 
-  // Если пользователь уже авторизован, не показываем блок авторизации
+  // Если пользователь уже авторизован, не показываем компонент
   if (telegramUser || (userId && userId > 0)) {
     return null;
+  }
+
+  // Отображение для разных состояний авторизации
+  if (authStep === 'authing') {
+    return (
+      <div className={`${className}`}>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+          <div className="inline-flex items-center justify-center gap-2 mb-2">
+            <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span className="text-blue-800 font-medium">Авторизация в процессе...</span>
+          </div>
+          <p className="text-sm text-blue-600">Пожалуйста, подождите</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (authStep === 'instructions') {
+    return (
+      <div className={`${className}`}>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+          <div className="inline-flex items-center justify-center gap-2 mb-2">
+            <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" className="text-yellow-600">
+              <circle cx="120" cy="120" r="120" fill="#fff" />
+              <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+              <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+              <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+            </svg>
+            <span className="text-yellow-800 font-medium">Разрешите доступ к данным</span>
+          </div>
+          <p className="text-sm text-yellow-600 mb-3">
+            В Telegram появится запрос на доступ к вашим данным. Нажмите "Разрешить" и вернитесь в приложение.
+          </p>
+          <div className="inline-flex items-center justify-center gap-2 px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">
+            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Ожидание разрешения...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (authStep === 'success') {
+    return (
+      <div className={`${className}`}>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+          <div className="inline-flex items-center justify-center gap-2 mb-2">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-green-600">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <span className="text-green-800 font-medium">Авторизация успешна!</span>
+          </div>
+          <p className="text-sm text-green-600">Перенаправление...</p>
+        </div>
+      </div>
+    );
   }
 
   // Если мы в Telegram Mini Apps, показываем специальный интерфейс
@@ -97,7 +264,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
         
         {miniAppUser ? (
           <button
-            onClick={handleMiniAppAuth}
+            onClick={handleTelegramAuth}
             className="w-full bg-[#0088cc] hover:bg-[#006fa0] text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
             Продолжить
