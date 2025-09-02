@@ -3,10 +3,11 @@ import { TelegramUser } from '@/lib/telegram-auth';
 import { getTelegramWebApp, isRunningInTelegram } from '@/lib/utils';
 import { env, getEnvVar } from '@/lib/env';
 
-// Объявляем глобальную функцию для Telegram Auth
+// Объявляем глобальные функции для Telegram Auth
 declare global {
   interface Window {
     onTelegramAuth: (user: TelegramUser) => void;
+    onTelegramAuthError?: (error: any) => void;
   }
 }
 
@@ -794,6 +795,16 @@ export function TelegramLoginWidget({
       // Добавляем глобальную функцию для callback'а согласно документации
       window.onTelegramAuth = (user: TelegramUser) => {
         console.log('TelegramLoginWidget: Received auth data:', user);
+        
+        // Сохраняем данные авторизации в localStorage
+        try {
+          localStorage.setItem('telegram_auth_token', 'telegram_auth_' + Date.now());
+          localStorage.setItem('telegram_user', JSON.stringify(user));
+          console.log('TelegramLoginWidget: Auth data saved to localStorage');
+        } catch (error) {
+          console.warn('TelegramLoginWidget: Could not save to localStorage:', error);
+        }
+        
         onAuth(user);
       };
 
