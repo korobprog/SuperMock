@@ -69,7 +69,7 @@ jspm_packages/
 .parcel-cache/
 
 # Gatsby files
-public/
+# public/
 
 # Storybook build outputs
 .out/
