@@ -96,8 +96,24 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
             Продолжить
           </button>
         ) : (
-          <div className="text-sm text-blue-600 p-3 bg-blue-100 rounded border">
-            Авторизация через Telegram Mini Apps...
+          // В Telegram Mini Apps показываем кнопку для авторизации
+          <div className="space-y-3">
+            <p className="text-sm text-blue-600 p-3 bg-blue-100 rounded border">
+              Для продолжения необходимо авторизоваться в Telegram
+            </p>
+            {env.TELEGRAM_BOT_NAME ? (
+              <TelegramProductionLogin
+                botName={env.TELEGRAM_BOT_NAME}
+                onAuth={onAuth}
+                className="w-full"
+              />
+            ) : (
+              <div className="text-sm text-red-500 p-3 bg-red-50 rounded border">
+                Ошибка: VITE_TELEGRAM_BOT_NAME не настроен в переменных окружения
+                <br />
+                <small>Текущее значение: {String(env.TELEGRAM_BOT_NAME)}</small>
+              </div>
+            )}
           </div>
         )}
         

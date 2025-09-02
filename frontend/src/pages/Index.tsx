@@ -28,6 +28,7 @@ import {
   applyDevTestAccount,
   clearDevTestAccount
 } from '@/lib/dev-test-account';
+import { TelegramQuickTest } from '@/components/ui/telegram-production-test';
 
 const Index = () => {
   const [isLanguageDetected, setIsLanguageDetected] = useState(false);
