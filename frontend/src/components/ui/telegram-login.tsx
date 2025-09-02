@@ -1,28 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { TelegramUser } from '@/lib/telegram-auth';
+import { getTelegramWebApp, isRunningInTelegram } from '@/lib/utils';
 import { env, getEnvVar } from '@/lib/env';
 
-// Добавляем типы для Telegram WebApp
+// Объявляем глобальную функцию для Telegram Auth
 declare global {
   interface Window {
-    Telegram?: {
-      WebApp?: {
-        initDataUnsafe?: {
-          user?: {
-            id: number;
-            first_name: string;
-            last_name?: string;
-            username?: string;
-            photo_url?: string;
-          };
-        };
-        showAlert: (message: string) => void;
-        openTelegramLink: (url: string) => void;
-        initData?: string;
-      };
-    };
     onTelegramAuth: (user: TelegramUser) => void;
   }
+}
+
+// Интерфейс для Telegram Login Widget
+interface TelegramLoginWidget {
+  onAuth: (user: TelegramUser) => void;
 }
 
 interface TelegramLoginProps {
@@ -96,7 +86,7 @@ export function TelegramLogin({
         return;
       }
 
-      // Если пользователь не авторизован, показываем сообщение
+      // Если пользователь не авторизован в Mini Apps, показываем сообщение
       console.log('TelegramLogin: User not authenticated in Mini Apps');
       if (ref.current) {
         ref.current.innerHTML = `
@@ -150,7 +140,7 @@ export function TelegramLogin({
       console.log('TelegramLogin: Bot name:', botName);
       console.log('TelegramLogin: Bot ID:', botId);
     }
-  }, [botName, onAuth, children]);
+  }, [botName, onAuth]);
 
   return <div ref={ref} className={className} />;
 }
@@ -323,11 +313,8 @@ export function TelegramDesktopLogin({
         console.log(
           'TelegramDesktopLogin: User not authenticated in Mini Apps'
         );
-        if (typeof tg.showAlert === 'function') {
-          tg.showAlert(
-            'Для продолжения необходимо авторизоваться в Telegram Mini Apps'
-          );
-        }
+        // В Mini Apps не открываем ссылки в браузере
+        alert('Для продолжения необходимо авторизоваться в Telegram Mini Apps');
       }
     } else {
       // Если мы не в Telegram Mini Apps, открываем в Telegram
@@ -506,7 +493,7 @@ export function TelegramAuthButton({
 
     try {
       // Получаем данные из переменных окружения с проверкой
-      const botId = getEnvVar('VITE_TELEGRAM_BOT_ID');
+      const botId = import.meta.env.VITE_TELEGRAM_BOT_ID;
       const origin = window.location.origin;
       const returnTo = encodeURIComponent(origin);
       const requestAccess = 'write';
