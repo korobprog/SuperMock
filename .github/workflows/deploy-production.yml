@@ -220,14 +220,14 @@ jobs:
             echo "🌐 Проверяем доступность сервисов..."
             
             # API
-            if curl -s -o /dev/null -w "%{http_code}" -H 'Host: api.supermock.ru' http://localhost/api/health | grep -q "200"; then
+            if curl -s -o /dev/null -w "%{http_code}" -H 'Host: api.supermock.ru' http://localhost:3000/api/health | grep -q "200"; then
               echo "✅ API доступен"
             else
               echo "❌ API недоступен"
             fi
             
             # Frontend App
-            if curl -s -o /dev/null -w "%{http_code}" -H 'Host: app.supermock.ru' http://localhost/ | grep -q "200"; then
+            if curl -s -o /dev/null -w "%{http_code}" -H 'Host: app.supermock.ru' http://localhost:80/ | grep -q "200"; then
               echo "✅ Frontend App доступен"
             else
               echo "❌ Frontend App недоступен"
@@ -282,13 +282,13 @@ jobs:
               
               # Перезапускаем backend с правильными настройками
               echo "🔄 Перезапускаем backend..."
-              docker-compose -f docker-compose.prod-multi.yml restart supermock-backend
+              docker restart supermock-backend
               sleep 15
             fi
             
             # Проверяем API авторизации
             echo "🔑 Проверяем API авторизации..."
-            AUTH_RESPONSE=$(curl -s -H "Host: api.supermock.ru" "http://localhost/api/init" \
+            AUTH_RESPONSE=$(curl -s -H "Host: api.supermock.ru" "http://localhost:3000/api/init" \
               -X POST \
               -H "Content-Type: application/json" \
               -d '{"tg":{"id":123456,"first_name":"Test","username":"testuser"},"language":"ru","initData":"test_auth_hash"}' \
