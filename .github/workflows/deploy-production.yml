@@ -208,7 +208,7 @@ jobs:
             
             # Проверяем health check
             echo "🏥 Проверяем health check..."
-            for container in supermock-postgres supermock-redis supermock-backend; do
+            for container in mockmate-postgres mockmate-redis mockmate-backend; do
               if docker inspect "$container" | grep -q '"Status": "healthy"'; then
                 echo "✅ $container: здоров"
               else
@@ -246,31 +246,31 @@ jobs:
             
             # Проверяем, что PostgreSQL работает и доступен
             echo "🗄️ Проверяем PostgreSQL..."
-            if docker exec supermock-postgres pg_isready -U supermock > /dev/null 2>&1; then
+            if docker exec mockmate-postgres pg_isready -U supermock > /dev/null 2>&1; then
               echo "✅ PostgreSQL доступен"
             else
               echo "❌ PostgreSQL недоступен, перезапускаем..."
-              docker restart supermock-postgres
+              docker restart mockmate-postgres
               sleep 10
             fi
             
             # Проверяем, что Redis работает
             echo "🔴 Проверяем Redis..."
-            if docker exec supermock-redis redis-cli ping | grep -q "PONG"; then
+            if docker exec mockmate-redis redis-cli ping | grep -q "PONG"; then
               echo "✅ Redis доступен"
             else
               echo "❌ Redis недоступен, перезапускаем..."
-              docker restart supermock-redis
+              docker restart mockmate-redis
               sleep 10
             fi
             
             # Проверяем backend подключение к базе данных
             echo "🔌 Проверяем подключение backend к базе данных..."
-            if docker logs supermock-backend --tail 20 | grep -q "Connected to database"; then
+            if docker logs mockmate-backend --tail 20 | grep -q "Connected to database"; then
               echo "✅ Backend подключен к базе данных"
             else
               echo "⚠️ Backend не подключен к базе данных, проверяем логи..."
-              docker logs supermock-backend --tail 50
+              docker logs mockmate-backend --tail 50
               
               # Пытаемся исправить проблемы с подключением
               echo "🔧 Пытаемся исправить проблемы с подключением..."
@@ -278,11 +278,11 @@ jobs:
               # Проверяем, что контейнеры в одной сети
               echo "🌐 Проверяем сетевые настройки..."
               docker network ls
-              docker network inspect supermock_default || echo "Сеть supermock_default не найдена"
+              docker network inspect mockmate_supermock-network || echo "Сеть mockmate_supermock-network не найдена"
               
               # Перезапускаем backend с правильными настройками
               echo "🔄 Перезапускаем backend..."
-              docker-compose -f docker-compose.prod-multi.yml restart supermock-backend
+              docker-compose -f docker-compose.prod-multi.yml restart mockmate-backend
               sleep 15
             fi
             
@@ -299,12 +299,12 @@ jobs:
             else
               echo "❌ API авторизации не работает, код ответа: $AUTH_RESPONSE"
               echo "Проверяем логи backend..."
-              docker logs supermock-backend --tail 30
+              docker logs mockmate-backend --tail 30
             fi
             
             # Финальная проверка
             echo "🔍 Финальная проверка..."
-            if docker ps --filter "name=supermock" --format "{{.Status}}" | grep -q "Up"; then
+            if docker ps --filter "name=mockmate" --format "{{.Status}}" | grep -q "Up"; then
               echo "🎉 Деплой успешно завершен!"
               echo "Сервисы доступны по адресам:"
               echo "  - https://app.supermock.ru (Приложение)"
