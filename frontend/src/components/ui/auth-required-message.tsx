@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAppTranslation } from '@/lib/i18n';
 import { TelegramLoginWidget, TelegramWebLogin, TelegramProductionLogin } from './telegram-login';
 import { env } from '@/lib/env';
@@ -16,15 +16,23 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
   const [miniAppUser, setMiniAppUser] = useState<any>(null);
   const { telegramUser, userId } = useAppStore();
   const [authStep, setAuthStep] = useState<'initial' | 'authing' | 'instructions' | 'success'>('initial');
+  const [isWebAuth, setIsWebAuth] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Проверяем, находимся ли мы в Telegram Mini Apps
     const checkTelegramMiniApps = () => {
+      console.log('🔧 AuthRequiredMessage: Checking environment...');
+      console.log('🔧 Window location:', window.location.href);
+      console.log('🔧 User agent:', navigator.userAgent);
+      
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         console.log('🔧 AuthRequiredMessage: Detected Telegram Mini Apps environment');
         console.log('🔧 WebApp initData:', tg.initData);
         console.log('🔧 WebApp initDataUnsafe:', tg.initDataUnsafe);
+        console.log('🔧 WebApp version:', tg.version);
+        console.log('🔧 WebApp platform:', tg.platform);
         
         setIsTelegramMiniApps(true);
         
@@ -35,6 +43,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
         }
       } else {
         console.log('🔧 AuthRequiredMessage: Not in Telegram Mini Apps environment');
+        console.log('🔧 This is a regular web browser, will use Telegram Login Widget');
         setIsTelegramMiniApps(false);
       }
     };
@@ -171,6 +180,106 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
         console.log('❌ Fallback авторизация не удалась');
         setAuthStep('initial');
       }
+    }
+  };
+
+  // Обработчик авторизации через Telegram Login Widget (веб-версия)
+  const handleWebTelegramAuth = () => {
+    console.log('🌐 Starting web Telegram authorization...');
+    setAuthStep('authing');
+    setIsWebAuth(true);
+    
+    // Создаем глобальную функцию для callback'а
+    (window as any).onTelegramAuth = (user: any) => {
+      console.log('🌐 Telegram Login Widget callback received:', user);
+      
+      if (user && user.id) {
+        console.log('✅ Web auth successful, processing user data...');
+        
+        // Преобразуем данные в нужный формат
+        const telegramUser: TelegramUser = {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name || '',
+          username: user.username || '',
+          photo_url: user.photo_url || '',
+          auth_date: user.auth_date || Math.floor(Date.now() / 1000),
+          hash: user.hash || 'web_telegram_hash',
+        };
+        
+        console.log('🌐 Calling onAuth with user:', telegramUser);
+        onAuth(telegramUser);
+        setAuthStep('success');
+      } else {
+        console.error('❌ Invalid user data received from Telegram Login Widget:', user);
+        setAuthStep('initial');
+      }
+    };
+    
+    // Создаем Telegram Login Widget
+    if (ref.current) {
+      ref.current.innerHTML = '';
+      
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+      script.setAttribute('data-telegram-login', env.TELEGRAM_BOT_NAME || 'SuperMock_bot');
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-auth-url', window.location.origin);
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-lang', 'ru');
+      script.setAttribute('data-onauth', 'onTelegramAuth');
+      
+      ref.current.appendChild(script);
+      console.log('🌐 Telegram Login Widget script added');
+      
+      // Проверяем загрузку виджета
+      setTimeout(() => {
+        const iframe = ref.current?.querySelector('iframe');
+        if (iframe) {
+          console.log('✅ Telegram Login Widget iframe loaded:', iframe.src);
+        } else {
+          console.warn('⚠️ Telegram Login Widget iframe not found, showing fallback');
+          showWebFallback();
+        }
+      }, 3000);
+    }
+  };
+  
+  // Fallback для веб-версии
+  const showWebFallback = () => {
+    if (ref.current) {
+      ref.current.innerHTML = `
+        <div class="text-center p-4 border border-orange-200 bg-orange-50 rounded-lg">
+          <p class="text-sm text-orange-600 mb-3">Telegram виджет не загрузился</p>
+          <p class="text-xs text-orange-500 mb-3">Возможные причины:</p>
+          <ul class="text-xs text-orange-500 text-left mb-3">
+            <li>• Домен не настроен в @BotFather (/setdomain)</li>
+            <li>• Неправильный протокол (нужен HTTPS)</li>
+            <li>• Блокировка браузером</li>
+          </ul>
+          <div class="space-y-2">
+            <button 
+              onclick="window.open('https://t.me/${env.TELEGRAM_BOT_NAME || 'SuperMock_bot'}?start=auth', '_blank')"
+              class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full"
+            >
+              <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
+                <circle cx="120" cy="120" r="120" fill="#fff" />
+                <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+              </svg>
+              Открыть в Telegram
+            </button>
+            <button 
+              onclick="window.location.reload()"
+              class="inline-flex items-center justify-center gap-2 px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs transition-colors w-full"
+            >
+              🔄 Попробовать снова
+            </button>
+          </div>
+        </div>
+      `;
     }
   };
 
@@ -381,7 +490,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
     );
   }
 
-  // Для обычного браузера показываем стандартную кнопку авторизации
+  // Для обычного браузера показываем улучшенную авторизацию
   return (
     <div className={`bg-blue-50 border border-blue-200 rounded-lg p-6 text-center ${className}`}>
       <div className="mb-4">
@@ -398,27 +507,23 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
         </p>
       </div>
       
-      {env.TELEGRAM_BOT_NAME ? (
-        // Всегда используем обычный виджет для веб-авторизации
-        <TelegramLoginWidget
-          botName={env.TELEGRAM_BOT_NAME}
-          onAuth={onAuth}
-          className="w-full"
-        />
-      ) : (
-        // Fallback для продакшена когда переменные окружения не настроены
-        import.meta.env.PROD ? (
-          <TelegramLoginWidget
-            botName="SuperMock_bot"
-            onAuth={onAuth}
-            className="w-full"
-          />
-        ) : (
-          <div className="text-sm text-red-500 p-3 bg-red-50 rounded border">
-            Ошибка: VITE_TELEGRAM_BOT_NAME не настроен в переменных окружения
-          </div>
-        )
-      )}
+      {/* Используем наш улучшенный компонент с ref для веб-авторизации */}
+      <div ref={ref}>
+        {!isWebAuth && (
+          <button
+            onClick={handleWebTelegramAuth}
+            className="w-full bg-[#0088cc] hover:bg-[#006fa0] text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-3 text-lg"
+          >
+            <svg width="24" height="24" viewBox="0 0 240 240" fill="currentColor" className="flex-shrink-0">
+              <circle cx="120" cy="120" r="120" fill="#fff" />
+              <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+              <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+              <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+            </svg>
+            <span>Войти через Telegram</span>
+          </button>
+        )}
+      </div>
       
       <p className="text-xs text-blue-600 mt-3">
         Авторизация через Telegram обеспечивает безопасный доступ к вашим данным
