@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TelegramUser } from '@/lib/telegram-auth';
 import { getTelegramWebApp } from '@/lib/utils';
+import { useAppStore } from '@/lib/store';
 
 interface TelegramProductionTestProps {
   botName: string;
@@ -16,6 +17,7 @@ export function TelegramProductionTest({
   const [telegramStatus, setTelegramStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
   const [webAppData, setWebAppData] = useState<any>(null);
   const [authStep, setAuthStep] = useState<'initial' | 'authing' | 'success'>('initial');
+  const { telegramUser, userId } = useAppStore();
 
   useEffect(() => {
     console.log('🔧 TelegramProductionTest: Checking Telegram WebApp availability...');
@@ -70,6 +72,11 @@ export function TelegramProductionTest({
     
     return () => clearTimeout(timeoutId);
   }, [onAuth]);
+
+  // Если пользователь уже авторизован, не показываем компонент
+  if (telegramUser || (userId && userId > 0)) {
+    return null;
+  }
 
   const handleStartAuth = () => {
     setAuthStep('authing');
@@ -387,6 +394,139 @@ export function TelegramQuickTest({
           <div>• Бот: {botName}</div>
           <div>• Домен: {window.location.hostname}</div>
           <div>• Режим: {import.meta.env.PROD ? 'Продакшн' : 'Разработка'}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Компонент для быстрого тестирования авторизации в продакшн версии
+export function TelegramProductionAuthTest({
+  botName,
+  onAuth,
+  className = '',
+}: {
+  botName: string;
+  onAuth: (user: TelegramUser) => void;
+  className?: string;
+}) {
+  const { telegramUser, userId } = useAppStore();
+  const [isChecking, setIsChecking] = useState(false);
+  const [checkResult, setCheckResult] = useState<string>('');
+
+  const checkAuthStatus = () => {
+    setIsChecking(true);
+    setCheckResult('Проверяем статус авторизации...');
+    
+    setTimeout(() => {
+      const tg = window.Telegram?.WebApp;
+      let result = '';
+      
+      if (tg) {
+        result += `✅ Telegram WebApp обнаружен\n`;
+        result += `📱 Версия: ${tg.version || 'неизвестна'}\n`;
+        result += `🔧 initData: ${tg.initData ? 'присутствует' : 'отсутствует'}\n`;
+        result += `👤 Пользователь: ${tg.initDataUnsafe?.user ? 'авторизован' : 'не авторизован'}\n`;
+        
+        if (tg.initDataUnsafe?.user) {
+          result += `\n🎯 Данные пользователя:\n`;
+          result += `ID: ${tg.initDataUnsafe.user.id}\n`;
+          result += `Имя: ${tg.initDataUnsafe.user.first_name}\n`;
+          result += `Username: ${tg.initDataUnsafe.user.username || 'не указан'}\n`;
+        }
+      } else {
+        result += `❌ Telegram WebApp не обнаружен\n`;
+      }
+      
+      result += `\n📊 Store состояние:\n`;
+      result += `telegramUser: ${telegramUser ? 'установлен' : 'не установлен'}\n`;
+      result += `userId: ${userId || 'не установлен'}\n`;
+      
+      if (telegramUser) {
+        result += `\n👤 Данные из store:\n`;
+        result += `ID: ${telegramUser.id}\n`;
+        result += `Имя: ${telegramUser.first_name}\n`;
+        result += `Username: ${telegramUser.username || 'не указан'}\n`;
+      }
+      
+      setCheckResult(result);
+      setIsChecking(false);
+    }, 1000);
+  };
+
+  const forceAuth = () => {
+    if (telegramUser) {
+      onAuth(telegramUser);
+      setCheckResult('✅ Принудительная авторизация выполнена');
+    } else {
+      setCheckResult('❌ Нет данных пользователя для авторизации');
+    }
+  };
+
+  // Если пользователь уже авторизован, не показываем компонент
+  if (telegramUser || (userId && userId > 0)) {
+    return (
+      <div className={`text-center ${className}`}>
+        <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+          <span className="text-sm font-medium">Пользователь уже авторизован</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${className}`}>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">
+          🧪 Тест авторизации в продакшн версии
+        </h3>
+        <p className="text-sm text-blue-700 mb-3">
+          Этот компонент поможет диагностировать проблемы с авторизацией
+        </p>
+        
+        <div className="space-y-2">
+          <button
+            onClick={checkAuthStatus}
+            disabled={isChecking}
+            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium"
+          >
+            {isChecking ? 'Проверяем...' : 'Проверить статус авторизации'}
+          </button>
+          
+          {telegramUser && (
+            <button
+              onClick={forceAuth}
+              className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium"
+            >
+              Принудительная авторизация
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Результаты проверки */}
+      {checkResult && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Результаты проверки:</h4>
+          <div className="bg-white border border-gray-200 rounded p-3 max-h-64 overflow-y-auto">
+            <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono">
+              {checkResult}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {/* Информация о боте */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-4">
+        <h4 className="text-sm font-medium text-yellow-900 mb-2">ℹ️ Информация:</h4>
+        <div className="text-xs text-yellow-800 space-y-1">
+          <div>• Бот: {botName}</div>
+          <div>• Домен: {window.location.hostname}</div>
+          <div>• Режим: {import.meta.env.PROD ? 'Продакшн' : 'Разработка'}</div>
+          <div>• Telegram WebApp: {window.Telegram?.WebApp ? 'Доступен' : 'Недоступен'}</div>
         </div>
       </div>
     </div>

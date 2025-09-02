@@ -3,6 +3,7 @@ import { useAppTranslation } from '@/lib/i18n';
 import { TelegramLoginWidget, TelegramWebLogin, TelegramProductionLogin } from './telegram-login';
 import { env } from '@/lib/env';
 import { TelegramUser } from '@/lib/telegram-auth';
+import { useAppStore } from '@/lib/store';
 
 interface AuthRequiredMessageProps {
   onAuth: (user: TelegramUser) => void;
@@ -13,6 +14,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
   const { t } = useAppTranslation();
   const [isTelegramMiniApps, setIsTelegramMiniApps] = useState(false);
   const [miniAppUser, setMiniAppUser] = useState<any>(null);
+  const { telegramUser, userId } = useAppStore();
 
   useEffect(() => {
     // Проверяем, находимся ли мы в Telegram Mini Apps
@@ -66,6 +68,11 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
       }
     }
   };
+
+  // Если пользователь уже авторизован, не показываем блок авторизации
+  if (telegramUser || (userId && userId > 0)) {
+    return null;
+  }
 
   // Если мы в Telegram Mini Apps, показываем специальный интерфейс
   if (isTelegramMiniApps) {

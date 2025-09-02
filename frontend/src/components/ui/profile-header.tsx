@@ -121,6 +121,8 @@ export function ProfileHeader() {
 
   // Определяем отображаемые данные пользователя
   const displayUser = telegramUser || realUser;
+  
+  // Исправляем логику отображения имени пользователя
   const displayName = displayUser
     ? telegramUser
       ? telegramUser.first_name
@@ -129,19 +131,18 @@ export function ProfileHeader() {
         ? `${realUser.firstName} ${realUser.lastName}`
         : realUser.firstName
       : t('common.user')
-    : userId && import.meta.env.DEV
-    ? `${t('common.user')} #${userId}`
-    : t('common.notAuthorized');
+    : null; // Убираем fallback на "Не авторизован"
 
   const displayUsername = displayUser
     ? telegramUser
       ? telegramUser.username
       : realUser?.username
-    : userId && import.meta.env.DEV
-    ? `ID: ${userId}`
     : null;
 
   const displayPhoto = telegramUser?.photo_url;
+
+  // Определяем, авторизован ли пользователь
+  const isAuthorized = !!(telegramUser || (userId && userId > 0));
 
   return (
     <div className="w-full">
@@ -159,21 +160,20 @@ export function ProfileHeader() {
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-              <span className="font-semibold text-gray-900">{displayName}</span>
+              <span className="font-semibold text-gray-900">
+                {isAuthorized ? (displayName || t('common.user')) : t('common.notAuthorized')}
+              </span>
               <span className="text-sm text-gray-500">
-                {displayUsername
-                  ? `@${displayUsername}`
-                  : userId && import.meta.env.DEV
-                  ? `ID: ${userId}`
-                  : t('common.notAuthorized')}
+                {isAuthorized 
+                  ? (displayUsername ? `@${displayUsername}` : `ID: ${userId}`)
+                  : t('common.notAuthorized')
+                }
               </span>
               <span className="text-xs text-gray-400">
                 {isLoading
                   ? t('common.loading')
-                  : telegramUser
-                  ? t('common.telegram')
-                  : userId && import.meta.env.DEV
-                  ? t('common.localUser')
+                  : isAuthorized
+                  ? (telegramUser ? t('common.telegram') : t('common.authorized'))
                   : t('common.notAuthorized')}
               </span>
             </div>
@@ -181,7 +181,7 @@ export function ProfileHeader() {
           <div className="flex items-center space-x-2">
             {/* Кнопки для веб-версии - скрыты на мобильных */}
             <div className="hidden md:flex items-center space-x-2">
-              {(telegramUser || (userId && import.meta.env.DEV)) && (
+              {isAuthorized && (
                 <>
                   <Button
                     variant="ghost"
@@ -209,8 +209,8 @@ export function ProfileHeader() {
             {/* Языковое меню - показывается везде */}
             <LanguageSelector />
             
-            {/* Кнопка выхода - показывается везде */}
-            {(telegramUser || (userId && import.meta.env.DEV)) && (
+            {/* Кнопка выхода - показывается только для авторизованных пользователей */}
+            {isAuthorized && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -225,7 +225,7 @@ export function ProfileHeader() {
         </div>
 
         {/* Telegram Auth Button - показываем только если нет пользователя */}
-        {!telegramUser && !userId && (
+        {!isAuthorized && (
           <div className="mt-4">
             <AuthRequiredMessage onAuth={handleTelegramAuth} />
           </div>

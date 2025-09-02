@@ -28,7 +28,7 @@ import {
   applyDevTestAccount,
   clearDevTestAccount
 } from '@/lib/dev-test-account';
-import { TelegramQuickTest } from '@/components/ui/telegram-production-test';
+import { TelegramQuickTest, TelegramProductionAuthTest } from '@/components/ui/telegram-production-test';
 import { TelegramLoginTest } from '@/components/ui/telegram-login-test';
 
 const Index = () => {
@@ -115,9 +115,17 @@ const Index = () => {
               console.log('🔧 Production mode: initData present but no user data');
               console.log('🔧 This is normal in production Telegram WebApp');
               
-              // В продакшене Telegram WebApp может не передавать пользователя сразу
-              // Показываем сообщение о необходимости авторизации
-              console.log('ℹ️ User needs to authenticate in production mode');
+              // В продакшене проверяем, может быть пользователь уже авторизован в store
+              const currentTelegramUser = useAppStore.getState().telegramUser;
+              const currentUserId = useAppStore.getState().userId;
+              
+              if (currentTelegramUser || (currentUserId && currentUserId > 0)) {
+                console.log('✅ User already authenticated in store, skipping auth block');
+                // Пользователь уже авторизован, не показываем блок авторизации
+              } else {
+                console.log('ℹ️ User needs to authenticate in production mode');
+                // Показываем блок авторизации
+              }
             } else {
               console.log('🔧 Telegram Mini Apps detected but no auth data');
             }
@@ -125,44 +133,44 @@ const Index = () => {
             console.log('🔧 No Telegram Mini Apps environment detected');
             
             // Проверяем тестовый аккаунт в development режиме
-              if (import.meta.env.DEV && isDevTestAccountsEnabled()) {
-                const testAccount = getActiveDevTestAccount();
-                if (testAccount) {
-                  console.log('Dev test account detected:', testAccount);
-                  setTelegramUser(testAccount.telegramUser);
-                  // Используем setTimeout для избежания race condition
-                  setTimeout(() => {
-                    setUserId(testAccount.userId);
-                    setRole(testAccount.role);
-                    setProfession(testAccount.profession);
-                    setLanguage(testAccount.language);
-                  }, 0);
-                  return; // Не загружаем сохраненного пользователя если есть тестовый аккаунт
-                }
-              }
-              
-              // Загружаем сохраненного пользователя Telegram из localStorage только если нет Telegram WebApp и тестового аккаунта
-              const savedTelegramUser = loadTelegramUser();
-              if (savedTelegramUser) {
-                console.log('Загружен сохраненный пользователь Telegram:', savedTelegramUser);
-                setTelegramUser(savedTelegramUser);
-                // Явно устанавливаем userId для немедленного использования
+            if (import.meta.env.DEV && isDevTestAccountsEnabled()) {
+              const testAccount = getActiveDevTestAccount();
+              if (testAccount) {
+                console.log('Dev test account detected:', testAccount);
+                setTelegramUser(testAccount.telegramUser);
                 // Используем setTimeout для избежания race condition
                 setTimeout(() => {
-                  setUserId(savedTelegramUser.id);
+                  setUserId(testAccount.userId);
+                  setRole(testAccount.role);
+                  setProfession(testAccount.profession);
+                  setLanguage(testAccount.language);
                 }, 0);
-              } else {
-                console.log('Нет сохраненного пользователя Telegram');
-                // В продакшене не создаем локального пользователя
-                if (import.meta.env.DEV) {
-                  // В development режиме можно создать локального пользователя для тестирования
-                  console.log('Development mode: можно создать локального пользователя');
-                } else {
-                  console.log('Production mode: не создаем локального пользователя');
-                }
-                setUserId(0);
+                return; // Не загружаем сохраненного пользователя если есть тестовый аккаунт
               }
             }
+            
+            // Загружаем сохраненного пользователя Telegram из localStorage только если нет Telegram WebApp и тестового аккаунта
+            const savedTelegramUser = loadTelegramUser();
+            if (savedTelegramUser) {
+              console.log('Загружен сохраненный пользователь Telegram:', savedTelegramUser);
+              setTelegramUser(savedTelegramUser);
+              // Явно устанавливаем userId для немедленного использования
+              // Используем setTimeout для избежания race condition
+              setTimeout(() => {
+                setUserId(savedTelegramUser.id);
+              }, 0);
+            } else {
+              console.log('Нет сохраненного пользователя Telegram');
+              // В продакшене не создаем локального пользователя
+              if (import.meta.env.DEV) {
+                // В development режиме можно создать локального пользователя для тестирования
+                console.log('Development mode: можно создать локального пользователя');
+              } else {
+                console.log('Production mode: не создаем локального пользователя');
+              }
+              setUserId(0);
+            }
+          }
         } else {
           // Очищаем флаги выхода
           sessionStorage.removeItem('just_logged_out');
@@ -335,7 +343,20 @@ const Index = () => {
             </div>
           )
         }
-        {/* Удалено */}
+        {/* Тест авторизации в продакшн версии */}
+        {import.meta.env.PROD && (
+          <div className="mt-6">
+            <TelegramProductionAuthTest
+              botName="supermock_ai_bot"
+              onAuth={(user) => {
+                console.log('🔧 Index: Production auth received:', user);
+                setTelegramUser(user);
+                setUserId(user.id);
+              }}
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
 
       {/* Mobile Bottom Menu */}
