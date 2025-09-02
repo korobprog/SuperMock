@@ -120,24 +120,22 @@ export function TelegramLogin({
         onAuth(user);
       };
 
-      // Создаем официальный Telegram Login Widget с правильными параметрами
-      const widgetHtml = `
-        <script 
-          async 
-          src="https://telegram.org/js/telegram-widget.js?22" 
-          data-telegram-login="${botName}" 
-          data-size="large" 
-          data-auth-url="${currentOrigin}/telegram-auth-callback" 
-          data-request-access="write"
-          data-lang="ru"
-          data-onauth="onTelegramAuth"
-        ></script>
-      `;
+      // Создаем script элемент правильно через DOM API
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+      script.setAttribute('data-telegram-login', botName);
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-auth-url', `${currentOrigin}/telegram-auth-callback`);
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-lang', 'ru');
+      script.setAttribute('data-onauth', 'onTelegramAuth');
 
-      ref.current.innerHTML = widgetHtml;
+      ref.current.innerHTML = ''; // Очищаем div
+      ref.current.appendChild(script);
 
       console.log('TelegramLogin: Official widget created successfully');
-      console.log('TelegramLogin: Widget HTML:', widgetHtml);
+      console.log('TelegramLogin: Script element created and appended');
       console.log('TelegramLogin: Current origin:', currentOrigin);
       console.log('TelegramLogin: Bot name:', botName);
       console.log('TelegramLogin: Bot ID:', botId);
@@ -301,24 +299,21 @@ export function TelegramOfficialWidget({
         onAuth(user);
       };
 
-      // Создаем официальный виджет с правильными параметрами
-      const widgetHtml = `
-        <script 
-          async 
-          src="https://telegram.org/js/telegram-widget.js?22" 
-          data-telegram-login="${botName}" 
-          data-size="large" 
-          data-auth-url="${window.location.origin}/telegram-auth-callback" 
-          data-request-access="write"
-          data-lang="ru"
-          data-onauth="onTelegramAuth"
-        ></script>
-      `;
+      // Создаем script элемент правильно через DOM API
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+      script.setAttribute('data-telegram-login', botName);
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-auth-url', `${window.location.origin}/telegram-auth-callback`);
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-lang', 'ru');
+      script.setAttribute('data-onauth', 'onTelegramAuth');
 
-      ref.current.innerHTML = widgetHtml;
+      ref.current.innerHTML = ''; // Очищаем div
+      ref.current.appendChild(script);
       console.log(
-        'TelegramOfficialWidget: Widget created with HTML:',
-        widgetHtml
+        'TelegramOfficialWidget: Script element created and appended'
       );
 
       // Проверяем, загрузился ли виджет через 2 секунды
@@ -517,21 +512,19 @@ export function TelegramSimpleLogin({
         onAuth(user);
       };
 
-      // Создаем официальный виджет
-      const widgetHtml = `
-        <script 
-          async 
-          src="https://telegram.org/js/telegram-widget.js?22" 
-          data-telegram-login="${botName}" 
-          data-size="large" 
-          data-auth-url="${window.location.origin}/telegram-auth-callback" 
-          data-request-access="write"
-          data-lang="ru"
-          data-onauth="onTelegramAuth"
-        ></script>
-      `;
+      // Создаем script элемент правильно через DOM API
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+      script.setAttribute('data-telegram-login', botName);
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-auth-url', `${window.location.origin}/telegram-auth-callback`);
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-lang', 'ru');
+      script.setAttribute('data-onauth', 'onTelegramAuth');
 
-      ref.current.innerHTML = widgetHtml;
+      ref.current.innerHTML = ''; // Очищаем div
+      ref.current.appendChild(script);
     }
   }, [botName, onAuth]);
 
@@ -804,23 +797,20 @@ export function TelegramLoginWidget({
         onAuth(user);
       };
 
-      // Создаем официальный виджет через HTML строку (более надежно)
-      const widgetHtml = `
-        <script 
-          async 
-          src="https://telegram.org/js/telegram-widget.js?22" 
-          data-telegram-login="${botName}" 
-          data-size="large" 
-          data-auth-url="${window.location.origin}/telegram-auth-callback" 
-          data-request-access="write"
-          data-lang="ru"
-          data-onauth="onTelegramAuth(user)"
-        ></script>
-      `;
+      // Создаем script элемент правильно через DOM API
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://telegram.org/js/telegram-widget.js?22';
+      script.setAttribute('data-telegram-login', botName);
+      script.setAttribute('data-size', 'large');
+      script.setAttribute('data-auth-url', `${window.location.origin}/telegram-auth-callback`);
+      script.setAttribute('data-request-access', 'write');
+      script.setAttribute('data-lang', 'ru');
+      script.setAttribute('data-onauth', 'onTelegramAuth');
 
-      ref.current.innerHTML = widgetHtml;
+      ref.current.appendChild(script);
 
-      console.log('TelegramLoginWidget: Widget HTML created:', widgetHtml);
+      console.log('TelegramLoginWidget: Script element created and appended');
 
       // Проверяем загрузку через 2 секунды
       setTimeout(() => {
@@ -1061,5 +1051,128 @@ export function TelegramWebLogin({
       </svg>
       Войти через Telegram (Веб)
     </button>
+  );
+}
+
+// Новый компонент для продакшена с улучшенной логикой
+export function TelegramProductionLogin({
+  botName,
+  onAuth,
+  className = '',
+}: {
+  botName: string;
+  onAuth: (user: TelegramUser) => void;
+  className?: string;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [authStep, setAuthStep] = useState<'initial' | 'authing' | 'success'>('initial');
+
+  const handleProductionAuth = async () => {
+    setIsLoading(true);
+    setAuthStep('authing');
+    
+    try {
+      console.log('TelegramProductionLogin: Starting production auth for bot:', botName);
+      
+      // В продакшене Telegram WebApp может не передавать пользователя сразу
+      // Показываем инструкции по авторизации
+      console.log('ℹ️ Production mode: guiding user through auth process');
+      
+      // Пытаемся открыть ссылку на бота через Telegram WebApp API
+      if (window.Telegram?.WebApp?.openTelegramLink) {
+        try {
+          window.Telegram.WebApp.openTelegramLink(`https://t.me/${botName}?start=auth`);
+          console.log('✅ Opened Telegram link through WebApp API');
+        } catch (error) {
+          console.warn('⚠️ Failed to open through WebApp API, falling back to window.open');
+          window.open(`https://t.me/${botName}?start=auth`, '_blank');
+        }
+      } else {
+        // Fallback для случаев когда WebApp API недоступен
+        window.open(`https://t.me/${botName}?start=auth`, '_blank');
+      }
+      
+      // Показываем сообщение пользователю
+      alert('Пожалуйста, авторизуйтесь в боте @' + botName + ' и вернитесь в приложение');
+      
+      // В продакшене ждем некоторое время и проверяем авторизацию
+      setTimeout(() => {
+        const tg = window.Telegram?.WebApp;
+        if (tg?.initDataUnsafe?.user) {
+          console.log('✅ User authenticated after delay:', tg.initDataUnsafe.user);
+          const user = tg.initDataUnsafe.user;
+          onAuth({
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name || '',
+            username: user.username || '',
+            photo_url: user.photo_url || '',
+            auth_date: Math.floor(Date.now() / 1000),
+            hash: 'telegram_mini_apps_hash',
+          });
+          setAuthStep('success');
+        } else {
+          console.log('ℹ️ User still not authenticated after delay');
+          setAuthStep('initial');
+        }
+        setIsLoading(false);
+      }, 5000); // Ждем 5 секунд
+      
+    } catch (error) {
+      console.error('TelegramProductionLogin: Error during auth:', error);
+      setAuthStep('initial');
+      setIsLoading(false);
+    }
+  };
+
+  if (authStep === 'success') {
+    return (
+      <div className={`text-center ${className}`}>
+        <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+          <span className="text-sm font-medium">Авторизация успешна!</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`text-center ${className}`}>
+      <p className="text-sm text-gray-600 mb-3">
+        Для продолжения необходимо авторизоваться в Telegram
+      </p>
+      <button
+        onClick={handleProductionAuth}
+        disabled={isLoading}
+        className={`
+          inline-flex items-center justify-center gap-2 px-4 py-2 
+          bg-[#0088cc] hover:bg-[#006fa0] disabled:bg-gray-400
+          text-white rounded-lg font-medium text-sm transition-colors w-full h-12
+          ${isLoading ? 'cursor-not-allowed' : ''}
+        `}
+      >
+        {isLoading ? (
+          <>
+            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Авторизация...</span>
+          </>
+        ) : (
+          <>
+            <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" className="flex-shrink-0">
+              <circle cx="120" cy="120" r="120" fill="#fff" />
+              <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+              <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+              <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+            </svg>
+            <span>Авторизоваться в Telegram</span>
+          </>
+        )}
+      </button>
+    </div>
   );
 }

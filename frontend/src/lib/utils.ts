@@ -35,8 +35,12 @@ interface TelegramWebAppAPI {
   exitFullscreen?: () => void;
   isFullscreen?: boolean;
   version?: string;
+  platform?: string;
+  colorScheme?: string;
   onEvent?: (eventType: string, callback: (event?: unknown) => void) => void;
   offEvent?: (eventType: string, callback: (event?: unknown) => void) => void;
+  // Метод для открытия ссылок в Telegram
+  openTelegramLink?: (url: string) => void;
   BackButton?: {
     show: () => void;
     hide: () => void;
@@ -143,6 +147,11 @@ export function openAboutCompanyInMiniApp() {
 export function setupTelegramFullscreen() {
   const tg = getTelegramWebApp();
   if (tg) {
+    console.log('🔧 Setting up Telegram Mini Apps...');
+    console.log('🔧 initData:', tg.initData);
+    console.log('🔧 initDataUnsafe:', tg.initDataUnsafe);
+    console.log('🔧 version:', tg.version);
+    
     // Говорим Telegram, что приложение готово
     tg.ready?.();
 
@@ -198,6 +207,8 @@ export function setupTelegramFullscreen() {
     }
 
     console.log('✅ Telegram Mini Apps настроен');
+  } else {
+    console.log('ℹ️ Telegram Mini Apps не обнаружен');
   }
 }
 

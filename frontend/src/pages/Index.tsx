@@ -78,31 +78,51 @@ const Index = () => {
         // В продакшене всегда проверяем авторизацию, в development можно пропустить
         if (!isRecentlyLoggedOut || !import.meta.env.DEV) {
           // Проверяем Telegram Mini Apps в первую очередь (более приоритетно)
-          if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-            const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
-            console.log('Telegram Mini Apps user detected:', tgUser);
+          const tg = window.Telegram?.WebApp;
+          
+          if (tg && (tg.initData || tg.initDataUnsafe?.user)) {
+            console.log('🔧 Telegram Mini Apps detected with data');
+            console.log('🔧 initData:', tg.initData);
+            console.log('🔧 initDataUnsafe:', tg.initDataUnsafe);
+            
+            if (tg.initDataUnsafe?.user) {
+              const tgUser = tg.initDataUnsafe.user;
+              console.log('✅ Telegram Mini Apps user detected:', tgUser);
 
-            // Создаем объект пользователя из Telegram Mini Apps
-            const telegramUser = {
-              id: tgUser.id,
-              first_name: tgUser.first_name,
-              last_name: tgUser.last_name || '',
-              username: tgUser.username || '',
-              photo_url: tgUser.photo_url || '',
-              auth_date: Math.floor(Date.now() / 1000),
-              hash: 'telegram_mini_apps_hash',
-            };
+              // Создаем объект пользователя из Telegram Mini Apps
+              const telegramUser = {
+                id: tgUser.id,
+                first_name: tgUser.first_name,
+                last_name: tgUser.last_name || '',
+                username: tgUser.username || '',
+                photo_url: tgUser.photo_url || '',
+                auth_date: Math.floor(Date.now() / 1000),
+                hash: 'telegram_mini_apps_hash',
+              };
 
-            // Сохраняем и устанавливаем пользователя
-            saveTelegramUser(telegramUser);
-            setTelegramUser(telegramUser);
-            // Явно устанавливаем userId для немедленного использования
-            // Используем setTimeout для избежания race condition
-            setTimeout(() => {
-              setUserId(telegramUser.id);
-            }, 0);
-                      } else {
-              // Проверяем тестовый аккаунт в development режиме
+              // Сохраняем и устанавливаем пользователя
+              saveTelegramUser(telegramUser);
+              setTelegramUser(telegramUser);
+              // Явно устанавливаем userId для немедленного использования
+              // Используем setTimeout для избежания race condition
+              setTimeout(() => {
+                setUserId(telegramUser.id);
+              }, 0);
+            } else if (tg.initData) {
+              // Если есть initData, но нет пользователя, это может быть продакшн
+              console.log('🔧 Production mode: initData present but no user data');
+              console.log('🔧 This is normal in production Telegram WebApp');
+              
+              // В продакшене Telegram WebApp может не передавать пользователя сразу
+              // Показываем сообщение о необходимости авторизации
+              console.log('ℹ️ User needs to authenticate in production mode');
+            } else {
+              console.log('🔧 Telegram Mini Apps detected but no auth data');
+            }
+          } else {
+            console.log('🔧 No Telegram Mini Apps environment detected');
+            
+            // Проверяем тестовый аккаунт в development режиме
               if (import.meta.env.DEV && isDevTestAccountsEnabled()) {
                 const testAccount = getActiveDevTestAccount();
                 if (testAccount) {

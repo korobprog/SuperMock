@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppTranslation } from '@/lib/i18n';
-import { TelegramLoginWidget, TelegramWebLogin } from './telegram-login';
+import { TelegramLoginWidget, TelegramWebLogin, TelegramProductionLogin } from './telegram-login';
 import { env } from '@/lib/env';
 import { TelegramUser } from '@/lib/telegram-auth';
 
@@ -128,7 +128,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
       {env.TELEGRAM_BOT_NAME ? (
         // В продакшене используем веб-версию для лучшей совместимости
         import.meta.env.PROD ? (
-          <TelegramWebLogin
+          <TelegramProductionLogin
             botName={env.TELEGRAM_BOT_NAME}
             onAuth={onAuth}
             className="w-full"
