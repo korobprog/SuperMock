@@ -29,6 +29,7 @@ import {
   clearDevTestAccount
 } from '@/lib/dev-test-account';
 import { TelegramQuickTest } from '@/components/ui/telegram-production-test';
+import { TelegramLoginTest } from '@/components/ui/telegram-login-test';
 
 const Index = () => {
   const [isLanguageDetected, setIsLanguageDetected] = useState(false);
@@ -315,6 +316,22 @@ const Index = () => {
                    )}
                  </div>
                </div>
+              
+              {/* Telegram Login Test */}
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h3 className="text-sm font-medium text-green-800 mb-2">🔧 Тест Telegram Login Widget</h3>
+                <p className="text-xs text-green-600 mb-3">
+                  Тестируем работу официального виджета Telegram для веб-авторизации
+                </p>
+                <TelegramLoginTest
+                  onAuth={(user) => {
+                    console.log('🔧 Index: Telegram auth received:', user);
+                    setTelegramUser(user);
+                    setUserId(user.id);
+                  }}
+                  className="w-full"
+                />
+              </div>
             </div>
           )
         }
