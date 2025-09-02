@@ -740,40 +740,32 @@ export function TelegramLoginWidget({
         onAuth(user);
       };
 
-      // Создаем script элемент через createElement
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://telegram.org/js/telegram-widget.js?22';
-      script.setAttribute('data-telegram-login', botName);
-      script.setAttribute('data-size', 'large');
-      script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-      script.setAttribute('data-request-access', 'write');
+      // Создаем официальный виджет через HTML строку (более надежно)
+      const widgetHtml = `
+        <script 
+          async 
+          src="https://telegram.org/js/telegram-widget.js?22" 
+          data-telegram-login="${botName}" 
+          data-size="large" 
+          data-auth-url="${window.location.origin}" 
+          data-request-access="write"
+          data-lang="ru"
+          data-onauth="onTelegramAuth(user)"
+        ></script>
+      `;
 
-      console.log(
-        'TelegramLoginWidget: Created script element:',
-        script.outerHTML
-      );
+      ref.current.innerHTML = widgetHtml;
 
-      // Добавляем обработчики событий
-      script.onload = () => {
-        console.log('TelegramLoginWidget: Script loaded successfully');
-      };
+      console.log('TelegramLoginWidget: Widget HTML created:', widgetHtml);
 
-      script.onerror = () => {
-        console.log('TelegramLoginWidget: Script failed to load');
-      };
-
-      // Добавляем скрипт в DOM
-      ref.current.appendChild(script);
-
-      // Проверяем загрузку через 3 секунды
+      // Проверяем загрузку через 2 секунды
       setTimeout(() => {
         const iframe = ref.current?.querySelector('iframe');
         const button = ref.current?.querySelector('button');
         const scriptElement = ref.current?.querySelector('script');
 
         console.log(
-          'TelegramLoginWidget: After 3s - iframe:',
+          'TelegramLoginWidget: After 2s - iframe:',
           iframe,
           'button:',
           button,
@@ -781,10 +773,56 @@ export function TelegramLoginWidget({
           scriptElement
         );
 
-        if (iframe || button) {
-          console.log('TelegramLoginWidget: Widget loaded successfully');
+        // Если виджет не загрузился, показываем fallback
+        if (!iframe && !button) {
+          console.warn('TelegramLoginWidget: Widget failed to load, showing fallback');
+          if (ref.current) {
+            ref.current.innerHTML = `
+              <button 
+                onclick="window.location.href='https://t.me/${botName}?start=auth'"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full h-12"
+              >
+                <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
+                  <circle cx="120" cy="120" r="120" fill="#fff" />
+                  <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                  <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                  <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+                </svg>
+                Войти через Telegram
+              </button>
+            `;
+          }
         }
-      }, 3000);
+      }, 2000);
+
+      // Дополнительная проверка через 5 секунд
+      setTimeout(() => {
+        const iframe = ref.current?.querySelector('iframe');
+        const button = ref.current?.querySelector('button');
+        
+        if (!iframe && !button) {
+          console.error('TelegramLoginWidget: Widget still not loaded after 5s, forcing fallback');
+          if (ref.current) {
+            ref.current.innerHTML = `
+              <div class="text-center">
+                <p class="text-sm text-gray-600 mb-3">Telegram виджет не загрузился</p>
+                <button 
+                  onclick="window.open('https://t.me/${botName}?start=auth', '_blank')"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors"
+                >
+                  <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
+                    <circle cx="120" cy="120" r="120" fill="#fff" />
+                    <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                    <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                    <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+                  </svg>
+                  Открыть в Telegram
+                </button>
+              </div>
+            `;
+          }
+        }
+      }, 5000);
     }
   }, [botName, onAuth]);
 
