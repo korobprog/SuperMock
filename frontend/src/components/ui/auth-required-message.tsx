@@ -158,9 +158,18 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
           />
         )
       ) : (
-        <div className="text-sm text-red-500 p-3 bg-red-50 rounded border">
-          Ошибка: VITE_TELEGRAM_BOT_NAME не настроен в переменных окружения
-        </div>
+        // Fallback для продакшена когда переменные окружения не настроены
+        import.meta.env.PROD ? (
+          <TelegramProductionLogin
+            botName="supermock_ai_bot"
+            onAuth={onAuth}
+            className="w-full"
+          />
+        ) : (
+          <div className="text-sm text-red-500 p-3 bg-red-50 rounded border">
+            Ошибка: VITE_TELEGRAM_BOT_NAME не настроен в переменных окружения
+          </div>
+        )
       )}
       
       <p className="text-xs text-blue-600 mt-3">
