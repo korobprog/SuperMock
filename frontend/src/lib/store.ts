@@ -121,6 +121,10 @@ export const useAppStore = create<AppState>()(
       },
       setUserId: (id) => {
         console.log('🔧 setUserId called with:', id, 'Type:', typeof id);
+        console.log('🔧 Current store state before setUserId:', {
+          userId: get().userId,
+          telegramUser: get().telegramUser
+        });
         
         // Проверяем, есть ли уже telegramUser в store
         const currentState = get();
@@ -143,6 +147,10 @@ export const useAppStore = create<AppState>()(
         
         set({ userId: finalId });
         console.log('🔧 userId set in store to:', finalId);
+        console.log('🔧 New store state after setUserId:', {
+          userId: get().userId,
+          telegramUser: get().telegramUser
+        });
         
         // Автоматически загружаем данные пользователя при установке userId
         if (finalId > 0) {
@@ -154,7 +162,14 @@ export const useAppStore = create<AppState>()(
       },
       setTelegramUser: (user) => {
         console.log('🔧 setTelegramUser called with:', user);
+        console.log('🔧 Current store state before setTelegramUser:', {
+          userId: get().userId,
+          telegramUser: get().telegramUser
+        });
+        
         set({ telegramUser: user });
+        console.log('🔧 telegramUser set in store');
+        
         // Если пользователь Telegram установлен, используем его ID как userId
         if (user && user.id) {
           console.log('🔧 Setting userId from telegramUser:', user.id);
@@ -165,6 +180,10 @@ export const useAppStore = create<AppState>()(
             telegramUser: user 
           }));
           console.log('🔧 userId and telegramUser set in store to:', user.id);
+          console.log('🔧 New store state after setTelegramUser:', {
+            userId: get().userId,
+            telegramUser: get().telegramUser
+          });
           
           // Асинхронно загружаем данные пользователя
           setTimeout(() => {
@@ -176,6 +195,8 @@ export const useAppStore = create<AppState>()(
               });
             }
           }, 100);
+        } else {
+          console.log('🔧 No user or user.id provided to setTelegramUser');
         }
       },
       loadUserSettings: async (userId) => {

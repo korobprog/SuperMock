@@ -75,10 +75,11 @@ const Index = () => {
           // Проверяем Telegram Mini Apps в первую очередь (более приоритетно)
           const tg = window.Telegram?.WebApp;
           
-          if (tg && (tg.initData || tg.initDataUnsafe?.user)) {
-            console.log('🔧 Telegram Mini Apps detected with data');
+          if (tg) {
+            console.log('🔧 Telegram Mini Apps detected');
             console.log('🔧 initData:', tg.initData);
             console.log('🔧 initDataUnsafe:', tg.initDataUnsafe);
+            console.log('🔧 initDataUnsafe.user:', tg.initDataUnsafe?.user);
             
             if (tg.initDataUnsafe?.user) {
               const tgUser = tg.initDataUnsafe.user;
@@ -120,6 +121,7 @@ const Index = () => {
               }
             } else {
               console.log('🔧 Telegram Mini Apps detected but no auth data');
+              console.log('🔧 This is normal in production - user needs to authenticate');
             }
           } else {
             console.log('🔧 No Telegram Mini Apps environment detected');
@@ -207,6 +209,15 @@ const Index = () => {
     // Если userId изменился на положительное значение, логируем это
     if (userId && userId > 0) {
       console.log('✅ userId successfully set to:', userId);
+    }
+    
+    // Если telegramUser изменился, логируем это
+    if (telegramUser) {
+      console.log('✅ telegramUser updated:', {
+        id: telegramUser.id,
+        first_name: telegramUser.first_name,
+        username: telegramUser.username
+      });
     }
   }, [userId, telegramUser]);
 
@@ -371,20 +382,29 @@ const Index = () => {
     </div>
   );
 
-  // Отслеживаем изменения в store для отладки
-  useEffect(() => {
-    console.log('🔍 Store state changed:', {
-      userId,
-      telegramUser,
-      hasTelegramUser: !!telegramUser,
-      timestamp: new Date().toISOString()
-    });
-    
-    // Если userId изменился на положительное значение, логируем это
-    if (userId && userId > 0) {
-      console.log('✅ userId successfully set to:', userId);
-    }
-  }, [userId, telegramUser]);
+      // Отслеживаем изменения в store для отладки
+    useEffect(() => {
+      console.log('🔍 Store state changed:', {
+        userId,
+        telegramUser,
+        hasTelegramUser: !!telegramUser,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Если userId изменился на положительное значение, логируем это
+      if (userId && userId > 0) {
+        console.log('✅ userId successfully set to:', userId);
+      }
+      
+      // Если telegramUser изменился, логируем это
+      if (telegramUser) {
+        console.log('✅ telegramUser updated:', {
+          id: telegramUser.id,
+          first_name: telegramUser.first_name,
+          username: telegramUser.username
+        });
+      }
+    }, [userId, telegramUser]);
 
   return (
     <div className="min-h-screen bg-gray-50">
