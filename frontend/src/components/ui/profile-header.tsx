@@ -9,7 +9,7 @@ import { createApiUrl } from '@/lib/config';
 import { LanguageSelector } from './language-selector';
 import { useNavigate } from 'react-router-dom';
 import { useOAuthListener } from '@/hooks/useOAuthListener';
-import { TelegramOAuthButton } from './telegram-oauth-button';
+import { TelegramLogin } from './telegram-login';
 
 interface RealUser {
   id: string;
@@ -302,11 +302,10 @@ export function ProfileHeader() {
                   <p className="text-gray-600 text-center mb-4 max-w-xs">
                     Для доступа к платформе необходимо авторизоваться через Telegram
                   </p>
-                  <TelegramOAuthButton
-                    onAuth={handleTelegramAuth}
-                    className="w-full max-w-xs"
-                    size="lg"
-                  />
+                                     <TelegramLogin
+                     onAuth={handleTelegramAuth}
+                     className="w-full max-w-xs"
+                   />
                 </div>
               )}
             </div>
