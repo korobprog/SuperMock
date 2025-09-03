@@ -12,6 +12,7 @@ import { TelegramAuthCallback } from '@/components/ui/telegram-login';
 import { TelegramUser } from '@/lib/telegram-auth';
 import { validateEnv } from '@/lib/env';
 import { applyTelegramDesktopFixes } from '@/lib/telegram-desktop-fixes';
+import './test-env'; // Импортируем тестовый файл для проверки переменных окружения
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
 import { ProfessionSelection } from './pages/ProfessionSelection';

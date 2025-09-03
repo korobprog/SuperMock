@@ -141,7 +141,7 @@ router.get('/telegram-auth-callback', async (req: Request, res: Response) => {
 
     // Перенаправляем на frontend с токеном
     const frontendUrl = process.env.FRONTEND_URL || 'https://app.supermock.ru';
-    const redirectUrl = `${frontendUrl}/telegram-auth-success?token=${token}&userId=${user.id}`;
+    const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&userId=${user.id}`;
     
     console.log('Redirecting to:', redirectUrl);
     

@@ -9,20 +9,7 @@ import { createApiUrl } from '@/lib/config';
 import { LanguageSelector } from './language-selector';
 import { useNavigate } from 'react-router-dom';
 import { useOAuthListener } from '@/hooks/useOAuthListener';
-import { TelegramLoginWidget } from './telegram-login';
 import { TelegramOAuthButton } from './telegram-oauth-button';
-
-// Добавляем типы для Telegram Login Widget
-declare global {
-  interface Window {
-    TelegramLoginWidget: {
-      init: (element: HTMLElement, options: {
-        dataOnauth: (user: any) => void;
-        bot_id: string;
-      }) => void;
-    };
-  }
-}
 
 interface RealUser {
   id: string;
@@ -286,51 +273,58 @@ export function ProfileHeader() {
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border p-4 mb-4">
         <div className="flex items-center justify-between">
-{isAuthorized ? ( 
- <div className="flex items-center space-x-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={displayPhoto} />
-              <AvatarFallback className="bg-blue-100 text-blue-600">
-                {displayName ? (
-                  displayName.charAt(0).toUpperCase()
-                ) : (
-                  <User className="h-5 w-5" />
-                )}
-              </AvatarFallback>
-            </Avatar>
+          {isAuthorized ? ( 
+            <div className="flex items-center space-x-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={displayPhoto} />
+                <AvatarFallback className="bg-blue-100 text-blue-600">
+                  {displayName ? (
+                    displayName.charAt(0).toUpperCase()
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                </AvatarFallback>
+              </Avatar>
 
-            <div className="flex flex-col">
-              <span className="font-semibold text-gray-900">
-                {isAuthorized ? (displayName || t('common.user')) : t('common.notAuthorized')}
-              </span>
-              <span className="text-sm text-gray-500">
-                {isAuthorized 
-                  ? (displayUsername ? `@${displayUsername}` : `ID: ${userId}`)
-                  : t('common.notAuthorized')
-                }
-              </span>
-              <span className="text-xs text-gray-400">
-                {isLoading
-                  ? t('common.loading')
-                  : isAuthorized
-                  ? (telegramUser ? t('common.telegram') : 'Авторизован')
-                  : t('common.notAuthorized')}
-              </span>
-
+              <div className="flex flex-col">
+                <span className="font-semibold text-gray-900">
+                  {isAuthorized ? (displayName || t('common.user')) : t('common.notAuthorized')}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {isAuthorized 
+                    ? (displayUsername ? `@${displayUsername}` : `ID: ${userId}`)
+                    : t('common.notAuthorized')
+                  }
+                </span>
+                <span className="text-xs text-gray-400">
+                  {isLoading
+                    ? t('common.loading')
+                    : isAuthorized
+                    ? (telegramUser ? t('common.telegram') : 'Авторизован')
+                    : t('common.notAuthorized')}
+                </span>
+              </div>
             </div>
-          </div>
- ) : (
-  <div className="text-center">
-
-  {!isInTelegramMiniApps && (
-    <TelegramOAuthButton
-      onAuth={handleTelegramAuth}
-      className="w-full max-w-xs"
-      size="md"
-    />
-  )}
-</div>
-)}
+          ) : (
+            <div className="text-center">
+              {!isInTelegramMiniApps && (
+                <div className="flex flex-col items-center space-y-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Войти в аккаунт
+                  </h3>
+                  <p className="text-gray-600 text-center mb-4 max-w-xs">
+                    Для доступа к платформе необходимо авторизоваться через Telegram
+                  </p>
+                  <TelegramOAuthButton
+                    onAuth={handleTelegramAuth}
+                    className="w-full max-w-xs"
+                    size="lg"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          
           <div className="flex items-center space-x-2">
             {/* Кнопки для веб-версии - скрыты на мобильных */}
             <div className="hidden md:flex items-center space-x-2">
@@ -339,7 +333,7 @@ export function ProfileHeader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                                         onClick={() => navigate('/notifications')}
+                    onClick={() => navigate('/notifications')}
                     className="text-gray-500 hover:text-gray-700"
                     title={t('common.notifications')}
                   >
@@ -349,7 +343,7 @@ export function ProfileHeader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                                         onClick={() => navigate('/profile')}
+                    onClick={() => navigate('/profile')}
                     className="text-gray-500 hover:text-gray-700"
                     title={t('common.settings')}
                   >
@@ -359,57 +353,9 @@ export function ProfileHeader() {
               )}
             </div>
             
-
-            
             {/* Языковое меню - показывается везде */}
             <LanguageSelector />
             
-            {/* Кнопка авторизации - показывается только для неавторизованных пользователей */}
-            {!isAuthorized && (
-              <div className="flex flex-col items-center space-y-2">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => {
-                    // Показываем виджет авторизации Telegram
-                    const telegramLoginWidget = document.createElement('div');
-                    telegramLoginWidget.innerHTML = `
-                      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
-                          <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">
-                            Войти в аккаунт
-                          </h3>
-                          <p class="text-gray-600 text-center mb-4">
-                            Для доступа к платформе необходимо авторизоваться через Telegram
-                          </p>
-                          <div id="telegram-login-widget"></div>
-                          <button class="mt-4 w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300" onclick="this.parentElement.parentElement.remove()">
-                            Закрыть
-                          </button>
-                        </div>
-                      </div>
-                    `;
-                    document.body.appendChild(telegramLoginWidget);
-                    
-                    // Инициализируем Telegram Login Widget
-                    if (window.TelegramLoginWidget) {
-                      window.TelegramLoginWidget.init(telegramLoginWidget.querySelector('#telegram-login-widget'), {
-                        dataOnauth: (user: any) => {
-                          handleTelegramAuth(user);
-                          telegramLoginWidget.remove();
-                        },
-                        bot_id: 'SuperMock_bot'
-                      });
-                    }
-                  }}
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
-                  title="Войти через Telegram"
-                >
-                  Войти через Telegram
-                </Button>
-              </div>
-            )}
-          
             {/* Кнопка выхода - показывается только для авторизованных пользователей */}
             {isAuthorized && (
               <Button 
@@ -425,8 +371,6 @@ export function ProfileHeader() {
           </div>
         </div>
 
-
-        
         {/* Информация для пользователей в Telegram Mini Apps - скрыта в продакшене */}
         {import.meta.env.DEV && isInTelegramMiniApps && !isAuthorized && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
