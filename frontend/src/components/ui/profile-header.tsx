@@ -12,6 +12,7 @@ import { env } from '@/lib/env';
 import { createApiUrl } from '@/lib/config';
 import { LanguageSelector } from './language-selector';
 import { AuthRequiredMessage } from './auth-required-message';
+import { TelegramWebAuth } from './telegram-web-auth';
 
 interface RealUser {
   id: string;
@@ -151,6 +152,23 @@ export function ProfileHeader() {
   // Определяем, авторизован ли пользователь
   const isAuthorized = !!(telegramUser || (userId && userId > 0));
 
+  // Проверяем, находимся ли мы в Telegram Mini Apps
+  const isInTelegramMiniApps = !!window.Telegram?.WebApp;
+
+  // В Telegram Mini Apps не показываем блок авторизации, так как пользователь уже авторизован в Telegram
+  const shouldShowAuthBlock = !isAuthorized && !isInTelegramMiniApps;
+
+  // Дополнительная проверка для Telegram Mini Apps
+  // Если мы в Telegram Mini Apps и у нас нет пользователя, но есть initData, то пользователь авторизован
+  const isTelegramMiniAppsAuthorized = isInTelegramMiniApps && (
+    isAuthorized || 
+    !!window.Telegram?.WebApp?.initData ||
+    !!window.Telegram?.WebApp?.initDataUnsafe?.user
+  );
+
+  // Финальное решение о показе блока авторизации
+  const finalShouldShowAuthBlock = shouldShowAuthBlock && !isTelegramMiniAppsAuthorized;
+
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border p-4 mb-4">
@@ -232,9 +250,31 @@ export function ProfileHeader() {
         </div>
 
         {/* Telegram Auth Button - показываем только если нет пользователя */}
-        {!isAuthorized && (
+        {finalShouldShowAuthBlock && (
           <div className="mt-4">
-            <AuthRequiredMessage onAuth={handleTelegramAuth} />
+            {/* Для веб-версии используем новый компонент, для Mini Apps - старый */}
+            {isInTelegramMiniApps ? (
+              <AuthRequiredMessage onAuth={handleTelegramAuth} />
+            ) : (
+              <TelegramWebAuth 
+                botName="SuperMock_bot" 
+                onAuth={handleTelegramAuth} 
+              />
+            )}
+          </div>
+        )}
+        
+        {/* Информация для пользователей в Telegram Mini Apps */}
+        {isInTelegramMiniApps && !isAuthorized && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-center">
+              <p className="text-sm text-blue-800 mb-2">
+                🚀 Добро пожаловать в SuperMock!
+              </p>
+              <p className="text-xs text-blue-600">
+                Вы уже авторизованы в Telegram. Приложение автоматически загрузит ваши данные.
+              </p>
+            </div>
           </div>
         )}
       </div>

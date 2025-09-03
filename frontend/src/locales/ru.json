@@ -24,6 +24,7 @@
     "user": "Пользователь",
     "unknown": "Неизвестен",
     "telegram": "Telegram",
+    "telegramMiniApps": "Telegram Mini Apps",
     "localUser": "Локальный пользователь",
     "notAuthorized": "Не авторизован",
     "configureApi": "Настроить API",

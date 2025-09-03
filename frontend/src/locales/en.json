@@ -17,6 +17,7 @@
     "user": "User",
     "unknown": "Unknown",
     "telegram": "Telegram",
+    "telegramMiniApps": "Telegram Mini Apps",
     "localUser": "Local user",
     "notAuthorized": "Not authorized",
     "configureApi": "Configure API",

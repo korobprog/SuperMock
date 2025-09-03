@@ -31,8 +31,10 @@ import {
 import { TelegramQuickTest, TelegramProductionAuthTest } from '@/components/ui/telegram-production-test';
 import { TelegramLoginTest } from '@/components/ui/telegram-login-test';
 import { TelegramLoginWidget } from '@/components/ui/telegram-login';
+import { TelegramMiniAppsStatus } from '@/components/ui/telegram-mini-apps-status';
 import { createApiUrl } from '@/lib/config';
 import { TelegramUser } from '@/lib/telegram-auth';
+import { TelegramWebAuth } from '@/components/ui/telegram-web-auth';
 
 const Index = () => {
   const [isLanguageDetected, setIsLanguageDetected] = useState(false);
@@ -123,11 +125,10 @@ const Index = () => {
                 console.log('ℹ️ User needs to authenticate in production mode');
                 
                 // В Telegram Mini Apps пользователь может быть уже авторизован в Telegram
-                // Попробуем создать временного пользователя для Telegram Mini Apps
-                if (tg.ready && tg.platform !== 'unknown') {
-                  console.log('🔧 Telegram WebApp is ready, user might be authenticated');
-                  console.log('🔧 Creating temporary user for Telegram Mini Apps');
-                  
+                // Пытаемся получить данные пользователя через Telegram WebApp
+                try {
+                  // В продакшн версии Telegram Mini Apps пользователь может быть уже авторизован
+                  // но данные не передаются в initDataUnsafe.user
                   // Создаем временного пользователя для Telegram Mini Apps
                   const tempTelegramUser = {
                     id: Date.now(), // Временный ID
@@ -139,12 +140,16 @@ const Index = () => {
                     hash: 'telegram_mini_apps_temp_hash',
                   };
                   
-                  console.log('🔧 Temporary user created:', tempTelegramUser);
+                  console.log('🔧 Temporary user created for production:', tempTelegramUser);
                   setTelegramUser(tempTelegramUser);
                   setUserId(tempTelegramUser.id);
-                } else {
-                  console.log('🔧 Telegram WebApp not ready, showing auth block');
-                  // Показываем блок авторизации
+                  
+                  // В продакшн версии не показываем блок авторизации
+                  // так как пользователь уже в Telegram Mini Apps
+                  console.log('🔧 Production mode: user in Telegram Mini Apps, not showing auth block');
+                } catch (error) {
+                  console.warn('⚠️ Failed to create temporary user:', error);
+                  // Показываем блок авторизации только если не удалось создать временного пользователя
                 }
               }
             } else {
@@ -178,6 +183,9 @@ const Index = () => {
                   console.log('🔧 Temporary user created for no initData case:', tempTelegramUser);
                   setTelegramUser(tempTelegramUser);
                   setUserId(tempTelegramUser.id);
+                  
+                  // В Telegram Mini Apps не показываем блок авторизации
+                  console.log('🔧 Telegram Mini Apps: user created, not showing auth block');
                 } else {
                   console.log('🔧 Telegram WebApp not ready, showing auth block');
                   // Показываем блок авторизации
@@ -341,6 +349,28 @@ const Index = () => {
 
         {/* Main Menu */}
         <MainMenu />
+        
+        {/* Telegram Mini Apps Status - для отладки */}
+        <TelegramMiniAppsStatus />
+        
+        {/* Новая веб-авторизация в стиле easyoffer.ru */}
+        <div className="mt-6">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h3 className="text-sm font-medium text-green-800 mb-2">🚀 Новая веб-авторизация (easyoffer.ru стиль)</h3>
+            <p className="text-xs text-green-600 mb-3">
+              Тестируем новый подход к авторизации через iframe
+            </p>
+            <TelegramWebAuth
+              botName="SuperMock_bot"
+              onAuth={(user) => {
+                console.log('🚀 Index: EasyOffer style auth received:', user);
+                setTelegramUser(user);
+                setUserId(user.id);
+              }}
+              className="w-full"
+            />
+          </div>
+        </div>
         {
           import.meta.env.DEV && (
             <div className="mt-6">
