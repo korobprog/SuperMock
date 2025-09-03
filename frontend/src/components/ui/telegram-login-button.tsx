@@ -10,9 +10,9 @@ export function TelegramLoginButtonComponent({
 }) {
   
   const handleTelegramResponse = (response) => {
-    console.log('🔧 TelegramLoginButton: Получен ответ от Telegram:', response);
+    console.log('🔧 TelegramLoginButton: Получен ответ от Telegram API:', response);
     
-    // Преобразуем ответ в нужный формат
+    // Преобразуем ответ от Telegram API в нужный формат
     const telegramUser = {
       id: response.id,
       first_name: response.first_name,
@@ -127,18 +127,16 @@ export function TelegramLoginButtonComponent({
         </p>
       </div>
       
-      {/* Telegram Login Button с исправленной конфигурацией */}
+      {/* Telegram Login Widget - работает с Telegram API напрямую */}
       <div className="flex justify-center">
         <TelegramLoginButton
           dataOnauth={handleTelegramResponse}
-          botName="SuperMock_bot"
+          botName={botName}
           dataSize="large"
           dataRadius="8"
           dataRequestAccess="write"
           dataUserpic="false"
           dataLang="ru"
-          dataAuthUrl="https://app.supermock.ru/auth/callback"
-          dataWidgetVersion="1"
         />
       </div>
       
@@ -146,38 +144,39 @@ export function TelegramLoginButtonComponent({
       <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="text-center">
           <p className="text-sm text-blue-800 mb-2">
-            🔐 Безопасная авторизация через Telegram
+            🔐 Безопасная авторизация через Telegram API
           </p>
           <p className="text-xs text-blue-600">
-            Ваши данные защищены официальным API Telegram. 
+            Авторизация происходит напрямую через официальный Telegram API. 
             Мы не получаем доступ к вашему паролю или личным сообщениям.
           </p>
         </div>
       </div>
       
-      {/* Примечание о домене и порте */}
+      {/* Примечание о домене */}
       <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
         <p className="text-xs text-yellow-700 text-center">
-          ⚠️ <strong>Важно:</strong> Виджет работает только на зарегистрированных доменах (не localhost) 
-          и требует порт 80. Для разработки используйте тестовый домен или настройте hosts файл.
-        </p>
-      </div>
-      
-      {/* Дополнительная информация о настройке */}
-      <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
-        <p className="text-xs text-gray-600 text-center">
-          📝 <strong>Настройка:</strong> Зарегистрируйте домен у @BotFather и добавьте в настройки бота.
-          Для локальной разработки можно использовать <code>yourdomain.local</code> в hosts файле.
+          ⚠️ <strong>Важно:</strong> Telegram Login Widget работает только на зарегистрированных доменах.
+          Домен должен быть добавлен в BotFather для вашего бота.
         </p>
       </div>
       
       {/* Отладочная информация */}
       <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
         <p className="text-xs text-red-700 text-center">
-          🐛 <strong>Отладка:</strong> Если окно авторизации появляется и исчезает, проверьте:
-          <br />1. Домен добавлен в BotFather (/setdomain)
+          🐛 <strong>Отладка:</strong> Если окно авторизации появляется и исчезает:
+          <br />1. Домен <code>{botName}</code> добавлен в BotFather (/setdomain)
           <br />2. Бот активен и работает
           <br />3. Нет блокировщиков рекламы
+          <br />4. CSP настройки разрешают telegram.org
+        </p>
+      </div>
+      
+      {/* Техническая информация */}
+      <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
+        <p className="text-xs text-gray-600 text-center">
+          🔧 <strong>Архитектура:</strong> Telegram Login Widget → Telegram API → Ваше приложение
+          <br />Бот нужен только для регистрации домена, авторизация идет через Telegram API
         </p>
       </div>
     </div>
