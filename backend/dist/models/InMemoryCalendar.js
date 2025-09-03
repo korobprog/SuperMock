@@ -8,6 +8,12 @@ const crypto_1 = __importDefault(require("crypto"));
 // Хранилище записей календаря в памяти
 const calendarEntries = [];
 class InMemoryCalendarEntry {
+    id;
+    sessionId;
+    videoLink;
+    startTime;
+    participants;
+    createdAt;
     constructor(entryData) {
         this.id = crypto_1.default.randomUUID();
         this.sessionId = entryData.sessionId;

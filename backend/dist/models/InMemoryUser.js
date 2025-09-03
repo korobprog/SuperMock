@@ -9,6 +9,16 @@ const crypto_1 = __importDefault(require("crypto"));
 // Хранилище пользователей в памяти
 const users = [];
 class InMemoryUser {
+    id;
+    email;
+    password;
+    roleHistory;
+    feedbackStatus;
+    createdAt;
+    googleId;
+    googleAccessToken;
+    googleRefreshToken;
+    tgId;
     constructor(userData) {
         this.id = crypto_1.default.randomUUID();
         this.email = userData.email;

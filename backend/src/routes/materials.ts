@@ -50,14 +50,16 @@ router.get('/categories', async (req: Request, res: Response) => {
 
     console.log(`📊 Found ${categories.length} categories`);
 
-    const formattedCategories = categories.map(cat => {
-      const categoryName = getCategoryDisplayName(cat.category, String(language));
+    const formattedCategories = categories.map((cat: any) => {
       return {
-        id: cat.category,
-        name: categoryName,
-        count: cat._count.category,
-        icon: getCategoryIcon(cat.category),
-        color: getCategoryColor(cat.category)
+        id: cat._id || cat.id,
+        name: cat.name,
+        description: cat.description || '',
+        icon: cat.icon || '📁',
+        color: cat.color || '#3B82F6',
+        materialsCount: cat.materialsCount || 0,
+        createdAt: cat.createdAt || new Date(),
+        updatedAt: cat.updatedAt || new Date(),
       };
     });
 
@@ -98,21 +100,19 @@ router.get('/popular', async (req: Request, res: Response) => {
       ]
     });
 
-    const formattedMaterials = materials.map(material => {
-      const translation = material.translations[0];
+    const formattedMaterials = materials.map((material: any) => {
       return {
-        id: material.id,
-        title: translation?.title || `Material ${material.id}`,
-        description: translation?.description || 'No description available',
-        category: material.category,
-        difficulty: material.difficulty,
-        readTime: material.readTime,
-        rating: material.rating,
-        reads: material.reads,
-        tags: material.tags,
-        isNew: material.isNew,
-        isPopular: material.isPopular,
-        createdAt: material.createdAt.toISOString()
+        id: material._id || material.id,
+        title: material.title,
+        description: material.description || '',
+        content: material.content || '',
+        categoryId: material.categoryId || material.category?.id || material.category?._id,
+        categoryName: material.category?.name || 'Без категории',
+        tags: material.tags || [],
+        difficulty: material.difficulty || 'beginner',
+        estimatedTime: material.estimatedTime || 30,
+        createdAt: material.createdAt || new Date(),
+        updatedAt: material.updatedAt || new Date(),
       };
     });
 
@@ -150,21 +150,19 @@ router.get('/new', async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' }
     });
 
-    const formattedMaterials = materials.map(material => {
-      const translation = material.translations[0];
+    const formattedMaterials = materials.map((material: any) => {
       return {
-        id: material.id,
-        title: translation?.title || `Material ${material.id}`,
-        description: translation?.description || 'No description available',
-        category: material.category,
-        difficulty: material.difficulty,
-        readTime: material.readTime,
-        rating: material.rating,
-        reads: material.reads,
-        tags: material.tags,
-        isNew: material.isNew,
-        isPopular: material.isPopular,
-        createdAt: material.createdAt.toISOString()
+        id: material._id || material.id,
+        title: material.title,
+        description: material.description || '',
+        content: material.content || '',
+        categoryId: material.categoryId || material.category?.id || material.category?._id,
+        categoryName: material.category?.name || 'Без категории',
+        tags: material.tags || [],
+        difficulty: material.difficulty || 'beginner',
+        estimatedTime: material.estimatedTime || 30,
+        createdAt: material.createdAt || new Date(),
+        updatedAt: material.updatedAt || new Date(),
       };
     });
 
@@ -227,22 +225,19 @@ router.get('/', async (req: Request, res: Response) => {
     console.log(`📊 Found ${materials.length} materials`);
 
     // Преобразуем данные для фронтенда
-    const formattedMaterials = materials.map(material => {
-      const translation = material.translations[0];
+    const formattedMaterials = materials.map((material: any) => {
       return {
-        id: material.id,
-        title: translation?.title || `Material ${material.id}`,
-        description: translation?.description || 'No description available',
-        category: material.category,
-        difficulty: material.difficulty,
-        readTime: material.readTime,
-        rating: material.rating,
-        reads: material.reads,
-        tags: material.tags,
-        isNew: material.isNew,
-        isPopular: material.isPopular,
-        createdAt: material.createdAt.toISOString(),
-        content: translation?.content || ''
+        id: material._id || material.id,
+        title: material.title,
+        description: material.description || '',
+        content: material.content || '',
+        categoryId: material.categoryId || material.category?.id || material.category?._id,
+        categoryName: material.category?.name || 'Без категории',
+        tags: material.tags || [],
+        difficulty: material.difficulty || 'beginner',
+        estimatedTime: material.estimatedTime || 30,
+        createdAt: material.createdAt || new Date(),
+        updatedAt: material.updatedAt || new Date(),
       };
     });
 

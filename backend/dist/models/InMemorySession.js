@@ -8,6 +8,16 @@ const crypto_1 = __importDefault(require("crypto"));
 // Хранилище сессий в памяти
 const sessions = [];
 class InMemorySession {
+    id;
+    interviewerId;
+    intervieweeId;
+    observerIds;
+    videoLink;
+    videoLinkStatus;
+    status;
+    startTime;
+    createdAt;
+    creatorId;
     constructor(sessionData) {
         this.id = crypto_1.default.randomUUID();
         this.interviewerId = sessionData.interviewerId || null;

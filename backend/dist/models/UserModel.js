@@ -17,6 +17,23 @@ dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 // Класс PrismaUser для работы с Prisma
 class PrismaUser {
+    id;
+    email;
+    password;
+    roleHistory;
+    feedbackStatus;
+    createdAt;
+    googleId;
+    googleAccessToken;
+    googleRefreshToken;
+    // Поля из Prisma схемы
+    tgId;
+    username;
+    firstName;
+    lastName;
+    photoUrl;
+    language;
+    updatedAt;
     constructor(userData) {
         this.id = userData.id;
         this.email = userData.email || `user_${userData.id}@example.com`; // Временный email
