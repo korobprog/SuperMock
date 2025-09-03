@@ -16,8 +16,8 @@ model User {
   language              String?
   createdAt             DateTime       @default(now()) @map("created_at")
   updatedAt             DateTime       @updatedAt @map("updated_at")
-  lastLoginAt           DateTime?      @map("last_login_at")
   photoUrl              String?        @map("photo_url")
+  lastLoginAt           DateTime?      @map("last_login_at")
   feedbackGiven         Feedback[]     @relation("FeedbackFrom")
   feedbackReceived      Feedback[]     @relation("FeedbackTo")
   matchesAsCandidate    Match[]        @relation("MatchCandidate")
@@ -29,11 +29,6 @@ model User {
   queues                UserQueue[]
   userSettings          UserSettings?
   userTools             UserTool[]
-  // 🤖 AI связи
-  feedbackAnalyses      FeedbackAnalysis[]
-  learningRecommendations LearningRecommendation[]
-  skillProgress         SkillProgress[]
-  aiAnalysisLogs        AIAnalysisLog[]
 
   @@map("users")
 }
@@ -154,8 +149,6 @@ model Feedback {
   fromUser        User     @relation("FeedbackFrom", fields: [fromUserId], references: [id])
   session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   toUser          User     @relation("FeedbackTo", fields: [toUserId], references: [id])
-  // 🤖 AI связь
-  analysis        FeedbackAnalysis?
 
   @@index([sessionId])
   @@index([fromUserId])
@@ -229,102 +222,4 @@ model MaterialTranslation {
   @@unique([materialId, language])
   @@index([language])
   @@map("material_translations")
-}
-
-// 🤖 AI АНАЛИЗ ФИДБЕКА - Новые таблицы для AI-ментор системы
-model FeedbackAnalysis {
-  id                 Int      @id @default(autoincrement())
-  feedbackId         Int      @unique @map("feedback_id")
-  userId             String   @map("user_id")
-  weaknesses         Json     // ["algorithms", "system_design"] 
-  strengths          Json     // ["javascript", "communication"]
-  skillLevels        Json     // [{"skill": "react", "level": 7, "confidence": 0.9}]
-  communicationScore Int      @map("communication_score") // 1-10
-  technicalScore     Int      @map("technical_score") // 1-10  
-  overallReadiness   Int      @map("overall_readiness") // 1-10 готовность к работе
-  suggestions        Json     // ["Изучить алгоритмы", "Практика дизайна"]
-  uniquenessScore    Float    @map("uniqueness_score") // 0.0-1.0 уникальность проблем
-  summary            String   // краткое резюме AI анализа
-  aiModel            String   @default("meta-llama/llama-3.1-8b-instruct") @map("ai_model") // используемая модель
-  processingTimeMs   Int?     @map("processing_time_ms") // время обработки в мс
-  createdAt          DateTime @default(now()) @map("created_at")
-  
-  // Связи
-  feedback           Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  recommendations    LearningRecommendation[]
-  
-  @@index([userId])
-  @@index([createdAt])
-  @@index([overallReadiness])
-  @@map("feedback_analysis")
-}
-
-model LearningRecommendation {
-  id                    Int      @id @default(autoincrement())
-  analysisId            Int      @map("analysis_id")
-  userId                String   @map("user_id")
-  type                  String   // "material", "roadmap", "training", "schedule"
-  priority              Int      // 1-10
-  title                 String
-  description           String
-  estimatedHours        Int?     @map("estimated_hours")
-  dueDate              DateTime? @map("due_date")
-  isCompleted          Boolean   @default(false) @map("is_completed")
-  completedAt          DateTime? @map("completed_at")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
-  
-  // Связи
-  analysis             FeedbackAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
-  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId, isCompleted])
-  @@index([priority])
-  @@index([dueDate])
-  @@index([type])
-  @@map("learning_recommendations")
-}
-
-model SkillProgress {
-  id           Int      @id @default(autoincrement())
-  userId       String   @map("user_id")
-  skillName    String   @map("skill_name") // "react", "algorithms", "communication"
-  currentLevel Int      @map("current_level") // 1-10 текущий уровень
-  targetLevel  Int      @map("target_level") // 1-10 целевой уровень
-  confidence   Float    @default(0.5) // 0-1 уверенность в оценке
-  source       String   @default("ai_analysis") // "ai_analysis", "self_assessment", "manual"
-  lastUpdated  DateTime @updatedAt @map("last_updated")
-  createdAt    DateTime @default(now()) @map("created_at")
-  
-  // Связи
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId, skillName])
-  @@index([skillName])
-  @@index([currentLevel])
-  @@map("skill_progress")
-}
-
-model AIAnalysisLog {
-  id              Int      @id @default(autoincrement())
-  userId          String   @map("user_id")
-  operation       String   // "analyze_feedback", "generate_recommendations", "extract_skills"
-  inputData       Json     @map("input_data") // входные данные (обезличенные)
-  outputData      Json?    @map("output_data") // результат анализа
-  aiModel         String   @map("ai_model") // используемая модель
-  processingTimeMs Int     @map("processing_time_ms") // время обработки
-  tokensUsed      Int?     @map("tokens_used") // количество токенов
-  success         Boolean  @default(true) // успешно ли выполнено
-  errorMessage    String?  @map("error_message") // сообщение об ошибке
-  createdAt       DateTime @default(now()) @map("created_at")
-  
-  // Связи
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@index([userId])
-  @@index([operation])
-  @@index([success])
-  @@index([createdAt])
-  @@map("ai_analysis_log")
 }
