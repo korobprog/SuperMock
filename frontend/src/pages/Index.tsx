@@ -131,29 +131,13 @@ const Index = () => {
                 // В Telegram Mini Apps пользователь может быть уже авторизован в Telegram
                 // Пытаемся получить данные пользователя через Telegram WebApp
                 try {
-                  // В продакшн версии Telegram Mini Apps пользователь может быть уже авторизован
-                  // но данные не передаются в initDataUnsafe.user
-                  // Создаем временного пользователя для Telegram Mini Apps
-                  const tempTelegramUser = {
-                    id: Date.now(), // Временный ID
-                    first_name: 'Telegram User',
-                    last_name: '',
-                    username: '',
-                    photo_url: '',
-                    auth_date: Math.floor(Date.now() / 1000),
-                    hash: 'telegram_mini_apps_temp_hash',
-                  };
-                  
-                  if (import.meta.env.DEV) {
-                    console.log('🔧 Temporary user created for production:', tempTelegramUser);
-                  }
-                  setTelegramUser(tempTelegramUser);
-                  setUserId(tempTelegramUser.id);
-                  
-                  // В продакшн версии не показываем блок авторизации
-                  // так как пользователь уже в Telegram Mini Apps
+                  // В продакшн версии НЕ создаем временного пользователя
+                  // Показываем блок авторизации для неавторизованных пользователей
                   if (import.meta.env.DEV) {
                     console.log('🔧 Production mode: user in Telegram Mini Apps, not showing auth block');
+                  } else {
+                    // В продакшн версии показываем блок авторизации
+                    console.log('🔧 Production mode: showing auth block for unauthorized users');
                   }
                 } catch (error) {
                   if (import.meta.env.DEV) {
@@ -186,31 +170,32 @@ const Index = () => {
                 if (tg.ready && tg.platform !== 'unknown') {
                   if (import.meta.env.DEV) {
                     console.log('🔧 Telegram WebApp is ready, creating temporary user');
-                  }
-                  
-                  const tempTelegramUser = {
-                    id: Date.now(), // Временный ID
-                    first_name: 'Telegram User',
-                    last_name: '',
-                    username: '',
-                    photo_url: '',
-                    auth_date: Math.floor(Date.now() / 1000),
-                    hash: 'telegram_mini_apps_temp_hash',
-                  };
-                  
-                  if (import.meta.env.DEV) {
+                    
+                    const tempTelegramUser = {
+                      id: Date.now(), // Временный ID
+                      first_name: 'Telegram User',
+                      last_name: '',
+                      username: '',
+                      photo_url: '',
+                      auth_date: Math.floor(Date.now() / 1000),
+                      hash: 'telegram_mini_apps_temp_hash',
+                    };
+                    
                     console.log('🔧 Temporary user created for no initData case:', tempTelegramUser);
-                  }
-                  setTelegramUser(tempTelegramUser);
-                  setUserId(tempTelegramUser.id);
-                  
-                  // В Telegram Mini Apps не показываем блок авторизации
-                  if (import.meta.env.DEV) {
+                    setTelegramUser(tempTelegramUser);
+                    setUserId(tempTelegramUser.id);
+                    
+                    // В Telegram Mini Apps не показываем блок авторизации
                     console.log('🔧 Telegram Mini Apps: user created, not showing auth block');
+                  } else {
+                    // В продакшн версии не создаем временного пользователя
+                    console.log('🔧 Production mode: not creating temporary user, showing auth block');
                   }
                 } else {
                   if (import.meta.env.DEV) {
                     console.log('🔧 Telegram WebApp not ready, showing auth block');
+                  } else {
+                    console.log('🔧 Production mode: Telegram WebApp not ready, showing auth block');
                   }
                   // Показываем блок авторизации
                 }
@@ -238,13 +223,15 @@ const Index = () => {
               if (import.meta.env.DEV) {
                 console.log('Нет сохраненного пользователя Telegram');
               }
-              // В продакшене не создаем локального пользователя
+              // В продакшне не создаем локального пользователя
               if (import.meta.env.DEV) {
                 // В development режиме можно создать локального пользователя для тестирования
                 console.log('Development mode: можно создать локального пользователя');
               } else {
                 if (import.meta.env.DEV) {
                   console.log('Production mode: не создаем локального пользователя');
+                } else {
+                  console.log('🔧 Production mode: не создаем локального пользователя, показываем блок авторизации');
                 }
               }
               setUserId(0);
@@ -361,6 +348,17 @@ const Index = () => {
       telegramUser,
       userId,
       isLanguageDetected
+    });
+  }
+
+  // Отладочная информация для продакшн версии
+  if (import.meta.env.PROD) {
+    console.log('🔍 Index PRODUCTION: Rendering with state:', {
+      telegramUser: telegramUser ? { id: telegramUser.id, first_name: telegramUser.first_name, hash: telegramUser.hash } : null,
+      userId,
+      isLanguageDetected,
+      hasTelegramUser: !!telegramUser,
+      isInTelegramMiniApps: !!window.Telegram?.WebApp
     });
   }
 

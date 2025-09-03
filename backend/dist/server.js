@@ -40,6 +40,7 @@ const slots_1 = __importDefault(require("./routes/slots"));
 const preferences_1 = __importDefault(require("./routes/preferences"));
 const userSettings_1 = __importDefault(require("./routes/userSettings"));
 const telegram_auth_1 = __importDefault(require("./routes/telegram-auth"));
+const telegram_oauth_1 = __importDefault(require("./routes/telegram-oauth"));
 const files_1 = __importDefault(require("./routes/files"));
 // Инициализация приложения Express
 const app = (0, express_1.default)();
@@ -123,6 +124,7 @@ app.use('/api/history', history_1.default);
 app.use('/api/user-tools', userTools_1.default);
 app.use('/api/materials', materials_1.default);
 app.use('/api', telegram_auth_1.default);
+app.use('/api/auth', telegram_oauth_1.default);
 // Маршруты для health-check
 app.get('/health', healthCheck_1.healthCheck);
 app.get('/health/simple', healthCheck_1.simpleHealthCheck);

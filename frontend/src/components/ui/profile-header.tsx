@@ -236,7 +236,9 @@ export function ProfileHeader() {
 
   // Определяем, авторизован ли пользователь
   // Пользователь считается авторизованным если есть telegramUser ИЛИ userId > 0
-  const isAuthorized = !!(telegramUser || (userId && userId > 0));
+  // НО временные пользователи (с hash === 'telegram_mini_apps_temp_hash') не считаются авторизованными
+  const isAuthorized = !!(telegramUser || (userId && userId > 0)) && 
+    !(telegramUser?.hash === 'telegram_mini_apps_temp_hash');
   
   // Отладочная информация (только в development)
   if (import.meta.env.DEV) {
@@ -255,6 +257,8 @@ export function ProfileHeader() {
 
   // В Telegram Mini Apps пользователь уже авторизован через Telegram
   // В веб-версии показываем блок авторизации только если пользователь не авторизован
+  // В продакшн версии всегда показываем блок авторизации для неавторизованных пользователей
+  const shouldShowAuthBlock = !isAuthorized && (!isInTelegramMiniApps || import.meta.env.PROD);
 
   // Отладочная информация при рендере (только в development)
   if (import.meta.env.DEV) {
@@ -266,6 +270,18 @@ export function ProfileHeader() {
       displayName,
       displayUsername,
       realUser
+    });
+  }
+
+  // Отладочная информация для продакшн версии
+  if (import.meta.env.PROD) {
+    console.log('🔍 ProfileHeader PRODUCTION: Rendering with state:', {
+      telegramUser: telegramUser ? { id: telegramUser.id, first_name: telegramUser.first_name, hash: telegramUser.hash } : null,
+      userId,
+      isAuthorized,
+      isInTelegramMiniApps,
+      shouldShowAuthBlock,
+      displayUser: displayUser ? { id: displayUser.id } : null
     });
   }
 
@@ -307,7 +323,7 @@ export function ProfileHeader() {
             </div>
           ) : (
             <div className="text-center">
-              {!isInTelegramMiniApps && (
+              {shouldShowAuthBlock && (
                 <div className="flex flex-col items-center space-y-2">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     Войти в аккаунт
