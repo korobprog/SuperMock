@@ -30,6 +30,7 @@ import {
 } from '@/lib/dev-test-account';
 import { TelegramQuickTest, TelegramProductionAuthTest } from '@/components/ui/telegram-production-test';
 import { TelegramLoginTest } from '@/components/ui/telegram-login-test';
+import { TelegramLoginWidget } from '@/components/ui/telegram-login';
 import { createApiUrl } from '@/lib/config';
 import { TelegramUser } from '@/lib/telegram-auth';
 
@@ -375,6 +376,25 @@ const Index = () => {
             />
           </div>
         )}
+        
+        {/* Рабочая авторизация в браузере для всех сред */}
+        <div className="mt-6">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">🔧 Авторизация в браузере</h3>
+            <p className="text-xs text-blue-600 mb-3">
+              Рабочая авторизация через Telegram Login Widget для браузера
+            </p>
+            <TelegramLoginWidget
+              botName="SuperMock_bot"
+              onAuth={(user) => {
+                console.log('🔧 Index: Browser auth received:', user);
+                setTelegramUser(user);
+                setUserId(user.id);
+              }}
+              className="w-full"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Mobile Bottom Menu */}
