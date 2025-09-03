@@ -8,7 +8,6 @@ import { TelegramUser } from '@/lib/telegram-auth';
 import { createApiUrl } from '@/lib/config';
 import { LanguageSelector } from './language-selector';
 import { TelegramWebAuth } from './telegram-web-auth';
-import { TelegramOAuthButton } from './telegram-oauth-button';
 import { useTelegramNavigation } from '@/hooks/useTelegramNavigation';
 import { useOAuthListener } from '@/hooks/useOAuthListener';
 
@@ -253,21 +252,7 @@ export function ProfileHeader() {
           </div>
         </div>
 
-        {/* Telegram Auth Button - показываем только в веб-версии если нет пользователя */}
-        {!isInTelegramMiniApps && !isAuthorized && (
-          <div className="mt-4">
-            <TelegramOAuthButton 
-              onAuth={handleTelegramAuth}
-              className="w-full"
-              size="lg"
-            />
-            <p className="text-xs text-gray-500 text-center mt-2">
-              Безопасная авторизация через официальный Telegram OAuth
-              <br />
-              <span className="text-blue-600">Откроется в новой вкладке</span>
-            </p>
-          </div>
-        )}
+
         
         {/* Информация для пользователей в Telegram Mini Apps */}
         {isInTelegramMiniApps && !isAuthorized && (

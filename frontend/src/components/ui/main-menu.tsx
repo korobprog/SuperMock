@@ -5,6 +5,8 @@ import {
   Bell,
   ArrowRight,
   Grid3X3,
+  User,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,11 +14,18 @@ import { useAppStore } from '@/lib/store';
 import { useAppTranslation } from '@/lib/i18n';
 import { useUserDataCheck } from '@/hooks/use-user-data-check';
 import { useOnboardingStatus } from '@/hooks/use-onboarding-status';
+import { TelegramOAuthButton } from './telegram-oauth-button';
+import { useTelegramNavigation } from '@/hooks/useTelegramNavigation';
+import { useOAuthListener } from '@/hooks/useOAuthListener';
 
 export function MainMenu() {
   const navigate = useNavigate();
   const { t } = useAppTranslation();
-  const { userSettings } = useAppStore();
+  const { userSettings, telegramUser, setTelegramUser, setUserId } = useAppStore();
+  const { navigateTo } = useTelegramNavigation();
+  
+  // Слушаем OAuth авторизацию из других вкладок
+  useOAuthListener();
   
   // Получаем данные из store напрямую
   const profession = useAppStore((s) => s.profession);
@@ -26,6 +35,35 @@ export function MainMenu() {
 
   const { isComplete: isOnboardingComplete } = useOnboardingStatus();
   const hasApiKey = !!userSettings.openRouterApiKey;
+
+  // Определяем, авторизован ли пользователь
+  const isAuthorized = !!(telegramUser || (userId && userId > 0));
+  
+  // Проверяем, находимся ли мы в Telegram Mini Apps
+  const isInTelegramMiniApps = !!window.Telegram?.WebApp;
+
+  const handleTelegramAuth = async (user: any) => {
+    console.log('MainMenu: Received Telegram auth:', user);
+    setTelegramUser(user);
+    if (user.id) {
+      setUserId(user.id);
+    }
+  };
+
+  const handleLogout = () => {
+    setTelegramUser(null);
+    setUserId(0);
+    localStorage.removeItem('Super Mock-storage');
+    localStorage.removeItem('telegram_user');
+    sessionStorage.setItem('just_logged_out', 'true');
+    sessionStorage.setItem('logout_timestamp', Date.now().toString());
+    
+    if (import.meta.env.DEV) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    }
+  };
 
   const handleStartInterview = () => {
     console.log('🎯 MainMenu handleStartInterview called:');
@@ -111,6 +149,60 @@ export function MainMenu() {
 
   return (
     <div className="space-y-4">
+      {/* Authorization Status Block */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <CardContent className="p-4">
+          {isAuthorized ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <User className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    {telegramUser?.first_name || `Пользователь ${userId}`}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {telegramUser?.username ? `@${telegramUser.username}` : 'Авторизован'}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Выйти
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Добро пожаловать в SuperMock!
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Войдите через Telegram для доступа к полному функционалу
+              </p>
+              {!isInTelegramMiniApps && (
+                <TelegramOAuthButton
+                  onAuth={handleTelegramAuth}
+                  className="w-full max-w-xs"
+                  size="md"
+                />
+              )}
+              {isInTelegramMiniApps && (
+                <div className="p-3 bg-blue-100 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    🚀 Вы уже авторизованы в Telegram Mini Apps!
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
 
       {/* Main Menu Grid - мобильная версия */}
