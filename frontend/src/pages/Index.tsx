@@ -20,7 +20,7 @@ import {
   saveTelegramUser,
 } from '@/lib/telegram-auth';
 import { useTelegramFullscreen } from '@/hooks/use-telegram-fullscreen';
-import { TelegramLoginWidget } from '@/components/ui/telegram-login';
+import { TelegramLoginWidget, TelegramProductionLogin } from '@/components/ui/telegram-login';
 import { TelegramMiniAppsStatus } from '@/components/ui/telegram-mini-apps-status';
 import { createApiUrl } from '@/lib/config';
 import { TelegramUser } from '@/lib/telegram-auth';

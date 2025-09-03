@@ -818,7 +818,9 @@ export function TelegramLoginWidget({
           console.warn('TelegramLoginWidget: Could not save to localStorage:', error);
         }
         
+        // Вызываем onAuth callback
         onAuth(user);
+        console.log('TelegramLoginWidget: onAuth callback executed');
       };
 
       // Создаем script элемент правильно через DOM API
@@ -827,7 +829,8 @@ export function TelegramLoginWidget({
       script.src = 'https://telegram.org/js/telegram-widget.js?22';
       script.setAttribute('data-telegram-login', botName);
       script.setAttribute('data-size', 'large');
-      script.setAttribute('data-auth-url', `${window.location.origin}/telegram-auth-callback`);
+      // ИСПРАВЛЯЕМ: убираем data-auth-url, используем только data-onauth
+      // script.setAttribute('data-auth-url', `${window.location.origin}/telegram-auth-callback`);
       script.setAttribute('data-request-access', 'write');
       script.setAttribute('data-lang', 'ru');
       script.setAttribute('data-onauth', 'onTelegramAuth');
@@ -853,46 +856,13 @@ export function TelegramLoginWidget({
 
         // Если виджет не загрузился, показываем fallback
         if (!iframe && !button) {
-          console.warn('TelegramLoginWidget: Widget failed to load, showing fallback');
-          if (ref.current) {
-            ref.current.innerHTML = `
-              <div class="text-center p-4 border border-orange-200 bg-orange-50 rounded-lg">
-                <p class="text-sm text-orange-600 mb-3">Telegram виджет не загрузился</p>
-                <p class="text-xs text-orange-500 mb-3">Возможные причины:</p>
-                <ul class="text-xs text-orange-500 text-left mb-3">
-                  <li>• Домен не настроен в @BotFather (/setdomain)</li>
-                  <li>• Неправильный протокол (нужен HTTPS)</li>
-                  <li>• Блокировка браузером</li>
-                </ul>
-                <div class="space-y-2">
-                  <button 
-                    onclick="window.open('https://t.me/${botName}?start=auth', '_blank')"
-                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
-                      <circle cx="120" cy="120" r="120" fill="#fff" />
-                      <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
-                      <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
-                      <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
-                    </svg>
-                    Открыть в Telegram
-                  </button>
-                  <button 
-                    onclick="window.location.reload()"
-                    class="inline-flex items-center justify-center gap-2 px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs transition-colors w-full"
-                  >
-                    🔄 Попробовать снова
-                  </button>
-                </div>
-              </div>
-            `;
-          }
-        } else {
-          console.log('✅ TelegramLoginWidget: Widget loaded successfully!');
-          if (iframe) {
-            console.log('  - iframe src:', iframe.getAttribute('src'));
-            console.log('  - iframe id:', iframe.getAttribute('id'));
-          }
+          console.warn('TelegramLoginWidget: Widget not loaded after 3s, showing fallback');
+          ref.current!.innerHTML = `
+            <div class="text-center p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
+              <p class="text-sm text-yellow-600 mb-3">Telegram виджет загружается...</p>
+              <p class="text-xs text-yellow-500 mb-3">Если кнопка не появилась, проверьте настройки</p>
+            </div>
+          `;
         }
       }, 3000);
 
@@ -900,43 +870,41 @@ export function TelegramLoginWidget({
       setTimeout(() => {
         const iframe = ref.current?.querySelector('iframe');
         const button = ref.current?.querySelector('button');
-        
+
         if (!iframe && !button) {
-          console.error('TelegramLoginWidget: Widget still not loaded after 8s, forcing fallback');
-          if (ref.current) {
-            ref.current.innerHTML = `
-              <div class="text-center p-4 border border-red-200 bg-red-50 rounded-lg">
-                <p class="text-sm text-red-600 mb-3">Telegram виджет не загрузился после 8 секунд</p>
-                <p class="text-xs text-red-500 mb-3">Это означает, что домен не настроен в BotFather</p>
-                <div class="text-xs text-red-500 text-left mb-3 p-2 bg-red-100 rounded">
-                  <strong>Для исправления:</strong><br/>
-                  1. Откройте @BotFather в Telegram<br/>
-                  2. Выполните: <code>/setdomain</code><br/>
-                  3. Введите: <code>https://app.supermock.ru</code>
-                </div>
-                <div class="space-y-2">
-                  <button 
-                    onclick="window.open('https://t.me/${botName}?start=auth', '_blank')"
-                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
-                      <circle cx="120" cy="120" r="120" fill="#fff" />
-                      <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
-                      <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
-                      <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
-                    </svg>
-                    Открыть в Telegram
-                  </button>
-                  <button 
-                    onclick="window.location.reload()"
-                    class="inline-flex items-center justify-center gap-2 px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs transition-colors w-full"
-                  >
-                    🔄 Попробовать снова
-                  </button>
-                </div>
+          console.error('TelegramLoginWidget: Widget failed to load after 8s');
+          ref.current!.innerHTML = `
+            <div class="text-center p-4 border border-red-200 bg-red-50 rounded-lg">
+              <p class="text-sm text-red-600 mb-3">Telegram виджет не загрузился после 8 секунд</p>
+              <p class="text-xs text-red-500 mb-3">Это означает, что домен не настроен в BotFather</p>
+              <div class="text-xs text-red-500 text-left mb-3 p-2 bg-red-100 rounded">
+                <strong>Для исправления:</strong><br/>
+                1. Откройте @BotFather в Telegram<br/>
+                2. Выполните: <code>/setdomain</code><br/>
+                3. Введите: <code>app.supermock.ru</code>
               </div>
-            `;
-          }
+              <div class="space-y-2">
+                <button 
+                  onclick="window.open('https://t.me/${botName}?start=auth', '_blank')"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors w-full"
+                >
+                  <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" class="flex-shrink-0">
+                    <circle cx="120" cy="120" r="120" fill="#fff" />
+                    <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                    <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                    <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+                  </svg>
+                  Открыть в Telegram
+                </button>
+                <button 
+                  onclick="window.location.reload()"
+                  class="inline-flex items-center justify-center gap-2 px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded text-xs transition-colors w-full"
+                >
+                  🔄 Попробовать снова
+                </button>
+              </div>
+            </div>
+          `;
         } else {
           console.log('✅ TelegramLoginWidget: Widget confirmed loaded after 8s');
         }
@@ -1138,34 +1106,21 @@ export function TelegramProductionLogin({
     try {
       console.log('TelegramProductionLogin: Starting production auth for bot:', botName);
       
-      // В продакшене Telegram WebApp может не передавать пользователя сразу
-      // Показываем инструкции по авторизации
-      console.log('ℹ️ Production mode: guiding user through auth process');
+      // В продакшене проверяем Telegram WebApp
+      const tg = window.Telegram?.WebApp;
       
-      // Пытаемся открыть ссылку на бота через Telegram WebApp API
-      if (window.Telegram?.WebApp?.openTelegramLink) {
-        try {
-          window.Telegram.WebApp.openTelegramLink(`https://t.me/${botName}?start=auth`);
-          console.log('✅ Opened Telegram link through WebApp API');
-        } catch (error) {
-          console.warn('⚠️ Failed to open through WebApp API, falling back to window.open');
-          window.open(`https://t.me/${botName}?start=auth`, '_blank');
-        }
-      } else {
-        // Fallback для случаев когда WebApp API недоступен
-        window.open(`https://t.me/${botName}?start=auth`, '_blank');
-      }
-      
-      // Показываем сообщение пользователю
-      alert('Пожалуйста, авторизуйтесь в боте @' + botName + ' и вернитесь в приложение');
-      
-      // В продакшене ждем некоторое время и проверяем авторизацию
-      setTimeout(() => {
-        const tg = window.Telegram?.WebApp;
-        if (tg?.initDataUnsafe?.user) {
-          console.log('✅ User authenticated after delay:', tg.initDataUnsafe.user);
+      if (tg) {
+        console.log('✅ Telegram WebApp detected');
+        console.log('🔧 initData:', tg.initData);
+        console.log('🔧 initDataUnsafe:', tg.initDataUnsafe);
+        console.log('🔧 version:', tg.version);
+        
+        // Если пользователь уже авторизован в WebApp
+        if (tg.initDataUnsafe?.user) {
+          console.log('✅ User already authenticated in WebApp:', tg.initDataUnsafe.user);
           const user = tg.initDataUnsafe.user;
-          onAuth({
+          
+          const telegramUser: TelegramUser = {
             id: user.id,
             first_name: user.first_name,
             last_name: user.last_name || '',
@@ -1173,14 +1128,111 @@ export function TelegramProductionLogin({
             photo_url: user.photo_url || '',
             auth_date: Math.floor(Date.now() / 1000),
             hash: 'telegram_mini_apps_hash',
-          });
+          };
+          
+          // Сохраняем в localStorage
+          localStorage.setItem('telegram_user', JSON.stringify(telegramUser));
+          console.log('✅ User saved to localStorage');
+          
+          // Вызываем onAuth
+          onAuth(telegramUser);
           setAuthStep('success');
-        } else {
-          console.log('ℹ️ User still not authenticated after delay');
-          setAuthStep('initial');
+          setIsLoading(false);
+          return;
         }
-        setIsLoading(false);
-      }, 5000); // Ждем 5 секунд
+        
+        // Если пользователь не авторизован, запрашиваем доступ
+        if ((tg as any).requestWriteAccess) {
+          console.log('✅ Requesting write access through WebApp API');
+          (tg as any).requestWriteAccess();
+        }
+        
+        // Пытаемся открыть ссылку на бота через WebApp API
+        if (tg.openTelegramLink) {
+          try {
+            tg.openTelegramLink(`https://t.me/${botName}?start=auth`);
+            console.log('✅ Opened Telegram link through WebApp API');
+          } catch (error) {
+            console.warn('⚠️ Failed to open through WebApp API, falling back to window.open');
+            window.open(`https://t.me/${botName}?start=auth`, '_blank');
+          }
+        } else {
+          // Fallback для случаев когда WebApp API недоступен
+          window.open(`https://t.me/${botName}?start=auth`, '_blank');
+        }
+        
+        // Показываем сообщение пользователю
+        alert('Пожалуйста, авторизуйтесь в боте @' + botName + ' и вернитесь в приложение');
+        
+        // В продакшене ждем некоторое время и проверяем авторизацию
+        setTimeout(() => {
+          const tg = window.Telegram?.WebApp;
+          if (tg?.initDataUnsafe?.user) {
+            console.log('✅ User authenticated after delay:', tg.initDataUnsafe.user);
+            const user = tg.initDataUnsafe.user;
+            const telegramUser: TelegramUser = {
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name || '',
+              username: user.username || '',
+              photo_url: user.photo_url || '',
+              auth_date: Math.floor(Date.now() / 1000),
+              hash: 'telegram_mini_apps_hash',
+            };
+            
+            // Сохраняем в localStorage
+            localStorage.setItem('telegram_user', JSON.stringify(telegramUser));
+            console.log('✅ User saved to localStorage after delay');
+            
+            onAuth(telegramUser);
+            setAuthStep('success');
+          } else {
+            console.log('ℹ️ User still not authenticated after delay');
+            setAuthStep('initial');
+          }
+          setIsLoading(false);
+        }, 5000); // Ждем 5 секунд
+        
+      } else {
+        // Если WebApp недоступен, используем обычный виджет
+        console.log('ℹ️ WebApp not available, using regular widget');
+        
+        // Создаем обычный виджет Telegram Login
+        const container = document.createElement('div');
+        container.id = 'telegram-widget-container';
+        document.body.appendChild(container);
+        
+        // Добавляем глобальную функцию для callback'а
+        window.onTelegramAuth = (user: TelegramUser) => {
+          console.log('✅ Regular widget auth received:', user);
+          
+          // Сохраняем в localStorage
+          localStorage.setItem('telegram_user', JSON.stringify(user));
+          console.log('✅ User saved to localStorage from regular widget');
+          
+          // Удаляем контейнер
+          document.body.removeChild(container);
+          
+          onAuth(user);
+          setAuthStep('success');
+          setIsLoading(false);
+        };
+        
+        // Создаем script элемент
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://telegram.org/js/telegram-widget.js?22';
+        script.setAttribute('data-telegram-login', botName);
+        script.setAttribute('data-size', 'large');
+        script.setAttribute('data-request-access', 'write');
+        script.setAttribute('data-lang', 'ru');
+        script.setAttribute('data-onauth', 'onTelegramAuth');
+        
+        container.appendChild(script);
+        
+        // Показываем сообщение
+        alert('Откроется окно авторизации Telegram. Пожалуйста, авторизуйтесь.');
+      }
       
     } catch (error) {
       console.error('TelegramProductionLogin: Error during auth:', error);
@@ -1204,25 +1256,16 @@ export function TelegramProductionLogin({
 
   return (
     <div className={`text-center ${className}`}>
-      <p className="text-sm text-gray-600 mb-3">
-        Для продолжения необходимо авторизоваться в Telegram
-      </p>
       <button
         onClick={handleProductionAuth}
         disabled={isLoading}
-        className={`
-          inline-flex items-center justify-center gap-2 px-4 py-2 
-          bg-[#0088cc] hover:bg-[#006fa0] disabled:bg-gray-400
-          text-white rounded-lg font-medium text-sm transition-colors w-full h-12
-          ${isLoading ? 'cursor-not-allowed' : ''}
-        `}
+        className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] disabled:bg-gray-400 text-white rounded-lg font-medium text-sm transition-colors w-full ${
+          isLoading ? 'cursor-not-allowed' : ''
+        }`}
       >
         {isLoading ? (
           <>
-            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             <span>Авторизация...</span>
           </>
         ) : (
@@ -1233,10 +1276,17 @@ export function TelegramProductionLogin({
               <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
               <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
             </svg>
-            <span>Авторизоваться в Telegram</span>
+            <span>Войти через Telegram</span>
           </>
         )}
       </button>
+      
+      {authStep === 'authing' && (
+        <div className="mt-3 text-xs text-gray-600">
+          <p>Откроется Telegram для авторизации...</p>
+          <p>После авторизации вернитесь в приложение</p>
+        </div>
+      )}
     </div>
   );
 }
