@@ -13,7 +13,7 @@ prisma
   .then(() => {
     console.log('Prisma успешно подключен к базе данных');
   })
-  .catch((error) => {
+  .catch((error: any) => {
     console.error('Ошибка при подключении Prisma к базе данных:', error);
   });
 

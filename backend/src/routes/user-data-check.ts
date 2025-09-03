@@ -34,7 +34,7 @@ router.get(
       // Получаем последнюю профессию и инструменты
       const lastPreference = preferences[0];
       const profession = lastPreference?.profession || null;
-      const tools = userTools.map(tool => tool.toolName);
+      const tools = userTools.map((tool: any) => tool.toolName);
 
       console.log('Результаты проверки:');
       console.log('- Есть профессия:', hasProfession);

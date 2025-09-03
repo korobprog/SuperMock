@@ -4,6 +4,16 @@ exports.InMemoryFeedback = void 0;
 const uuid_1 = require("uuid");
 // Класс для работы с обратной связью в памяти
 class InMemoryFeedback {
+    id;
+    sessionId;
+    userId;
+    ratings;
+    comments;
+    recommendations;
+    createdAt;
+    updatedAt;
+    // Хранилище обратной связи в памяти
+    static feedbacks = [];
     constructor(data) {
         this.id = data.id || (0, uuid_1.v4)();
         this.sessionId = data.sessionId;
@@ -60,6 +70,4 @@ class InMemoryFeedback {
     }
 }
 exports.InMemoryFeedback = InMemoryFeedback;
-// Хранилище обратной связи в памяти
-InMemoryFeedback.feedbacks = [];
 //# sourceMappingURL=InMemoryFeedback.js.map

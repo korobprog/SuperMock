@@ -334,7 +334,7 @@ router.get('/user-data-check/:userId', (async (req, res, next) => {
             // Получаем последнюю профессию и инструменты
             const lastPreference = preferences[0];
             const profession = lastPreference?.profession || null;
-            const tools = userTools.map(tool => tool.toolName);
+            const tools = userTools.map((tool) => tool.toolName);
             console.log('Результаты проверки (MongoDB):');
             console.log('- Есть профессия:', hasProfession);
             console.log('- Есть инструменты:', hasTools);

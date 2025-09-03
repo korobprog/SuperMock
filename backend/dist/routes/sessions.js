@@ -12,6 +12,10 @@ const websocket_1 = require("../websocket");
 const webRTCService_1 = require("../services/webRTCService");
 // Заглушка для модели Log
 class LogModel {
+    sessionId;
+    userId;
+    action;
+    details;
     constructor(data) {
         this.sessionId = data.sessionId;
         this.userId = data.userId;
