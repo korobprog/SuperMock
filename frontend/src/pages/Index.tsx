@@ -29,7 +29,7 @@ const Index = () => {
   const [isLanguageDetected, setIsLanguageDetected] = useState(false);
   const { t } = useAppTranslation();
   const { i18n } = useTranslation();
-  const { setUserId, setLanguage, setTelegramUser, telegramUser, userId } =
+  const { setUserId, setLanguage, setTelegramUser, setRole, setProfession, telegramUser, userId } =
     useAppStore();
 
   // Настройка полноэкранного режима в Telegram Mini Apps
@@ -39,17 +39,21 @@ const Index = () => {
   useEffect(() => {
     async function initializeApp() {
       try {
-        console.log('🚀 Starting app initialization...');
-        console.log('🔍 Current store state:', {
-          userId,
-          telegramUser,
-          hasTelegramUser: !!telegramUser
-        });
+        if (import.meta.env.DEV) {
+          console.log('🚀 Starting app initialization...');
+          console.log('🔍 Current store state:', {
+            userId,
+            telegramUser,
+            hasTelegramUser: !!telegramUser
+          });
+        }
         
         // Определяем язык
         const detectedLanguage = await detectUserLanguage();
         setLanguage(detectedLanguage);
-        console.log('🌍 Language detected:', detectedLanguage);
+        if (import.meta.env.DEV) {
+          console.log('🌍 Language detected:', detectedLanguage);
+        }
 
         // Проверяем, не выходил ли пользователь только что
         const justLoggedOut = sessionStorage.getItem('just_logged_out');
@@ -67,17 +71,21 @@ const Index = () => {
           const tg = window.Telegram?.WebApp;
           
           if (tg) {
-            console.log('🔧 Telegram Mini Apps detected');
-            console.log('🔧 initData:', tg.initData);
-            console.log('🔧 initDataUnsafe:', tg.initDataUnsafe);
-            console.log('🔧 initDataUnsafe.user:', tg.initDataUnsafe?.user);
-            console.log('🔧 WebApp.ready:', tg.ready);
-            console.log('🔧 WebApp.platform:', tg.platform);
-            console.log('🔧 WebApp.version:', tg.version);
+            if (import.meta.env.DEV) {
+              console.log('🔧 Telegram Mini Apps detected');
+              console.log('🔧 initData:', tg.initData);
+              console.log('🔧 initDataUnsafe:', tg.initDataUnsafe);
+              console.log('🔧 initDataUnsafe.user:', tg.initDataUnsafe?.user);
+              console.log('🔧 WebApp.ready:', tg.ready);
+              console.log('🔧 WebApp.platform:', tg.platform);
+              console.log('🔧 WebApp.version:', tg.version);
+            }
             
             if (tg.initDataUnsafe?.user) {
               const tgUser = tg.initDataUnsafe.user;
-              console.log('✅ Telegram Mini Apps user detected:', tgUser);
+              if (import.meta.env.DEV) {
+                console.log('✅ Telegram Mini Apps user detected:', tgUser);
+              }
 
               // Создаем объект пользователя из Telegram Mini Apps
               const telegramUser = {
@@ -96,21 +104,29 @@ const Index = () => {
               setTelegramUser(telegramUser);
               // Явно устанавливаем userId для немедленного использования
               setUserId(telegramUser.id);
-              console.log('🔧 Telegram Mini Apps: userId set to:', telegramUser.id);
+              if (import.meta.env.DEV) {
+                console.log('🔧 Telegram Mini Apps: userId set to:', telegramUser.id);
+              }
             } else if (tg.initData) {
               // Если есть initData, но нет пользователя, это может быть продакшн
-              console.log('🔧 Production mode: initData present but no user data');
-              console.log('🔧 This is normal in production Telegram WebApp');
+              if (import.meta.env.DEV) {
+                console.log('🔧 Production mode: initData present but no user data');
+                console.log('🔧 This is normal in production Telegram WebApp');
+              }
               
               // В продакшне проверяем, может быть пользователь уже авторизован в store
               const currentTelegramUser = useAppStore.getState().telegramUser;
               const currentUserId = useAppStore.getState().userId;
               
               if (currentTelegramUser || (currentUserId && currentUserId > 0)) {
-                console.log('✅ User already authenticated in store, skipping auth block');
+                if (import.meta.env.DEV) {
+                  console.log('✅ User already authenticated in store, skipping auth block');
+                }
                 // Пользователь уже авторизован, не показываем блок авторизации
               } else {
-                console.log('ℹ️ User needs to authenticate in production mode');
+                if (import.meta.env.DEV) {
+                  console.log('ℹ️ User needs to authenticate in production mode');
+                }
                 
                 // В Telegram Mini Apps пользователь может быть уже авторизован в Telegram
                 // Пытаемся получить данные пользователя через Telegram WebApp
@@ -128,35 +144,49 @@ const Index = () => {
                     hash: 'telegram_mini_apps_temp_hash',
                   };
                   
-                  console.log('🔧 Temporary user created for production:', tempTelegramUser);
+                  if (import.meta.env.DEV) {
+                    console.log('🔧 Temporary user created for production:', tempTelegramUser);
+                  }
                   setTelegramUser(tempTelegramUser);
                   setUserId(tempTelegramUser.id);
                   
                   // В продакшн версии не показываем блок авторизации
                   // так как пользователь уже в Telegram Mini Apps
-                  console.log('🔧 Production mode: user in Telegram Mini Apps, not showing auth block');
+                  if (import.meta.env.DEV) {
+                    console.log('🔧 Production mode: user in Telegram Mini Apps, not showing auth block');
+                  }
                 } catch (error) {
-                  console.warn('⚠️ Failed to create temporary user:', error);
+                  if (import.meta.env.DEV) {
+                    console.warn('⚠️ Failed to create temporary user:', error);
+                  }
                   // Показываем блок авторизации только если не удалось создать временного пользователя
                 }
               }
             } else {
               // Случай 3: Нет initData - это может быть тестовый режим или ошибка
-              console.log('🔧 Telegram Mini Apps detected but no initData');
-              console.log('🔧 This might be a test environment or error');
+              if (import.meta.env.DEV) {
+                console.log('🔧 Telegram Mini Apps detected but no initData');
+                console.log('🔧 This might be a test environment or error');
+              }
               
               // Проверяем, может быть пользователь уже авторизован в store
               const currentTelegramUser = useAppStore.getState().telegramUser;
               const currentUserId = useAppStore.getState().userId;
               
               if (currentTelegramUser || (currentUserId && currentUserId > 0)) {
-                console.log('✅ User already authenticated in store, skipping auth block');
+                if (import.meta.env.DEV) {
+                  console.log('✅ User already authenticated in store, skipping auth block');
+                }
               } else {
-                console.log('ℹ️ User needs to authenticate - no Telegram data available');
+                if (import.meta.env.DEV) {
+                  console.log('ℹ️ User needs to authenticate - no Telegram data available');
+                }
                 
                 // В Telegram Mini Apps попробуем создать временного пользователя
                 if (tg.ready && tg.platform !== 'unknown') {
-                  console.log('🔧 Telegram WebApp is ready, creating temporary user');
+                  if (import.meta.env.DEV) {
+                    console.log('🔧 Telegram WebApp is ready, creating temporary user');
+                  }
                   
                   const tempTelegramUser = {
                     id: Date.now(), // Временный ID
@@ -168,40 +198,54 @@ const Index = () => {
                     hash: 'telegram_mini_apps_temp_hash',
                   };
                   
-                  console.log('🔧 Temporary user created for no initData case:', tempTelegramUser);
+                  if (import.meta.env.DEV) {
+                    console.log('🔧 Temporary user created for no initData case:', tempTelegramUser);
+                  }
                   setTelegramUser(tempTelegramUser);
                   setUserId(tempTelegramUser.id);
                   
                   // В Telegram Mini Apps не показываем блок авторизации
-                  console.log('🔧 Telegram Mini Apps: user created, not showing auth block');
+                  if (import.meta.env.DEV) {
+                    console.log('🔧 Telegram Mini Apps: user created, not showing auth block');
+                  }
                 } else {
-                  console.log('🔧 Telegram WebApp not ready, showing auth block');
+                  if (import.meta.env.DEV) {
+                    console.log('🔧 Telegram WebApp not ready, showing auth block');
+                  }
                   // Показываем блок авторизации
                 }
               }
             }
           } else {
-            console.log('🔧 No Telegram Mini Apps environment detected');
-            
-            
+            if (import.meta.env.DEV) {
+              console.log('🔧 No Telegram Mini Apps environment detected');
+            }
             
             // Загружаем сохраненного пользователя Telegram из localStorage только если нет Telegram WebApp и тестового аккаунта
             const savedTelegramUser = loadTelegramUser();
             if (savedTelegramUser) {
-              console.log('Загружен сохраненный пользователь Telegram:', savedTelegramUser);
+              if (import.meta.env.DEV) {
+                console.log('Загружен сохраненный пользователь Telegram:', savedTelegramUser);
+              }
               // Используем setTelegramUser который автоматически установит userId
               setTelegramUser(savedTelegramUser);
               // Явно устанавливаем userId для немедленного использования
               setUserId(savedTelegramUser.id);
-              console.log('🔧 Saved user: userId set to:', savedTelegramUser.id);
+              if (import.meta.env.DEV) {
+                console.log('🔧 Saved user: userId set to:', savedTelegramUser.id);
+              }
             } else {
-              console.log('Нет сохраненного пользователя Telegram');
+              if (import.meta.env.DEV) {
+                console.log('Нет сохраненного пользователя Telegram');
+              }
               // В продакшене не создаем локального пользователя
               if (import.meta.env.DEV) {
                 // В development режиме можно создать локального пользователя для тестирования
                 console.log('Development mode: можно создать локального пользователя');
               } else {
-                console.log('Production mode: не создаем локального пользователя');
+                if (import.meta.env.DEV) {
+                  console.log('Production mode: не создаем локального пользователя');
+                }
               }
               setUserId(0);
             }
@@ -210,7 +254,9 @@ const Index = () => {
           // Очищаем флаги выхода
           sessionStorage.removeItem('just_logged_out');
           sessionStorage.removeItem('logout_timestamp');
-          console.log('User recently logged out, not loading Telegram data');
+          if (import.meta.env.DEV) {
+            console.log('User recently logged out, not loading Telegram data');
+          }
 
           // Принудительно очищаем данные пользователя из store и localStorage
           setTelegramUser(null);
@@ -220,45 +266,51 @@ const Index = () => {
           
           // В продакшене не создаем локального пользователя
           if (!import.meta.env.DEV) {
-            console.log('Production mode: очищаем все данные пользователя');
+            if (import.meta.env.DEV) {
+              console.log('Production mode: очищаем все данные пользователя');
+            }
             setRole(null);
             setProfession(null);
           }
         }
 
         setIsLanguageDetected(true);
-      } catch (error) {
-        console.error('App initialization error:', error);
-        // Fallback на русский
-        saveAndApplyLanguage('ru', i18n, setLanguage);
-        setIsLanguageDetected(true);
-      }
+              } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('App initialization error:', error);
+          }
+          // Fallback на русский
+          saveAndApplyLanguage('ru', i18n, setLanguage);
+          setIsLanguageDetected(true);
+        }
     }
 
     initializeApp();
   }, [i18n, setLanguage]);
 
-  // Отслеживаем изменения в store для отладки
+  // Отслеживаем изменения в store для отладки (только в development)
   useEffect(() => {
-    console.log('🔍 Store state changed:', {
-      userId,
-      telegramUser,
-      hasTelegramUser: !!telegramUser,
-      timestamp: new Date().toISOString()
-    });
-    
-    // Если userId изменился на положительное значение, логируем это
-    if (userId && userId > 0) {
-      console.log('✅ userId successfully set to:', userId);
-    }
-    
-    // Если telegramUser изменился, логируем это
-    if (telegramUser) {
-      console.log('✅ telegramUser updated:', {
-        id: telegramUser.id,
-        first_name: telegramUser.first_name,
-        username: telegramUser.username
+    if (import.meta.env.DEV) {
+      console.log('🔍 Index: Store state changed:', {
+        userId,
+        telegramUser,
+        hasTelegramUser: !!telegramUser,
+        timestamp: new Date().toISOString()
       });
+      
+      // Если userId изменился на положительное значение, логируем это
+      if (userId && userId > 0) {
+        console.log('✅ Index: userId successfully set to:', userId);
+      }
+      
+      // Если telegramUser изменился, логируем это
+      if (telegramUser) {
+        console.log('✅ Index: telegramUser updated:', {
+          id: telegramUser.id,
+          first_name: telegramUser.first_name,
+          username: telegramUser.username
+        });
+      }
     }
   }, [userId, telegramUser]);
 
@@ -303,6 +355,15 @@ const Index = () => {
     );
   }
 
+  // Отладочная информация при рендере (только в development)
+  if (import.meta.env.DEV) {
+    console.log('🔍 Index: Rendering with state:', {
+      telegramUser,
+      userId,
+      isLanguageDetected
+    });
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-telegram-light-gray p-3 sm:p-5 pb-24 md:pb-5">
       <div className="max-w-4xl mx-auto pt-16 sm:pt-20">
@@ -322,29 +383,10 @@ const Index = () => {
         {/* Main Menu */}
         <MainMenu />
         
-        {/* Telegram Mini Apps Status - для отладки */}
-        <TelegramMiniAppsStatus />
+        {/* Telegram Mini Apps Status - скрыт в продакшене */}
+        {import.meta.env.DEV && <TelegramMiniAppsStatus />}
         
-        {/* Основная авторизация для веб-версии */}
-        <div className="mt-6">
-          <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 text-center">
-              Войти в аккаунт
-            </h3>
-            <p className="text-gray-600 text-center mb-4">
-              Для доступа к платформе необходимо авторизоваться через Telegram
-            </p>
-            <TelegramLoginWidget
-              botName="SuperMock_bot"
-              onAuth={(user) => {
-                console.log('🚀 Index: Telegram auth received:', user);
-                setTelegramUser(user);
-                setUserId(user.id);
-              }}
-              className="w-full"
-            />
-          </div>
-        </div>
+        {/* Блок авторизации теперь находится в ProfileHeader */}
       </div>
 
       {/* Mobile Bottom Menu */}

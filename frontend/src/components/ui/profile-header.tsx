@@ -9,6 +9,19 @@ import { createApiUrl } from '@/lib/config';
 import { LanguageSelector } from './language-selector';
 import { useTelegramNavigation } from '@/hooks/useTelegramNavigation';
 import { useOAuthListener } from '@/hooks/useOAuthListener';
+import { TelegramLoginWidget } from './telegram-login';
+
+// Добавляем типы для Telegram Login Widget
+declare global {
+  interface Window {
+    TelegramLoginWidget: {
+      init: (element: HTMLElement, options: {
+        dataOnauth: (user: any) => void;
+        bot_id: string;
+      }) => void;
+    };
+  }
+}
 
 interface RealUser {
   id: string;
@@ -24,6 +37,16 @@ export function ProfileHeader() {
   const { t } = useAppTranslation();
   const { telegramUser, setTelegramUser, userId, setUserId } = useAppStore();
   
+  // Отладочная информация (только в development)
+  if (import.meta.env.DEV) {
+    console.log('🔍 ProfileHeader: Component loaded with state:', {
+      telegramUser: telegramUser ? { id: telegramUser.id, first_name: telegramUser.first_name } : null,
+      userId,
+      hasTelegramUser: !!telegramUser,
+      hasUserId: !!userId
+    });
+  }
+  
   // Слушаем OAuth авторизацию из других вкладок
   useOAuthListener();
   const [realUser, setRealUser] = useState<RealUser | null>(null);
@@ -31,8 +54,15 @@ export function ProfileHeader() {
 
   // Загружаем данные реального пользователя
   useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log('🔍 ProfileHeader: useEffect triggered with:', { userId, telegramUser });
+    }
+    
     const loadRealUser = async () => {
       if (!userId) {
+        if (import.meta.env.DEV) {
+          console.log('⚠️ ProfileHeader: No userId, skipping user data load');
+        }
         setRealUser(null);
         return;
       }
@@ -45,20 +75,32 @@ export function ProfileHeader() {
 
       setIsLoading(true);
       try {
+        if (import.meta.env.DEV) {
+          console.log('🔍 ProfileHeader: Loading user data for userId:', userId);
+        }
         const response = await fetch(createApiUrl(`/api/user/${userId}`));
         if (response.ok) {
           const userData = await response.json();
+          if (import.meta.env.DEV) {
+            console.log('✅ ProfileHeader: User data loaded:', userData);
+          }
           setRealUser(userData);
         } else if (response.status === 404) {
-          console.log('User not found in database, using local data');
+          if (import.meta.env.DEV) {
+            console.log('⚠️ ProfileHeader: User not found in database, using local data');
+          }
           setRealUser(null);
         } else {
-          console.error('Error loading user data:', response.status);
+          if (import.meta.env.DEV) {
+            console.error('❌ ProfileHeader: Error loading user data:', response.status);
+          }
           // Не устанавливаем realUser в null при ошибке БД
           // Пользователь может быть в локальном состоянии
         }
       } catch (error) {
-        console.log('Network error loading user data, using local data');
+        if (import.meta.env.DEV) {
+          console.log('⚠️ ProfileHeader: Network error loading user data, using local data:', error);
+        }
         // При ошибке сети/БД не очищаем realUser
         // Возможно, у нас есть локальные данные
       } finally {
@@ -92,7 +134,9 @@ export function ProfileHeader() {
   };
 
   const handleTelegramAuth = async (user: TelegramUser) => {
-    console.log('ProfileHeader: Received Telegram auth:', user);
+    if (import.meta.env.DEV) {
+      console.log('ProfileHeader: Received Telegram auth:', user);
+    }
     
     try {
       // Инициализируем пользователя в базе данных
@@ -108,55 +152,131 @@ export function ProfileHeader() {
       
       if (initResponse.ok) {
         const initData = await initResponse.json();
-        console.log('ProfileHeader: User initialized in database:', initData);
+        if (import.meta.env.DEV) {
+          console.log('ProfileHeader: User initialized in database:', initData);
+        }
         
         // Устанавливаем пользователя в store (это также установит userId)
         setTelegramUser(user);
         
         // Показываем уведомление об успешной авторизации
-        console.log('✅ User successfully authenticated and initialized');
+        if (import.meta.env.DEV) {
+          console.log('✅ User successfully authenticated and initialized');
+        }
       } else {
-        console.error('ProfileHeader: Failed to initialize user in database');
+        if (import.meta.env.DEV) {
+          console.error('ProfileHeader: Failed to initialize user in database');
+        }
         // Даже если инициализация в БД не удалась, устанавливаем пользователя в store
         setTelegramUser(user);
       }
     } catch (error) {
-      console.error('ProfileHeader: Error initializing user:', error);
+      if (import.meta.env.DEV) {
+        console.error('ProfileHeader: Error initializing user:', error);
+      }
       // Даже при ошибке устанавливаем пользователя в store
       setTelegramUser(user);
     }
   };
 
   // Определяем отображаемые данные пользователя
+  // Приоритет: telegramUser > realUser > null
   const displayUser = telegramUser || realUser;
   
+  if (import.meta.env.DEV) {
+    console.log('🔍 ProfileHeader: displayUser calculation:', {
+      telegramUser: telegramUser ? { id: telegramUser.id, first_name: telegramUser.first_name } : null,
+      realUser: realUser ? { id: realUser.id, firstName: realUser.firstName } : null,
+      displayUser: displayUser ? { id: displayUser.id } : null
+    });
+  }
+  
   // Исправляем логику отображения имени пользователя
-  const displayName = displayUser
-    ? telegramUser
-      ? telegramUser.first_name
-      : realUser?.firstName
-      ? realUser.lastName
+  let displayName = null;
+  
+  if (telegramUser) {
+    // Если есть telegramUser, используем его данные
+    displayName = telegramUser.first_name || 'Пользователь Telegram';
+  } else if (realUser) {
+    // Если есть realUser, используем его данные
+    if (realUser.firstName) {
+      displayName = realUser.lastName 
         ? `${realUser.firstName} ${realUser.lastName}`
-        : realUser.firstName
-      : t('common.user')
-    : null; // Убираем fallback на "Не авторизован"
+        : realUser.firstName;
+    } else {
+      displayName = 'Пользователь';
+    }
+  }
+  
+  if (import.meta.env.DEV) {
+    console.log('🔍 ProfileHeader: displayName calculation:', {
+      telegramUser: !!telegramUser,
+      realUser: !!realUser,
+      displayName
+    });
+  }
 
-  const displayUsername = displayUser
-    ? telegramUser
-      ? telegramUser.username
-      : realUser?.username
-    : null;
+  // Исправляем логику отображения username
+  let displayUsername = null;
+  
+  if (telegramUser) {
+    displayUsername = telegramUser.username;
+  } else if (realUser) {
+    displayUsername = realUser.username;
+  }
+  
+  if (import.meta.env.DEV) {
+    console.log('🔍 ProfileHeader: displayUsername calculation:', {
+      telegramUser: !!telegramUser,
+      realUser: !!realUser,
+      displayUsername
+    });
+  }
 
-  const displayPhoto = telegramUser?.photo_url;
+  // Исправляем логику отображения фото
+  const displayPhoto = telegramUser?.photo_url || null;
+  
+  if (import.meta.env.DEV) {
+    console.log('🔍 ProfileHeader: displayPhoto calculation:', {
+      telegramUser: !!telegramUser,
+      hasPhoto: !!displayPhoto
+    });
+  }
 
   // Определяем, авторизован ли пользователь
+  // Пользователь считается авторизованным если есть telegramUser ИЛИ userId > 0
   const isAuthorized = !!(telegramUser || (userId && userId > 0));
+  
+  // Отладочная информация (только в development)
+  if (import.meta.env.DEV) {
+    console.log('🔍 ProfileHeader Debug:', {
+      telegramUser,
+      userId,
+      isAuthorized,
+      displayUser,
+      displayName,
+      displayUsername
+    });
+  }
 
   // Проверяем, находимся ли мы в Telegram Mini Apps
   const isInTelegramMiniApps = !!window.Telegram?.WebApp;
 
   // В Telegram Mini Apps пользователь уже авторизован через Telegram
   // В веб-версии показываем блок авторизации только если пользователь не авторизован
+
+  // Отладочная информация при рендере (только в development)
+  if (import.meta.env.DEV) {
+    console.log('🔍 ProfileHeader: Rendering with state:', {
+      telegramUser,
+      userId,
+      isAuthorized,
+      displayUser,
+      displayName,
+      displayUsername,
+      realUser
+    });
+  }
 
   return (
     <div className="w-full">
@@ -173,6 +293,7 @@ export function ProfileHeader() {
                 )}
               </AvatarFallback>
             </Avatar>
+
             <div className="flex flex-col">
               <span className="font-semibold text-gray-900">
                 {isAuthorized ? (displayName || t('common.user')) : t('common.notAuthorized')}
@@ -187,9 +308,10 @@ export function ProfileHeader() {
                 {isLoading
                   ? t('common.loading')
                   : isAuthorized
-                  ? (telegramUser ? t('common.telegram') : t('common.authorized'))
+                  ? (telegramUser ? t('common.telegram') : 'Авторизован')
                   : t('common.notAuthorized')}
               </span>
+
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -236,6 +358,52 @@ export function ProfileHeader() {
             {/* Языковое меню - показывается везде */}
             <LanguageSelector />
             
+            {/* Кнопка авторизации - показывается только для неавторизованных пользователей */}
+            {!isAuthorized && (
+              <div className="flex flex-col items-center space-y-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => {
+                    // Показываем виджет авторизации Telegram
+                    const telegramLoginWidget = document.createElement('div');
+                    telegramLoginWidget.innerHTML = `
+                      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+                          <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">
+                            Войти в аккаунт
+                          </h3>
+                          <p class="text-gray-600 text-center mb-4">
+                            Для доступа к платформе необходимо авторизоваться через Telegram
+                          </p>
+                          <div id="telegram-login-widget"></div>
+                          <button class="mt-4 w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300" onclick="this.parentElement.parentElement.remove()">
+                            Закрыть
+                          </button>
+                        </div>
+                      </div>
+                    `;
+                    document.body.appendChild(telegramLoginWidget);
+                    
+                    // Инициализируем Telegram Login Widget
+                    if (window.TelegramLoginWidget) {
+                      window.TelegramLoginWidget.init(telegramLoginWidget.querySelector('#telegram-login-widget'), {
+                        dataOnauth: (user: any) => {
+                          handleTelegramAuth(user);
+                          telegramLoginWidget.remove();
+                        },
+                        bot_id: 'SuperMock_bot'
+                      });
+                    }
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  title="Войти через Telegram"
+                >
+                  Войти через Telegram
+                </Button>
+              </div>
+            )}
+            
             {/* Кнопка выхода - показывается только для авторизованных пользователей */}
             {isAuthorized && (
               <Button
@@ -253,8 +421,8 @@ export function ProfileHeader() {
 
 
         
-        {/* Информация для пользователей в Telegram Mini Apps */}
-        {isInTelegramMiniApps && !isAuthorized && (
+        {/* Информация для пользователей в Telegram Mini Apps - скрыта в продакшене */}
+        {import.meta.env.DEV && isInTelegramMiniApps && !isAuthorized && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="text-center">
               <p className="text-sm text-blue-800 mb-2">

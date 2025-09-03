@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -35,11 +36,18 @@ const Header = () => {
               Главная
             </Link>
             <Link
+              href="/languages"
+              className="text-gray-300 hover:text-white transition-colors font-medium"
+            >
+              Языки
+            </Link>
+            <Link
               href="/about"
               className="text-gray-300 hover:text-white transition-colors font-medium"
             >
               О нас
             </Link>
+            <LanguageSwitcher />
             <Link
               href="/auth"
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
@@ -90,12 +98,22 @@ const Header = () => {
                 Главная
               </Link>
               <Link
+                href="/languages"
+                className="text-gray-300 hover:text-white transition-colors font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Языки
+              </Link>
+              <Link
                 href="/about"
                 className="text-gray-300 hover:text-white transition-colors font-medium"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 О нас
               </Link>
+              <div className="py-2">
+                <LanguageSwitcher />
+              </div>
               <Link
                 href="/auth"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center"

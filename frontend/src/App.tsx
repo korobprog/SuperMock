@@ -40,6 +40,7 @@ import AuthCallback from './pages/AuthCallback';
 import TelegramAuthSuccess from './pages/TelegramAuthSuccess';
 import DevTest from './pages/DevTest';
 import { DevRouteGuard } from './components/ui/dev-route-guard';
+import { LanguageSelection as Languages } from './pages/LanguageSelection';
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ function AppContent() {
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/roadmap" element={<Roadmap />} />
         <Route path="/language" element={<LanguageSelection />} />
+        <Route path="/languages" element={<Languages />} />
         <Route path="/tools" element={<ToolSelection />} />
         <Route path="/api-key-setup" element={<ApiKeySetup />} />
         <Route path="/time" element={<TimeSelection />} />

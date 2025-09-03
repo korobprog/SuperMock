@@ -56,7 +56,8 @@ const HomePage = () => {
               {
                 title: '6 языков интервью',
                 description: 'Проводите интервью на английском, русском, испанском, французском, немецком и китайском языках',
-                icon: '🌍'
+                icon: '🌍',
+                link: '/languages'
               },
               {
                 title: 'AI-анализ',
@@ -87,7 +88,15 @@ const HomePage = () => {
                 <h3 className="text-xl font-semibold mb-3 group-hover:text-blue-400 transition-colors">
                   {feature.title}
                 </h3>
-                <p className="text-gray-400">{feature.description}</p>
+                <p className="text-gray-400 mb-4">{feature.description}</p>
+                {feature.link && (
+                  <Link
+                    href={feature.link}
+                    className="inline-block text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                  >
+                    Узнать больше →
+                  </Link>
+                )}
               </div>
             ))}
           </div>

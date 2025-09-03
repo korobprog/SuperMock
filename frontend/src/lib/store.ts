@@ -120,11 +120,13 @@ export const useAppStore = create<AppState>()(
         updatedAt: new Date().toISOString(),
       },
       setUserId: (id) => {
-        console.log('🔧 setUserId called with:', id, 'Type:', typeof id);
-        console.log('🔧 Current store state before setUserId:', {
-          userId: get().userId,
-          telegramUser: get().telegramUser
-        });
+        if (import.meta.env.DEV) {
+          console.log('🔧 setUserId called with:', id, 'Type:', typeof id);
+          console.log('🔧 Current store state before setUserId:', {
+            userId: get().userId,
+            telegramUser: get().telegramUser
+          });
+        }
         
         // Проверяем, есть ли уже telegramUser в store
         const currentState = get();
@@ -136,67 +138,89 @@ export const useAppStore = create<AppState>()(
         // Если ID не передан, но есть telegramUser, используем его ID
         if (!finalId && telegramUser && telegramUser.id) {
           finalId = telegramUser.id;
-          console.log('🔧 Using telegramUser.id as userId:', finalId);
+          if (import.meta.env.DEV) {
+            console.log('🔧 Using telegramUser.id as userId:', finalId);
+          }
         }
         
         // В development режиме генерируем ID если ничего нет
         if (!finalId && import.meta.env.DEV) {
           finalId = getOrGenerateUserId();
-          console.log('🔧 Generated local userId in dev mode:', finalId);
+          if (import.meta.env.DEV) {
+            console.log('🔧 Generated local userId in dev mode:', finalId);
+          }
         }
         
         set({ userId: finalId });
-        console.log('🔧 userId set in store to:', finalId);
-        console.log('🔧 New store state after setUserId:', {
-          userId: get().userId,
-          telegramUser: get().telegramUser
-        });
+        if (import.meta.env.DEV) {
+          console.log('🔧 userId set in store to:', finalId);
+          console.log('🔧 New store state after setUserId:', {
+            userId: get().userId,
+            telegramUser: get().telegramUser
+          });
+        }
         
         // Автоматически загружаем данные пользователя при установке userId
         if (finalId > 0) {
           const store = useAppStore.getState();
           store.loadUserData(finalId).catch((error) => {
-            console.warn('⚠️ Failed to load user data in setUserId:', error);
+            if (import.meta.env.DEV) {
+              console.warn('⚠️ Failed to load user data in setUserId:', error);
+            }
           });
         }
       },
       setTelegramUser: (user) => {
-        console.log('🔧 setTelegramUser called with:', user);
-        console.log('🔧 Current store state before setTelegramUser:', {
-          userId: get().userId,
-          telegramUser: get().telegramUser
-        });
+        if (import.meta.env.DEV) {
+          console.log('🔧 setTelegramUser called with:', user);
+          console.log('🔧 Current store state before setTelegramUser:', {
+            userId: get().userId,
+            telegramUser: get().telegramUser
+          });
+        }
         
         set({ telegramUser: user });
-        console.log('🔧 telegramUser set in store');
+        if (import.meta.env.DEV) {
+          console.log('🔧 telegramUser set in store');
+        }
         
         // Если пользователь Telegram установлен, используем его ID как userId
         if (user && user.id) {
-          console.log('🔧 Setting userId from telegramUser:', user.id);
+          if (import.meta.env.DEV) {
+            console.log('🔧 Setting userId from telegramUser:', user.id);
+          }
           // Устанавливаем userId сразу, без setTimeout
           set((state) => ({ 
             ...state, 
             userId: user.id,
             telegramUser: user 
           }));
-          console.log('🔧 userId and telegramUser set in store to:', user.id);
-          console.log('🔧 New store state after setTelegramUser:', {
-            userId: get().userId,
-            telegramUser: get().telegramUser
-          });
+          if (import.meta.env.DEV) {
+            console.log('🔧 userId and telegramUser set in store to:', user.id);
+            console.log('🔧 New store state after setTelegramUser:', {
+              userId: get().userId,
+              telegramUser: get().telegramUser
+            });
+          }
           
           // Асинхронно загружаем данные пользователя
           setTimeout(() => {
             const store = useAppStore.getState();
             if (store.userId === user.id) {
-              console.log('🔧 Loading user data for userId:', user.id);
+              if (import.meta.env.DEV) {
+                console.log('🔧 Loading user data for userId:', user.id);
+              }
               store.loadUserData(user.id).catch((error) => {
-                console.warn('⚠️ Failed to load user data after setTelegramUser:', error);
+                if (import.meta.env.DEV) {
+                  console.warn('⚠️ Failed to load user data after setTelegramUser:', error);
+                }
               });
             }
           }, 100);
         } else {
-          console.log('🔧 No user or user.id provided to setTelegramUser');
+          if (import.meta.env.DEV) {
+            console.log('🔧 No user or user.id provided to setTelegramUser');
+          }
         }
       },
       loadUserSettings: async (userId) => {
@@ -211,7 +235,9 @@ export const useAppStore = create<AppState>()(
       },
       loadUserData: async (userId) => {
         try {
-          console.log('🔍 Loading user data for userId:', userId);
+          if (import.meta.env.DEV) {
+            console.log('🔍 Loading user data for userId:', userId);
+          }
           
           // Загружаем настройки пользователя
           const settings = await apiGetUserSettings(userId);
@@ -221,7 +247,9 @@ export const useAppStore = create<AppState>()(
           
           // Загружаем данные пользователя (профессия, язык, инструменты)
           const userData = await apiCheckUserData(userId);
-          console.log('📊 Loaded user data:', userData);
+          if (import.meta.env.DEV) {
+            console.log('📊 Loaded user data:', userData);
+          }
           
           if (userData.hasProfession && userData.profession) {
             set({ profession: userData.profession });
@@ -231,9 +259,13 @@ export const useAppStore = create<AppState>()(
             set({ selectedTools: userData.tools });
           }
           
-          console.log('✅ User data loaded successfully');
+          if (import.meta.env.DEV) {
+            console.log('✅ User data loaded successfully');
+          }
         } catch (error) {
-          console.warn('⚠️ Failed to load user data:', error);
+          if (import.meta.env.DEV) {
+            console.warn('⚠️ Failed to load user data:', error);
+          }
           // Не показываем ошибку пользователю, просто используем дефолтные настройки
         }
       },
@@ -282,7 +314,9 @@ export const useAppStore = create<AppState>()(
       saveCurrentRoleAsLast: () => {
         const currentState = get();
         if (currentState.role) {
-          console.log('Saving current role as lastRole:', currentState.role);
+          if (import.meta.env.DEV) {
+            console.log('Saving current role as lastRole:', currentState.role);
+          }
           set({ lastRole: currentState.role });
         }
       },
@@ -358,7 +392,9 @@ export const useAppStore = create<AppState>()(
 
           if (isRecentlyLoggedOut) {
             // Если пользователь недавно вышел, очищаем все данные
-            console.log('User recently logged out, clearing all data');
+            if (import.meta.env.DEV) {
+              console.log('User recently logged out, clearing all data');
+            }
             state.userId = import.meta.env.DEV ? (Number(getOrGenerateUserId()) || 0) : 0; // Генерируем новый userId только в development
             state.telegramUser = null;
             state.role = null;
@@ -386,11 +422,15 @@ export const useAppStore = create<AppState>()(
           if (!state.userId && !state.telegramUser && import.meta.env.DEV) {
             const localUserId = Number(generateLocalUserId()) || 0;
             state.userId = localUserId;
-            console.log('Initialized local user ID:', localUserId);
+            if (import.meta.env.DEV) {
+              console.log('Initialized local user ID:', localUserId);
+            }
           } else if (!state.userId && !state.telegramUser && !import.meta.env.DEV) {
             // В продакшене не создаем локального пользователя
             state.userId = 0;
-            console.log('Production mode: no local user created');
+            if (import.meta.env.DEV) {
+              console.log('Production mode: no local user created');
+            }
           }
         }
       },
