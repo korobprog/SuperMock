@@ -20,28 +20,16 @@ import {
   saveTelegramUser,
 } from '@/lib/telegram-auth';
 import { useTelegramFullscreen } from '@/hooks/use-telegram-fullscreen';
-import { DevBanner } from '@/components/ui/dev-banner';
-import { 
-  getActiveDevTestAccount, 
-  isDevTestAccountsEnabled, 
-  getDevTestAccounts,
-  applyDevTestAccount,
-  clearDevTestAccount
-} from '@/lib/dev-test-account';
-import { TelegramQuickTest, TelegramProductionAuthTest } from '@/components/ui/telegram-production-test';
-import { TelegramLoginTest } from '@/components/ui/telegram-login-test';
 import { TelegramLoginWidget } from '@/components/ui/telegram-login';
 import { TelegramMiniAppsStatus } from '@/components/ui/telegram-mini-apps-status';
 import { createApiUrl } from '@/lib/config';
 import { TelegramUser } from '@/lib/telegram-auth';
-import { TelegramWebAuth } from '@/components/ui/telegram-web-auth';
 
 const Index = () => {
   const [isLanguageDetected, setIsLanguageDetected] = useState(false);
-  const [demoUserState, setDemoUserState] = useState(getActiveDevTestAccount() ? 'enabled' : 'disabled');
   const { t } = useAppTranslation();
   const { i18n } = useTranslation();
-  const { setUserId, setLanguage, setTelegramUser, telegramUser, setRole, setProfession, userId } =
+  const { setUserId, setLanguage, setTelegramUser, telegramUser, userId } =
     useAppStore();
 
   // Настройка полноэкранного режима в Telegram Mini Apps
@@ -195,23 +183,7 @@ const Index = () => {
           } else {
             console.log('🔧 No Telegram Mini Apps environment detected');
             
-            // Проверяем тестовый аккаунт в development режиме
-            if (import.meta.env.DEV && isDevTestAccountsEnabled()) {
-              const testAccount = getActiveDevTestAccount();
-              if (testAccount) {
-                console.log('Dev test account detected:', testAccount);
-                // Устанавливаем telegramUser который автоматически установит userId
-                setTelegramUser(testAccount.telegramUser);
-                // Дополнительно устанавливаем остальные параметры
-                setRole(testAccount.role);
-                setProfession(testAccount.profession);
-                setLanguage(testAccount.language);
-                // Явно устанавливаем userId для немедленного использования
-                setUserId(testAccount.userId);
-                console.log('🔧 Dev test account: userId set to:', testAccount.userId);
-                return; // Не загружаем сохраненного пользователя если есть тестовый аккаунт
-              }
-            }
+            
             
             // Загружаем сохраненного пользователя Telegram из localStorage только если нет Telegram WebApp и тестового аккаунта
             const savedTelegramUser = loadTelegramUser();
@@ -353,131 +325,19 @@ const Index = () => {
         {/* Telegram Mini Apps Status - для отладки */}
         <TelegramMiniAppsStatus />
         
-        {/* Новая веб-авторизация в стиле easyoffer.ru */}
+        {/* Основная авторизация для веб-версии */}
         <div className="mt-6">
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h3 className="text-sm font-medium text-green-800 mb-2">🚀 Новая веб-авторизация (easyoffer.ru стиль)</h3>
-            <p className="text-xs text-green-600 mb-3">
-              Тестируем новый подход к авторизации через iframe
-            </p>
-            <TelegramWebAuth
-              botName="SuperMock_bot"
-              onAuth={(user) => {
-                console.log('🚀 Index: EasyOffer style auth received:', user);
-                setTelegramUser(user);
-                setUserId(user.id);
-              }}
-              className="w-full"
-            />
-          </div>
-        </div>
-        {
-          import.meta.env.DEV && (
-            <div className="mt-6">
-              <DevBanner />
-              {/* Quick Demo User Toggle */}
-                             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                 <h3 className="text-sm font-medium text-blue-800 mb-2">🧪 Быстрое включение демо пользователя</h3>
-                                    <div className="mb-2 text-xs text-blue-600">
-                     Статус: {demoUserState === 'enabled' ? '✅ Демо включен' : '❌ Демо выключен'}
-                   </div>
-                 <div className="flex gap-2">
-                                     <button
-                     onClick={() => {
-                       const testAccount = getDevTestAccounts()[0];
-                       if (testAccount) {
-                         console.log('🧪 Enabling demo user:', testAccount);
-                         applyDevTestAccount(testAccount);
-                         setTelegramUser(testAccount.telegramUser);
-                         setUserId(testAccount.userId);
-                         setRole(testAccount.role);
-                         setProfession(testAccount.profession);
-                         setLanguage(testAccount.language);
-                         setDemoUserState('enabled');
-                         // Не перезагружаем страницу - просто обновляем состояние
-                         console.log('✅ Demo user enabled successfully');
-                       }
-                     }}
-                     className="px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
-                   >
-                     Включить демо
-                   </button>
-                   <button
-                     onClick={() => {
-                       console.log('🧪 Clearing demo user');
-                       clearDevTestAccount();
-                       setTelegramUser(null);
-                       setUserId(0);
-                       setRole(null);
-                       setProfession(null);
-                       setLanguage('ru');
-                       setDemoUserState('disabled');
-                       // Не перезагружаем страницу - просто обновляем состояние
-                       console.log('✅ Demo user cleared successfully');
-                     }}
-                     className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-                   >
-                                          Очистить демо
-                   </button>
-                   {demoUserState === 'enabled' && (
-                     <button
-                       onClick={() => {
-                         console.log('🧪 Testing smart navigation');
-                         // Переходим на главную страницу для тестирования умной навигации
-                         window.location.href = '/';
-                       }}
-                       className="px-3 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600"
-                     >
-                       Тест навигации
-                     </button>
-                   )}
-                 </div>
-               </div>
-              
-              {/* Telegram Login Test */}
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h3 className="text-sm font-medium text-green-800 mb-2">🔧 Тест Telegram Login Widget</h3>
-                <p className="text-xs text-green-600 mb-3">
-                  Тестируем работу официального виджета Telegram для веб-авторизации
-                </p>
-                <TelegramLoginTest
-                  onAuth={(user) => {
-                    console.log('🔧 Index: Telegram auth received:', user);
-                    setTelegramUser(user);
-                    setUserId(user.id);
-                  }}
-                  className="w-full"
-                />
-              </div>
-            </div>
-          )
-        }
-        {/* Тест авторизации в продакшн версии */}
-        {import.meta.env.PROD && (
-          <div className="mt-6">
-            <TelegramProductionAuthTest
-              botName="SuperMock_bot"
-              onAuth={(user) => {
-                console.log('🔧 Index: Production auth received:', user);
-                setTelegramUser(user);
-                setUserId(user.id);
-              }}
-              className="w-full"
-            />
-          </div>
-        )}
-        
-        {/* Рабочая авторизация в браузере для всех сред */}
-        <div className="mt-6">
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="text-sm font-medium text-blue-800 mb-2">🔧 Авторизация в браузере</h3>
-            <p className="text-xs text-blue-600 mb-3">
-              Рабочая авторизация через Telegram Login Widget для браузера
+          <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 text-center">
+              Войти в аккаунт
+            </h3>
+            <p className="text-gray-600 text-center mb-4">
+              Для доступа к платформе необходимо авторизоваться через Telegram
             </p>
             <TelegramLoginWidget
               botName="SuperMock_bot"
               onAuth={(user) => {
-                console.log('🔧 Index: Browser auth received:', user);
+                console.log('🚀 Index: Telegram auth received:', user);
                 setTelegramUser(user);
                 setUserId(user.id);
               }}
