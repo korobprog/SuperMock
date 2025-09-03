@@ -32,14 +32,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v2
         # Убираем явное указание версии - используем из package.json
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: 22
           cache: 'pnpm'
@@ -83,7 +83,7 @@ jobs:
           cd ../frontend && pnpm run test || echo "No frontend tests configured"
 
       - name: Cache build artifacts
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         with:
           path: |
             frontend/dist
@@ -175,6 +175,41 @@ jobs:
               if ! grep -q "REDIS_PASSWORD" production.env; then
                 echo "REDIS_PASSWORD=krishna1284" >> production.env
               fi
+              
+              # Создаем backend/.env файл с правильными настройками
+              echo "🔧 Создаем backend/.env файл..."
+              mkdir -p backend
+              echo "NODE_ENV=production" > backend/.env
+              echo "PORT=3000" >> backend/.env
+              echo "HOST=0.0.0.0" >> backend/.env
+              echo "" >> backend/.env
+              echo "# Database Configuration" >> backend/.env
+              echo "DATABASE_URL=\"postgresql://supermock:krishna1284@postgres:5432/supermock\"" >> backend/.env
+              echo "" >> backend/.env
+              echo "USE_MONGODB=false" >> backend/.env
+              echo "" >> backend/.env
+              echo "# Redis Configuration" >> backend/.env
+              echo "USE_REDIS=false" >> backend/.env
+              echo "REDIS_HOST=redis" >> backend/.env
+              echo "REDIS_PORT=6379" >> backend/.env
+              echo "" >> backend/.env
+              echo "# Frontend Configuration" >> backend/.env
+              echo "FRONTEND_URL=https://app.supermock.ru" >> backend/.env
+              echo "FRONTEND_PORT=8080" >> backend/.env
+              echo "" >> backend/.env
+              echo "# JWT Configuration" >> backend/.env
+              echo "JWT_SECRET=052aa937e3faf8542efe8c091a7ff830" >> backend/.env
+              echo "" >> backend/.env
+              echo "# Telegram Configuration" >> backend/.env
+              echo "TELEGRAM_BOT_TOKEN=8464088869:AAFcZb7HmYQJa6vaYjfTDCjfr187p9hhk2o" >> backend/.env
+              echo "TELEGRAM_BOT_NAME=SuperMock_bot" >> backend/.env
+              echo "" >> backend/.env
+              echo "# Domain Configuration" >> backend/.env
+              echo "DOMAIN=supermock.ru" >> backend/.env
+              
+              # Проверяем, что .env файл создался
+              echo "✅ Backend .env файл создан:"
+              cat backend/.env
               
               # Проверяем критически важные переменные для авторизации
               echo "🔍 Проверяем критически важные переменные окружения..."
