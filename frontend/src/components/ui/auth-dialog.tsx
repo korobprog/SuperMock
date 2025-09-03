@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { TelegramLogin, TelegramWebLogin, TelegramProductionLogin } from './telegram-login';
-import { TelegramUser } from '@/lib/telegram-auth';
+import { TelegramLogin } from './telegram-login';
+import { TelegramUser, loadTelegramUser, getTelegramUserDisplayName } from '@/lib/telegram-auth';
 import { useAppStore } from '@/lib/store';
+import { User } from 'lucide-react';
 import { createApiUrl } from '@/lib/config';
 import { toast } from 'sonner';
 import { apiValidateTelegramAuth } from '@/lib/api';
@@ -253,8 +254,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     {console.log('🔧 Rendering real Telegram button')}
                     {isProduction ? (
                       // В продакшене используем специальный компонент для продакшена
-                      <TelegramProductionLogin
-                        botName={import.meta.env.VITE_TELEGRAM_BOT_NAME}
+                      <TelegramLogin
                         onAuth={handleTelegramAuth}
                         className="w-full"
                       />

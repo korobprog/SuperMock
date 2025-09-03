@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '@/lib/store';
-import { TelegramAuthCallback } from '@/components/ui/telegram-login';
+// TelegramAuthCallback removed - using simplified auth system
 import { TelegramUser } from '@/lib/telegram-auth';
 import { validateEnv } from '@/lib/env';
 import { applyTelegramDesktopFixes } from '@/lib/telegram-desktop-fixes';
@@ -81,8 +81,7 @@ function AppContent() {
         v7_relativeSplatPath: true,
       }}
     >
-      {/* Обработчик callback от Telegram OAuth */}
-      <TelegramAuthCallback onAuth={handleTelegramAuth} />
+      {/* Telegram auth handled by individual components now */}
 
       <Routes>
         <Route path="/" element={<Index />} />
