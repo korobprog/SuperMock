@@ -34,6 +34,8 @@ import { History } from './pages/History';
 import { WaitingRoom } from './pages/WaitingRoom';
 import { DevWaitingRoom } from './pages/DevWaitingRoom';
 import { Profile } from './pages/Profile';
+import { ProfilePage } from './pages/ProfilePage';
+import { PhoneInputPage } from './pages/PhoneInputPage';
 import TelegramAuthSuccess from './pages/TelegramAuthSuccess';
 import DevTest from './pages/DevTest';
 import { DevRouteGuard } from './components/ui/dev-route-guard';
@@ -99,6 +101,8 @@ function AppContent() {
         <Route path="/history" element={<History />} />
         <Route path="/waiting/:sessionId" element={<WaitingRoom />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile-new" element={<ProfilePage />} />
+        <Route path="/phone-input" element={<PhoneInputPage />} />
         <Route path="/telegram-auth-success" element={<TelegramAuthSuccess />} />
         {/* Development-only routes with extra protection */}
         <Route

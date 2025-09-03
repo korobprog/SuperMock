@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/lib/store';
 import { useAppTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
-import { TelegramHeaderButton } from '@/components/ui/telegram-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, Settings, LogOut, User } from 'lucide-react';
-import { TelegramLoginWidget } from './telegram-login';
+import { Bell, Settings, LogOut, User, Phone } from 'lucide-react';
 import { TelegramUser } from '@/lib/telegram-auth';
-import { env } from '@/lib/env';
 import { createApiUrl } from '@/lib/config';
 import { LanguageSelector } from './language-selector';
-import { AuthRequiredMessage } from './auth-required-message';
 import { TelegramWebAuth } from './telegram-web-auth';
+import { useTelegramNavigation } from '@/hooks/useTelegramNavigation';
 
 interface RealUser {
   id: string;
@@ -20,10 +16,11 @@ interface RealUser {
   lastName?: string;
   username?: string;
   language?: string;
+  phone?: string;
 }
 
 export function ProfileHeader() {
-  const navigate = useNavigate();
+  const { navigateTo } = useTelegramNavigation();
   const { t } = useAppTranslation();
   const { telegramUser, setTelegramUser, userId, setUserId } = useAppStore();
   const [realUser, setRealUser] = useState<RealUser | null>(null);
@@ -155,19 +152,8 @@ export function ProfileHeader() {
   // Проверяем, находимся ли мы в Telegram Mini Apps
   const isInTelegramMiniApps = !!window.Telegram?.WebApp;
 
-  // В Telegram Mini Apps не показываем блок авторизации, так как пользователь уже авторизован в Telegram
-  const shouldShowAuthBlock = !isAuthorized && !isInTelegramMiniApps;
-
-  // Дополнительная проверка для Telegram Mini Apps
-  // Если мы в Telegram Mini Apps и у нас нет пользователя, но есть initData, то пользователь авторизован
-  const isTelegramMiniAppsAuthorized = isInTelegramMiniApps && (
-    isAuthorized || 
-    !!window.Telegram?.WebApp?.initData ||
-    !!window.Telegram?.WebApp?.initDataUnsafe?.user
-  );
-
-  // Финальное решение о показе блока авторизации
-  const finalShouldShowAuthBlock = shouldShowAuthBlock && !isTelegramMiniAppsAuthorized;
+  // В Telegram Mini Apps пользователь уже авторизован через Telegram
+  // В веб-версии показываем блок авторизации только если пользователь не авторизован
 
   return (
     <div className="w-full">
@@ -211,7 +197,7 @@ export function ProfileHeader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate('/notifications')}
+                    onClick={() => navigateTo('/notifications')}
                     className="text-gray-500 hover:text-gray-700"
                     title={t('common.notifications')}
                   >
@@ -221,7 +207,7 @@ export function ProfileHeader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate('/profile')}
+                    onClick={() => navigateTo('/profile')}
                     className="text-gray-500 hover:text-gray-700"
                     title={t('common.settings')}
                   >
@@ -230,6 +216,19 @@ export function ProfileHeader() {
                 </>
               )}
             </div>
+            
+            {/* Кнопка для ввода телефона - показывается для авторизованных пользователей без телефона */}
+            {isAuthorized && !realUser?.phone && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigateTo('/phone-input')}
+                className="text-gray-500 hover:text-gray-700"
+                title="Ввести телефон"
+              >
+                <Phone className="h-5 w-5" />
+              </Button>
+            )}
             
             {/* Языковое меню - показывается везде */}
             <LanguageSelector />
@@ -249,18 +248,13 @@ export function ProfileHeader() {
           </div>
         </div>
 
-        {/* Telegram Auth Button - показываем только если нет пользователя */}
-        {finalShouldShowAuthBlock && (
+        {/* Telegram Auth Button - показываем только в веб-версии если нет пользователя */}
+        {!isInTelegramMiniApps && !isAuthorized && (
           <div className="mt-4">
-            {/* Для веб-версии используем новый компонент, для Mini Apps - старый */}
-            {isInTelegramMiniApps ? (
-              <AuthRequiredMessage onAuth={handleTelegramAuth} />
-            ) : (
-              <TelegramWebAuth 
-                botName="SuperMock_bot" 
-                onAuth={handleTelegramAuth} 
-              />
-            )}
+            <TelegramWebAuth 
+              botName="SuperMock_bot" 
+              onAuth={handleTelegramAuth} 
+            />
           </div>
         )}
         
