@@ -9,7 +9,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile
 
 # Явно устанавливаем react-telegram-login если он не установился
-RUN pnpm add react-telegram-login@^1.1.2
+RUN pnpm add -w react-telegram-login@^1.1.2
 
 COPY frontend ./frontend
 # Копируем папку public с логотипом
