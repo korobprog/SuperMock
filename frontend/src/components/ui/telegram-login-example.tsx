@@ -34,7 +34,7 @@ export function TelegramLoginExample() {
       localStorage.setItem('telegram_user', JSON.stringify(telegramUser));
 
       // Отправляем данные на сервер
-      const response = await fetch('/api/auth/telegram/callback', {
+      const response = await fetch('/auth/telegram/callback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +43,8 @@ export function TelegramLoginExample() {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
@@ -88,6 +89,64 @@ export function TelegramLoginExample() {
     console.log('✅ User logged out');
   };
 
+  // Тестовая функция для проверки API
+  const testApiEndpoint = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      setSuccess('Тестируем API endpoint...');
+
+      const response = await fetch('/auth/telegram/callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: 123456789,
+          first_name: 'Test',
+          last_name: 'User',
+          username: 'testuser',
+          photo_url: '',
+          auth_date: Math.floor(Date.now() / 1000),
+          hash: 'test_hash'
+        }),
+      });
+
+      const data = await response.json();
+      console.log('API test response:', data);
+
+      if (response.ok) {
+        setSuccess(`API endpoint работает! Status: ${response.status}`);
+      } else {
+        setError(`API error: ${response.status} - ${data.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('API test error:', error);
+      setError(error instanceof Error ? error.message : 'Network error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Ручная авторизация для тестирования
+  const handleManualAuth = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    
+    const testUser: TelegramUser = {
+      id: Number(formData.get('id')),
+      first_name: String(formData.get('first_name')),
+      last_name: String(formData.get('last_name') || ''),
+      username: String(formData.get('username') || ''),
+      photo_url: String(formData.get('photo_url') || ''),
+      auth_date: Math.floor(Date.now() / 1000),
+      hash: 'manual_test_hash'
+    };
+
+    console.log('🔧 Manual auth with user:', testUser);
+    await handleAuthSuccess(testUser);
+  };
+
   // Загружаем пользователя из localStorage при монтировании
   React.useEffect(() => {
     const savedUser = localStorage.getItem('telegram_user');
@@ -126,7 +185,7 @@ export function TelegramLoginExample() {
             <Info className="h-4 w-4" />
             <AlertDescription>
               <strong>Бот:</strong> @{botName} | 
-              <strong>Callback URL:</strong> https://app.supermock.ru/auth/callback
+              <strong>Callback URL:</strong> {window.location.origin}/auth/telegram/callback
             </AlertDescription>
           </Alert>
 
@@ -148,12 +207,74 @@ export function TelegramLoginExample() {
                   botName={botName}
                   onAuth={handleAuthSuccess}
                   onError={handleAuthError}
-                  dataOnauth="https://app.supermock.ru/auth/callback"
+                  dataOnauth="/auth/telegram/callback"
                   requestAccess={true}
                   usePic={true}
                   cornerRadius={8}
                   lang="ru"
                 />
+              </div>
+
+              {/* Тестовая кнопка для проверки API */}
+              <div className="text-center">
+                <Button 
+                  onClick={testApiEndpoint} 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs"
+                >
+                  Тест API Endpoint
+                </Button>
+              </div>
+
+              {/* Ручная авторизация для тестирования */}
+              <div className="border-t pt-4">
+                <details className="text-center">
+                  <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800">
+                    Ручная авторизация (для тестирования)
+                  </summary>
+                  <form onSubmit={handleManualAuth} className="mt-4 space-y-3 max-w-xs mx-auto">
+                    <input
+                      name="id"
+                      type="number"
+                      placeholder="Telegram ID"
+                      defaultValue="123456789"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      required
+                    />
+                    <input
+                      name="first_name"
+                      type="text"
+                      placeholder="Имя"
+                      defaultValue="Test"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      required
+                    />
+                    <input
+                      name="last_name"
+                      type="text"
+                      placeholder="Фамилия"
+                      defaultValue="User"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    />
+                    <input
+                      name="username"
+                      type="text"
+                      placeholder="Username"
+                      defaultValue="testuser"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    />
+                    <input
+                      name="photo_url"
+                      type="url"
+                      placeholder="URL фото"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    />
+                    <Button type="submit" size="sm" className="w-full">
+                      Войти вручную
+                    </Button>
+                  </form>
+                </details>
               </div>
 
               {/* Дополнительная информация */}
