@@ -35,7 +35,7 @@ import { WaitingRoom } from './pages/WaitingRoom';
 import { DevWaitingRoom } from './pages/DevWaitingRoom';
 import { Profile } from './pages/Profile';
 import { ProfilePage } from './pages/ProfilePage';
-import { PhoneInputPage } from './pages/PhoneInputPage';
+
 import AuthCallback from './pages/AuthCallback';
 import TelegramAuthSuccess from './pages/TelegramAuthSuccess';
 import DevTest from './pages/DevTest';
@@ -105,7 +105,7 @@ function AppContent() {
         <Route path="/waiting/:sessionId" element={<WaitingRoom />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile-new" element={<ProfilePage />} />
-        <Route path="/phone-input" element={<PhoneInputPage />} />
+
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/telegram-auth-success" element={<TelegramAuthSuccess />} />
         {/* Development-only routes with extra protection */}

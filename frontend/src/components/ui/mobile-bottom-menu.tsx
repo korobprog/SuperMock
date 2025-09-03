@@ -21,7 +21,7 @@ export function MobileBottomMenu() {
   const selectedTools = useAppStore((s) => s.selectedTools);
   const userId = useAppStore((s) => s.userId);
   const userSettings = useAppStore((s) => s.userSettings);
-  const hasApiKey = !!userSettings.openRouterApiKey;
+  const hasApiKey = !!userSettings.openrouterApiKey;
 
   const isHomeActive = location.pathname === '/';
   const isProfileActive = location.pathname === '/profile';

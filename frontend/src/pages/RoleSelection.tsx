@@ -27,7 +27,7 @@ export function RoleSelection() {
   const { t } = useAppTranslation();
   const { i18n } = useTranslation();
 
-  const hasApiKey = !!userSettings.openRouterApiKey;
+  const hasApiKey = !!userSettings.openrouterApiKey;
 
   // Автоматическое определение языка при загрузке страницы
   useEffect(() => {

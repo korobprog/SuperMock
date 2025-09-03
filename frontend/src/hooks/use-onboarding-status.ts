@@ -19,7 +19,7 @@ export function useOnboardingStatus(): OnboardingStatus {
       { key: 'profession', label: 'Профессия', completed: !!profession },
       { key: 'language', label: 'Язык', completed: !!language },
       { key: 'tools', label: 'Инструменты', completed: selectedTools.length >= 2 },
-      { key: 'apiKey', label: 'API ключ', completed: !!userSettings.openRouterApiKey },
+      { key: 'apiKey', label: 'API ключ', completed: !!userSettings.openrouterApiKey },
     ];
 
     const completedSteps = steps
@@ -39,7 +39,7 @@ export function useOnboardingStatus(): OnboardingStatus {
       missingSteps,
       progress,
     };
-  }, [profession, language, selectedTools, userSettings.openRouterApiKey]);
+  }, [profession, language, selectedTools, userSettings.openrouterApiKey]);
 
   return status;
 }

@@ -3,13 +3,14 @@ import { useAppStore } from '@/lib/store';
 import { useAppTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, Settings, LogOut, User, Phone } from 'lucide-react';
+import { Bell, Settings, LogOut, User } from 'lucide-react';
 import { TelegramUser } from '@/lib/telegram-auth';
 import { createApiUrl } from '@/lib/config';
 import { LanguageSelector } from './language-selector';
-import { useTelegramNavigation } from '@/hooks/useTelegramNavigation';
+import { useNavigate } from 'react-router-dom';
 import { useOAuthListener } from '@/hooks/useOAuthListener';
 import { TelegramLoginWidget } from './telegram-login';
+import { TelegramOAuthButton } from './telegram-oauth-button';
 
 // Добавляем типы для Telegram Login Widget
 declare global {
@@ -33,7 +34,7 @@ interface RealUser {
 }
 
 export function ProfileHeader() {
-  const { navigateTo } = useTelegramNavigation();
+  const navigate = useNavigate();
   const { t } = useAppTranslation();
   const { telegramUser, setTelegramUser, userId, setUserId } = useAppStore();
   
@@ -124,6 +125,9 @@ export function ProfileHeader() {
     // Устанавливаем флаги выхода
     sessionStorage.setItem('just_logged_out', 'true');
     sessionStorage.setItem('logout_timestamp', Date.now().toString());
+    
+    // Добавить навигацию на главную страницу
+    navigate('/');
     
     // В продакшене не перезагружаем страницу, просто очищаем состояние
     if (import.meta.env.DEV) {
@@ -282,7 +286,8 @@ export function ProfileHeader() {
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border p-4 mb-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+{isAuthorized ? ( 
+ <div className="flex items-center space-x-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={displayPhoto} />
               <AvatarFallback className="bg-blue-100 text-blue-600">
@@ -314,6 +319,18 @@ export function ProfileHeader() {
 
             </div>
           </div>
+ ) : (
+  <div className="text-center">
+
+  {!isInTelegramMiniApps && (
+    <TelegramOAuthButton
+      onAuth={handleTelegramAuth}
+      className="w-full max-w-xs"
+      size="md"
+    />
+  )}
+</div>
+)}
           <div className="flex items-center space-x-2">
             {/* Кнопки для веб-версии - скрыты на мобильных */}
             <div className="hidden md:flex items-center space-x-2">
@@ -322,7 +339,7 @@ export function ProfileHeader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigateTo('/notifications')}
+                                         onClick={() => navigate('/notifications')}
                     className="text-gray-500 hover:text-gray-700"
                     title={t('common.notifications')}
                   >
@@ -332,7 +349,7 @@ export function ProfileHeader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigateTo('/profile')}
+                                         onClick={() => navigate('/profile')}
                     className="text-gray-500 hover:text-gray-700"
                     title={t('common.settings')}
                   >
@@ -342,18 +359,7 @@ export function ProfileHeader() {
               )}
             </div>
             
-            {/* Кнопка для ввода телефона - показывается для авторизованных пользователей без телефона */}
-            {isAuthorized && !realUser?.phone && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigateTo('/phone-input')}
-                className="text-gray-500 hover:text-gray-700"
-                title="Ввести телефон"
-              >
-                <Phone className="h-5 w-5" />
-              </Button>
-            )}
+
             
             {/* Языковое меню - показывается везде */}
             <LanguageSelector />
@@ -403,10 +409,10 @@ export function ProfileHeader() {
                 </Button>
               </div>
             )}
-            
+          
             {/* Кнопка выхода - показывается только для авторизованных пользователей */}
             {isAuthorized && (
-              <Button
+              <Button 
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}

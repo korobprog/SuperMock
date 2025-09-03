@@ -34,7 +34,7 @@ export function MainMenu() {
   const userId = useAppStore((s) => s.userId);
 
   const { isComplete: isOnboardingComplete } = useOnboardingStatus();
-  const hasApiKey = !!userSettings.openRouterApiKey;
+  const hasApiKey = !!userSettings.openrouterApiKey;
 
   // Определяем, авторизован ли пользователь
   const isAuthorized = !!(telegramUser || (userId && userId > 0));
@@ -149,62 +149,6 @@ export function MainMenu() {
 
   return (
     <div className="space-y-4">
-      {/* Authorization Status Block */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardContent className="p-4">
-          {isAuthorized ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {telegramUser?.first_name || `Пользователь ${userId}`}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {telegramUser?.username ? `@${telegramUser.username}` : 'Авторизован'}
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Выйти
-              </Button>
-            </div>
-          ) : (
-            <div className="text-center">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Добро пожаловать в SuperMock!
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Войдите через Telegram для доступа к полному функционалу
-              </p>
-              {!isInTelegramMiniApps && (
-                <TelegramOAuthButton
-                  onAuth={handleTelegramAuth}
-                  className="w-full max-w-xs"
-                  size="md"
-                />
-              )}
-              {isInTelegramMiniApps && (
-                <div className="p-3 bg-blue-100 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    🚀 Вы уже авторизованы в Telegram Mini Apps!
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-
       {/* Main Menu Grid - мобильная версия */}
       <div className="grid grid-cols-1 gap-3 sm:gap-4 md:hidden">
         {menuItems.map((item, index) => {

@@ -31,11 +31,11 @@ export function ApiKeySetup() {
 
   // Проверяем, есть ли уже API ключ
   useEffect(() => {
-    if (userSettings.openRouterApiKey) {
+    if (userSettings.openrouterApiKey) {
       setApiKey('••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••');
       setIsValid(true);
     }
-  }, [userSettings.openRouterApiKey]);
+  }, [userSettings.openrouterApiKey]);
 
   const handleValidateApiKey = async () => {
     if (!apiKey.trim()) {
@@ -94,7 +94,7 @@ export function ApiKeySetup() {
           // Добавляем таймаут для API вызова
           const savePromise = apiSaveUserSettings({
             userId: currentUserId,
-            openRouterApiKey: apiKey.trim() || null,
+            openrouterApiKey: apiKey.trim() || null,
           });
           
           const timeoutPromise = new Promise((_, reject) => 
@@ -111,7 +111,7 @@ export function ApiKeySetup() {
 
       // Сохраняем локально
       setUserSettings({
-        openRouterApiKey: apiKey.trim() || null,
+        openrouterApiKey: apiKey.trim() || null,
       });
 
       toast.success(t('profile.settingsSaved'));
