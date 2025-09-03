@@ -16,6 +16,7 @@ model User {
   language              String?
   createdAt             DateTime       @default(now()) @map("created_at")
   updatedAt             DateTime       @updatedAt @map("updated_at")
+  lastLoginAt           DateTime?      @map("last_login_at")
   photoUrl              String?        @map("photo_url")
   feedbackGiven         Feedback[]     @relation("FeedbackFrom")
   feedbackReceived      Feedback[]     @relation("FeedbackTo")
