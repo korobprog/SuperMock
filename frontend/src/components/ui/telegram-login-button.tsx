@@ -127,16 +127,18 @@ export function TelegramLoginButtonComponent({
         </p>
       </div>
       
-      {/* Telegram Login Button с правильными параметрами */}
+      {/* Telegram Login Button с исправленной конфигурацией */}
       <div className="flex justify-center">
         <TelegramLoginButton
           dataOnauth={handleTelegramResponse}
-          botName={botName}
+          botName="SuperMock_bot"
           dataSize="large"
           dataRadius="8"
           dataRequestAccess="write"
           dataUserpic="false"
           dataLang="ru"
+          dataAuthUrl="https://app.supermock.ru/auth/callback"
+          dataWidgetVersion="1"
         />
       </div>
       
@@ -166,6 +168,16 @@ export function TelegramLoginButtonComponent({
         <p className="text-xs text-gray-600 text-center">
           📝 <strong>Настройка:</strong> Зарегистрируйте домен у @BotFather и добавьте в настройки бота.
           Для локальной разработки можно использовать <code>yourdomain.local</code> в hosts файле.
+        </p>
+      </div>
+      
+      {/* Отладочная информация */}
+      <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+        <p className="text-xs text-red-700 text-center">
+          🐛 <strong>Отладка:</strong> Если окно авторизации появляется и исчезает, проверьте:
+          <br />1. Домен добавлен в BotFather (/setdomain)
+          <br />2. Бот активен и работает
+          <br />3. Нет блокировщиков рекламы
         </p>
       </div>
     </div>
