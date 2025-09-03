@@ -7,7 +7,6 @@ import { Bell, Settings, LogOut, User, Phone } from 'lucide-react';
 import { TelegramUser } from '@/lib/telegram-auth';
 import { createApiUrl } from '@/lib/config';
 import { LanguageSelector } from './language-selector';
-import { TelegramWebAuth } from './telegram-web-auth';
 import { useTelegramNavigation } from '@/hooks/useTelegramNavigation';
 import { useOAuthListener } from '@/hooks/useOAuthListener';
 
