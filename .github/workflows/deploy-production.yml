@@ -32,14 +32,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         # Убираем явное указание версии - используем из package.json
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
@@ -83,7 +83,7 @@ jobs:
           cd ../frontend && pnpm run test || echo "No frontend tests configured"
 
       - name: Cache build artifacts
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             frontend/dist
