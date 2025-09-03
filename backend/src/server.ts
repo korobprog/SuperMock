@@ -42,6 +42,7 @@ import slotsRoutes from './routes/slots';
 import preferencesRoutes from './routes/preferences';
 import userSettingsRoutes from './routes/userSettings';
 import telegramAuthRoutes from './routes/telegram-auth';
+import telegramOAuthRoutes from './routes/telegram-oauth';
 import filesRoutes from './routes/files';
 
 // Инициализация приложения Express
@@ -137,6 +138,7 @@ app.use('/api/history', historyRoutes);
 app.use('/api/user-tools', userToolsRoutes);
 app.use('/api/materials', materialsRoutes);
 app.use('/api', telegramAuthRoutes);
+app.use('/api/auth', telegramOAuthRoutes);
 
 // Маршруты для health-check
 app.get('/health', healthCheck);
