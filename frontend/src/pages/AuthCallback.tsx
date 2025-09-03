@@ -65,6 +65,15 @@ export default function AuthCallback() {
             setUserId(result.userId);
           }
           
+          // Сохраняем данные в localStorage для cross-tab communication
+          const oauthData = {
+            user: userData,
+            userId: result.userId,
+            success: true,
+            timestamp: Date.now()
+          };
+          localStorage.setItem('telegram_oauth_data', JSON.stringify(oauthData));
+          
           setUser(userData);
           setStatus('success');
           setMessage('Авторизация прошла успешно!');

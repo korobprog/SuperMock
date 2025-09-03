@@ -10,6 +10,7 @@ import { LanguageSelector } from './language-selector';
 import { TelegramWebAuth } from './telegram-web-auth';
 import { TelegramOAuthButton } from './telegram-oauth-button';
 import { useTelegramNavigation } from '@/hooks/useTelegramNavigation';
+import { useOAuthListener } from '@/hooks/useOAuthListener';
 
 interface RealUser {
   id: string;
@@ -24,6 +25,9 @@ export function ProfileHeader() {
   const { navigateTo } = useTelegramNavigation();
   const { t } = useAppTranslation();
   const { telegramUser, setTelegramUser, userId, setUserId } = useAppStore();
+  
+  // Слушаем OAuth авторизацию из других вкладок
+  useOAuthListener();
   const [realUser, setRealUser] = useState<RealUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -259,6 +263,8 @@ export function ProfileHeader() {
             />
             <p className="text-xs text-gray-500 text-center mt-2">
               Безопасная авторизация через официальный Telegram OAuth
+              <br />
+              <span className="text-blue-600">Откроется в новой вкладке</span>
             </p>
           </div>
         )}
