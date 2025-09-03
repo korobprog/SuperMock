@@ -124,50 +124,21 @@ export function ProfileHeader() {
     }
   };
 
-  const handleTelegramAuth = async (user: TelegramUser) => {
-    if (import.meta.env.DEV) {
-      console.log('ProfileHeader: Received Telegram auth:', user);
-    }
+  const handleTelegramAuth = (telegramUser: TelegramUser) => {
+    console.log('🔐 Telegram auth received in ProfileHeader:', telegramUser);
     
-    try {
-      // Инициализируем пользователя в базе данных
-      const initResponse = await fetch(createApiUrl('/api/init'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tg: user,
-          language: 'ru',
-          initData: 'telegram_auth_hash'
-        })
-      });
-      
-      if (initResponse.ok) {
-        const initData = await initResponse.json();
-        if (import.meta.env.DEV) {
-          console.log('ProfileHeader: User initialized in database:', initData);
-        }
-        
-        // Устанавливаем пользователя в store (это также установит userId)
-        setTelegramUser(user);
-        
-        // Показываем уведомление об успешной авторизации
-        if (import.meta.env.DEV) {
-          console.log('✅ User successfully authenticated and initialized');
-        }
-      } else {
-        if (import.meta.env.DEV) {
-          console.error('ProfileHeader: Failed to initialize user in database');
-        }
-        // Даже если инициализация в БД не удалась, устанавливаем пользователя в store
-        setTelegramUser(user);
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('ProfileHeader: Error initializing user:', error);
-      }
-      // Даже при ошибке устанавливаем пользователя в store
-      setTelegramUser(user);
-    }
+    // Сохраняем пользователя в store
+    setTelegramUser(telegramUser);
+    setUserId(telegramUser.id);
+    
+    // Сохраняем в localStorage для персистентности
+    localStorage.setItem('telegram_user', JSON.stringify(telegramUser));
+    localStorage.setItem('userId', telegramUser.id.toString());
+    
+    console.log('✅ User authenticated and saved to store');
+    
+    // Показываем уведомление об успешной авторизации
+    // Можно добавить toast уведомление здесь
   };
 
   // Определяем отображаемые данные пользователя

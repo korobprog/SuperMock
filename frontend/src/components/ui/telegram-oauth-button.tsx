@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useRef } from 'react';
 import { TelegramUser } from '@/lib/telegram-auth';
 
 interface TelegramOAuthButtonProps {
@@ -11,86 +10,78 @@ interface TelegramOAuthButtonProps {
 
 export function TelegramOAuthButton({ 
   onAuth, 
-  className = '',
-  variant = 'default',
-  size = 'lg'
+  className = ''
 }: TelegramOAuthButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleOAuthLogin = () => {
-    setIsLoading(true);
-    
-    // Получаем bot username из переменных окружения
-    const botUsername = import.meta.env.VITE_TELEGRAM_BOT_NAME;
-    
-    if (!botUsername) {
-      console.error('❌ VITE_TELEGRAM_BOT_NAME не настроен в переменных окружения');
-      console.error('❌ Все доступные env переменные:', import.meta.env);
-      setIsLoading(false);
-      return;
-    }
-    
-    // Создаем стандартный Telegram Login Widget URL
-    const widgetUrl = `https://oauth.telegram.org/auth?bot_id=${import.meta.env.VITE_TELEGRAM_BOT_ID}&origin=${encodeURIComponent(window.location.origin)}&request_access=write&return_to=${encodeURIComponent(`${window.location.origin}/auth/callback`)}`;
-    
-    console.log('🔐 Opening Telegram Login Widget:', widgetUrl);
-    console.log('🔐 Bot Username:', botUsername);
+  useEffect(() => {
+    console.log('🔐 Initializing Telegram Login Widget...');
+    console.log('🔐 Bot Username:', import.meta.env.VITE_TELEGRAM_BOT_NAME);
     console.log('🔐 Bot ID:', import.meta.env.VITE_TELEGRAM_BOT_ID);
-    
-    try {
-      // Открываем в новой вкладке
-      const newWindow = window.open(widgetUrl, '_blank', 'noopener,noreferrer');
+
+    // Глобальная функция для callback от Telegram
+    (window as any).onTelegramAuth = (user: any) => {
+      console.log('🔐 Telegram Login Widget callback received:', user);
       
-      if (newWindow) {
-        // Проверяем, что окно открылось
-        newWindow.focus();
+      if (user && user.id) {
+        // Преобразуем данные в наш формат
+        const telegramUser: TelegramUser = {
+          id: user.id,
+          first_name: user.first_name || '',
+          last_name: user.last_name || '',
+          username: user.username || '',
+          photo_url: user.photo_url || '',
+          auth_date: user.auth_date || Math.floor(Date.now() / 1000),
+          hash: user.hash || ''
+        };
         
-        // Сбрасываем состояние загрузки
-        setIsLoading(false);
+        console.log('🔐 Processed Telegram user:', telegramUser);
         
-        // Показываем уведомление пользователю
-        console.log('✅ Telegram Login Widget opened successfully');
+        // Отправляем данные на backend для валидации
+        fetch('/api/init', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tg: telegramUser,
+            language: 'ru',
+            initData: 'telegram_login_widget'
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('✅ User initialized in backend:', data);
+          onAuth(telegramUser);
+        })
+        .catch(error => {
+          console.error('❌ Error initializing user in backend:', error);
+          // Продолжаем даже при ошибке backend
+          onAuth(telegramUser);
+        });
       } else {
-        // Если popup заблокирован, используем fallback - перенаправление
-        console.warn('Popup blocked, using redirect fallback');
-        window.location.href = widgetUrl;
+        console.error('❌ Invalid user data from Telegram:', user);
       }
-    } catch (error) {
-      console.error('Error opening Telegram Login Widget:', error);
-      // Fallback к перенаправлению
-      window.location.href = widgetUrl;
-    }
-  };
+    };
+
+    // Очистка при размонтировании
+    return () => {
+      delete (window as any).onTelegramAuth;
+    };
+  }, [onAuth]);
 
   return (
-    <Button
-      onClick={handleOAuthLogin}
-      disabled={isLoading}
-      variant={variant}
-      size={size}
-      className={`bg-[#0088cc] hover:bg-[#006fa0] disabled:bg-gray-400 text-white ${className}`}
-    >
-      {isLoading ? (
-        <>
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-          Перенаправление...
-        </>
-      ) : (
-        <>
-          <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" className="flex-shrink-0 mr-2">
-            <circle cx="120" cy="120" r="120" fill="#fff" />
-            <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
-            <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
-            <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
-          </svg>
-          Войти через Telegram
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="ml-2">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-            <polyline points="15,3 21,3 21,9" />
-            <line x1="10" y1="14" x2="21" y2="3" />
-          </svg>
-        </>
-      )}
-    </Button>
+    <div ref={containerRef} className={className}>
+      {/* Telegram Login Widget - встраивается автоматически */}
+      <script
+        async
+        src="https://telegram.org/js/telegram-widget.js?22"
+        data-telegram-login={import.meta.env.VITE_TELEGRAM_BOT_NAME || ''}
+        data-size="large"
+        data-radius="8"
+        data-request-access="write"
+        data-userpic="true"
+        data-lang="ru"
+        data-onauth="onTelegramAuth(user)"
+      />
+    </div>
   );
 }
