@@ -50,6 +50,14 @@ jobs:
           cd frontend && pnpm install --frozen-lockfile
           cd ../backend && pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        run: |
+          cd backend
+          # Создаем временный .env файл для Prisma
+          echo "DATABASE_URL=postgresql://dummy:password@localhost:5432/dummy" > .env
+          pnpm prisma generate
+          rm .env
+
       - name: Build frontend
         run: cd frontend && pnpm run build
 
