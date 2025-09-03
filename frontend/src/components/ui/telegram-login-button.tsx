@@ -1,5 +1,4 @@
-import React from 'react';
-import TelegramLoginButton from 'react-telegram-login';
+import React, { useEffect, useRef } from 'react';
 
 export function TelegramLoginButtonComponent({ 
   botName, 
@@ -8,26 +7,55 @@ export function TelegramLoginButtonComponent({
   user = null,
   onLogout = null
 }) {
-  
-  const handleTelegramResponse = (response) => {
-    console.log('🔧 TelegramLoginButton: Получен ответ от Telegram API:', response);
-    
-    // Преобразуем ответ от Telegram API в нужный формат
-    const telegramUser = {
-      id: response.id,
-      first_name: response.first_name,
-      last_name: response.last_name,
-      username: response.username,
-      photo_url: response.photo_url,
-      auth_date: response.auth_date,
-      hash: response.hash
+  const widgetRef = useRef(null);
+
+  useEffect(() => {
+    // Создаем нативный Telegram Login Widget
+    const createTelegramWidget = () => {
+      if (widgetRef.current && !user) {
+        // Очищаем предыдущий виджет
+        widgetRef.current.innerHTML = '';
+        
+        // Создаем script для Telegram Login Widget
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://telegram.org/js/telegram-widget.js?22';
+        script.setAttribute('data-telegram-login', botName);
+        script.setAttribute('data-size', 'large');
+        script.setAttribute('data-radius', '8');
+        script.setAttribute('data-request-access', 'write');
+        script.setAttribute('data-userpic', 'false');
+        script.setAttribute('data-lang', 'ru');
+        script.setAttribute('data-auth-url', `${window.location.origin}/telegram-auth-callback`);
+        
+        // Обработчик авторизации
+        window.onTelegramAuth = (userData) => {
+          console.log('🔧 TelegramLoginButton: Получен ответ от Telegram API:', userData);
+          
+          // Преобразуем ответ от Telegram API в нужный формат
+          const telegramUser = {
+            id: userData.id,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            username: userData.username,
+            photo_url: userData.photo_url,
+            auth_date: userData.auth_date,
+            hash: userData.hash
+          };
+          
+          console.log('🔧 TelegramLoginButton: Преобразованный пользователь:', telegramUser);
+          
+          // Вызываем callback с данными пользователя
+          onAuth(telegramUser);
+        };
+        
+        // Добавляем script в DOM
+        widgetRef.current.appendChild(script);
+      }
     };
-    
-    console.log('🔧 TelegramLoginButton: Преобразованный пользователь:', telegramUser);
-    
-    // Вызываем callback с данными пользователя
-    onAuth(telegramUser);
-  };
+
+    createTelegramWidget();
+  }, [botName, onAuth, user]);
 
   // Если пользователь авторизован, показываем его профиль
   if (user) {
@@ -127,17 +155,9 @@ export function TelegramLoginButtonComponent({
         </p>
       </div>
       
-      {/* Telegram Login Widget - работает с Telegram API напрямую */}
+      {/* Нативный Telegram Login Widget */}
       <div className="flex justify-center">
-        <TelegramLoginButton
-          dataOnauth={handleTelegramResponse}
-          botName={botName}
-          dataSize="large"
-          dataRadius="8"
-          dataRequestAccess="write"
-          dataUserpic="false"
-          dataLang="ru"
-        />
+        <div ref={widgetRef} className="telegram-login-widget"></div>
       </div>
       
       {/* Информация о безопасности */}
