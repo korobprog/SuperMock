@@ -81,6 +81,9 @@ const Index = () => {
             console.log('🔧 initData:', tg.initData);
             console.log('🔧 initDataUnsafe:', tg.initDataUnsafe);
             console.log('🔧 initDataUnsafe.user:', tg.initDataUnsafe?.user);
+            console.log('🔧 WebApp.ready:', tg.ready);
+            console.log('🔧 WebApp.platform:', tg.platform);
+            console.log('🔧 WebApp.version:', tg.version);
             
             if (tg.initDataUnsafe?.user) {
               const tgUser = tg.initDataUnsafe.user;
@@ -109,7 +112,7 @@ const Index = () => {
               console.log('🔧 Production mode: initData present but no user data');
               console.log('🔧 This is normal in production Telegram WebApp');
               
-              // В продакшене проверяем, может быть пользователь уже авторизован в store
+              // В продакшне проверяем, может быть пользователь уже авторизован в store
               const currentTelegramUser = useAppStore.getState().telegramUser;
               const currentUserId = useAppStore.getState().userId;
               
@@ -118,11 +121,68 @@ const Index = () => {
                 // Пользователь уже авторизован, не показываем блок авторизации
               } else {
                 console.log('ℹ️ User needs to authenticate in production mode');
-                // Показываем блок авторизации
+                
+                // В Telegram Mini Apps пользователь может быть уже авторизован в Telegram
+                // Попробуем создать временного пользователя для Telegram Mini Apps
+                if (tg.ready && tg.platform !== 'unknown') {
+                  console.log('🔧 Telegram WebApp is ready, user might be authenticated');
+                  console.log('🔧 Creating temporary user for Telegram Mini Apps');
+                  
+                  // Создаем временного пользователя для Telegram Mini Apps
+                  const tempTelegramUser = {
+                    id: Date.now(), // Временный ID
+                    first_name: 'Telegram User',
+                    last_name: '',
+                    username: '',
+                    photo_url: '',
+                    auth_date: Math.floor(Date.now() / 1000),
+                    hash: 'telegram_mini_apps_temp_hash',
+                  };
+                  
+                  console.log('🔧 Temporary user created:', tempTelegramUser);
+                  setTelegramUser(tempTelegramUser);
+                  setUserId(tempTelegramUser.id);
+                } else {
+                  console.log('🔧 Telegram WebApp not ready, showing auth block');
+                  // Показываем блок авторизации
+                }
               }
             } else {
-              console.log('🔧 Telegram Mini Apps detected but no auth data');
-              console.log('🔧 This is normal in production - user needs to authenticate');
+              // Случай 3: Нет initData - это может быть тестовый режим или ошибка
+              console.log('🔧 Telegram Mini Apps detected but no initData');
+              console.log('🔧 This might be a test environment or error');
+              
+              // Проверяем, может быть пользователь уже авторизован в store
+              const currentTelegramUser = useAppStore.getState().telegramUser;
+              const currentUserId = useAppStore.getState().userId;
+              
+              if (currentTelegramUser || (currentUserId && currentUserId > 0)) {
+                console.log('✅ User already authenticated in store, skipping auth block');
+              } else {
+                console.log('ℹ️ User needs to authenticate - no Telegram data available');
+                
+                // В Telegram Mini Apps попробуем создать временного пользователя
+                if (tg.ready && tg.platform !== 'unknown') {
+                  console.log('🔧 Telegram WebApp is ready, creating temporary user');
+                  
+                  const tempTelegramUser = {
+                    id: Date.now(), // Временный ID
+                    first_name: 'Telegram User',
+                    last_name: '',
+                    username: '',
+                    photo_url: '',
+                    auth_date: Math.floor(Date.now() / 1000),
+                    hash: 'telegram_mini_apps_temp_hash',
+                  };
+                  
+                  console.log('🔧 Temporary user created for no initData case:', tempTelegramUser);
+                  setTelegramUser(tempTelegramUser);
+                  setUserId(tempTelegramUser.id);
+                } else {
+                  console.log('🔧 Telegram WebApp not ready, showing auth block');
+                  // Показываем блок авторизации
+                }
+              }
             }
           } else {
             console.log('🔧 No Telegram Mini Apps environment detected');
