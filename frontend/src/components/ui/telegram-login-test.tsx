@@ -31,7 +31,20 @@ export function TelegramLoginTest({ onAuth, className = '' }: TelegramLoginTestP
       // Глобальная функция для callback'а
       (window as any).onTelegramAuth = (user: TelegramUser) => {
         console.log('🔧 TelegramLoginTest: Auth callback received:', user);
+        console.log('🔧 User data:', {
+          id: user.id,
+          first_name: user.first_name,
+          username: user.username,
+          hasPhoto: !!user.photo_url
+        });
+        
+        // Сохраняем пользователя в localStorage
+        localStorage.setItem('telegram_user', JSON.stringify(user));
+        console.log('🔧 User saved to localStorage');
+        
+        // Вызываем onAuth callback
         onAuth(user);
+        console.log('🔧 onAuth callback executed');
       };
 
       // Создаем script элемент

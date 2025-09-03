@@ -97,12 +97,11 @@ const Index = () => {
 
               // Сохраняем и устанавливаем пользователя
               saveTelegramUser(telegramUser);
+              // Используем setTelegramUser который теперь сразу устанавливает userId
               setTelegramUser(telegramUser);
               // Явно устанавливаем userId для немедленного использования
-              // Используем setTimeout для избежания race condition
-              setTimeout(() => {
-                setUserId(telegramUser.id);
-              }, 0);
+              setUserId(telegramUser.id);
+              console.log('🔧 Telegram Mini Apps: userId set to:', telegramUser.id);
             } else if (tg.initData) {
               // Если есть initData, но нет пользователя, это может быть продакшн
               console.log('🔧 Production mode: initData present but no user data');
@@ -130,14 +129,15 @@ const Index = () => {
               const testAccount = getActiveDevTestAccount();
               if (testAccount) {
                 console.log('Dev test account detected:', testAccount);
+                // Устанавливаем telegramUser который автоматически установит userId
                 setTelegramUser(testAccount.telegramUser);
-                // Используем setTimeout для избежания race condition
-                setTimeout(() => {
-                  setUserId(testAccount.userId);
-                  setRole(testAccount.role);
-                  setProfession(testAccount.profession);
-                  setLanguage(testAccount.language);
-                }, 0);
+                // Дополнительно устанавливаем остальные параметры
+                setRole(testAccount.role);
+                setProfession(testAccount.profession);
+                setLanguage(testAccount.language);
+                // Явно устанавливаем userId для немедленного использования
+                setUserId(testAccount.userId);
+                console.log('🔧 Dev test account: userId set to:', testAccount.userId);
                 return; // Не загружаем сохраненного пользователя если есть тестовый аккаунт
               }
             }
@@ -146,12 +146,11 @@ const Index = () => {
             const savedTelegramUser = loadTelegramUser();
             if (savedTelegramUser) {
               console.log('Загружен сохраненный пользователь Telegram:', savedTelegramUser);
+              // Используем setTelegramUser который автоматически установит userId
               setTelegramUser(savedTelegramUser);
               // Явно устанавливаем userId для немедленного использования
-              // Используем setTimeout для избежания race condition
-              setTimeout(() => {
-                setUserId(savedTelegramUser.id);
-              }, 0);
+              setUserId(savedTelegramUser.id);
+              console.log('🔧 Saved user: userId set to:', savedTelegramUser.id);
             } else {
               console.log('Нет сохраненного пользователя Telegram');
               // В продакшене не создаем локального пользователя
@@ -204,6 +203,11 @@ const Index = () => {
       hasTelegramUser: !!telegramUser,
       timestamp: new Date().toISOString()
     });
+    
+    // Если userId изменился на положительное значение, логируем это
+    if (userId && userId > 0) {
+      console.log('✅ userId successfully set to:', userId);
+    }
   }, [userId, telegramUser]);
 
   const handleLogout = () => {
@@ -375,6 +379,11 @@ const Index = () => {
       hasTelegramUser: !!telegramUser,
       timestamp: new Date().toISOString()
     });
+    
+    // Если userId изменился на положительное значение, логируем это
+    if (userId && userId > 0) {
+      console.log('✅ userId successfully set to:', userId);
+    }
   }, [userId, telegramUser]);
 
   return (

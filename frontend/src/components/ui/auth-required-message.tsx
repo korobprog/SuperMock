@@ -151,8 +151,8 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
           last_name: user.last_name || '',
           username: user.username || '',
           photo_url: user.photo_url || '',
-          auth_date: Math.floor(Date.now() / 1000),
-          hash: 'telegram_mini_apps_hash',
+        auth_date: Math.floor(Date.now() / 1000),
+        hash: 'telegram_mini_apps_hash',
         });
       }
       
@@ -176,7 +176,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
           hash: 'telegram_mini_apps_hash',
         });
         setAuthStep('success');
-      } else {
+    } else {
         console.log('❌ Fallback авторизация не удалась');
         setAuthStep('initial');
       }
@@ -190,8 +190,9 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
     setIsWebAuth(true);
     
     // Создаем глобальную функцию для callback'а
-    (window as any).onTelegramAuth = (user: any) => {
-      console.log('🌐 Telegram Login Widget callback received:', user);
+            (window as any).onTelegramAuth = (user: any) => {
+          console.log('🌐 Telegram Login Widget callback received:', user);
+          console.log('🌐 Raw user data:', user);
       
               if (user && user.id) {
           console.log('✅ Web auth successful, processing user data...');
@@ -210,6 +211,10 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
           
           console.log('🌐 Processed telegramUser:', telegramUser);
           console.log('🌐 Calling onAuth with user:', telegramUser);
+          
+          // Сохраняем пользователя в localStorage
+          localStorage.setItem('telegram_user', JSON.stringify(telegramUser));
+          console.log('🌐 User saved to localStorage');
           
           // Вызываем onAuth и отслеживаем результат
           try {
@@ -544,7 +549,7 @@ export function AuthRequiredMessage({ onAuth, className = '' }: AuthRequiredMess
             <span>Войти через Telegram</span>
           </button>
         )}
-      </div>
+          </div>
       
       <p className="text-xs text-blue-600 mt-3">
         Авторизация через Telegram обеспечивает безопасный доступ к вашим данным

@@ -118,7 +118,20 @@ export function TelegramLogin({
       // Добавляем глобальную функцию для callback'а ПЕРЕД созданием виджета
       window.onTelegramAuth = (user: TelegramUser) => {
         console.log('TelegramLogin: Received auth data from widget:', user);
+        console.log('TelegramLogin: User details:', {
+          id: user.id,
+          first_name: user.first_name,
+          username: user.username,
+          hasPhoto: !!user.photo_url
+        });
+        
+        // Сохраняем пользователя в localStorage
+        localStorage.setItem('telegram_user', JSON.stringify(user));
+        console.log('TelegramLogin: User saved to localStorage');
+        
+        // Вызываем onAuth callback
         onAuth(user);
+        console.log('TelegramLogin: onAuth callback executed');
       };
 
       // Создаем script элемент правильно через DOM API
