@@ -6,7 +6,7 @@ interface TelegramOAuthButtonProps {
   onAuth: (user: TelegramUser) => void;
   className?: string;
   variant?: 'default' | 'outline' | 'ghost';
-  size?: 'sm' | 'lg';
+  size?: 'lg';
 }
 
 export function TelegramOAuthButton({ 
@@ -20,30 +20,26 @@ export function TelegramOAuthButton({
   const handleOAuthLogin = () => {
     setIsLoading(true);
     
-    // Получаем bot_id из переменных окружения
-    const botId = import.meta.env.VITE_TELEGRAM_BOT_ID;
+    // Получаем bot username из переменных окружения
+    const botUsername = import.meta.env.VITE_TELEGRAM_BOT_NAME;
     
-    if (!botId) {
-      console.error('❌ VITE_TELEGRAM_BOT_ID не настроен в переменных окружения');
+    if (!botUsername) {
+      console.error('❌ VITE_TELEGRAM_BOT_NAME не настроен в переменных окружения');
       console.error('❌ Все доступные env переменные:', import.meta.env);
       setIsLoading(false);
       return;
     }
     
-    const origin = encodeURIComponent(window.location.origin);
-    const returnTo = encodeURIComponent(`${window.location.origin}/auth/callback`);
+    // Создаем стандартный Telegram Login Widget URL
+    const widgetUrl = `https://oauth.telegram.org/auth?bot_id=${import.meta.env.VITE_TELEGRAM_BOT_ID}&origin=${encodeURIComponent(window.location.origin)}&request_access=write&return_to=${encodeURIComponent(`${window.location.origin}/auth/callback`)}`;
     
-    // Создаем OAuth URL
-    const oauthUrl = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${origin}&request_access=write&return_to=${returnTo}`;
-    
-    console.log('🔐 Opening Telegram OAuth in new tab:', oauthUrl);
-    console.log('🔐 Bot ID:', botId);
-    console.log('🔐 Origin:', origin);
-    console.log('🔐 Return to:', returnTo);
+    console.log('🔐 Opening Telegram Login Widget:', widgetUrl);
+    console.log('🔐 Bot Username:', botUsername);
+    console.log('🔐 Bot ID:', import.meta.env.VITE_TELEGRAM_BOT_ID);
     
     try {
       // Открываем в новой вкладке
-      const newWindow = window.open(oauthUrl, '_blank', 'noopener,noreferrer');
+      const newWindow = window.open(widgetUrl, '_blank', 'noopener,noreferrer');
       
       if (newWindow) {
         // Проверяем, что окно открылось
@@ -53,16 +49,16 @@ export function TelegramOAuthButton({
         setIsLoading(false);
         
         // Показываем уведомление пользователю
-        console.log('✅ OAuth window opened successfully');
+        console.log('✅ Telegram Login Widget opened successfully');
       } else {
         // Если popup заблокирован, используем fallback - перенаправление
         console.warn('Popup blocked, using redirect fallback');
-        window.location.href = oauthUrl;
+        window.location.href = widgetUrl;
       }
     } catch (error) {
-      console.error('Error opening OAuth window:', error);
+      console.error('Error opening Telegram Login Widget:', error);
       // Fallback к перенаправлению
-      window.location.href = oauthUrl;
+      window.location.href = widgetUrl;
     }
   };
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import crypto from 'crypto';
+import { AuthDataValidator } from '@telegram-auth/server';
 
 const router = Router();
 
@@ -16,45 +16,11 @@ interface TelegramOAuthData {
   initData: string;
 }
 
-/**
- * Проверяет OAuth данные от Telegram
- * @param data - данные от Telegram OAuth
- * @param botToken - токен бота
- * @returns boolean - валидны ли данные
- */
-function validateTelegramOAuth(data: TelegramOAuthData, botToken: string): boolean {
-  try {
-    // Создаем HMAC-SHA256 подпись
-    const secret = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
-    
-    // Сортируем параметры по алфавиту (кроме hash)
-    const params = new URLSearchParams(data.initData);
-    params.delete('hash');
-    
-    const paramString = Array.from(params.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `${key}=${value}`)
-      .join('\n');
-    
-    // Вычисляем подпись
-    const calculatedHash = crypto
-      .createHmac('sha256', secret)
-      .update(paramString)
-      .digest('hex');
-    
-    console.log('🔐 OAuth validation:', {
-      paramString,
-      calculatedHash,
-      receivedHash: data.hash,
-      isValid: calculatedHash === data.hash
-    });
-    
-    return calculatedHash === data.hash;
-  } catch (error) {
-    console.error('Error validating OAuth data:', error);
-    return false;
-  }
-}
+// Инициализируем валидатор Telegram OAuth
+const telegramValidator = new AuthDataValidator({ 
+  botToken: process.env.TELEGRAM_BOT_TOKEN || '',
+  inValidateDataAfter: 3600 // 1 час
+});
 
 /**
  * POST /api/auth/telegram-oauth
@@ -81,46 +47,62 @@ router.post('/telegram-oauth', async (req, res) => {
       });
     }
 
-    // Проверяем подпись данных
-    if (!validateTelegramOAuth({ user, hash, initData }, botToken)) {
-      console.warn('Invalid OAuth signature for user:', user.id);
-      return res.status(401).json({
-        success: false,
-        message: 'Недействительная подпись данных'
-      });
-    }
+    try {
+      // Создаем Map для валидации
+      const authDataMap = new Map([
+        ['id', user.id.toString()],
+        ['first_name', user.first_name],
+        ['last_name', user.last_name || ''],
+        ['username', user.username || ''],
+        ['photo_url', user.photo_url || ''],
+        ['auth_date', user.auth_date.toString()],
+        ['hash', hash]
+      ]);
 
-    // Проверяем время авторизации (не старше 1 часа)
-    const authTime = user.auth_date * 1000; // конвертируем в миллисекунды
-    const currentTime = Date.now();
-    const maxAge = 60 * 60 * 1000; // 1 час
-    
-    if (currentTime - authTime > maxAge) {
-      console.warn('OAuth data too old for user:', user.id);
-      return res.status(401).json({
-        success: false,
-        message: 'Данные авторизации устарели'
-      });
-    }
+      // Валидируем данные используя официальную библиотеку
+      const validatedUser = await telegramValidator.validate(authDataMap);
+      console.log('✅ Telegram OAuth data validated successfully:', validatedUser);
 
-    console.log('✅ Valid OAuth data for user:', user.id);
-
-    // Здесь должна быть логика создания/обновления пользователя в БД
-    // Пока возвращаем успешный ответ с userId
-    const userId = user.id; // Используем Telegram ID как userId
-
-    res.json({
-      success: true,
-      message: 'Авторизация успешна',
-      userId: userId,
-      user: {
-        id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        username: user.username,
-        photo_url: user.photo_url
+      // Проверяем время авторизации (не старше 1 часа)
+      const authTime = user.auth_date * 1000; // конвертируем в миллисекунды
+      const currentTime = Date.now();
+      const maxAge = 60 * 60 * 1000; // 1 час
+      
+      if (currentTime - authTime > maxAge) {
+        console.warn('OAuth data too old for user:', user.id);
+        return res.status(401).json({
+          success: false,
+          message: 'Данные авторизации устарели'
+        });
       }
-    });
+
+      console.log('✅ Valid OAuth data for user:', user.id);
+
+      // Здесь должна быть логика создания/обновления пользователя в БД
+      // Пока возвращаем успешный ответ с userId
+      const userId = user.id; // Используем Telegram ID как userId
+
+      res.json({
+        success: true,
+        message: 'Авторизация успешна',
+        userId: userId,
+        user: {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          username: user.username,
+          photo_url: user.photo_url
+        }
+      });
+
+    } catch (validationError) {
+      console.error('❌ Telegram OAuth validation failed:', validationError);
+      return res.status(401).json({
+        success: false,
+        message: 'Недействительная подпись данных',
+        details: validationError instanceof Error ? validationError.message : 'Unknown error'
+      });
+    }
 
   } catch (error) {
     console.error('Error processing OAuth callback:', error);

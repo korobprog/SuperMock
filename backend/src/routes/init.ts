@@ -1,8 +1,15 @@
 import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { AuthDataValidator } from '@telegram-auth/server';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+// Инициализируем валидатор Telegram OAuth
+const telegramValidator = new AuthDataValidator({ 
+  botToken: process.env.TELEGRAM_BOT_TOKEN || '',
+  inValidateDataAfter: 3600 // 1 час
+});
 
 // POST /api/init
 // body: { tg?: { id:number|string, first_name?:string, username?:string, language_code?:string }, language?: string, initData?: string }
@@ -25,7 +32,62 @@ router.post(
         initData === 'demo_hash_12345';
       console.log('Demo mode:', isDemoMode);
 
-      // Extract user id from Telegram-like object or fallback
+      // Если это Telegram OAuth данные, валидируем их
+      if (tg && tg.hash && tg.auth_date && !isDemoMode) {
+        try {
+          console.log('🔐 Validating Telegram OAuth data...');
+          
+          // Создаем Map для валидации
+          const authDataMap = new Map([
+            ['id', tg.id.toString()],
+            ['first_name', tg.first_name || ''],
+            ['last_name', tg.last_name || ''],
+            ['username', tg.username || ''],
+            ['photo_url', tg.photo_url || ''],
+            ['auth_date', tg.auth_date.toString()],
+            ['hash', tg.hash]
+          ]);
+
+          // Валидируем данные
+          const validatedUser = await telegramValidator.validate(authDataMap);
+          console.log('✅ Telegram OAuth data validated successfully:', validatedUser);
+          
+          // Используем валидированные данные
+          const userId = String(validatedUser.id);
+          const userLang: string | undefined = language || validatedUser.language_code || 'ru';
+
+          // Ensure user exists / update language
+          const user = await prisma.user.upsert({
+            where: { id: userId },
+            update: { 
+              language: userLang,
+              tgId: String(validatedUser.id),
+              username: validatedUser.username || null,
+              firstName: validatedUser.first_name || null,
+            },
+            create: {
+              id: userId,
+              tgId: String(validatedUser.id),
+              username: validatedUser.username || null,
+              firstName: validatedUser.first_name || null,
+              language: userLang,
+            },
+            select: { id: true, language: true },
+          });
+
+          res.json({ user, telegramValidated: true });
+          return;
+          
+        } catch (validationError) {
+          console.error('❌ Telegram OAuth validation failed:', validationError);
+          return res.status(401).json({ 
+            error: 'Invalid Telegram OAuth data',
+            details: validationError instanceof Error ? validationError.message : 'Unknown error'
+          });
+        }
+      }
+
+      // Fallback для невалидированных данных или demo режима
       const rawId = tg?.id ?? req.body?.userId ?? null;
       if (!rawId) {
         return res.status(400).json({ error: 'Missing user id' });
@@ -47,7 +109,7 @@ router.post(
         select: { id: true, language: true },
       });
 
-      res.json({ user });
+      res.json({ user, telegramValidated: false });
     } catch (err) {
       console.error('Error in POST /api/init:', err);
       res.status(500).json({ error: 'Failed to initialize user' });

@@ -29,76 +29,38 @@ export default function AuthCallback() {
       try {
         console.log('🔐 Processing Telegram auth callback...');
         
-        // Получаем данные из хэша URL (Telegram OAuth возвращает данные в хэше)
-        const hash = window.location.hash;
-        console.log('🔐 Hash from URL:', hash);
+        // Telegram OAuth возвращает данные в query параметрах, а не в хэше
+        // Согласно документации: https://core.telegram.org/widgets/login
+        const id = searchParams.get('id');
+        const first_name = searchParams.get('first_name');
+        const last_name = searchParams.get('last_name');
+        const username = searchParams.get('username');
+        const photo_url = searchParams.get('photo_url');
+        const auth_date = searchParams.get('auth_date');
+        const hash = searchParams.get('hash');
         
-        if (!hash || !hash.includes('tgAuthResult=')) {
-          // Fallback: проверяем query параметры
-          const token = searchParams.get('token');
-          const userId = searchParams.get('userId');
-          
-          if (!token || !userId) {
-            setStatus('error');
-            setMessage('Отсутствуют необходимые параметры авторизации');
-            return;
-          }
-
-          console.log('🔐 Using query params:', { token: token ? 'present' : 'missing', userId });
-
-          // Сохраняем токен в localStorage
-          localStorage.setItem('authToken', token);
-          localStorage.setItem('userId', userId);
-          
-          // Устанавливаем заголовок для всех будущих запросов
-          if (window.authHeaders) {
-            window.authHeaders.Authorization = `Bearer ${token}`;
-          } else {
-            window.authHeaders = { Authorization: `Bearer ${token}` };
-          }
-
-          // Сохраняем userId в store
-          setUserId(Number(userId));
-          
-          setStatus('success');
-          setMessage('Авторизация через Telegram успешна! Перенаправление...');
-          
-          // Через 2 секунды перенаправляем на главную
-          setTimeout(() => {
-            navigate('/');
-          }, 2000);
-          
-          return;
-        }
-
-        // Парсим данные из хэша
-        const tgAuthResult = hash.split('tgAuthResult=')[1];
-        if (!tgAuthResult) {
+        console.log('🔐 Query params from Telegram:', { id, first_name, last_name, username, photo_url, auth_date, hash });
+        
+        // Проверяем обязательные поля согласно документации Telegram
+        if (!id || !first_name || !auth_date || !hash) {
           setStatus('error');
-          setMessage('Не удалось получить данные авторизации из URL');
+          setMessage('Отсутствуют необходимые параметры авторизации от Telegram');
+          console.error('❌ Missing required params:', { id, first_name, auth_date, hash });
           return;
         }
 
-        console.log('🔐 tgAuthResult from hash:', tgAuthResult);
+        // Создаем объект пользователя Telegram
+        const telegramUser: TelegramUser = {
+          id: parseInt(id),
+          first_name,
+          last_name: last_name || '',
+          username: username || '',
+          photo_url: photo_url || '',
+          auth_date: parseInt(auth_date),
+          hash
+        };
 
-        // Декодируем и парсим JSON
-        let telegramUser: TelegramUser;
-        try {
-          telegramUser = JSON.parse(decodeURIComponent(tgAuthResult));
-          console.log('🔐 Parsed Telegram user:', telegramUser);
-        } catch (parseError) {
-          console.error('Error parsing tgAuthResult:', parseError);
-          setStatus('error');
-          setMessage('Ошибка при парсинге данных авторизации');
-          return;
-        }
-
-        // Проверяем обязательные поля
-        if (!telegramUser.id || !telegramUser.first_name) {
-          setStatus('error');
-          setMessage('Данные пользователя Telegram неполные');
-          return;
-        }
+        console.log('🔐 Created Telegram user object:', telegramUser);
 
         // Инициализируем пользователя в базе данных
         try {
