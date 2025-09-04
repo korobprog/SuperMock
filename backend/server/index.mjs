@@ -179,7 +179,7 @@ app.use(express.json());
 // Import and use materials router
 import materialsRouter from './materials.mjs';
 import testMaterialsRouter from './test-materials.mjs';
-import telegramAuthRouter from '../src/routes/telegram-auth.ts';
+import telegramAuthRouter from '../dist/routes/telegram-auth.js';
 
 app.use('/api', materialsRouter);
 app.use('/api', testMaterialsRouter);
