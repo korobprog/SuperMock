@@ -149,12 +149,16 @@ jobs:
             
             # Останавливаем текущие контейнеры
             echo "🛑 Останавливаем текущие контейнеры..."
-            docker-compose -f docker-compose.prod-multi.yml down --timeout 30 || true
+            docker-compose -f docker-compose.prod-multi.yml down --timeout 30 --remove-orphans || true
             
             # Останавливаем конфликтующие сервисы
             echo "🛑 Останавливаем конфликтующие сервисы..."
             docker stop app-backend-1 app-redis-1 || true
             docker rm app-backend-1 app-redis-1 || true
+            
+            # Принудительно удаляем все контейнеры supermock
+            echo "🗑️ Принудительно удаляем все контейнеры supermock..."
+            docker ps -a --filter "name=supermock" --format "{{.Names}}" | xargs -r docker rm -f || true
             
             # Очищаем старые образы
             echo "🧹 Очищаем старые образы..."
