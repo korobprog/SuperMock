@@ -11,7 +11,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile
 
 # Copy backend sources (including compiled dist)
-COPY . ./backend
+COPY backend ./backend
 
 # Generate Prisma client
 RUN pnpm exec prisma generate --schema backend/prisma/schema.prisma
