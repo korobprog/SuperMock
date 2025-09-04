@@ -43,6 +43,7 @@ import DevTest from './pages/DevTest';
 import { DevRouteGuard } from './components/ui/dev-route-guard';
 import { LanguageSelection as Languages } from './pages/LanguageSelection';
 import { TelegramLoginExample } from './components/ui/telegram-login-example';
+import TelegramAuthTest from './pages/TelegramAuthTest';
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,7 @@ function AppContent() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/telegram-auth-success" element={<TelegramAuthSuccess />} />
         <Route path="/telegram-login" element={<TelegramLoginExample />} />
+        <Route path="/telegram-auth-test" element={<TelegramAuthTest />} />
         {/* Development-only routes with extra protection */}
         <Route
           path="/dev-test"
