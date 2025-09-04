@@ -8,8 +8,7 @@ const router = express.Router();
 const phoneValidation = [
   body('phoneNumber')
     .isMobilePhone('any')
-    .withMessage('Неверный формат номера телефона')
-    .normalizeMobilePhone(),
+    .withMessage('Неверный формат номера телефона'),
   body('telegramUserId')
     .optional()
     .isString()

@@ -1,6 +1,22 @@
 import express, { Request, Response } from 'express';
 import { requireTelegramAuth, optionalTelegramAuth } from '../middleware/telegramAuth';
 
+// Расширяем интерфейс Request для добавления пользователя
+declare global {
+  namespace Express {
+    interface Request {
+      telegramUser?: {
+        id: string;
+        phoneNumber: string;
+        firstName?: string;
+        lastName?: string;
+        username?: string;
+        createdAt: Date;
+      };
+    }
+  }
+}
+
 const router = express.Router();
 
 /**
@@ -9,8 +25,8 @@ const router = express.Router();
  */
 router.get('/profile', requireTelegramAuth, async (req: Request, res: Response) => {
   try {
-    // req.user доступен благодаря middleware requireTelegramAuth
-    const user = req.user!;
+    // req.telegramUser доступен благодаря middleware requireTelegramAuth
+    const user = req.telegramUser!;
     
     res.json({
       success: true,
@@ -40,7 +56,7 @@ router.get('/profile', requireTelegramAuth, async (req: Request, res: Response) 
  */
 router.put('/profile', requireTelegramAuth, async (req: Request, res: Response) => {
   try {
-    const user = req.user!;
+    const user = req.telegramUser!;
     const { firstName, lastName, username } = req.body;
 
     // Здесь должна быть логика обновления пользователя в базе данных
@@ -74,7 +90,7 @@ router.put('/profile', requireTelegramAuth, async (req: Request, res: Response) 
  */
 router.get('/dashboard', optionalTelegramAuth, async (req: Request, res: Response) => {
   try {
-    const isAuthenticated = !!req.user;
+    const isAuthenticated = !!req.telegramUser;
     
     let dashboardData: any = {
       isAuthenticated,
@@ -87,8 +103,8 @@ router.get('/dashboard', optionalTelegramAuth, async (req: Request, res: Respons
     // Если пользователь авторизован, добавляем персональные данные
     if (isAuthenticated) {
       dashboardData.personalData = {
-        userId: req.user!.id,
-        phoneNumber: req.user!.phoneNumber,
+        userId: req.telegramUser!.id,
+        phoneNumber: req.telegramUser!.phoneNumber,
         userSessions: 5,
         lastActivity: new Date()
       };
@@ -115,7 +131,7 @@ router.get('/dashboard', optionalTelegramAuth, async (req: Request, res: Respons
  */
 router.get('/status', requireTelegramAuth, async (req: Request, res: Response) => {
   try {
-    const user = req.user!;
+    const user = req.telegramUser!;
     
     res.json({
       success: true,

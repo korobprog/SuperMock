@@ -2,18 +2,21 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { telegramAuthService } from '../services/telegramAuthService';
 
+// Интерфейс для Telegram пользователя
+interface TelegramUser {
+  id: string;
+  phoneNumber: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  createdAt: Date;
+}
+
 // Расширяем интерфейс Request для добавления пользователя
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: string;
-        phoneNumber: string;
-        firstName?: string;
-        lastName?: string;
-        username?: string;
-        createdAt: Date;
-      };
+      telegramUser?: TelegramUser;
     }
   }
 }
@@ -51,7 +54,7 @@ export const requireTelegramAuth = async (
     }
 
     // Добавляем пользователя в запрос
-    req.user = result.user;
+    req.telegramUser = result.user;
     next();
 
   } catch (error) {
@@ -83,7 +86,7 @@ export const optionalTelegramAuth = async (
       
       if (result.success) {
         // Добавляем пользователя в запрос, если токен валиден
-        req.user = result.user;
+        req.telegramUser = result.user;
       }
     }
 
@@ -101,7 +104,7 @@ export const optionalTelegramAuth = async (
  */
 export const requireRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user) {
+    if (!req.telegramUser) {
       res.status(401).json({
         success: false,
         message: 'Пользователь не авторизован'
@@ -110,7 +113,7 @@ export const requireRole = (allowedRoles: string[]) => {
     }
 
     // В текущей реализации у нас нет ролей, но можно добавить в будущем
-    // const userRole = req.user.role || 'user';
+    // const userRole = req.telegramUser.role || 'user';
     
     // if (!allowedRoles.includes(userRole)) {
     //   res.status(403).json({
@@ -129,7 +132,7 @@ export const requireRole = (allowedRoles: string[]) => {
  */
 export const requireOwnership = (userIdParam: string = 'userId') => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user) {
+    if (!req.telegramUser) {
       res.status(401).json({
         success: false,
         message: 'Пользователь не авторизован'
@@ -139,7 +142,7 @@ export const requireOwnership = (userIdParam: string = 'userId') => {
 
     const resourceUserId = req.params[userIdParam] || req.body[userIdParam];
     
-    if (req.user.id !== resourceUserId) {
+    if (req.telegramUser.id !== resourceUserId) {
       res.status(403).json({
         success: false,
         message: 'Доступ запрещен. Вы можете работать только со своими ресурсами'
