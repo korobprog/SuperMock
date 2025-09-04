@@ -179,11 +179,11 @@ app.use(express.json());
 // Import and use materials router
 import materialsRouter from './materials.mjs';
 import testMaterialsRouter from './test-materials.mjs';
-// import telegramAuthRouter from '../src/routes/telegram-auth.ts';
+import telegramAuthRouter from '../src/routes/telegram-auth.ts';
 
 app.use('/api', materialsRouter);
 app.use('/api', testMaterialsRouter);
-// app.use('/api', telegramAuthRouter);
+app.use('/api', telegramAuthRouter);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
