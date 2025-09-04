@@ -156,6 +156,11 @@ jobs:
             echo "🛑 Останавливаем текущие контейнеры..."
             docker-compose -f docker-compose.prod-multi.yml down --timeout 30 || true
             
+            # Останавливаем конфликтующие сервисы
+            echo "🛑 Останавливаем конфликтующие сервисы..."
+            docker stop app-backend-1 app-redis-1 || true
+            docker rm app-backend-1 app-redis-1 || true
+            
             # Очищаем старые образы
             echo "🧹 Очищаем старые образы..."
             docker image prune -af || true
