@@ -14,7 +14,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lo
 COPY . ./backend
 
 # Generate Prisma client
-RUN pnpm exec prisma generate --schema backend/prisma/schema.prisma
+RUN pnpm exec prisma generate --schema prisma/schema.prisma
 
 ENV NODE_ENV=production
 ENV PORT=3000
