@@ -53,8 +53,8 @@ jobs:
       - name: Generate Prisma client
         run: |
           cd backend
-          # Создаем временный .env файл для Prisma
-          echo "DATABASE_URL=postgresql://dummy:password@localhost:5432/dummy" > .env
+          # Создаем временный .env файл для Prisma с реалистичными данными
+          echo "DATABASE_URL=postgresql://supermock:krishna1284@postgres:5432/supermock" > .env
           pnpm prisma generate
           rm .env
 
