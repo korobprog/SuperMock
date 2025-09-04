@@ -160,6 +160,12 @@ jobs:
             echo "🗑️ Принудительно удаляем все контейнеры supermock..."
             docker ps -a --filter "name=supermock" --format "{{.Names}}" | xargs -r docker rm -f || true
             
+            # Освобождаем порты 80 и 443
+            echo "🔓 Освобождаем порты 80 и 443..."
+            sudo fuser -k 80/tcp || true
+            sudo fuser -k 443/tcp || true
+            sleep 2
+            
             # Очищаем старые образы
             echo "🧹 Очищаем старые образы..."
             docker image prune -af || true
