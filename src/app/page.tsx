@@ -25,6 +25,28 @@ export default function Home() {
     }
   }, []);
 
+  // Слушаем изменения в localStorage для обновления состояния
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (typeof window !== 'undefined') {
+        const storedToken = localStorage.getItem('token');
+        console.log('🔄 Storage change detected, new token:', storedToken ? 'Found' : 'Not found');
+        setToken(storedToken);
+      }
+    };
+
+    // Слушаем изменения в localStorage
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Также слушаем события от других вкладок
+    window.addEventListener('focus', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleStorageChange);
+    };
+  }, []);
+
   // Обработчик успешного входа или регистрации
   const handleAuthSuccess = (newToken: string) => {
     setToken(newToken);

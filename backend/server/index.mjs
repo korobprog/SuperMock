@@ -3338,6 +3338,7 @@ io.on('connection', (socket) => {
     console.log('[socket] connected', {
       id: socket.id,
       query: socket.handshake?.query || {},
+      auth: socket.handshake?.auth || {},
       origin: socket.handshake?.headers?.origin,
       userAgent: socket.handshake?.headers?.['user-agent'],
       timestamp: new Date().toISOString(),
@@ -3345,17 +3346,38 @@ io.on('connection', (socket) => {
   } catch (error) {
     console.error('[socket] connection error:', error);
   }
-  // Optional: authenticate userId via query param (for notifications)
-  const { userId } = socket.handshake.query || {};
-  if (userId) {
+  
+  // Authenticate user via token from auth
+  const token = socket.handshake?.auth?.token;
+  let userId = null;
+  
+  if (token) {
     try {
-      const uid = String(userId);
-      socket.join(`user:${uid}`);
-      console.log('[socket] user joined personal room:', { userId: uid, socketId: socket.id });
-    } catch {}
+      // Verify JWT token and extract userId
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded.userId;
+      socket.userId = userId;
+      socket.join(`user:${userId}`);
+      console.log('[socket] user authenticated via token:', { userId, socketId: socket.id });
+    } catch (error) {
+      console.error('[socket] token verification failed:', error.message);
+    }
   }
   
-  socket.on('join_room', async ({ sessionId, userId }) => {
+  // Fallback: authenticate userId via query param (for notifications)
+  if (!userId) {
+    const queryUserId = socket.handshake?.query?.userId;
+    if (queryUserId) {
+      userId = String(queryUserId);
+      socket.userId = userId;
+      socket.join(`user:${userId}`);
+      console.log('[socket] user joined personal room via query:', { userId, socketId: socket.id });
+    }
+  }
+  
+  socket.on('join_room', async ({ sessionId, userId: paramUserId }) => {
+    // Use socket.userId if userId not provided in params
+    const userId = paramUserId || socket.userId;
     console.log('[socket] join_room attempt:', { sessionId, userId, socketId: socket.id });
     try {
       if (!sessionId || !userId) {
@@ -3519,7 +3541,7 @@ io.on('connection', (socket) => {
       console.log('[socket] disconnected', { 
         id: socket.id, 
         reason, 
-        userId: socket.handshake?.query?.userId,
+        userId: socket.userId || socket.handshake?.query?.userId,
         timestamp: new Date().toISOString(),
         origin: socket.handshake?.headers?.origin 
       });
