@@ -1,12 +1,10 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function TelegramAuthSuccess() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const processCallback = async () => {
@@ -62,7 +60,7 @@ export default function TelegramAuthSuccess() {
           window.dispatchEvent(new Event('storage'));
           
           // Перенаправляем на главную страницу
-          router.push('/');
+          navigate('/');
         } else {
           throw new Error('Токен не получен от сервера');
         }
@@ -75,7 +73,7 @@ export default function TelegramAuthSuccess() {
     };
 
     processCallback();
-  }, [router]);
+  }, [navigate]);
 
   if (loading) {
     return (
@@ -98,7 +96,7 @@ export default function TelegramAuthSuccess() {
           <h1 className="text-2xl font-bold text-white mb-4">Ошибка авторизации</h1>
           <p className="text-gray-300 mb-6">{error}</p>
           <button
-            onClick={() => router.push('/')}
+            onClick={() => navigate('/')}
             className="px-6 py-3 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition-colors"
           >
             Вернуться на главную

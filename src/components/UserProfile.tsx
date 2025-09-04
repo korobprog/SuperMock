@@ -1,13 +1,13 @@
-'use client';
-
-import { useState, useEffect, FC } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, FC } from 'react';
 
 interface UserData {
   _id: string;
   email: string;
   createdAt: string;
   googleId?: string;
+  telegramId?: string;
+  firstName?: string;
+  username?: string;
   roleHistory?: Array<{
     role: string;
     sessionId?: string;
@@ -25,7 +25,6 @@ const UserProfile: FC<UserProfileProps> = ({ token, onLogout }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  const router = useRouter();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -61,6 +60,9 @@ const UserProfile: FC<UserProfileProps> = ({ token, onLogout }) => {
     // Удаляем токен из localStorage
     localStorage.removeItem('token');
 
+    // Принудительно обновляем состояние в других вкладках
+    window.dispatchEvent(new Event('storage'));
+
     // Вызываем функцию обратного вызова для обновления состояния в родительском компоненте
     if (onLogout) {
       onLogout();
@@ -86,6 +88,21 @@ const UserProfile: FC<UserProfileProps> = ({ token, onLogout }) => {
       </h2>
 
       <div className="profile-info bg-gray-800 p-4 rounded-lg shadow-sm">
+        {/* Аватарка пользователя */}
+        <div className="flex items-center mb-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mr-4">
+            {userData.firstName ? userData.firstName.charAt(0).toUpperCase() : 
+             userData.email ? userData.email.charAt(0).toUpperCase() : 'U'}
+          </div>
+          <div>
+            <h3 className="text-white text-xl font-semibold">
+              {userData.firstName || 'Пользователь'}
+            </h3>
+            {userData.username && (
+              <p className="text-gray-400 text-sm">@{userData.username}</p>
+            )}
+          </div>
+        </div>
         <p className="text-white mb-2">
           <strong className="text-blue-300">Email:</strong> {userData.email}
         </p>
@@ -102,6 +119,20 @@ const UserProfile: FC<UserProfileProps> = ({ token, onLogout }) => {
           <strong className="text-blue-300">Google аккаунт:</strong>{' '}
           {userData.googleId ? (
             <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+              Подключен
+            </span>
+          ) : (
+            <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+              Не подключен
+            </span>
+          )}
+        </p>
+
+        {/* Отображение статуса Telegram-аутентификации */}
+        <p className="text-white mb-2">
+          <strong className="text-blue-300">Telegram аккаунт:</strong>{' '}
+          {userData.telegramId ? (
+            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
               Подключен
             </span>
           ) : (
