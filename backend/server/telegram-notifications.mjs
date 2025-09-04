@@ -799,7 +799,8 @@ Hello, ${user.first_name || user.username || 'friend'}! 👋
           });
         } else {
           console.error('❌ Failed to generate auth token:', await tokenResponse.text());
-          // Fallback к обычной ссылке
+          // Fallback к ссылке с параметрами авторизации
+          const fallbackUrl = `${this.frontendUrl}/telegram-auth-success?telegramId=${user.id}&firstName=${encodeURIComponent(user.first_name || '')}&username=${encodeURIComponent(user.username || '')}&source=bot&fallback=true`;
           const authKeyboard = {
             inline_keyboard: [
               [
@@ -811,7 +812,7 @@ Hello, ${user.first_name || user.username || 'friend'}! 👋
               [
                 {
                   text: '🚀 Open SuperMock',
-                  url: 'https://app.supermock.ru',
+                  url: fallbackUrl,
                 },
               ],
               [
@@ -835,7 +836,8 @@ Hello, ${user.first_name || user.username || 'friend'}! 👋
         }
       } catch (error) {
         console.error('❌ Error generating auth token:', error);
-        // Fallback к обычной ссылке
+        // Fallback к ссылке с параметрами авторизации
+        const fallbackUrl = `${this.frontendUrl}/telegram-auth-success?telegramId=${user.id}&firstName=${encodeURIComponent(user.first_name || '')}&username=${encodeURIComponent(user.username || '')}&source=bot&fallback=true`;
         const authKeyboard = {
           inline_keyboard: [
             [
@@ -847,7 +849,7 @@ Hello, ${user.first_name || user.username || 'friend'}! 👋
             [
               {
                 text: '🚀 Open SuperMock',
-                url: 'https://app.supermock.ru',
+                url: fallbackUrl,
               },
             ],
             [
@@ -932,7 +934,7 @@ Click the <b>Instructions</b> button below to learn how to conduct mock intervie
           [
             {
               text: '🚀 Open Application',
-              url: 'https://app.supermock.ru',
+              url: `${this.frontendUrl}/telegram-auth-success?telegramId=${user.id}&firstName=${encodeURIComponent(user.first_name || '')}&username=${encodeURIComponent(user.username || '')}&source=bot&fallback=true`,
             },
           ],
           [

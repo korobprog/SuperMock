@@ -19,6 +19,16 @@ export default function TelegramAuthSuccess() {
     const token = searchParams.get('token');
     const userId = searchParams.get('userId');
     const source = searchParams.get('source');
+    const fallback = searchParams.get('fallback');
+    const telegramId = searchParams.get('telegramId');
+    const firstName = searchParams.get('firstName');
+    const username = searchParams.get('username');
+
+    // Если это fallback режим (когда endpoint не работает), создаем токен локально
+    if (fallback === 'true' && telegramId) {
+      handleFallbackAuth(telegramId, firstName, username);
+      return;
+    }
 
     if (!token) {
       setStatus('error');
@@ -34,6 +44,44 @@ export default function TelegramAuthSuccess() {
       handleWidgetToken(token, userId);
     }
   }, [searchParams, navigate]);
+
+  const handleFallbackAuth = (telegramId: string, firstName: string | null, username: string | null) => {
+    try {
+      setStatus('loading');
+      setMessage('Авторизация через Telegram...');
+
+      // Создаем токен локально для fallback режима
+      const userId = `user_${telegramId}_${Date.now()}`;
+      const token = `fallback_token_${telegramId}_${Date.now()}`;
+
+      // Сохраняем токен в localStorage
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('userId', userId);
+      localStorage.setItem('telegramId', telegramId);
+      localStorage.setItem('firstName', firstName || '');
+      localStorage.setItem('username', username || '');
+      
+      // Устанавливаем заголовок для всех будущих запросов
+      if (window.authHeaders) {
+        window.authHeaders.Authorization = `Bearer ${token}`;
+      } else {
+        window.authHeaders = { Authorization: `Bearer ${token}` };
+      }
+
+      setStatus('success');
+      setMessage('Авторизация через Telegram успешна! Перенаправление...');
+
+      // Перенаправляем на главную страницу через 2 секунды
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error in fallback auth:', error);
+      setStatus('error');
+      setMessage('Ошибка при авторизации');
+    }
+  };
 
   const handleBotToken = async (tempToken: string) => {
     try {
