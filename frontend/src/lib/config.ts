@@ -4,13 +4,13 @@ export const API_CONFIG = {
   // В development используем относительные пути (через Vite proxy)
   baseURL:
     import.meta.env.PROD 
-      ? (import.meta.env.VITE_API_URL || 'https://api.supermock.ru')
+      ? (import.meta.env.VITE_API_URL || 'https://app.supermock.ru')
       : '', // В dev режиме используем относительные пути для proxy
 
   // WebSocket URL для dev режима
   wsURL: import.meta.env.DEV 
     ? 'ws://localhost:3000' // В dev режиме подключаемся к локальному серверу
-    : (import.meta.env.VITE_WS_URL || 'wss://api.supermock.ru'), // В production используем переменную окружения или fallback
+    : (import.meta.env.VITE_WS_URL || 'wss://app.supermock.ru'), // В production используем тот же домен что и frontend
 
   // Полные пути к API endpoints
   endpoints: {
@@ -129,6 +129,7 @@ export function createApiUrl(endpoint: string): string {
   // Проверяем, находимся ли мы на продакшн домене
   const isProductionDomain = window.location.hostname === 'supermock.ru' || 
                             window.location.hostname === 'www.supermock.ru' ||
+                            window.location.hostname === 'app.supermock.ru' ||
                             window.location.hostname === 'api.supermock.ru';
   
   // Добавляем отладочную информацию
@@ -144,7 +145,7 @@ export function createApiUrl(endpoint: string): string {
 
   // Если мы на продакшн домене, всегда используем продакшн API
   if (isProductionDomain) {
-    const base = 'https://supermock.ru';
+    const base = 'https://app.supermock.ru';
     const path = endpoint.trim().startsWith('/') ? endpoint.trim() : `/${endpoint.trim()}`;
     const result = `${base}${path}`;
     
@@ -160,7 +161,7 @@ export function createApiUrl(endpoint: string): string {
   }
 
   // В production всегда используем полный HTTPS URL
-  const base = API_CONFIG.baseURL || 'https://supermock.ru';
+  const base = API_CONFIG.baseURL || 'https://app.supermock.ru';
   const path = endpoint.trim().startsWith('/') ? endpoint.trim() : `/${endpoint.trim()}`;
   
   // Убеждаемся, что используем HTTPS

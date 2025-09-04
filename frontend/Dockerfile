@@ -11,6 +11,8 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lo
 COPY frontend ./frontend
 # Копируем папку public с логотипом
 COPY public ./public
+# Копируем папку media с favicon файлами
+COPY media ./media
 # Allow passing Vite envs at build time
 # VITE_ prefix is required for Vite environment variables
 ARG VITE_API_URL
@@ -38,6 +40,8 @@ FROM nginx:alpine AS runtime
 COPY nginx/frontend-nginx.conf /etc/nginx/conf.d/default.conf
 # Vite builds into /app/frontend/dist (root is set in config)
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
+# Копируем папку media в nginx контейнер
+COPY --from=build /app/media /usr/share/nginx/html/media
 EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
 
