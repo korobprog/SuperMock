@@ -232,7 +232,7 @@ export function TelegramLoginSimple({
                   onClick={() => {
                     const botUrl = `https://t.me/${botName}?start=auth`;
                     window.open(botUrl, '_blank');
-                    setSuccess('Откройте бота в Telegram и нажмите /start для авторизации. После этого вернитесь на сайт.');
+                    setSuccess('Откройте бота в Telegram. Бот автоматически отправит сообщение с кнопкой авторизации. Нажмите "🔐 Confirm Authorization", затем "🚀 Open SuperMock".');
                   }}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors"
                 >

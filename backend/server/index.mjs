@@ -2610,6 +2610,15 @@ app.post('/api/telegram-webhook', async (req, res) => {
         );
         console.log('✅ Результат обработки /start:', result);
         res.json({ success: true, handled: 'start_command' });
+      } else if (message.text === '/start auth') {
+        // Обработка команды /start auth (для повторной авторизации)
+        console.log('🔐 Обработка команды /start auth для chatId:', message.chat.id);
+        const result = await telegramService.handleAuthStartCommand(
+          message.chat.id,
+          message.from
+        );
+        console.log('✅ Результат обработки /start auth:', result);
+        res.json({ success: true, handled: 'auth_start_command' });
       } else if (message.text === '/stats') {
         // Обработка команды /stats
         const user = await prisma.user.findFirst({

@@ -112,7 +112,6 @@ function AppContent() {
         <Route path="/telegram-auth-success" element={<TelegramAuthSuccess />} />
         <Route path="/telegram-login" element={<TelegramLoginExample />} />
         <Route path="/telegram-auth-test" element={<TelegramAuthTest />} />
-        <Route path="/api/telegram-auth-by-token" element={<TelegramAuthSuccess />} />
         {/* Development-only routes with extra protection */}
         <Route
           path="/dev-test"

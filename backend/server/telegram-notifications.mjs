@@ -721,6 +721,161 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
   }
 
   /**
+   * Обрабатывает команду /start auth для повторной авторизации
+   */
+  async handleAuthStartCommand(chatId, user) {
+    try {
+      if (!this.botToken) {
+        console.warn('Telegram bot token not configured');
+        return { success: false, reason: 'Bot token not configured' };
+      }
+
+      const authMessage = `
+🔐 <b>Авторизация в SuperMock</b>
+
+Hello, ${user.first_name || user.username || 'friend'}! 👋
+
+🎯 <b>Для доступа к приложению необходимо подтвердить авторизацию.</b>
+
+🚀 <b>Что нужно сделать:</b>
+1. Нажмите кнопку "🔐 Confirm Authorization" ниже
+2. После подтверждения нажмите "🚀 Open SuperMock"
+3. Вы будете автоматически авторизованы в приложении
+
+💡 <b>Need help?</b> Use the /help command anytime.
+      `.trim();
+
+      // Генерируем временный токен для авторизации
+      try {
+        const tokenResponse = await fetch(`${this.frontendUrl.replace('app.', 'api.')}/api/telegram-generate-auth-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            telegramId: user.id,
+            firstName: user.first_name,
+            username: user.username,
+          }),
+        });
+
+        if (tokenResponse.ok) {
+          const tokenData = await tokenResponse.json();
+          const authUrl = `${this.frontendUrl}/telegram-auth-success?token=${tokenData.token}&source=bot`;
+          
+          console.log('✅ Generated auth URL for user:', user.id, 'URL:', authUrl);
+
+          const authKeyboard = {
+            inline_keyboard: [
+              [
+                {
+                  text: '🔐 Confirm Authorization',
+                  callback_data: 'confirm_auth',
+                },
+              ],
+              [
+                {
+                  text: '🚀 Open SuperMock',
+                  url: authUrl,
+                },
+              ],
+              [
+                {
+                  text: '📊 My Statistics',
+                  callback_data: 'show_stats',
+                },
+              ],
+              [
+                {
+                  text: '❓ Help',
+                  callback_data: 'help',
+                },
+              ],
+            ],
+          };
+
+          return await this.sendMessage(chatId, authMessage, {
+            reply_markup: authKeyboard,
+          });
+        } else {
+          console.error('❌ Failed to generate auth token:', await tokenResponse.text());
+          // Fallback к обычной ссылке
+          const authKeyboard = {
+            inline_keyboard: [
+              [
+                {
+                  text: '🔐 Confirm Authorization',
+                  callback_data: 'confirm_auth',
+                },
+              ],
+              [
+                {
+                  text: '🚀 Open SuperMock',
+                  url: 'https://app.supermock.ru',
+                },
+              ],
+              [
+                {
+                  text: '📊 My Statistics',
+                  callback_data: 'show_stats',
+                },
+              ],
+              [
+                {
+                  text: '❓ Help',
+                  callback_data: 'help',
+                },
+              ],
+            ],
+          };
+
+          return await this.sendMessage(chatId, authMessage, {
+            reply_markup: authKeyboard,
+          });
+        }
+      } catch (error) {
+        console.error('❌ Error generating auth token:', error);
+        // Fallback к обычной ссылке
+        const authKeyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🔐 Confirm Authorization',
+                callback_data: 'confirm_auth',
+              },
+            ],
+            [
+              {
+                text: '🚀 Open SuperMock',
+                url: 'https://app.supermock.ru',
+              },
+            ],
+            [
+              {
+                text: '📊 My Statistics',
+                callback_data: 'show_stats',
+              },
+            ],
+            [
+              {
+                text: '❓ Help',
+                callback_data: 'help',
+              },
+            ],
+          ],
+        };
+
+        return await this.sendMessage(chatId, authMessage, {
+          reply_markup: authKeyboard,
+        });
+      }
+    } catch (error) {
+      console.error(`❌ Error handling auth start command for ${chatId}:`, error);
+      return { success: false, reason: error.message };
+    }
+  }
+
+  /**
    * Обрабатывает команду /start и отправляет приветственное сообщение с кнопкой
    */
   async handleStartCommand(chatId, user) {

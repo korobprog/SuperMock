@@ -343,6 +343,43 @@ router.post('/telegram-generate-auth-token', async (req: Request, res: Response)
   }
 });
 
+// GET /api/telegram-auth-status - проверка статуса авторизации пользователя
+router.get('/telegram-auth-status', async (req: Request, res: Response) => {
+  try {
+    console.log('=== TELEGRAM AUTH STATUS CHECK ===');
+    console.log('Query params:', req.query);
+
+    const { telegramId } = req.query;
+
+    if (!telegramId) {
+      return res.status(400).json({ 
+        error: 'Missing telegramId',
+        message: 'Telegram ID обязателен для проверки статуса'
+      });
+    }
+
+    // Проверяем, есть ли пользователь в базе данных
+    // Пока что просто возвращаем статус "не авторизован"
+    // В будущем можно добавить проверку в базе данных
+    
+    console.log('✅ Auth status checked for telegramId:', telegramId);
+
+    res.json({
+      success: true,
+      telegramId: String(telegramId),
+      isAuthorized: false, // Всегда false для повторной авторизации
+      message: 'Пользователь не авторизован'
+    });
+
+  } catch (error) {
+    console.error('❌ Error checking auth status:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'Ошибка при проверке статуса авторизации'
+    });
+  }
+});
+
 // GET /api/telegram-auth-by-token - авторизация по временному токену
 router.get('/telegram-auth-by-token', async (req: Request, res: Response) => {
   try {
