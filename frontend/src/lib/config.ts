@@ -4,13 +4,13 @@ export const API_CONFIG = {
   // В development используем относительные пути (через Vite proxy)
   baseURL:
     import.meta.env.PROD 
-      ? (import.meta.env.VITE_API_URL || 'https://app.supermock.ru')
+      ? (import.meta.env.VITE_API_URL || 'https://api.supermock.ru')
       : '', // В dev режиме используем относительные пути для proxy
 
   // WebSocket URL для dev режима
   wsURL: import.meta.env.DEV 
     ? 'ws://localhost:3000' // В dev режиме подключаемся к локальному серверу
-    : (import.meta.env.VITE_WS_URL || 'wss://app.supermock.ru'), // В production используем тот же домен что и frontend
+    : (import.meta.env.VITE_WS_URL || 'wss://api.supermock.ru'), // В production используем API домен
 
   // Полные пути к API endpoints
   endpoints: {
@@ -145,7 +145,7 @@ export function createApiUrl(endpoint: string): string {
 
   // Если мы на продакшн домене, всегда используем продакшн API
   if (isProductionDomain) {
-    const base = 'https://app.supermock.ru';
+    const base = 'https://api.supermock.ru';
     const path = endpoint.trim().startsWith('/') ? endpoint.trim() : `/${endpoint.trim()}`;
     const result = `${base}${path}`;
     
@@ -161,7 +161,7 @@ export function createApiUrl(endpoint: string): string {
   }
 
   // В production всегда используем полный HTTPS URL
-  const base = API_CONFIG.baseURL || 'https://app.supermock.ru';
+  const base = API_CONFIG.baseURL || 'https://api.supermock.ru';
   const path = endpoint.trim().startsWith('/') ? endpoint.trim() : `/${endpoint.trim()}`;
   
   // Убеждаемся, что используем HTTPS

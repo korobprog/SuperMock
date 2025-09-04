@@ -211,6 +211,14 @@ jobs:
               echo "TELEGRAM_BOT_TOKEN=8464088869:AAFcZb7HmYQJa6vaYjfTDCjfr187p9hhk2o" >> backend/.env
               echo "TELEGRAM_BOT_NAME=SuperMock_bot" >> backend/.env
               echo "" >> backend/.env
+              echo "# Telegram Auth Configuration" >> backend/.env
+              echo "MAX_VERIFICATION_ATTEMPTS=3" >> backend/.env
+              echo "VERIFICATION_CODE_EXPIRY=5" >> backend/.env
+              echo "JWT_EXPIRY_DAYS=30" >> backend/.env
+              echo "VERIFICATION_CODE_LENGTH=6" >> backend/.env
+              echo "CODE_CLEANUP_INTERVAL=5" >> backend/.env
+              echo "MAX_CODES_PER_PHONE=3" >> backend/.env
+              echo "" >> backend/.env
               echo "# Domain Configuration" >> backend/.env
               echo "DOMAIN=supermock.ru" >> backend/.env
               
@@ -251,6 +259,15 @@ jobs:
               exit 1
             fi
             
+            # Проверяем, что используется правильный Dockerfile для backend
+            echo "🔧 Проверяем конфигурацию Docker для backend..."
+            if grep -q "dockerfile: backend/Dockerfile.fix" docker-compose.prod-multi.yml; then
+              echo "✅ docker-compose.prod-multi.yml использует исправленный Dockerfile.fix"
+            else
+              echo "⚠️ Предупреждение: docker-compose.prod-multi.yml может использовать старый Dockerfile"
+              echo "Это может привести к проблемам с зависимостями backend"
+            fi
+            
             # Запускаем новые контейнеры
             echo "🚀 Запускаем новые контейнеры..."
             docker-compose -f docker-compose.prod-multi.yml up -d --build
@@ -276,11 +293,21 @@ jobs:
             # Проверяем доступность сервисов
             echo "🌐 Проверяем доступность сервисов..."
             
-            # API
+            # API (внутренняя проверка)
             if curl -s -o /dev/null -w "%{http_code}" -H 'Host: api.supermock.ru' http://localhost:3000/api/health | grep -q "200"; then
-              echo "✅ API доступен"
+              echo "✅ API доступен (внутренняя проверка)"
             else
-              echo "❌ API недоступен"
+              echo "❌ API недоступен (внутренняя проверка)"
+            fi
+            
+            # API (внешняя проверка через Traefik)
+            echo "🌐 Проверяем API через внешний домен..."
+            if curl -s -o /dev/null -w "%{http_code}" https://api.supermock.ru/api/health | grep -q "200"; then
+              echo "✅ API доступен через https://api.supermock.ru"
+            else
+              echo "❌ API недоступен через https://api.supermock.ru"
+              echo "Проверяем логи Traefik..."
+              docker logs supermock-traefik --tail 20
             fi
             
             # Frontend App
@@ -375,6 +402,19 @@ jobs:
               docker logs supermock-backend --tail 30
             fi
             
+            # Проверяем Telegram Auth API
+            echo "🤖 Проверяем Telegram Auth API..."
+            TELEGRAM_AUTH_RESPONSE=$(curl -s --max-time 15 --connect-timeout 10 -H "Host: api.supermock.ru" "http://localhost:3000/api/telegram-auth/stats" \
+              -w "%{http_code}" 2>/dev/null || echo "000")
+            
+            if echo "$TELEGRAM_AUTH_RESPONSE" | grep -q "200"; then
+              echo "✅ Telegram Auth API работает"
+            else
+              echo "❌ Telegram Auth API не работает, код ответа: $TELEGRAM_AUTH_RESPONSE"
+              echo "Проверяем логи backend..."
+              docker logs supermock-backend --tail 30
+            fi
+            
             # Финальная проверка
             echo "🔍 Финальная проверка..."
             
@@ -388,8 +428,14 @@ jobs:
               echo "- https://api.supermock.ru (API)"
               echo "ℹ️ supermock.ru - это отдельный сайт, не обрабатывается Traefik"
               echo ""
-              echo "🔐 Авторизация в Telegram WebApp должна работать корректно"
+              echo "🔐 Telegram Auth API доступен:"
+              echo "- POST /api/telegram-auth/send-code - Отправка кода"
+              echo "- POST /api/telegram-auth/verify-code - Проверка кода"
+              echo "- GET /api/telegram-auth/me - Информация о пользователе"
+              echo "- GET /api/telegram-auth/stats - Статистика"
+              echo ""
               echo "📱 Пользователи могут авторизоваться через @SuperMock_bot"
+              echo "🔗 Страница авторизации: https://app.supermock.ru/auth/telegram"
             else
               echo "❌ Ошибка: не все контейнеры запущены"
               echo "📊 Статус контейнеров:"

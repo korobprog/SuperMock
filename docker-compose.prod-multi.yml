@@ -44,7 +44,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: backend/Dockerfile.fix
     container_name: supermock-backend
     environment:
       - NODE_ENV=production
@@ -77,15 +77,18 @@ services:
     labels:
       - traefik.enable=true
       # HTTP to HTTPS redirect
-      - traefik.http.routers.api-http.rule=Host(`api.supermock.ru`)
-      - traefik.http.routers.api-http.entrypoints=web
-      - traefik.http.routers.api-http.middlewares=api-redirect
+      - traefik.http.routers.backend-http.rule=Host(`api.supermock.ru`)
+      - traefik.http.routers.backend-http.entrypoints=web
+      - traefik.http.routers.backend-http.middlewares=backend-redirect
       # HTTPS
-      - traefik.http.routers.api.rule=Host(`api.supermock.ru`)
-      - traefik.http.routers.api.entrypoints=websecure
-      - traefik.http.routers.api.tls=true
-      - traefik.http.routers.api.tls.certresolver=letsencrypt
-      - traefik.http.services.api.loadbalancer.server.port=3000
+      - traefik.http.routers.backend.rule=Host(`api.supermock.ru`)
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls=true
+      - traefik.http.routers.backend.tls.certresolver=letsencrypt
+      - traefik.http.services.backend.loadbalancer.server.port=3000
+      # WebSocket middleware
+      - traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Connection=Upgrade
+      - traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Upgrade=websocket
 
   # Frontend приложение (app.supermock.ru)
   frontend-app:
@@ -165,8 +168,8 @@ services:
       # Создаем специфичные middleware для каждого поддомена
       - traefik.http.middlewares.app-redirect.redirectscheme.scheme=https
       - traefik.http.middlewares.app-redirect.redirectscheme.permanent=true
-      - traefik.http.middlewares.api-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.api-redirect.redirectscheme.permanent=true
+      - traefik.http.middlewares.backend-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.backend-redirect.redirectscheme.permanent=true
 
 
 

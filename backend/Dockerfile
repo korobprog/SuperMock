@@ -6,19 +6,25 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile
+# Copy backend package files
+COPY backend/package.json ./backend/
+WORKDIR /app/backend
+
+# Install backend dependencies
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --no-frozen-lockfile
+
+# Approve build scripts for Prisma
+RUN pnpm approve-builds
 
 # Copy backend sources (including compiled dist)
-COPY backend ./backend
+COPY backend ./
 
 # Generate Prisma client
-RUN pnpm exec prisma generate --schema backend/prisma/schema.prisma
+RUN npx prisma generate --schema prisma/schema.prisma
 
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
 # Run the production server (uses server/index.mjs)
-CMD ["node", "backend/server/index.mjs"]
+CMD ["node", "server/index.mjs"]

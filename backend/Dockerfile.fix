@@ -1,0 +1,9 @@
+# Fix missing dependencies in existing backend image
+FROM mockmate-backend
+
+# Install all missing dependencies
+WORKDIR /app/backend
+RUN npm install jsonwebtoken @types/jsonwebtoken bcryptjs @types/bcryptjs cors @types/cors express @types/express dotenv express-validator @types/express-validator form-data googleapis mongodb @types/mongodb mongoose node-fetch @types/node-fetch openai passport @types/passport passport-google-oauth20 @types/passport-google-oauth20 redis @types/redis socket.io @types/socket.io uuid @types/uuid @socket.io/redis-adapter @telegram-auth/server
+
+# Run the production server
+CMD ["node", "server/index.mjs"]

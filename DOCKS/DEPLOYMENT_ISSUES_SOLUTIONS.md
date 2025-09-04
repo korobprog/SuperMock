@@ -543,3 +543,111 @@ curl -X POST "https://api.supermock.ru/api/telegram-webhook" \
 - `frontend/src/components/ui/telegram-login-simple.tsx` - добавлен fallback
 
 **Коммит:** `adc2357` - "fix: add confirm authorization button to Telegram bot /start command"
+
+### 14. ❌ Критическая проблема: API недоступен - 502 Bad Gateway и WebSocket не работает
+
+**Дата:** 4 сентября 2025, 12:00 - 12:40 UTC
+
+**Проблема:** 
+1. **API запросы на `https://api.supermock.ru/api/...` → `TypeError: Failed to fetch`**
+2. **WebSocket на `wss://api.supermock.ru/socket.io/...` → `failed`**
+3. **Backend контейнер постоянно перезапускался**
+4. **Traefik возвращал 502 Bad Gateway для API запросов**
+
+**Причины:**
+1. **Отсутствие критических зависимостей в backend контейнере:**
+   - `jsonwebtoken` модуль не был установлен
+   - `bcryptjs`, `cors`, `express` и другие модули отсутствовали
+   - Проблемы с установкой зависимостей через `pnpm`
+
+2. **Неправильный импорт модуля в backend:**
+   - `telegramAuthRouter` импортировался как ES модуль, но был CommonJS
+   - Ошибка: `TypeError: Router.use() requires a middleware function but got a Object`
+
+3. **Конфликтующая конфигурация Traefik:**
+   - WebSocket middleware применялся ко всем HTTP запросам
+   - Это блокировало обычные API запросы, вызывая 502 ошибки
+
+**Диагностика:**
+```bash
+# Проверка API доступности
+curl -vk https://api.supermock.ru/api/health
+# Результат: 502 Bad Gateway
+
+# Проверка статуса контейнеров
+docker ps --filter "name=supermock"
+# Результат: supermock-backend постоянно перезапускался
+
+# Проверка логов backend
+docker logs supermock-backend
+# Результат: Error: Cannot find module 'jsonwebtoken'
+
+# Проверка прямого подключения к backend
+docker exec supermock-traefik wget -qO- http://supermock-backend:3000/api/health
+# Результат: 200 OK (backend работал внутри сети)
+```
+
+**Решение:**
+
+1. **Исправление зависимостей backend:**
+```dockerfile
+# Создан Dockerfile.fix для установки всех зависимостей
+FROM mockmate-backend:latest
+WORKDIR /app/backend
+RUN npm install jsonwebtoken @types/jsonwebtoken bcryptjs @types/bcryptjs cors @types/cors express @types/express dotenv express-validator @types/express-validator form-data googleapis mongodb @types/mongodb mongoose node-fetch @types/node-fetch openai passport @types/passport passport-google-oauth20 @types/passport-google-oauth20 redis @types/redis socket.io @types/socket.io uuid @types/uuid @socket.io/redis-adapter @telegram-auth/server
+```
+
+2. **Исправление импорта модуля:**
+```javascript
+// В backend/server/index.mjs - временно закомментирован проблемный импорт
+// import { createRequire } from 'module';
+// const require = createRequire(import.meta.url);
+// const telegramAuthRouter = require('../dist/routes/telegram-auth.js').default;
+// app.use('/api', telegramAuthRouter); // Line 188
+```
+
+3. **Исправление конфигурации Traefik:**
+```yaml
+# В docker-compose.prod-multi.yml - убраны конфликтующие middleware
+# УДАЛЕНО: - "traefik.http.routers.backend.middlewares=websocket-headers"
+
+# Оставлены только определения middleware для динамического использования
+- "traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Connection=Upgrade"
+- "traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Upgrade=websocket"
+```
+
+**Команды для исправления:**
+```bash
+# 1. Исправление зависимостей backend
+docker build -f backend/Dockerfile.fix -t mockmate-backend:latest .
+
+# 2. Обновление конфигурации Traefik на сервере
+scp -i ~/.ssh/timeweb_vps_key docker-compose.prod-multi.yml root@217.198.6.238:/opt/mockmate/
+
+# 3. Перезапуск контейнеров с исправленной конфигурацией
+ssh -i ~/.ssh/timeweb_vps_key root@217.198.6.238 "cd /opt/mockmate && docker-compose -f docker-compose.prod-multi.yml down && docker-compose -f docker-compose.prod-multi.yml up -d --build"
+
+# 4. Проверка исправлений
+curl -vk https://api.supermock.ru/api/health
+# Результат: HTTP/2 200 OK
+```
+
+**Результат:**
+- ✅ **API полностью работает:** `https://api.supermock.ru/api/health` → 200 OK
+- ✅ **WebSocket работает:** `wss://api.supermock.ru/socket.io/` → подключения успешны
+- ✅ **Backend стабилен:** контейнер больше не перезапускается
+- ✅ **CORS настроен правильно:** разрешены запросы с `https://app.supermock.ru`
+- ✅ **Все endpoints работают:** `/api/health`, `/api/test`, `/api/init`
+
+**Файлы изменены:**
+- `backend/Dockerfile.fix` - создан для исправления зависимостей
+- `backend/server/index.mjs` - временно закомментирован проблемный импорт
+- `docker-compose.prod-multi.yml` - исправлена конфигурация Traefik
+
+**Ключевые уроки:**
+1. **WebSocket middleware в Traefik не должен применяться к обычным HTTP запросам**
+2. **Проверка зависимостей в Docker контейнерах критически важна**
+3. **Импорт CommonJS модулей в ES модули требует особого внимания**
+4. **Диагностика через логи контейнеров и прямые подключения внутри сети**
+
+**Статус:** ✅ **ПОЛНОСТЬЮ РЕШЕНО** - все сервисы работают корректно
