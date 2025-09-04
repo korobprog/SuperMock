@@ -52,7 +52,19 @@ export default function TelegramAuthSuccess() {
 
       // Создаем токен локально для fallback режима
       const userId = `user_${telegramId}_${Date.now()}`;
-      const token = `fallback_token_${telegramId}_${Date.now()}`;
+      
+      // Создаем простой JWT-подобный токен для fallback режима
+      const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+      const payload = btoa(JSON.stringify({ 
+        userId: userId,
+        tgId: telegramId,
+        type: 'telegram',
+        fallback: true,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60) // 30 дней
+      }));
+      const signature = btoa(`fallback_${telegramId}_${Date.now()}`);
+      const token = `${header}.${payload}.${signature}`;
 
       // Сохраняем токен в localStorage
       localStorage.setItem('authToken', token);
@@ -60,6 +72,7 @@ export default function TelegramAuthSuccess() {
       localStorage.setItem('telegramId', telegramId);
       localStorage.setItem('firstName', firstName || '');
       localStorage.setItem('username', username || '');
+      localStorage.setItem('isAuthenticated', 'true');
       
       // Устанавливаем заголовок для всех будущих запросов
       if (window.authHeaders) {
@@ -67,6 +80,8 @@ export default function TelegramAuthSuccess() {
       } else {
         window.authHeaders = { Authorization: `Bearer ${token}` };
       }
+
+      console.log('✅ Fallback auth successful:', { userId, telegramId, firstName, username });
 
       setStatus('success');
       setMessage('Авторизация через Telegram успешна! Перенаправление...');
@@ -124,6 +139,7 @@ export default function TelegramAuthSuccess() {
     try {
       localStorage.setItem('authToken', token);
       localStorage.setItem('userId', userId);
+      localStorage.setItem('isAuthenticated', 'true');
       
       // Устанавливаем заголовок для всех будущих запросов
       if (window.authHeaders) {
@@ -131,6 +147,8 @@ export default function TelegramAuthSuccess() {
       } else {
         window.authHeaders = { Authorization: `Bearer ${token}` };
       }
+
+      console.log('✅ Widget auth successful:', { userId, token });
 
       setStatus('success');
       setMessage('Авторизация через Telegram успешна! Перенаправление...');
