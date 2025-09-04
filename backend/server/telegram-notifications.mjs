@@ -463,11 +463,47 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
   }
 
   /**
+   * Показывает лоадер для callback запроса
+   */
+  async showCallbackLoader(callbackQueryId, text = '⏳ Processing...') {
+    try {
+      const response = await fetch(`${this.baseUrl}/answerCallbackQuery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          callback_query_id: callbackQueryId,
+          text: text,
+          show_alert: false,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.ok) {
+        console.log('✅ Callback loader shown');
+        return { success: true };
+      } else {
+        console.error('❌ Failed to show callback loader:', data.description);
+        return { success: false, reason: data.description };
+      }
+    } catch (error) {
+      console.error('❌ Error showing callback loader:', error);
+      return { success: false, reason: error.message };
+    }
+  }
+
+  /**
    * Обрабатывает callback запросы от Telegram бота
    */
-  async handleCallback(callbackData, chatId, user) {
+  async handleCallback(callbackData, chatId, user, callbackQueryId = null) {
     try {
       if (callbackData === 'confirm_auth') {
+        // Показываем лоадер
+        if (callbackQueryId) {
+          await this.showCallbackLoader(callbackQueryId, '⏳ Generating authorization link...');
+        }
+
         // Обработка подтверждения авторизации
         const authMessage = `
 🔐 <b>Authorization Confirmed!</b>
@@ -530,45 +566,47 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
             return await this.sendMessage(chatId, authMessage, {
               reply_markup: authKeyboard,
             });
-          } else {
-            console.error('❌ Failed to generate auth token:', await tokenResponse.text());
-            // Fallback к обычной ссылке
-            const authKeyboard = {
-              inline_keyboard: [
-                [
-                  {
-                    text: '🚀 Open SuperMock',
-                    url: 'https://app.supermock.ru',
-                  },
-                ],
-                [
-                  {
-                    text: '📊 My Statistics',
-                    callback_data: 'show_stats',
-                  },
-                ],
-                [
-                  {
-                    text: '❓ Help',
-                    callback_data: 'help',
-                  },
-                ],
-              ],
-            };
-
-            return await this.sendMessage(chatId, authMessage, {
-              reply_markup: authKeyboard,
-            });
-          }
-        } catch (error) {
-          console.error('❌ Error generating auth token:', error);
-          // Fallback к обычной ссылке
+                  } else {
+          console.error('❌ Failed to generate auth token:', await tokenResponse.text());
+          // Fallback к ссылке с параметрами авторизации
+          const fallbackUrl = `${this.frontendUrl}/telegram-auth-success?telegramId=${user.id}&firstName=${encodeURIComponent(user.first_name || '')}&username=${encodeURIComponent(user.username || '')}&source=bot&fallback=true`;
           const authKeyboard = {
             inline_keyboard: [
               [
                 {
                   text: '🚀 Open SuperMock',
-                  url: 'https://app.supermock.ru',
+                  url: fallbackUrl,
+                },
+              ],
+              [
+                {
+                  text: '📊 My Statistics',
+                  callback_data: 'show_stats',
+                },
+              ],
+              [
+                {
+                  text: '❓ Help',
+                  callback_data: 'help',
+                },
+              ],
+            ],
+          };
+
+          return await this.sendMessage(chatId, authMessage, {
+            reply_markup: authKeyboard,
+          });
+        }
+        } catch (error) {
+          console.error('❌ Error generating auth token:', error);
+          // Fallback к ссылке с параметрами авторизации
+          const fallbackUrl = `${this.frontendUrl}/telegram-auth-success?telegramId=${user.id}&firstName=${encodeURIComponent(user.first_name || '')}&username=${encodeURIComponent(user.username || '')}&source=bot&fallback=true`;
+          const authKeyboard = {
+            inline_keyboard: [
+              [
+                {
+                  text: '🚀 Open SuperMock',
+                  url: fallbackUrl,
                 },
               ],
               [
@@ -721,6 +759,53 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
   }
 
   /**
+   * Показывает лоадер в сообщении
+   */
+  async showMessageLoader(chatId, text = '⏳ Processing...') {
+    try {
+      const response = await this.sendMessage(chatId, text);
+      if (response.success) {
+        return { success: true, messageId: response.messageId };
+      } else {
+        return { success: false, reason: response.reason };
+      }
+    } catch (error) {
+      console.error('❌ Error showing message loader:', error);
+      return { success: false, reason: error.message };
+    }
+  }
+
+  /**
+   * Удаляет сообщение
+   */
+  async deleteMessage(chatId, messageId) {
+    try {
+      const response = await fetch(`${this.baseUrl}/deleteMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          message_id: messageId,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.ok) {
+        console.log('✅ Message deleted');
+        return { success: true };
+      } else {
+        console.error('❌ Failed to delete message:', data.description);
+        return { success: false, reason: data.description };
+      }
+    } catch (error) {
+      console.error('❌ Error deleting message:', error);
+      return { success: false, reason: error.message };
+    }
+  }
+
+  /**
    * Обрабатывает команду /start auth для повторной авторизации
    */
   async handleAuthStartCommand(chatId, user) {
@@ -728,6 +813,13 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
       if (!this.botToken) {
         console.warn('Telegram bot token not configured');
         return { success: false, reason: 'Bot token not configured' };
+      }
+
+      // Показываем лоадер
+      const loaderResult = await this.showMessageLoader(chatId, '⏳ Preparing authorization...');
+      let loaderMessageId = null;
+      if (loaderResult.success) {
+        loaderMessageId = loaderResult.messageId;
       }
 
       const authMessage = `
@@ -765,6 +857,11 @@ Hello, ${user.first_name || user.username || 'friend'}! 👋
           
           console.log('✅ Generated auth URL for user:', user.id, 'URL:', authUrl);
 
+          // Удаляем лоадер
+          if (loaderMessageId) {
+            await this.deleteMessage(chatId, loaderMessageId);
+          }
+
           const authKeyboard = {
             inline_keyboard: [
               [
@@ -801,6 +898,12 @@ Hello, ${user.first_name || user.username || 'friend'}! 👋
           console.error('❌ Failed to generate auth token:', await tokenResponse.text());
           // Fallback к ссылке с параметрами авторизации
           const fallbackUrl = `${this.frontendUrl}/telegram-auth-success?telegramId=${user.id}&firstName=${encodeURIComponent(user.first_name || '')}&username=${encodeURIComponent(user.username || '')}&source=bot&fallback=true`;
+          
+          // Удаляем лоадер
+          if (loaderMessageId) {
+            await this.deleteMessage(chatId, loaderMessageId);
+          }
+
           const authKeyboard = {
             inline_keyboard: [
               [
@@ -838,6 +941,12 @@ Hello, ${user.first_name || user.username || 'friend'}! 👋
         console.error('❌ Error generating auth token:', error);
         // Fallback к ссылке с параметрами авторизации
         const fallbackUrl = `${this.frontendUrl}/telegram-auth-success?telegramId=${user.id}&firstName=${encodeURIComponent(user.first_name || '')}&username=${encodeURIComponent(user.username || '')}&source=bot&fallback=true`;
+        
+        // Удаляем лоадер
+        if (loaderMessageId) {
+          await this.deleteMessage(chatId, loaderMessageId);
+        }
+
         const authKeyboard = {
           inline_keyboard: [
             [

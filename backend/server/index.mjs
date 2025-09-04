@@ -2570,7 +2570,8 @@ app.post('/api/telegram-webhook', async (req, res) => {
       const result = await telegramService.handleCallback(
         callback_query.data,
         callback_query.message.chat.id,
-        callback_query.from
+        callback_query.from,
+        callback_query.id
       );
 
       // Отвечаем на callback
