@@ -18,10 +18,57 @@ export default function TelegramAuthSuccess() {
   useEffect(() => {
     const token = searchParams.get('token');
     const userId = searchParams.get('userId');
+    const source = searchParams.get('source');
 
-    if (!token || !userId) {
+    if (!token) {
       setStatus('error');
-      setMessage('Отсутствуют необходимые параметры авторизации');
+      setMessage('Отсутствует токен авторизации');
+      return;
+    }
+
+    // Если это токен от бота, нужно сначала обменять его на постоянный токен
+    if (source === 'bot') {
+      handleBotToken(token);
+    } else {
+      // Обычная авторизация через виджет
+      handleWidgetToken(token, userId);
+    }
+  }, [searchParams, navigate]);
+
+  const handleBotToken = async (tempToken: string) => {
+    try {
+      setStatus('loading');
+      setMessage('Обмен токена авторизации...');
+
+      // Отправляем запрос на backend для обмена временного токена на постоянный
+      const response = await fetch(`/api/telegram-auth-by-token?token=${tempToken}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // Backend должен перенаправить нас с постоянным токеном
+        // Если мы дошли сюда, значит что-то пошло не так
+        setStatus('error');
+        setMessage('Ошибка при обмене токена авторизации');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setStatus('error');
+        setMessage(errorData.message || 'Ошибка при обмене токена авторизации');
+      }
+    } catch (error) {
+      console.error('Error exchanging bot token:', error);
+      setStatus('error');
+      setMessage('Ошибка при обмене токена авторизации');
+    }
+  };
+
+  const handleWidgetToken = (token: string, userId: string | null) => {
+    if (!userId) {
+      setStatus('error');
+      setMessage('Отсутствует ID пользователя');
       return;
     }
 
@@ -50,7 +97,7 @@ export default function TelegramAuthSuccess() {
       setStatus('error');
       setMessage('Ошибка при сохранении данных авторизации');
     }
-  }, [searchParams, navigate]);
+  };
 
   const handleGoHome = () => {
     navigate('/');

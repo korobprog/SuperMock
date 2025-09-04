@@ -296,4 +296,121 @@ router.get('/telegram-bot-check', async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/telegram-generate-auth-token - генерация временного токена для авторизации
+router.post('/telegram-generate-auth-token', async (req: Request, res: Response) => {
+  try {
+    console.log('=== TELEGRAM GENERATE AUTH TOKEN ===');
+    console.log('Body:', req.body);
+
+    const { telegramId, firstName, username } = req.body;
+
+    if (!telegramId) {
+      return res.status(400).json({ 
+        error: 'Missing telegramId',
+        message: 'Telegram ID обязателен для генерации токена'
+      });
+    }
+
+    // Создаем временный токен (действует 5 минут)
+    const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
+    const tempToken = jwt.sign(
+      { 
+        telegramId: String(telegramId),
+        firstName: firstName || '',
+        username: username || '',
+        type: 'telegram_temp_auth',
+        purpose: 'bot_to_web_auth'
+      },
+      JWT_SECRET,
+      { expiresIn: '5m' }
+    );
+
+    console.log('✅ Temporary auth token generated for telegramId:', telegramId);
+
+    res.json({
+      success: true,
+      token: tempToken,
+      expiresIn: '5m',
+      message: 'Временный токен авторизации создан'
+    });
+
+  } catch (error) {
+    console.error('❌ Error generating auth token:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'Ошибка при генерации токена авторизации'
+    });
+  }
+});
+
+// GET /api/telegram-auth-by-token - авторизация по временному токену
+router.get('/telegram-auth-by-token', async (req: Request, res: Response) => {
+  try {
+    console.log('=== TELEGRAM AUTH BY TOKEN ===');
+    console.log('Query params:', req.query);
+
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ 
+        error: 'Missing token',
+        message: 'Токен авторизации обязателен'
+      });
+    }
+
+    // Валидируем токен
+    const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
+    let decoded: any;
+    
+    try {
+      decoded = jwt.verify(String(token), JWT_SECRET);
+    } catch (jwtError) {
+      console.error('❌ Invalid token:', jwtError);
+      return res.status(401).json({ 
+        error: 'Invalid token',
+        message: 'Неверный или истекший токен авторизации'
+      });
+    }
+
+    if (decoded.type !== 'telegram_temp_auth' || decoded.purpose !== 'bot_to_web_auth') {
+      return res.status(401).json({ 
+        error: 'Invalid token type',
+        message: 'Неверный тип токена'
+      });
+    }
+
+    console.log('✅ Token validated for telegramId:', decoded.telegramId);
+
+    // Создаем постоянный JWT токен для пользователя
+    const userId = `user_${decoded.telegramId}_${Date.now()}`;
+    
+    const permanentToken = jwt.sign(
+      { 
+        userId: userId,
+        tgId: decoded.telegramId,
+        type: 'telegram'
+      },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    console.log('✅ Permanent token created for user:', userId);
+
+    // Перенаправляем на frontend с токеном
+    const frontendUrl = process.env.FRONTEND_URL || 'https://app.supermock.ru';
+    const redirectUrl = `${frontendUrl}/telegram-auth-success?token=${permanentToken}&userId=${userId}&telegramId=${decoded.telegramId}`;
+    
+    console.log('Redirecting to:', redirectUrl);
+    
+    res.redirect(redirectUrl);
+
+  } catch (error) {
+    console.error('❌ Error in telegram auth by token:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'Ошибка при авторизации по токену'
+    });
+  }
+});
+
 export default router;

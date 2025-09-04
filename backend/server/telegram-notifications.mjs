@@ -484,32 +484,112 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
 💡 <b>Need help?</b> Use the /help command anytime.
         `.trim();
 
-        const authKeyboard = {
-          inline_keyboard: [
-            [
-              {
-                text: '🚀 Open SuperMock',
-                url: 'https://app.supermock.ru',
-              },
-            ],
-            [
-              {
-                text: '📊 My Statistics',
-                callback_data: 'show_stats',
-              },
-            ],
-            [
-              {
-                text: '❓ Help',
-                callback_data: 'help',
-              },
-            ],
-          ],
-        };
+        // Генерируем временный токен для авторизации
+        try {
+          const tokenResponse = await fetch(`${this.frontendUrl.replace('app.', 'api.')}/api/telegram-generate-auth-token`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              telegramId: user.id,
+              firstName: user.first_name,
+              username: user.username,
+            }),
+          });
 
-        return await this.sendMessage(chatId, authMessage, {
-          reply_markup: authKeyboard,
-        });
+          if (tokenResponse.ok) {
+            const tokenData = await tokenResponse.json();
+            const authUrl = `${this.frontendUrl}/telegram-auth-success?token=${tokenData.token}&source=bot`;
+            
+            console.log('✅ Generated auth URL for user:', user.id, 'URL:', authUrl);
+
+            const authKeyboard = {
+              inline_keyboard: [
+                [
+                  {
+                    text: '🚀 Open SuperMock',
+                    url: authUrl,
+                  },
+                ],
+                [
+                  {
+                    text: '📊 My Statistics',
+                    callback_data: 'show_stats',
+                  },
+                ],
+                [
+                  {
+                    text: '❓ Help',
+                    callback_data: 'help',
+                  },
+                ],
+              ],
+            };
+
+            return await this.sendMessage(chatId, authMessage, {
+              reply_markup: authKeyboard,
+            });
+          } else {
+            console.error('❌ Failed to generate auth token:', await tokenResponse.text());
+            // Fallback к обычной ссылке
+            const authKeyboard = {
+              inline_keyboard: [
+                [
+                  {
+                    text: '🚀 Open SuperMock',
+                    url: 'https://app.supermock.ru',
+                  },
+                ],
+                [
+                  {
+                    text: '📊 My Statistics',
+                    callback_data: 'show_stats',
+                  },
+                ],
+                [
+                  {
+                    text: '❓ Help',
+                    callback_data: 'help',
+                  },
+                ],
+              ],
+            };
+
+            return await this.sendMessage(chatId, authMessage, {
+              reply_markup: authKeyboard,
+            });
+          }
+        } catch (error) {
+          console.error('❌ Error generating auth token:', error);
+          // Fallback к обычной ссылке
+          const authKeyboard = {
+            inline_keyboard: [
+              [
+                {
+                  text: '🚀 Open SuperMock',
+                  url: 'https://app.supermock.ru',
+                },
+              ],
+              [
+                {
+                  text: '📊 My Statistics',
+                  callback_data: 'show_stats',
+                },
+              ],
+              [
+                {
+                  text: '❓ Help',
+                  callback_data: 'help',
+                },
+              ],
+            ],
+          };
+
+          return await this.sendMessage(chatId, authMessage, {
+            reply_markup: authKeyboard,
+          });
+        }
       }
 
       if (callbackData.startsWith('remind_later_')) {
