@@ -96,9 +96,9 @@ create_archive() {
 upload_to_server() {
     log_info "Копирование файлов на сервер..."
     
-    # Создаем резервную копию на сервере
-    if ! run_with_timeout 120 ssh -i "$SSH_KEY" "root@$SERVER_IP" "cd $SERVER_PATH && tar -czf backup-$(date +%Y%m%d-%H%M%S).tar.gz docker-compose.prod-multi.yml frontend/ backend/ Lading/ 2>/dev/null || true"; then
-        log_warning "Не удалось создать резервную копию"
+    # Очищаем старые архивные файлы на сервере для экономии места
+    if ! run_with_timeout 120 ssh -i "$SSH_KEY" "root@$SERVER_IP" "cd $SERVER_PATH && find . -name 'backup-*.tar.gz' -mtime +7 -delete 2>/dev/null || true; find . -name 'supermock-full-deploy-*.tar.gz' -mtime +3 -delete 2>/dev/null || true"; then
+        log_warning "Не удалось очистить старые архивные файлы"
     fi
     
     # Копируем новый архив
@@ -159,8 +159,15 @@ deploy_on_server() {
         echo "Проверка статуса контейнеров..."
         docker ps --filter "name=supermock" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" || true
         
-        echo "Очистка временных файлов..."
+        echo "Очистка временных файлов и старых архивов..."
         rm -f supermock-full-deploy-*.tar.gz
+        
+        # Дополнительная очистка старых архивных файлов
+        echo "Удаляем старые архивные файлы для экономии места..."
+        find . -name "backup-*.tar.gz" -mtime +7 -delete 2>/dev/null || true
+        find . -name "supermock-full-deploy-*.tar.gz" -mtime +3 -delete 2>/dev/null || true
+        find . -name "*.tar.gz" -size +100M -mtime +1 -delete 2>/dev/null || true
+        echo "Очистка завершена"
 EOF
     then
         log_error "Ошибка при развертывании на сервере"

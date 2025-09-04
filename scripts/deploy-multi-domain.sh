@@ -261,6 +261,11 @@ ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no root@"$SERVER" << EOF
     tar -xzf supermock-multi-domain.tar.gz
     rm supermock-multi-domain.tar.gz
     
+    echo "🧹 Очищаем старые архивные файлы для экономии места..."
+    find . -name "backup-*.tar.gz" -mtime +7 -delete 2>/dev/null || true
+    find . -name "supermock-*.tar.gz" -mtime +3 -delete 2>/dev/null || true
+    find . -name "*.tar.gz" -size +100M -mtime +1 -delete 2>/dev/null || true
+    
     echo "🔐 Настраиваем SSL сертификаты..."
     ./setup-ssl.sh $DOMAIN $APP_DOMAIN $API_DOMAIN
     

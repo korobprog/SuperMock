@@ -6,12 +6,12 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Install deps separately for better cache
+# Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile
 
-# Copy backend sources
-COPY backend ./backend
+# Copy backend sources (including compiled dist)
+COPY . ./backend
 
 # Generate Prisma client
 RUN pnpm exec prisma generate --schema backend/prisma/schema.prisma
@@ -20,7 +20,5 @@ ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-# Run the production server (uses backend/server/index.mjs)
+# Run the production server (uses server/index.mjs)
 CMD ["node", "backend/server/index.mjs"]
-
-

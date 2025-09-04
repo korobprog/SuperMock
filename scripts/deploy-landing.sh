@@ -97,8 +97,14 @@ deploy_on_server() {
         echo "Пересборка и запуск контейнера лендинга..."
         docker-compose -f docker-compose.prod-multi.yml up -d --build frontend-landing
         
-        echo "Очистка временных файлов..."
+        echo "Очистка временных файлов и старых архивов..."
         rm -f $ARCHIVE_NAME
+        
+        # Дополнительная очистка старых архивных файлов
+        echo "Удаляем старые архивные файлы для экономии места..."
+        find . -name "backup-*.tar.gz" -mtime +7 -delete 2>/dev/null || true
+        find . -name "landing-update-*.tar.gz" -mtime +3 -delete 2>/dev/null || true
+        find . -name "*.tar.gz" -size +100M -mtime +1 -delete 2>/dev/null || true
         
         echo "Проверка статуса контейнеров..."
         docker ps --filter "name=supermock-frontend-landing" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
