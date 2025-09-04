@@ -1,590 +1,594 @@
 {
   "navigation": {
-    "next": "Suivant",
-    "back": "Retour",
-    "select": "Sélectionner",
-    "cancel": "Annuler"
+    "features": "Fonctionnalités",
+    "learningProcess": "Processus",
+    "professions": "Professions",
+    "languages": "Langues",
+    "pricing": "Tarifs",
+    "instructions": "📖 Aide",
+    "support": "💜 Support",
+    "about": "À propos",
+    "login": "Se connecter"
   },
-  "common": {
-    "detectingLanguage": "Détection de langue...",
-    "loading": "Chargement...",
-    "platformSubtitle": "plateforme pour mener des entretiens simulés",
-    "notifications": "Notifications",
-    "settings": "Paramètres",
-    "logout": "Déconnexion",
-    "profession": "Profession",
-    "language": "Langue",
-    "user": "Utilisateur",
-    "unknown": "Inconnu",
-    "telegram": "Telegram",
-    "localUser": "Utilisateur local",
-    "notAuthorized": "Non autorisé",
-    "configureApi": "Configurer l'API",
-    "quickActions": "Actions rapides",
-    "interviewer": "Recruteur",
-    "candidate": "Candidat",
-    "lastInterview": "Dernier entretien",
-    "comingSoon": "Bientôt",
-    "save": "Enregistrer"
+  "hero": {
+    "title": "Préparez-vous à votre",
+    "titleHighlight": "entretien",
+    "titleSuffix": "en 6 langues",
+    "subtitle": "Super Mock — Plateforme IA pour les entretiens avec un appariement unique de candidats et d'intervieweurs",
+    "startLearning": "🚀 Commencer l'apprentissage",
+    "openApp": "💻 Ouvrir l'application",
+    "help": "📖 Aide"
   },
-  "role": {
-    "selectRole": "Sélectionner le Rôle",
-    "roleSubtitle": "Quel rôle voulez-vous jouer dans l'entretien simulé ?",
-    "interviewer": "Recruteur",
-    "interviewerDesc": "Mener des entretiens et évaluer les candidats",
-    "candidate": "Candidat",
-    "candidateDesc": "Passer des entretiens et recevoir des commentaires",
-    "interviewerShort": "Rec.",
-    "candidateShort": "Cand.",
-    "interviewerAction": "Mener des entretiens",
-    "candidateAction": "Passer des entretiens"
+  "stats": {
+    "professions": "Professions<br />Techniques 💼",
+    "languages": "Langues 🌍",
+    "interviews": "Entretiens 📊",
+    "success": "Taux de réussite 🎯"
   },
-  "profession": {
-    "selectProfession": "Sélectionner la Profession",
-    "professionSubtitle": "Choisissez une spécialisation pour l'entretien simulé",
-    "frontend": "Développeur Frontend",
-    "frontendDesc": "Développement d'interfaces utilisateur et d'applications web côté client",
-    "backend": "Développeur Backend",
-    "backendDesc": "Développement d'applications côté serveur et API",
-    "fullstack": "Développeur Fullstack",
-    "fullstackDesc": "Développement frontend et backend",
-    "mobile": "Développeur Mobile",
-    "mobileDesc": "Développement d'applications mobiles",
-    "devops": "Ingénieur DevOps",
-    "devopsDesc": "Automatisation et infrastructure",
-    "qa": "Ingénieur QA",
-    "qaDesc": "Tests et assurance qualité",
-    "designer": "Designer UX/UI",
-    "designerDesc": "Design d'expérience utilisateur",
-    "analyst": "Analyste de Données",
-    "analystDesc": "Analyse de données et rapports",
-    "scientist": "Data Scientist",
-    "scientistDesc": "Apprentissage automatique et recherche",
-    "pm": "Chef de Produit",
-    "pmDesc": "Gestion de produit"
-  },
-  "language": {
-    "selectLanguage": "Sélectionner la Langue",
-    "languageSubtitle": "Dans quelle langue l'entretien sera-t-il mené ?"
-  },
-  "time": {
-    "selectTime": "Sélectionner l'Heure",
-    "timeSubtitle": "Quand souhaitez-vous mener l'entretien ?",
-    "timezone": "Fuseau Horaire",
-    "availableSlots": "Créneaux Disponibles",
-    "selectedSlots": "Créneaux Sélectionnés",
-    "analysis": {
-      "title": "Analyse de Charge et Recommandations",
-      "online": "en ligne",
-      "recommendedTime": "Heure recommandée :",
-      "untilMatch": "Jusqu'au match :",
-      "load": "Charge :",
-      "expand": "Développer",
-      "collapse": "Réduire",
-      "showAnalysis": "Afficher l'analyse",
-      "interviewers": "Recruteurs",
-      "interviewersShort": "Recruteur",
-      "candidates": "Candidats"
+  "features": {
+    "title": "Fonctionnalités de la",
+    "titleHighlight": "plateforme",
+    "subtitle": "Technologies modernes pour une préparation efficace aux entretiens",
+    "webrtc": {
+      "title": "Appels vidéo WebRTC",
+      "description": "Communication de haute qualité en temps réel"
     },
-    "slots": {
-      "availableSlotsInterviewers": "Créneaux disponibles (recruteurs)",
-      "availableSlotsCandidates": "Créneaux disponibles (candidats)",
-      "interviewersShort": "Recruteur",
-      "candidatesShort": "Cand.",
-      "recommended": "Recommandé",
-      "recommendedShort": "Rec"
+    "coding": {
+      "title": "Programmation en temps réel",
+      "description": "Écriture collaborative de code"
     },
-    "buttons": {
-      "back": "Retour",
-      "continueAt": "Continuer à",
-      "selectTime": "Sélectionner l'heure",
-      "continue": "Continuer"
+    "chat": {
+      "title": "Chat intervieweur ↔ candidat",
+      "description": "Communication instantanée"
     },
-    "header": {
-      "title": "Sélectionner l'Heure",
-      "subtitle": "Trouvez un créneau d'entretien approprié",
-      "help": "Aide",
-      "role": "Sélectionner le rôle"
+    "ai": {
+      "title": "Analyse IA",
+      "description": "Évaluation intelligente des compétences"
     },
-    "sessionInfo": {
-      "title": "Informations de session"
+    "feedback": {
+      "title": "Retour personnalisé",
+      "description": "Recommandations détaillées"
     },
-    "roleSelection": {
-      "subtitle": "Quel rôle voulez-vous jouer dans l'entretien simulé ?"
-    },
-    "sessionInfo": {
-      "title": "Informations de session",
-      "toolsNotSelected": "Non sélectionné",
-      "toolsCount": "{{count}} outils",
-      "expand": "Développer",
-      "collapse": "Réduire",
-      "showAllTools": "Afficher tous les outils",
-      "collapseTools": "Réduire la liste"
-    },
-    "timeDisplay": {
-      "yourTime": "Votre heure",
-      "utcTime": "Heure UTC"
-    },
-    "tabs": {
-      "withTools": "Avec Outils",
-      "allSlots": "Tous les Créneaux"
-    },
-    "toolsRequired": {
-      "title": "Sélectionner les outils pour activer",
-      "description": "Cet onglet fonctionne uniquement avec les outils sélectionnés. Allez à la page de sélection d'outils.",
-      "selectTools": "Sélectionner les Outils"
-    },
-    "allSlotsDescription": "Tous les créneaux horaires disponibles sont affichés. Lors de la création d'un créneau, vos outils seront automatiquement sauvegardés.",
-    "searching": {
-      "title": "Recherche de Candidat",
-      "subtitle": "Recherche d'un candidat approprié pour l'entretien..."
+    "learning": {
+      "title": "Apprentissage interactif",
+      "description": "Gamification du processus"
     }
   },
-  "interview": {
-    "interview": "Entretien",
-    "chat": "Chat",
-    "questions": "Questions",
-    "codeEditor": "Éditeur de Code",
-    "startVideo": "Démarrer l'Appel Vidéo",
-    "endVideo": "Terminer l'Appel",
-    "endInterview": "Terminer l'Entretien",
-    "videoInactive": "L'appel vidéo n'est pas actif",
-    "waitingForMatch": "En attente d'appariement...",
-    "enterMessage": "Entrer un message...",
-    "exit": "Quitter"
-  },
-  "tags": {
-    "react": "React",
-    "vue": "Vue",
-    "angular": "Angular",
-    "typescript": "TypeScript",
-    "javascript": "JavaScript",
-    "nodejs": "Node.js",
-    "python": "Python",
-    "java": "Java",
-    "dotnet": ".NET",
-    "ios": "iOS",
-    "android": "Android",
-    "flutter": "Flutter",
-    "docker": "Docker",
-    "kubernetes": "Kubernetes",
-    "aws": "AWS",
-    "automation": "Automatisation",
-    "testing": "Tests",
-    "figma": "Figma",
-    "research": "Recherche",
-    "sql": "SQL",
-    "ml": "ML",
-    "ai": "IA",
-    "agile": "Agile",
-    "strategy": "Stratégie"
-  },
-  "home": {
-    "aiTipTitle": "🚀 Améliorez les entretiens avec l'IA",
-    "aiTipDesc": "Configurez l'API OpenRouter pour obtenir des questions uniques. Obtenez votre clé sur https://openrouter.ai/keys",
-    "startInterview": "Commencer l'entretien",
-    "startInterviewDesc": "Choisissez le rôle et commencez l'entretien",
-    "notifications": "Notifications",
-    "notificationsDesc": "Tous les événements et rappels",
-    "materials": "Matériaux",
-    "materialsDesc": "Questions et conseils de préparation",
-    "calendar": "Calendrier",
-    "calendarDesc": "Entretiens programmés"
-  },
-  "history": {
-    "title": "Historique des entretiens",
-    "description": "Voir l'historique des entretiens",
-    "backToMain": "Retour à l'accueil",
-    "noInterviews": "Vous n'avez pas encore mené d'entretiens",
-    "startNewInterview": "Commencer un nouvel entretien",
-    "interviewer": "Recruteur",
-    "candidate": "Candidat",
-    "receivedFeedback": "Commentaire reçu",
-    "givenFeedback": "Votre commentaire",
-    "giveFeedback": "Donner un commentaire",
-    "userIdNotFound": "ID utilisateur non trouvé",
-    "failedToLoadHistory": "Impossible de charger l'historique",
-    "unknownDate": "Date inconnue",
-          "candidateShort": "Cand.",
-      "interviewerShort": "Rec.",
-    "status": {
-      "completed": "Terminé",
-      "active": "Actif",
-      "cancelled": "Annulé"
-    }
-  },
-  "notifications": {
-    "title": "Notifications",
-    "clearAll": "Tout effacer",
-    "total": "Total",
-    "unread": "Non lues",
-    "noNotifications": "Aucune notification",
-    "markAsRead": "Marquer comme lu",
-    "joinInterview": "Rejoindre l'entretien",
-    "joinWaitingRoom": "Aller à la salle d'attente",
-    "delete": "Supprimer",
-    "loading": "Chargement des notifications...",
-    "error": "Erreur lors du chargement des notifications",
-    "copyLink": "Copier le lien",
-    "openLink": "Ouvrir le lien",
-    "copyRoomName": "Copier le nom complet de la salle",
-    "linkCopied": "Lien copié",
-    "roomNameCopied": "Nom de la salle copié",
-    "justNow": "À l'instant",
-    "minutesAgo": "il y a {{count}} min",
-    "hoursAgo": "il y a {{count}} h",
-    "daysAgo": "il y a {{count}} jours",
-    "dateLocale": "fr-FR",
-    "tools": "Outils",
-    "yourTools": "Vos outils",
-    "room": "Salle",
-    "emptyStateDescription": "Les notifications sur les correspondances et entretiens apparaîtront ici",
-    "priority": {
-      "high": "Élevé",
-      "medium": "Moyen",
-      "low": "Faible"
+  "languages": {
+    "title": "Langues",
+    "titleHighlight": "supportées",
+    "subtitle": "Passez des entretiens dans votre langue maternelle",
+    "english": "English",
+    "englishDesc": "Langue anglaise",
+    "russian": "Russian",
+    "russianDesc": "Langue russe",
+    "spanish": "Spanish",
+    "spanishDesc": "Langue espagnole",
+    "french": "French",
+    "frenchDesc": "Langue française",
+    "german": "German",
+    "germanDesc": "Langue allemande",
+    "chinese": "Chinese",
+    "chineseDesc": "Langue chinoise",
+    "benefits": {
+      "global": {
+        "title": "Accès Global",
+        "description": "Préparation aux entretiens dans 6 langues principales du monde"
+      },
+      "colleagues": {
+        "title": "Vos collègues avec votre stack et langue",
+        "description": "Choisissez le moment de la journée"
+      },
+      "communication": {
+        "title": "Communication Naturelle",
+        "description": "Communication confortable dans votre langue maternelle sans barrières linguistiques"
+      }
     },
-    "slotExpiredTitle": "Temps expiré",
-    "matchFoundTitle": "Match trouvé !",
-    "addedToQueueTitle": "Ajouté à la file d'attente",
-    "messages": {
-      "slotExpired": "Impossible de trouver un partenaire pour le créneau {{slotTime}}. Veuillez choisir une autre heure.",
-      "slotExpiredWithTools": "Impossible de trouver un partenaire pour le créneau {{slotTime}}. Veuillez choisir une autre heure.\nVos outils: {{tools}}",
-      "matchFound": "Heure: {{slotTime}}\nVotre rôle: {{role}}\nSalle: {{roomName}}\nLien: {{link}}",
-      "matchFoundWithTools": "Heure: {{slotTime}}\nVotre rôle: {{role}}\nSalle: {{roomName}}\nLien: {{link}}\nVos outils: {{tools}}",
-      "addedToQueue": "Créneau: {{slotTime}}\nRôle: {{role}}",
-      "addedToQueueWithTools": "Créneau: {{slotTime}}\nRôle: {{role}}\nOutils: {{tools}}",
-      "reminder": "Rappel: entretien dans {{timeLeft}}"
+    "cta": {
+      "title": "Choisissez une",
+      "titleHighlight": "langue",
+      "titleSuffix": "et commencez à apprendre",
+      "subtitle": "Préparez-vous à un entretien dans l'une des 6 langues supportées",
+      "startLearning": "Commencer à Apprendre",
+      "learningProcess": "Processus d'Apprentissage"
     }
   },
-  "profile": {
-    "title": "Profil",
-    "subtitle": "Paramètres utilisateur et génération IA",
-    "apiSettings": "Paramètres API",
-    "apiDescription": "Connectez OpenRouter pour générer des questions uniques en utilisant des modèles IA gratuits",
-    "apiKey": "Clé API OpenRouter",
-    "test": "Test",
-    "testing": "Test en cours...",
-    "connectionSuccess": "Connexion établie avec succès",
-    "connectionError": "Erreur de connexion API",
-    "getApiKey": "Obtenir une clé gratuite",
-    "aiGeneration": "Génération de Questions IA",
-    "aiGenerationDesc": "Utiliser l'IA pour créer des questions uniques",
-    "modelSettings": "Paramètres du Modèle IA",
-    "modelDescription": "Choisissez un modèle gratuit et des paramètres pour générer des questions",
-    "preferredModel": "Modèle Préféré",
-    "questionsLevel": "Niveau de Questions",
-    "questionsCount": "Nombre de Questions",
-    "questions": "questions",
-    "junior": "Junior",
-    "middle": "Middle",
-    "senior": "Senior",
+  "learningProcess": {
+    "hero": {
+      "title": "Processus",
+      "titleHighlight": "d'apprentissage",
+      "subtitle": "Plan étape par étape pour se préparer aux entretiens techniques en utilisant les technologies IA",
+      "startLearning": "Commencer l'apprentissage"
+    },
+    "processSteps": {
+      "step1": {
+        "title": "Sélection de la langue",
+        "description": "Entretiens en 6 langues",
+        "details": "Choisissez une langue pour passer des entretiens parmi 6 langues disponibles"
+      },
+      "step2": {
+        "title": "Sélection de la profession",
+        "description": "10+ directions techniques",
+        "details": "Déterminez la spécialisation technique pour la préparation"
+      },
+      "step3": {
+        "title": "Outils et technologies",
+        "description": "Stack technologique de la profession",
+        "details": "Étudiez les outils et technologies nécessaires pour la profession choisie"
+      },
+      "step4": {
+        "title": "Entretien simulé",
+        "description": "Simulation réaliste",
+        "details": "Passez des entretiens réalistes avec de vrais participants"
+      },
+      "step5": {
+        "title": "Obtenir un retour",
+        "description": "Retour détaillé",
+        "details": "Obtenez une analyse détaillée de vos réponses et comportement"
+      },
+      "step6": {
+        "title": "Analyse IA et planification",
+        "description": "Recommandations personnalisées",
+        "details": "L'IA analyse les résultats et crée un plan de développement"
+      },
+      "step7": {
+        "title": "Apprentissage dans les applications",
+        "description": "Tâches pratiques",
+        "details": "Complétez des tâches pratiques pour renforcer les compétences"
+      },
+      "step8": {
+        "title": "Répétition du cycle",
+        "description": "Développement continu",
+        "details": "Revenez au début pour une amélioration constante"
+      }
+    },
+    "languagesSection": {
+      "title": "Langues",
+      "titleHighlight": "supportées",
+      "subtitle": "Passez des entretiens dans votre langue maternelle"
+    },
+    "professionsSection": {
+      "title": "Professions",
+      "titleHighlight": "techniques",
+      "subtitle": "Préparation aux entretiens dans tous les domaines IT"
+    },
+    "plansSection": {
+      "title": "Processus d'apprentissage par forfaits",
+      "subtitle": "Différents niveaux d'accès aux fonctionnalités d'apprentissage selon le forfait choisi",
+      "free": {
+        "title": "Gratuit",
+        "description": "Capacités de base",
+        "features": {
+          "mockInterviews": {
+            "title": "Entretiens simulés",
+            "description": "Simulations d'entretiens de base"
+          },
+          "basicFeedback": {
+            "title": "Retour de base",
+            "description": "Retour simple"
+          }
+        },
+        "select": "Choisir Gratuit"
+      },
+      "basic": {
+        "title": "Basique",
+        "description": "Analyse étendue",
+        "features": {
+          "mockInterviews": {
+            "title": "Entretiens simulés",
+            "description": "Simulations étendues"
+          },
+          "aiAssistant": {
+            "title": "Assistant IA",
+            "description": "Support IA pendant les entretiens"
+          },
+          "aiAnalysis": {
+            "title": "Analyse IA et planification",
+            "description": "Recommandations personnalisées"
+          },
+          "advancedAnalytics": {
+            "title": "Analytique avancée",
+            "description": "Statistiques détaillées des progrès"
+          }
+        },
+        "select": "Choisir Basique"
+      },
+      "pro": {
+        "title": "Pro",
+        "description": "Cycle d'apprentissage complet",
+        "features": {
+          "allBasicFeatures": {
+            "title": "Toutes les fonctionnalités Basique",
+            "description": "Accès complet à l'analytique"
+          },
+          "appLearning": {
+            "title": "Apprentissage dans les applications",
+            "description": "Tâches pratiques"
+          },
+          "cycleRepetition": {
+            "title": "Répétition du cycle",
+            "description": "Développement continu"
+          },
+          "prioritySupport": {
+            "title": "Support prioritaire",
+            "description": "Fonctionnalités exclusives"
+          }
+        },
+        "select": "Choisir Pro"
+      }
+    },
+    "cta": {
+      "title": "Prêt à",
+      "titleHighlight": "commencer",
+      "titleSuffix": "l'apprentissage ?",
+      "subtitle": "Rejoignez des milliers de développeurs qui ont déjà amélioré leurs compétences avec Super Mock",
+      "startLearning": "Commencer l'apprentissage",
+      "comparePlans": "Comparer les forfaits"
+    }
+  },
+  "pricing": {
+    "title": "Choisissez votre",
+    "titleHighlight": "forfait",
+    "subtitle": "🎯 Forfaits flexibles pour une préparation efficace aux entretiens",
+    "betaNotice": {
+      "title": "La plateforme est actuellement en version Beta",
+      "description": "Par conséquent, les prix sont maximument abordables pour tous. Après la sortie de la version complète, les tarifs seront plus élevés, donc c'est maintenant le moment le plus rentable de se connecter !"
+    },
+    "learnMore": "💰 Plus d'informations sur les tarifs",
+    "included": "✅ Ce qui est inclus :",
+    "excluded": "❌ Ce qui n'est pas inclus :",
+    "proDiscount": "Prix favorable (40% d'économie)",
+    "free": {
+      "title": "Gratuit",
+      "price": "$1",
+      "period": "USD par mois",
+      "features": [
+        "Entretiens simulés illimités",
+        "Période de validité : 1 mois",
+        "Fonctionnalités de base de la plateforme"
+      ],
+      "select": "Choisir le forfait"
+    },
+    "basic": {
+      "title": "Basique",
+      "price": "$9.99",
+      "period": "USD par mois",
+      "features": [
+        "Entretiens simulés",
+        "Assistant IA",
+        "Période de validité : 1 mois",
+        "Analytique avancée"
+      ],
+      "select": "Choisir le forfait"
+    },
+    "pro": {
+      "title": "Pro",
+      "price": "$20",
+      "period": "USD pour 3 mois",
+      "popular": "Populaire",
+      "features": [
+        "Entretiens simulés",
+        "Assistant IA",
+        "Période de validité : 3 mois",
+        "Support prioritaire",
+        "Fonctionnalités exclusives"
+      ],
+      "select": "Choisir le forfait"
+    }
+  },
+  "social": {
+    "title": "Nous sommes là quand c'est difficile",
+    "subtitle": "SuperMock n'est pas seulement une question de carrière et d'entretiens. C'est une question de personnes.",
+    "description": "Nous savons à quel point cela peut être difficile pour ceux qui se trouvent dans des situations de vie difficiles. Par conséquent :",
+    "donationsPrefix": "10% de tous les paiements",
+    "donations": "sont dirigés vers l'aide à ceux qui en ont particulièrement besoin.",
+    "accessibilityPrefix": "Les personnes handicapées et les familles à faible revenu",
+    "accessibility": "peuvent étudier sur notre plateforme gratuitement.",
+    "conclusion": "Parce que chacun mérite une chance pour un avenir avec espoir et amour ❤️"
+  },
+  "pricingFaq": {
+    "title": "Questions Fréquemment Posées",
+    "howToChoose": {
+      "question": "Comment choisir un plan ?",
+      "answer": "Commencez par le plan Free pour vous familiariser avec la plateforme, puis passez à Basic ou Pro selon vos besoins."
+    },
+    "cancelSubscription": {
+      "question": "Puis-je annuler mon abonnement ?",
+      "answer": "Oui, vous pouvez annuler votre abonnement à tout moment. La période payée restera active jusqu'à la fin de la période de validité."
+    },
+    "trialPeriod": {
+      "question": "Y a-t-il une période d'essai ?",
+      "answer": "Le plan Free vous permet de tester les fonctionnalités de base de la plateforme gratuitement."
+    },
+    "paymentMethods": {
+      "question": "Quelles méthodes de paiement sont disponibles ?",
+      "answer": "Nous acceptons les paiements en USD via divers systèmes de paiement."
+    }
+  },
+  "pricingCta": {
+    "title": "Prêt à",
+    "titleHighlight": "commencer",
+    "titleSuffix": "l'apprentissage ?",
+    "subtitle": "Choisissez le bon plan et commencez à vous préparer pour votre entretien dès aujourd'hui",
+    "startLearning": "Commencer l'Apprentissage",
+    "learningProcess": "Processus d'Apprentissage"
+  },
+  "about": {
+    "title": "À propos de",
+    "titleHighlight": "Super Mock",
+    "description1": "Super Mock est une plateforme IA innovante qui révolutionne le processus de préparation aux entretiens techniques. Nous combinons des technologies d'intelligence artificielle de pointe avec un support multilingue pour créer une expérience d'apprentissage personnalisée.",
+    "description2": "Notre plateforme aide les candidats à améliorer leurs compétences en programmation, communication et résolution de problèmes grâce à des simulations réalistes d'entretiens avec analyse IA et retour en temps réel.",
+    "learnMore": "En savoir plus",
+    "page": {
+      "badge": "À propos de nous",
+      "name": "Korobkov Maxim Viktorovich",
+      "subtitle": "Créateur de SuperMock — une plateforme innovante pour la préparation aux entretiens utilisant l'intelligence artificielle",
+      "contact": "Contacter",
+      "projectTitle": "À propos du projet",
+      "projectSubtitle": "Plateforme unique pour l'apprentissage personnalisé des professions IT",
+      "principles": "Principes principaux :",
+      "principlesText": "Beaucoup de cours IT ne sont pas vivants, ils ne sont pas individuels. Chaque personne est spéciale et tous sont différents, il n'y a pas de personnes identiques, ce qui signifie que le principe dans l'apprentissage doit être spécial et personnel pour chacun.",
+      "readMore": "Lire plus...",
+      "hideDetails": "Masquer les détails",
+      "authorIntro": "Mon nom est Korobkov Maxim Viktorovich et je suis un développeur avec 20 ans d'expérience, j'ai commencé avec des systèmes de trading automatisés sur les bourses financières, je conçois actuellement des systèmes pour les besoins des entreprises.",
+      "problemDescription": "Je reçois beaucoup d'idées dans la vie des problèmes que je rencontre, et en tant que développeur j'essaie de les résoudre. Le temps est la chose la plus précieuse dans notre vie, j'ai fait face au problème que beaucoup de temps est dépensé pour l'apprentissage. J'ai étudié dans quatre entreprises, cette expérience m'est connue, elles essaient toutes de résoudre des problèmes, mais beaucoup de leurs étudiants partent insatisfaits.",
+      "solutionTitle": "Solution au problème dans l'approche :",
+      "solutionText": "La chose la plus importante vers laquelle nous allons est l'objectif, mais pendant que nous y allons nous oublions déjà ce que nous avons traversé ou appris. Est-ce que cela vous est familier ? Je pense que oui, tout le monde connaît cela... Alors quelle est la solution ? Ne nous contentons pas d'enseigner à mémoriser, mais vivons aussi, plongeons-nous dans le bon sens de comprendre ce mot :)",
+      "experienceDescription": "Imaginez même si vous êtes déjà un professionnel et avez accompli quelque chose en IT. Vous êtes un junior et brûlez d'entrer en IT et gagner beaucoup d'argent à distance en buvant du jus sur le rivage de la mer, en travaillant sur un MacBook... Mais, il y a un \"MAIS\" — les employeurs ne prennent pas même s'il y a une réponse, dans leur société réussie, vous ne correspondez pas, le live coding a échoué ou vous avez répondu incorrectement, peu de projets pas d'expérience commerciale.",
+      "ideaTitle": "Voici venue l'idée :",
+      "ideaText": "Créer un service où tout est en un endroit et il y a votre mentor personnel — un vrai ami même si c'est l'IA ! Imaginez, vous avez appris quelques bases sur la plateforme, et puis le mentor vous dit : \"Êtes-vous prêt, allons à un entretien simulé, passez-le je vais regarder le feedback et à partir de là je vais vous guider, combler les lacunes dans vos connaissances\".",
+      "learningDescription": "Vous passez des entretiens, vous vous habituez à la communication et parlez avec confiance avec l'intervieweur, pas comme avant avec une voix tremblante ou en priant que la connexion disparaisse et sortir de cet enfer :) En général, l'apprentissage se fait avec joie parce qu'il est fait pour vous et configuré pour vous.",
+      "conclusion": "C'est le système que j'ai développé spécifiquement pour vous. Passez des entretiens en communiquant avec des collègues, payez un montant raisonnable pour l'apprentissage en signe de gratitude pour soutenir le projet.",
+      "featuresTitle": "Fonctionnalités clés",
+      "featuresSubtitle": "Ce qui fait de SuperMock une plateforme unique",
+      "feature1": "Mentor IA personnel pour chaque utilisateur",
+      "feature2": "Entretiens simulés avec des scénarios réalistes",
+      "feature3": "Apprentissage adaptatif basé sur vos lacunes",
+      "feature4": "Développement à la fois des compétences techniques et soft skills",
+      "skillsTitle": "Compétences et technologies",
+      "skillsSubtitle": "Spécialisation dans l'IA et le développement web",
+      "skill1": {
+        "name": "IA/ML",
+        "description": "Apprentissage automatique, réseaux de neurones, traitement du langage naturel"
+      },
+      "skill2": {
+        "name": "Développement Web",
+        "description": "Développement Frontend et Backend, frameworks modernes"
+      },
+      "skill3": {
+        "name": "Coaching d'Entretiens",
+        "description": "Préparation aux entretiens, développement des soft skills"
+      },
+      "skill4": {
+        "name": "Gestion de Produit",
+        "description": "Gestion de produit, analytique, stratégie de développement"
+      },
+      "collaborationTitle": "Prêt pour la collaboration",
+      "collaborationSubtitle": "ouvert aux nouveaux projets et opportunités professionnelles.",
+      "email": "Email",
+      "linkedin": "LinkedIn",
+      "github": "GitHub"
+    }
+  },
+  "professions": {
+    "hero": {
+      "title": "Professions",
+      "titleHighlight": "Techniques",
+      "subtitle": "Préparez-vous aux entretiens dans tous les domaines informatiques"
+    },
+    "professionsList": {
+      "frontend": {
+        "name": "Frontend",
+        "description": "Développement d'interfaces utilisateur"
+      },
+      "backend": {
+        "name": "Backend",
+        "description": "Développement côté serveur et API"
+      },
+      "fullstack": {
+        "name": "Fullstack",
+        "description": "Développement full-stack"
+      },
+      "mobile": {
+        "name": "Mobile",
+        "description": "Développement mobile"
+      },
+      "devops": {
+        "name": "DevOps",
+        "description": "Infrastructure et automatisation"
+      },
+      "qa": {
+        "name": "QA",
+        "description": "Tests et assurance qualité"
+      },
+      "uxui": {
+        "name": "UX/UI",
+        "description": "Conception d'expérience utilisateur"
+      },
+      "dataAnalyst": {
+        "name": "Analyste de Données",
+        "description": "Analyse de données"
+      },
+      "dataScientist": {
+        "name": "Scientifique des Données",
+        "description": "Science des données et ML"
+      },
+      "productManager": {
+        "name": "Chef de Produit",
+        "description": "Gestion de produit"
+      }
+    },
+    "stats": {
+      "professions": "Professions<br />Techniques 💼",
+      "languages": "Langues 🌍",
+      "interviews": "Entretiens 📊",
+      "success": "Taux de Réussite 🎯"
+    },
+    "cta": {
+      "title": "Choisissez une",
+      "titleHighlight": "profession",
+      "titleSuffix": "et commencez à vous préparer",
+      "subtitle": "Préparez-vous à un entretien dans n'importe quelle spécialité technique",
+      "startLearning": "Commencer l'Apprentissage",
+      "learningProcess": "Processus d'Apprentissage"
+    }
+  },
+  "instructions": {
+    "hero": {
+      "title": "Aide SuperMock",
+      "subtitle": "Guide étape par étape pour utiliser la plateforme de pratique d'entretiens",
+      "startLearning": "Commencer l'apprentissage",
+      "haveQuestions": "Vous avez des questions ?"
+    },
+    "steps": {
+      "title": "Guide",
+      "titleHighlight": "étape par étape",
+      "subtitle": "Suivez ces étapes simples pour commencer à pratiquer les entretiens",
+      "step1": {
+        "title": "Cliquez sur le bouton SuperMock",
+        "description": "Commencer l'apprentissage",
+        "details": "Allez à la page principale et cliquez sur le bouton 'Commencer l'apprentissage' pour entrer dans le système"
+      },
+      "step2": {
+        "title": "Choisissez une profession",
+        "description": "Spécifiez le domaine dans lequel vous voulez pratiquer",
+        "details": "Choisissez parmi la liste des professions disponibles celle qui correspond à vos objectifs d'apprentissage"
+      },
+      "step3": {
+        "title": "Choisissez un rôle",
+        "description": "Candidat ou intervieweur",
+        "details": "Décidez du rôle : voulez-vous pratiquer en tant que candidat ou en tant qu'intervieweur"
+      },
+      "step4": {
+        "title": "Trouvez un entretien",
+        "description": "Le système trouvera un partenaire approprié",
+        "details": "Notre système trouvera automatiquement un partenaire approprié pour que vous puissiez pratiquer"
+      },
+      "step5": {
+        "title": "Conduisez l'entretien",
+        "description": "Utilisez l'appel vidéo intégré",
+        "details": "Conduisez un entretien complet en utilisant l'appel vidéo intégré"
+      },
+      "step6": {
+        "title": "Laissez un retour",
+        "description": "Évaluez votre partenaire et recevez une note",
+        "details": "Après l'entretien, laissez un retour constructif et recevez une note de votre partenaire"
+      }
+    },
+    "tips": {
+      "title": "💡",
+      "titleHighlight": "Conseils",
+      "subtitle": "Recommandations utiles pour une pratique efficace",
+      "tip1": {
+        "title": "Soyez poli et professionnel",
+        "description": "Respectez l'étiquette professionnelle et traitez votre partenaire avec respect"
+      },
+      "tip2": {
+        "title": "Laissez un retour constructif",
+        "description": "Aidez votre partenaire à améliorer ses compétences en fournissant des recommandations utiles"
+      },
+      "tip3": {
+        "title": "Pratiquez régulièrement",
+        "description": "Pour de meilleurs résultats, consacrez du temps à la pratique sur une base régulière"
+      }
+    },
+    "cta": {
+      "title": "Vous avez des",
+      "titleHighlight": "questions",
+      "titleSuffix": " ?",
+      "subtitle": "Écrivez-nous ! 📧 Nous sommes toujours prêts à aider",
+      "contactUs": "Nous contacter",
+      "startPractice": "Commencer la pratique"
+    }
+  },
+  "support": {
+    "hero": {
+      "title": "Support",
+      "subtitle": "💜 Nous croyons que chacun mérite l'opportunité de grandir et de se développer"
+    },
+    "supportOptions": {
+      "freeLearning": {
+        "title": "Apprentissage Gratuit",
+        "description": "Pour les personnes handicapées et les familles à faible revenu",
+        "features": [
+          "Accès complet à la plateforme",
+          "Toutes les fonctionnalités et capacités",
+          "Support personnel"
+        ]
+      },
+      "discounts": {
+        "title": "Remises et Avantages",
+        "description": "Pour ceux qui se trouvent dans des situations de vie difficiles",
+        "features": [
+          "Remises individuelles jusqu'à 50%",
+          "Conditions de paiement flexibles",
+          "Examen de chaque cas"
+        ]
+      }
+    },
+    "howItWorks": {
+      "title": "Comment obtenir du support ?",
+      "subtitle": "Nous examinerons votre situation et proposerons la solution optimale",
+      "steps": {
+        "step1": {
+          "title": "Écrivez-nous",
+          "description": "Décrivez votre situation dans Telegram"
+        },
+        "step2": {
+          "title": "Nous étudierons",
+          "description": "Nous examinerons votre demande dans les 24 heures"
+        },
+        "step3": {
+          "title": "Obtenez de l'aide",
+          "description": "Nous proposerons une option de support appropriée"
+        }
+      }
+    },
+    "cta": {
+      "title": "Prêts à vous",
+      "titleHighlight": "aider",
+      "titleSuffix": "",
+      "subtitle": "Écrivez-nous dans Telegram, et nous examinerons définitivement votre situation. Chaque cas est unique, et nous trouverons un moyen de vous aider.",
+      "buttonText": "Écrire à Telegram",
+      "responseTime": "💜 Nous répondrons dans les 24 heures"
+    },
+    "socialImpact": {
+      "title": "Notre Impact Social",
+      "stats": {
+        "donations": {
+          "value": "10%",
+          "description": "De tous les paiements va à l'aide aux nécessiteux"
+        },
+        "peopleHelped": {
+          "value": "100+",
+          "description": "Personnes ont reçu un accès gratuit à l'apprentissage"
+        },
+        "responseTime": {
+          "value": "24h",
+          "description": "Temps de réponse moyen aux demandes de support"
+        }
+      }
+    }
+  },
+  "footer": {
+    "description": "Plateforme IA pour la préparation aux entretiens techniques avec support pour 6 langues et retour personnalisé.",
+    "product": "Produit",
+    "support": "Support",
+    "payment": "Paiement",
+    "features": "Fonctionnalités",
+    "professions": "Professions",
+    "languages": "Langues",
+    "pricing": "Tarifs",
+    "help": "📖 Aide",
+    "documentation": "Documentation",
+    "supportLink": "💜 Support",
+    "faq": "FAQ",
+    "about": "À propos",
+    "privacyPolicy": "Politique de Confidentialité",
+    "termsOfService": "Conditions d'Utilisation",
+    "github": "GitHub",
 
-    "aiBenefitsTitle": "Avantages de la génération IA",
-    "aiBenefit1": "Questions uniques pour chaque profession",
-    "aiBenefit2": "Adaptation au niveau de difficulté",
-    "aiBenefit3": "Nombre illimité de questions",
-    "save": "Enregistrer les Paramètres",
-    "loadingSettings": "Chargement des paramètres...",
-    "projectMode": "Mode projet",
-    "projectModeDesc": "Les paramètres sont sauvegardés localement et dans la base de données",
-    "online": "En ligne",
-    "profileSettings": "Paramètres du profil",
-    "interviewLanguage": "Langue de l'entretien",
-    "profession": "Profession",
-    "interfaceLanguage": "Langue de l'interface",
-    "interfaceLanguageDesc": "Choisissez la langue pour afficher l'interface de l'application",
-    "goToInterview": "Aller à la réservation d'entretien",
-    "getFreeKey": "Obtenir une clé gratuite",
-    "getFreeKeyDesc": "pour la génération IA de questions d'entretien.",
-    "learnMoreOpenRouter": "En savoir plus sur l'API OpenRouter",
-    "stackblitzApiKey": "Clé API StackBlitz",
-    "learnMoreStackBlitz": "En savoir plus sur l'API StackBlitz",
-    "getStackBlitzKey": "Obtenir une clé API",
-    "getStackBlitzKeyDesc": "pour l'exécution et l'édition collaborative de code dans l'éditeur d'entretien.",
-    "saving": "Enregistrement...",
-    "settingsSaved": "Paramètres enregistrés !",
-    "saveError": "Erreur lors de l'enregistrement des paramètres",
-    "enterApiKey": "Entrez la clé API pour le test",
-    "invalidApiKey": "Format de clé API invalide",
-    "connectionTestError": "Erreur lors du test de connexion"
-  },
-  "tools": {
-    "selectTools": "Sélectionner les Outils",
-    "subtitle": "Choisissez au moins 2 outils que vous utilisez dans votre travail",
-    "reset": "Réinitialiser",
-    "resetSelection": "Réinitialiser la Sélection",
-    "loading": "Chargement...",
-    "saving": "Sauvegarde...",
-    "minSelection": "Choisissez au moins 2 outils pour continuer",
-    "selectedCount": "Sélectionné : {{count}} sur {{max}}",
-    "minimumTools": "Minimum {{count}} outils",
-    "searchPlaceholder": "Rechercher des outils...",
-    "allCategories": "Tous",
-    "popularCombinations": "Combinaisons populaires",
-    "selectedOverlap": "{{overlap}}/{{total}} sélectionné",
-    "select": "Sélectionner",
-    "selected": "Sélectionné",
-    "limitReached": "Limite de sélection d'outils atteinte",
-    "noToolsFound": "Aucun outil trouvé",
-    "noToolsAvailable": "Aucun outil disponible",
-    "yourTools": "Vos outils",
-    "matchingTools": "Outils correspondants",
-    "selectToolsToActivate": "Sélectionner les outils à activer",
-    "selectTools": "Sélectionner les outils",
-    "allSlotsToolsSaved": "Tous les créneaux (les outils seront sauvegardés)",
-    "toolsWillBeSaved": "créneau sauvegardera automatiquement vos outils.",
-    "tryChangeFilter": "Essayez de changer le filtre de correspondance ou les outils sélectionnés",
-    "toolsNotSelected": "Vous n'avez pas encore sélectionné d'outils. Cliquez sur \"Modifier\" pour ajouter.",
-    "userToolsNotSelected": "L'utilisateur n'a pas encore sélectionné d'outils.",
-    "failedToLoadTools": "Impossible de charger les outils",
-    "failedToSaveTools": "Impossible de sauvegarder les outils",
-    "userTools": "Outils utilisateur",
-    "categories": {
-      "frameworks": "Frameworks",
-      "languages": "Langages de Programmation",
-      "databases": "Bases de Données",
-      "tools": "Outils",
-      "platforms": "Plateformes",
-      "design": "Design",
-      "testing": "Tests",
-      "devops": "DevOps"
-    }
-  },
-  "infoCarousel": {
-    "candidateTitle": "Pour les Candidats",
-    "interviewerTitle": "Recruteur",
-    "back": "Retour",
-    "next": "Suivant",
-    "candidateSlides": {
-      "slide1": {
-        "title": "Choisissez un moment pratique",
-        "description": "Créneaux disponibles 24h/24. Le système masque automatiquement l'heure passée."
-      },
-      "slide2": {
-        "title": "Trouvez des recruteurs",
-        "description": "Voyez le nombre de recruteurs disponibles dans chaque créneau horaire."
-      },
-      "slide3": {
-        "title": "Recommandations intelligentes",
-        "description": "Le système recommande l'heure optimale pour un appariement rapide."
-      },
-      "slide4": {
-        "title": "Démarrage rapide",
-        "description": "Un clic - et vous êtes dans la file d'attente d'entretien. Appariement automatique !"
-      }
-    },
-    "interviewerSlides": {
-      "slide1": {
-        "title": "Planning flexible",
-        "description": "Choisissez quand il vous convient de mener des entretiens."
-      },
-      "slide2": {
-        "title": "Les candidats attendent",
-        "description": "Voyez le nombre de candidats prêts pour les entretiens dans chaque créneau."
-      },
-      "slide3": {
-        "title": "Heure optimale",
-        "description": "Le système montre quand il y a le plus de candidats."
-      },
-      "slide4": {
-        "title": "Efficacité",
-        "description": "Charge maximale et temps d'attente minimal."
-      }
-    }
-  },
-  "stackBlitzModal": {
-    "title": "Clé API StackBlitz",
-    "subtitle": "En savoir plus sur les capacités d'édition collaborative de code",
-    "back": "Retour",
-    "next": "Suivant",
-    "gotIt": "Compris",
-    "getApiKey": "Obtenir la clé API",
-    "slides": {
-      "slide1": {
-        "title": "Qu'est-ce que StackBlitz API ?",
-        "description": "StackBlitz API vous permet d'exécuter et d'éditer du code dans le navigateur sans installer de logiciel supplémentaire."
-      },
-      "slide2": {
-        "title": "Édition collaborative",
-        "description": "Pendant l'entretien, vous pouvez écrire du code avec le recruteur en temps réel."
-      },
-      "slide3": {
-        "title": "Collaboration",
-        "description": "Le recruteur voit votre code et peut commenter, suggérer des modifications et évaluer les solutions."
-      },
-      "slide4": {
-        "title": "Comment obtenir une clé API ?",
-        "description": "Allez sur stackblitz.com, connectez-vous à votre compte et créez une clé API dans les paramètres de votre profil."
-      }
-    }
-  },
-  "openRouterModal": {
-    "title": "Clé API OpenRouter",
-    "subtitle": "En savoir plus sur les capacités de génération de questions IA pour les entretiens",
-    "back": "Retour",
-    "next": "Suivant",
-    "gotIt": "Compris",
-    "getApiKey": "Obtenir la clé API",
-    "slides": {
-      "slide1": {
-        "title": "Qu'est-ce qu'OpenRouter ?",
-        "description": "OpenRouter est une plateforme qui fournit l'accès à divers modèles d'IA via une interface API unifiée."
-      },
-      "slide2": {
-        "title": "Génération de questions IA",
-        "description": "En utilisant l'API OpenRouter, le système génère automatiquement des questions d'entretien personnalisées basées sur votre profession et votre niveau."
-      },
-      "slide3": {
-        "title": "Sécurité et confidentialité",
-        "description": "Votre clé API est stockée localement et utilisée uniquement pour la génération de questions. Nous n'avons pas accès à vos données."
-      },
-      "slide4": {
-        "title": "Comment obtenir une clé API ?",
-        "description": "Allez sur openrouter.ai, créez un compte et obtenez une clé API dans la section \"Keys\". Premiers $5 de crédits gratuits !"
-      }
-    }
-  },
-  "waiting": {
-    "rules": {
-      "title": "Règles de respect mutuel",
-      "important": "Important",
-      "bePolite": "Soyez poli et patient",
-      "dontInterrupt": "N'interrompez pas l'interlocuteur",
-      "askQuestions": "Posez des questions de clarification",
-      "giveFeedback": "Donnez un retour constructif",
-      "goal": "Rappelez-vous : l'objectif est de s'aider mutuellement à se développer professionnellement",
-      "interviewerTips": "Conseils pour le recruteur :",
-      "candidateTips": "Conseils pour le candidat :",
-      "interviewerAdvice": "Soyez bienveillant, posez des questions ouvertes, donnez au candidat le temps de réfléchir",
-      "candidateAdvice": "Soyez confiant, donnez des exemples concrets, n'ayez pas peur de poser des questions"
-    },
-    "devMode": "MODE DEV - Données simulées",
-    "waitingRoom": "Salle d'attente (DEV)",
-    "waitingForMock": "En attente du début de l'entretien simulé",
-    "sessionInfo": {
-      "startTime": "Heure de début",
-      "yourRole": "Votre rôle",
-      "profession": "Profession",
-      "language": "Langue",
-      "notSpecified": "Non spécifié",
-      "notSpecifiedLang": "Non spécifié"
-    },
-    "participants": {
-      "title": "Participants de la session",
-      "waiting": "En attente :",
-      "interviews": "entretiens",
-      "interviewer": "Recruteur",
-      "candidate": "Candidat"
-    },
-    "timer": {
-      "untilStart": "Jusqu'au début :",
-      "late": "En retard :",
-      "canEnter": "Peut entrer !",
-      "progress": "Progrès jusqu'à l'entrée possible",
-      "lateWarning": "⚠️ Vous êtes en retard pour l'entretien. Essayez de rejoindre dès que possible."
-    },
-    "actions": {
-      "mediaSettings": "Paramètres caméra et son",
-      "hideSettings": "Masquer les paramètres",
-      "joinInterview": "Rejoindre l'entretien",
-      "joinLate": "Rejoindre (en retard)",
-      "enterEarly": "Entrer tôt (test)",
-      "earlyInfo": "L'entrée est généralement possible 5 minutes avant le début",
-      "lateInfo": "L'heure de début de l'entretien est déjà passée",
-      "backToDevTest": "← Retour à dev-test"
-    },
-    "status": {
-      "active": "La session est active et prête à commencer (DEV)"
-    },
-    "errors": {
-      "title": "Erreur",
-      "insufficientData": "Données insuffisantes pour charger la session",
-      "loadError": "Erreur lors du chargement des données de session",
-      "sessionNotFound": "Session non trouvée",
-      "loadFailed": "Impossible de charger les données de session"
-    },
-    "loading": {
-      "mockData": "Chargement des données simulées...",
-      "sessionData": "Chargement des données de session..."
-    }
-  },
-  "chat": {
-    "title": "Chat des participants",
-    "typing": "Tape...",
-    "quickMessages": "Messages rapides",
-    "inputPlaceholder": "Écrire un message...",
-    "enterToSend": "Entrée pour envoyer",
-    "system": "Système",
-    "participantsConnected": "Les participants ont rejoint le chat ({{count}}/2)",
-    "you": "Vous",
-    "messages": {
-      "greeting": {
-        "hello": "Bonjour !",
-        "goodDay": "Bonne journée !",
-        "greetings": "Salutations !",
-        "niceToMeet": "Ravi de vous rencontrer !"
-      },
-      "status": {
-        "ready": "Prêt pour l'entretien",
-        "nervous": "Un peu nerveux",
-        "great": "Tout va bien !",
-        "needMinute": "Besoin d'une minute",
-        "checkingSound": "Vérification du son"
-      },
-      "question": {
-        "howAreYou": "Comment allez-vous ?",
-        "readyToStart": "Prêt à commencer ?",
-        "anyQuestions": "Des questions ?",
-        "everythingClear": "Tout est clair ?",
-        "shallWeStart": "On commence ?",
-        "readyToAnswer": "Prêt à répondre"
-      },
-      "reaction": {
-        "excellent": "Excellent !",
-        "agree": "D'accord",
-        "interesting": "Intéressant",
-        "gotIt": "Compris",
-        "thankYou": "Merci !",
-        "greatQuestion": "Excellente question"
-      }
-    }
-  },
-  "media": {
-    "title": "Paramètres caméra et son",
-    "subtitle": "Vérifiez et configurez vos appareils avant l'entretien",
-    "refresh": "Actualiser",
-    "camera": {
-      "title": "Caméra",
-      "enabled": "Activée",
-      "disabled": "Désactivée",
-      "enable": "Activer la caméra",
-      "selectDevice": "Sélectionner la caméra :"
-    },
-    "microphone": {
-      "title": "Microphone",
-      "enabled": "Activé",
-      "disabled": "Désactivé",
-      "enable": "Activer le microphone",
-      "selectDevice": "Sélectionner le microphone :",
-      "level": "Niveau sonore"
-    },
-    "volume": {
-      "title": "Volume"
-    },
-    "actions": {
-      "saveSettings": "Enregistrer les paramètres",
-      "testAudio": "Tester l'audio",
-      "stopTest": "Arrêter le test"
-    },
-    "status": {
-      "saved": "✅ Paramètres enregistrés et seront utilisés pendant l'entretien"
-    },
-    "errors": {
-      "noDevices": "Aucun appareil caméra ou microphone disponible trouvé",
-      "loadFailed": "Échec du chargement de la liste des appareils. Vérifiez les permissions du navigateur.",
-      "deviceUnavailable": "Appareil indisponible : {{constraint}}. Essayez de sélectionner un autre appareil.",
-      "streamFailed": "Échec du démarrage du flux média. Vérifiez les permissions du navigateur."
-    }
+    "linkedin": "LinkedIn",
+    "copyright": "© 2025 Super Mock. Tous droits réservés."
   }
 }

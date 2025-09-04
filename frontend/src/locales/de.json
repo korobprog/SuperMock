@@ -1,590 +1,594 @@
 {
   "navigation": {
-    "next": "Weiter",
-    "back": "Zurück",
-    "select": "Auswählen",
-    "cancel": "Abbrechen"
+    "features": "Funktionen",
+    "learningProcess": "Prozess",
+    "professions": "Berufe",
+    "languages": "Sprachen",
+    "pricing": "Preise",
+    "instructions": "📖 Hilfe",
+    "support": "💜 Support",
+    "about": "Über uns",
+    "login": "Anmelden"
   },
-  "common": {
-    "detectingLanguage": "Sprache erkennen...",
-    "loading": "Laden...",
-    "platformSubtitle": "plattform für die durchführung von mock-interviews",
-    "notifications": "Benachrichtigungen",
-    "settings": "Einstellungen",
-    "logout": "Abmelden",
-    "profession": "Beruf",
-    "language": "Sprache",
-    "user": "Benutzer",
-    "unknown": "Unbekannt",
-    "telegram": "Telegram",
-    "localUser": "Lokaler Benutzer",
-    "notAuthorized": "Nicht autorisiert",
-    "configureApi": "API konfigurieren",
-    "quickActions": "Schnellaktionen",
-    "interviewer": "Interviewer",
-    "candidate": "Kandidat",
-    "lastInterview": "Letztes Interview",
-    "comingSoon": "Demnächst",
-    "save": "Speichern"
+  "hero": {
+    "title": "Bereiten Sie sich auf Ihr",
+    "titleHighlight": "Vorstellungsgespräch",
+    "titleSuffix": "in 6 Sprachen vor",
+    "subtitle": "Super Mock — KI-Plattform für Vorstellungsgespräche mit einzigartiger Kandidaten- und Interviewer-Zuordnung",
+    "startLearning": "🚀 Lernen beginnen",
+    "openApp": "💻 App öffnen",
+    "help": "📖 Hilfe"
   },
-  "role": {
-    "selectRole": "Rolle Auswählen",
-    "roleSubtitle": "Welche Rolle möchten Sie im Mock-Interview übernehmen?",
-    "interviewer": "Interviewer",
-    "interviewerDesc": "Interviews führen und Kandidaten bewerten",
-    "candidate": "Kandidat",
-    "candidateDesc": "An Interviews teilnehmen und Feedback erhalten",
-    "interviewerShort": "Int.",
-    "candidateShort": "Kan.",
-    "interviewerAction": "Interviews führen",
-    "candidateAction": "An Interviews teilnehmen"
+  "stats": {
+    "professions": "Technische<br />Berufe 💼",
+    "languages": "Sprachen 🌍",
+    "interviews": "Vorstellungsgespräche 📊",
+    "success": "Erfolgsrate 🎯"
   },
-  "profession": {
-    "selectProfession": "Beruf Auswählen",
-    "professionSubtitle": "Wählen Sie eine Spezialisierung für das Mock-Interview",
-    "frontend": "Frontend Developer",
-    "frontendDesc": "Entwicklung von Benutzeroberflächen und clientseitigen Webanwendungen",
-    "backend": "Backend Developer",
-    "backendDesc": "Server-seitige Anwendungsentwicklung und API",
-    "fullstack": "Fullstack Developer",
-    "fullstackDesc": "Frontend- und Backend-Entwicklung",
-    "mobile": "Mobile Developer",
-    "mobileDesc": "Entwicklung mobiler Anwendungen",
-    "devops": "DevOps Engineer",
-    "devopsDesc": "Automatisierung und Infrastruktur",
-    "qa": "QA Engineer",
-    "qaDesc": "Testing und Qualitätssicherung",
-    "designer": "UX/UI Designer",
-    "designerDesc": "User Experience Design",
-    "analyst": "Data Analyst",
-    "analystDesc": "Datenanalyse und Berichterstattung",
-    "scientist": "Data Scientist",
-    "scientistDesc": "Maschinelles Lernen und Forschung",
-    "pm": "Product Manager",
-    "pmDesc": "Produktmanagement"
-  },
-  "language": {
-    "selectLanguage": "Sprache Auswählen",
-    "languageSubtitle": "In welcher Sprache wird das Interview durchgeführt?"
-  },
-  "time": {
-    "selectTime": "Zeit Auswählen",
-    "timeSubtitle": "Wann möchten Sie das Interview durchführen?",
-    "timezone": "Zeitzone",
-    "availableSlots": "Verfügbare Zeitslots",
-    "selectedSlots": "Ausgewählte Zeitslots",
-    "analysis": {
-      "title": "Lastanalyse und Empfehlungen",
-      "online": "online",
-      "recommendedTime": "Empfohlene Zeit:",
-      "untilMatch": "Bis zum Match:",
-      "load": "Last:",
-      "expand": "Erweitern",
-      "collapse": "Reduzieren",
-      "showAnalysis": "Analyse anzeigen",
-      "interviewers": "Interviewer",
-      "interviewersShort": "Interviewer",
-      "candidates": "Kandidaten"
+  "features": {
+    "title": "Plattform",
+    "titleHighlight": "Funktionen",
+    "subtitle": "Moderne Technologien für effektive Vorbereitung auf Vorstellungsgespräche",
+    "webrtc": {
+      "title": "WebRTC-Videoanrufe",
+      "description": "Hochwertige Echtzeitkommunikation"
     },
-    "slots": {
-      "availableSlotsInterviewers": "Verfügbare Zeitslots (Interviewer)",
-      "availableSlotsCandidates": "Verfügbare Zeitslots (Kandidaten)",
-      "interviewersShort": "Interviewer",
-      "candidatesShort": "Kan.",
-      "recommended": "Empfohlen",
-      "recommendedShort": "Empf"
+    "coding": {
+      "title": "Echtzeit-Programmierung",
+      "description": "Kollaboratives Code-Schreiben"
     },
-    "buttons": {
-      "back": "Zurück",
-      "continueAt": "Fortfahren um",
-      "selectTime": "Zeit auswählen",
-      "continue": "Fortfahren"
+    "chat": {
+      "title": "Interviewer ↔ Kandidat Chat",
+      "description": "Sofortige Kommunikation"
     },
-    "header": {
-      "title": "Zeit Auswählen",
-      "subtitle": "Finden Sie einen passenden Interview-Slot",
-      "help": "Hilfe",
-      "role": "Rolle auswählen"
+    "ai": {
+      "title": "KI-Analyse",
+      "description": "Intelligente Fähigkeitsbewertung"
     },
-    "sessionInfo": {
-      "title": "Sitzungsinformationen"
+    "feedback": {
+      "title": "Personalisierte Rückmeldung",
+      "description": "Detaillierte Empfehlungen"
     },
-    "roleSelection": {
-      "subtitle": "Welche Rolle möchten Sie im Mock-Interview übernehmen?"
-    },
-    "sessionInfo": {
-      "title": "Sitzungsinformationen",
-      "toolsNotSelected": "Nicht ausgewählt",
-      "toolsCount": "{{count}} Tools",
-      "expand": "Erweitern",
-      "collapse": "Reduzieren",
-      "showAllTools": "Alle Tools anzeigen",
-      "collapseTools": "Liste reduzieren"
-    },
-    "timeDisplay": {
-      "yourTime": "Ihre Zeit",
-      "utcTime": "UTC Zeit"
-    },
-    "tabs": {
-      "withTools": "Mit Tools",
-      "allSlots": "Alle Zeitslots"
-    },
-    "toolsRequired": {
-      "title": "Tools auswählen zur Aktivierung",
-      "description": "Dieser Tab funktioniert nur mit ausgewählten Tools. Gehen Sie zur Tool-Auswahlseite.",
-      "selectTools": "Tools auswählen"
-    },
-    "allSlotsDescription": "Alle verfügbaren Zeitslots werden angezeigt. Beim Erstellen eines Slots werden Ihre Tools automatisch gespeichert.",
-    "searching": {
-      "title": "Suche nach Kandidat",
-      "subtitle": "Suche nach einem passenden Kandidaten für das Interview..."
+    "learning": {
+      "title": "Interaktives Lernen",
+      "description": "Prozess-Gamifizierung"
     }
   },
-  "interview": {
-    "interview": "Interview",
-    "chat": "Chat",
-    "questions": "Fragen",
-    "codeEditor": "Code-Editor",
-    "startVideo": "Videoanruf starten",
-    "endVideo": "Anruf beenden",
-    "endInterview": "Interview beenden",
-    "videoInactive": "Videoanruf ist nicht aktiv",
-    "waitingForMatch": "Warten auf Matching...",
-    "enterMessage": "Nachricht eingeben...",
-    "exit": "Verlassen"
-  },
-  "tags": {
-    "react": "React",
-    "vue": "Vue",
-    "angular": "Angular",
-    "typescript": "TypeScript",
-    "javascript": "JavaScript",
-    "nodejs": "Node.js",
-    "python": "Python",
-    "java": "Java",
-    "dotnet": ".NET",
-    "ios": "iOS",
-    "android": "Android",
-    "flutter": "Flutter",
-    "docker": "Docker",
-    "kubernetes": "Kubernetes",
-    "aws": "AWS",
-    "automation": "Automatisierung",
-    "testing": "Testing",
-    "figma": "Figma",
-    "research": "Forschung",
-    "sql": "SQL",
-    "ml": "ML",
-    "ai": "KI",
-    "agile": "Agil",
-    "strategy": "Strategie"
-  },
-  "home": {
-    "aiTipTitle": "🚀 Verbessern Sie Interviews mit KI",
-    "aiTipDesc": "Konfigurieren Sie OpenRouter API für einzigartige Fragen. Holen Sie sich Ihren Schlüssel unter https://openrouter.ai/keys",
-    "startInterview": "Interview starten",
-    "startInterviewDesc": "Rolle wählen und Interview beginnen",
-    "notifications": "Benachrichtigungen",
-    "notificationsDesc": "Alle Ereignisse und Erinnerungen",
-    "materials": "Materialien",
-    "materialsDesc": "Fragen und Vorbereitungstipps",
-    "calendar": "Kalender",
-    "calendarDesc": "Geplante Interviews"
-  },
-  "history": {
-    "title": "Interview-Verlauf",
-    "description": "Interview-Verlauf anzeigen",
-    "backToMain": "Zurück zur Hauptseite",
-    "noInterviews": "Sie haben noch keine Interviews durchgeführt",
-    "startNewInterview": "Neues Interview starten",
-    "interviewer": "Interviewer",
-    "candidate": "Kandidat",
-    "receivedFeedback": "Erhaltenes Feedback",
-    "givenFeedback": "Ihr Feedback",
-    "giveFeedback": "Feedback geben",
-    "userIdNotFound": "Benutzer-ID nicht gefunden",
-    "failedToLoadHistory": "Verlauf konnte nicht geladen werden",
-    "unknownDate": "Unbekanntes Datum",
-          "candidateShort": "Kan.",
-      "interviewerShort": "Int.",
-    "status": {
-      "completed": "Abgeschlossen",
-      "active": "Aktiv",
-      "cancelled": "Abgebrochen"
-    }
-  },
-  "notifications": {
-    "title": "Benachrichtigungen",
-    "clearAll": "Alle löschen",
-    "total": "Gesamt",
-    "unread": "Ungelesen",
-    "noNotifications": "Keine Benachrichtigungen",
-    "markAsRead": "Als gelesen markieren",
-    "joinInterview": "Interview beitreten",
-    "joinWaitingRoom": "Zum Wartezimmer gehen",
-    "delete": "Löschen",
-    "loading": "Benachrichtigungen werden geladen...",
-    "error": "Fehler beim Laden der Benachrichtigungen",
-    "copyLink": "Link kopieren",
-    "openLink": "Link öffnen",
-    "copyRoomName": "Vollständigen Raumnamen kopieren",
-    "linkCopied": "Link kopiert",
-    "roomNameCopied": "Raumname kopiert",
-    "justNow": "Gerade eben",
-    "minutesAgo": "vor {{count}} Min.",
-    "hoursAgo": "vor {{count}} Std.",
-    "daysAgo": "vor {{count}} Tagen",
-    "dateLocale": "de-DE",
-    "tools": "Werkzeuge",
-    "yourTools": "Ihre Werkzeuge",
-    "room": "Raum",
-    "emptyStateDescription": "Hier werden Benachrichtigungen über Matches und Interviews angezeigt",
-    "priority": {
-      "high": "Hoch",
-      "medium": "Mittel",
-      "low": "Niedrig"
+  "languages": {
+    "title": "Unterstützte",
+    "titleHighlight": "Sprachen",
+    "subtitle": "Führen Sie Vorstellungsgespräche in Ihrer Muttersprache",
+    "english": "English",
+    "englishDesc": "Englische Sprache",
+    "russian": "Russian",
+    "russianDesc": "Russische Sprache",
+    "spanish": "Spanish",
+    "spanishDesc": "Spanische Sprache",
+    "french": "French",
+    "frenchDesc": "Französische Sprache",
+    "german": "German",
+    "germanDesc": "Deutsche Sprache",
+    "chinese": "Chinese",
+    "chineseDesc": "Chinesische Sprache",
+    "benefits": {
+      "global": {
+        "title": "Globaler Zugang",
+        "description": "Interviewvorbereitung in 6 Hauptsprachen der Welt"
+      },
+      "colleagues": {
+        "title": "Ihre Kollegen mit Ihrem Stack und Sprache",
+        "description": "Wählen Sie die Tageszeit"
+      },
+      "communication": {
+        "title": "Natürliche Kommunikation",
+        "description": "Komfortable Kommunikation in Ihrer Muttersprache ohne Sprachbarrieren"
+      }
     },
-    "slotExpiredTitle": "Zeit abgelaufen",
-    "matchFoundTitle": "Match gefunden!",
-    "addedToQueueTitle": "Zur Warteschlange hinzugefügt",
-    "messages": {
-      "slotExpired": "Konnte keinen Partner für Slot {{slotTime}} finden. Bitte wählen Sie eine andere Zeit.",
-      "slotExpiredWithTools": "Konnte keinen Partner für Slot {{slotTime}} finden. Bitte wählen Sie eine andere Zeit.\nIhre Werkzeuge: {{tools}}",
-      "matchFound": "Zeit: {{slotTime}}\nIhre Rolle: {{role}}\nRaum: {{roomName}}\nLink: {{link}}",
-      "matchFoundWithTools": "Zeit: {{slotTime}}\nIhre Rolle: {{role}}\nRaum: {{roomName}}\nLink: {{link}}\nIhre Werkzeuge: {{tools}}",
-      "addedToQueue": "Slot: {{slotTime}}\nRolle: {{role}}",
-      "addedToQueueWithTools": "Slot: {{slotTime}}\nRolle: {{role}}\nWerkzeuge: {{tools}}",
-      "reminder": "Erinnerung: Interview in {{timeLeft}}"
+    "cta": {
+      "title": "Wählen Sie eine",
+      "titleHighlight": "Sprache",
+      "titleSuffix": "und beginnen Sie zu lernen",
+      "subtitle": "Bereiten Sie sich auf ein Interview in einer der 6 unterstützten Sprachen vor",
+      "startLearning": "Lernen Beginnen",
+      "learningProcess": "Lernprozess"
     }
   },
-  "profile": {
-    "title": "Profil",
-    "subtitle": "Benutzereinstellungen und KI-Generierung",
-    "apiSettings": "API-Einstellungen",
-    "apiDescription": "Verbinden Sie OpenRouter, um einzigartige Fragen mit kostenlosen KI-Modellen zu generieren",
-    "apiKey": "OpenRouter API-Schlüssel",
-    "test": "Test",
-    "testing": "Teste...",
-    "connectionSuccess": "Verbindung erfolgreich hergestellt",
-    "connectionError": "API-Verbindungsfehler",
-    "getApiKey": "Kostenlosen Schlüssel erhalten",
-    "aiGeneration": "KI-Fragengenerierung",
-    "aiGenerationDesc": "KI verwenden, um einzigartige Fragen zu erstellen",
-    "modelSettings": "KI-Modell-Einstellungen",
-    "modelDescription": "Wählen Sie ein kostenloses Modell und Parameter für die Fragengenerierung",
-    "preferredModel": "Bevorzugtes Modell",
-    "questionsLevel": "Fragenniveau",
-    "questionsCount": "Anzahl der Fragen",
-    "questions": "Fragen",
-    "junior": "Junior",
-    "middle": "Middle",
-    "senior": "Senior",
+  "learningProcess": {
+    "hero": {
+      "title": "Lern",
+      "titleHighlight": "Prozess",
+      "subtitle": "Schritt-für-Schritt-Plan zur Vorbereitung auf technische Vorstellungsgespräche mit KI-Technologien",
+      "startLearning": "Lernen beginnen"
+    },
+    "processSteps": {
+      "step1": {
+        "title": "Sprachauswahl",
+        "description": "Interviews in 6 Sprachen",
+        "details": "Wählen Sie eine Sprache für die Durchführung von Interviews aus 6 verfügbaren Sprachen"
+      },
+      "step2": {
+        "title": "Berufsauswahl",
+        "description": "10+ technische Richtungen",
+        "details": "Bestimmen Sie die technische Spezialisierung für die Vorbereitung"
+      },
+      "step3": {
+        "title": "Werkzeuge und Technologien",
+        "description": "Technologie-Stack des Berufs",
+        "details": "Studieren Sie die notwendigen Werkzeuge und Technologien für den gewählten Beruf"
+      },
+      "step4": {
+        "title": "Mock-Interview",
+        "description": "Realistische Simulation",
+        "details": "Führen Sie realistische Interviews mit echten Teilnehmern durch"
+      },
+      "step5": {
+        "title": "Feedback erhalten",
+        "description": "Detailliertes Feedback",
+        "details": "Erhalten Sie eine detaillierte Analyse Ihrer Antworten und Ihres Verhaltens"
+      },
+      "step6": {
+        "title": "KI-Analyse und Planung",
+        "description": "Personalisierte Empfehlungen",
+        "details": "KI analysiert Ergebnisse und erstellt einen Entwicklungsplan"
+      },
+      "step7": {
+        "title": "Lernen in Anwendungen",
+        "description": "Praktische Aufgaben",
+        "details": "Vervollständigen Sie praktische Aufgaben, um Fähigkeiten zu festigen"
+      },
+      "step8": {
+        "title": "Zyklus-Wiederholung",
+        "description": "Kontinuierliche Entwicklung",
+        "details": "Kehren Sie zum Anfang zurück für ständige Verbesserung"
+      }
+    },
+    "languagesSection": {
+      "title": "Unterstützte",
+      "titleHighlight": "Sprachen",
+      "subtitle": "Führen Sie Vorstellungsgespräche in Ihrer Muttersprache"
+    },
+    "professionsSection": {
+      "title": "Technische",
+      "titleHighlight": "Berufe",
+      "subtitle": "Vorbereitung auf Interviews in allen IT-Bereichen"
+    },
+    "plansSection": {
+      "title": "Lernprozess nach Tarifen",
+      "subtitle": "Verschiedene Zugangsebenen zu Lernfunktionen je nach gewähltem Tarif",
+      "free": {
+        "title": "Kostenlos",
+        "description": "Grundlegende Fähigkeiten",
+        "features": {
+          "mockInterviews": {
+            "title": "Mock-Interviews",
+            "description": "Grundlegende Interview-Simulationen"
+          },
+          "basicFeedback": {
+            "title": "Grundlegendes Feedback",
+            "description": "Einfaches Feedback"
+          }
+        },
+        "select": "Kostenlos wählen"
+      },
+      "basic": {
+        "title": "Basic",
+        "description": "Erweiterte Analyse",
+        "features": {
+          "mockInterviews": {
+            "title": "Mock-Interviews",
+            "description": "Erweiterte Simulationen"
+          },
+          "aiAssistant": {
+            "title": "KI-Assistent",
+            "description": "KI-Unterstützung während Interviews"
+          },
+          "aiAnalysis": {
+            "title": "KI-Analyse und Planung",
+            "description": "Personalisierte Empfehlungen"
+          },
+          "advancedAnalytics": {
+            "title": "Erweiterte Analysen",
+            "description": "Detaillierte Fortschrittsstatistiken"
+          }
+        },
+        "select": "Basic wählen"
+      },
+      "pro": {
+        "title": "Pro",
+        "description": "Vollständiger Lernzyklus",
+        "features": {
+          "allBasicFeatures": {
+            "title": "Alle Basic-Funktionen",
+            "description": "Vollständiger Zugang zu Analysen"
+          },
+          "appLearning": {
+            "title": "Lernen in Anwendungen",
+            "description": "Praktische Aufgaben"
+          },
+          "cycleRepetition": {
+            "title": "Zyklus-Wiederholung",
+            "description": "Kontinuierliche Entwicklung"
+          },
+          "prioritySupport": {
+            "title": "Prioritäts-Support",
+            "description": "Exklusive Funktionen"
+          }
+        },
+        "select": "Pro wählen"
+      }
+    },
+    "cta": {
+      "title": "Bereit zum",
+      "titleHighlight": "Lernen",
+      "titleSuffix": "beginnen?",
+      "subtitle": "Schließen Sie sich Tausenden von Entwicklern an, die ihre Fähigkeiten bereits mit Super Mock verbessert haben",
+      "startLearning": "Lernen beginnen",
+      "comparePlans": "Tarife vergleichen"
+    }
+  },
+  "pricing": {
+    "title": "Wählen Sie Ihren",
+    "titleHighlight": "Tarif",
+    "subtitle": "🎯 Flexible Pläne für effektive Vorbereitung auf Vorstellungsgespräche",
+    "betaNotice": {
+      "title": "Die Plattform befindet sich derzeit in der Beta-Version",
+      "description": "Daher sind die Preise für alle maximal erschwinglich. Nach dem Release der Vollversion werden die Tarife höher sein, also ist jetzt die profitabelste Zeit, sich zu verbinden!"
+    },
+    "learnMore": "💰 Mehr über Preise erfahren",
+    "included": "✅ Was enthalten ist:",
+    "excluded": "❌ Was nicht enthalten ist:",
+    "proDiscount": "Günstiger Preis (40% Ersparnis)",
+    "free": {
+      "title": "Kostenlos",
+      "price": "$1",
+      "period": "USD pro Monat",
+      "features": [
+        "Unbegrenzte Mock-Interviews",
+        "Gültigkeitsdauer: 1 Monat",
+        "Grundlegende Plattformfunktionen"
+      ],
+      "select": "Tarif wählen"
+    },
+    "basic": {
+      "title": "Basic",
+      "price": "$9.99",
+      "period": "USD pro Monat",
+      "features": [
+        "Mock-Interviews",
+        "KI-Assistent",
+        "Gültigkeitsdauer: 1 Monat",
+        "Erweiterte Analysen"
+      ],
+      "select": "Tarif wählen"
+    },
+    "pro": {
+      "title": "Pro",
+      "price": "$20",
+      "period": "USD für 3 Monate",
+      "popular": "Beliebt",
+      "features": [
+        "Mock-Interviews",
+        "KI-Assistent",
+        "Gültigkeitsdauer: 3 Monate",
+        "Prioritäts-Support",
+        "Exklusive Funktionen"
+      ],
+      "select": "Tarif wählen"
+    }
+  },
+  "social": {
+    "title": "Wir sind da, wenn es schwierig ist",
+    "subtitle": "SuperMock geht es nicht nur um Karriere und Vorstellungsgespräche. Es geht um Menschen.",
+    "description": "Wir wissen, wie schwer es für diejenigen sein kann, die sich in schwierigen Lebenssituationen befinden. Daher:",
+    "donationsPrefix": "10% aller Zahlungen",
+    "donations": "leiten wir an diejenigen weiter, die es besonders brauchen.",
+    "accessibilityPrefix": "Menschen mit Behinderungen und einkommensschwache Familien",
+    "accessibility": "können kostenlos auf unserer Plattform lernen.",
+    "conclusion": "Weil jeder eine Chance auf eine Zukunft mit Hoffnung und Liebe verdient ❤️"
+  },
+  "pricingFaq": {
+    "title": "Häufig Gestellte Fragen",
+    "howToChoose": {
+      "question": "Wie wähle ich einen Plan?",
+      "answer": "Beginnen Sie mit dem Free-Plan, um sich mit der Plattform vertraut zu machen, und wechseln Sie dann je nach Bedarf zu Basic oder Pro."
+    },
+    "cancelSubscription": {
+      "question": "Kann ich mein Abonnement kündigen?",
+      "answer": "Ja, Sie können Ihr Abonnement jederzeit kündigen. Die bezahlte Zeit bleibt bis zum Ende der Gültigkeitsdauer aktiv."
+    },
+    "trialPeriod": {
+      "question": "Gibt es eine Testphase?",
+      "answer": "Der Free-Plan ermöglicht es Ihnen, die grundlegenden Plattformfunktionen kostenlos zu testen."
+    },
+    "paymentMethods": {
+      "question": "Welche Zahlungsmethoden sind verfügbar?",
+      "answer": "Wir akzeptieren Zahlungen in USD über verschiedene Zahlungssysteme."
+    }
+  },
+  "pricingCta": {
+    "title": "Bereit zum",
+    "titleHighlight": "Lernen",
+    "titleSuffix": "?",
+    "subtitle": "Wählen Sie den richtigen Plan und beginnen Sie noch heute mit der Vorbereitung auf Ihr Vorstellungsgespräch",
+    "startLearning": "Lernen Beginnen",
+    "learningProcess": "Lernprozess"
+  },
+  "about": {
+    "title": "Über",
+    "titleHighlight": "Super Mock",
+    "description1": "Super Mock ist eine innovative KI-Plattform, die den Prozess der Vorbereitung auf technische Vorstellungsgespräche revolutioniert. Wir kombinieren fortschrittliche Technologien der künstlichen Intelligenz mit mehrsprachiger Unterstützung, um eine personalisierte Lernerfahrung zu schaffen.",
+    "description2": "Unsere Plattform hilft Kandidaten dabei, ihre Programmier-, Kommunikations- und Problemlösungsfähigkeiten durch realistische Interview-Simulationen mit KI-Analyse und Echtzeit-Feedback zu verbessern.",
+    "learnMore": "Mehr erfahren",
+    "page": {
+      "badge": "Über uns",
+      "name": "Korobkov Maxim Viktorovich",
+      "subtitle": "Schöpfer von SuperMock — einer innovativen Plattform für die Vorbereitung auf Vorstellungsgespräche mit künstlicher Intelligenz",
+      "contact": "Kontakt",
+      "projectTitle": "Über das Projekt",
+      "projectSubtitle": "Einzigartige Plattform für personalisiertes IT-Berufslernen",
+      "principles": "Grundprinzipien:",
+      "principlesText": "Viele IT-Kurse sind nicht lebendig, sie sind nicht individuell. Jeder Mensch ist besonders und alle sind unterschiedlich, es gibt keine identischen Menschen, was bedeutet, dass das Prinzip im Lernen für jeden besonders und persönlich sein sollte.",
+      "readMore": "Mehr lesen...",
+      "hideDetails": "Details ausblenden",
+      "authorIntro": "Mein Name ist Korobkov Maxim Viktorovich und ich bin ein Entwickler mit 20 Jahren Erfahrung, begann mit automatisierten Handelssystemen an Finanzbörsen, entwerfe derzeit Systeme für Unternehmensbedürfnisse.",
+      "problemDescription": "Ich bekomme viele Ideen im Leben aus Problemen, auf die ich stoße, und als Entwickler versuche ich sie zu lösen. Zeit ist das Wertvollste in unserem Leben, ich stand vor dem Problem, dass viel Zeit für das Lernen aufgewendet wird. Ich studierte in vier Unternehmen, diese Erfahrung ist mir bekannt, sie alle versuchen Probleme zu lösen, aber viele ihrer Schüler gehen unzufrieden weg.",
+      "solutionTitle": "Lösung des Problems im Ansatz:",
+      "solutionText": "Das Wichtigste, wohin wir gehen, ist das Ziel, aber während wir dorthin gehen, vergessen wir bereits, was wir durchgemacht oder gelernt haben. Ist Ihnen das vertraut? Ich denke ja, jedem ist das vertraut... Also was ist dann die Lösung? Lassen Sie uns nicht nur lehren zu memorieren, sondern auch leben, uns in das gute Verständnis dieses Wortes vertiefen :)",
+      "experienceDescription": "Stellen Sie sich vor, auch wenn Sie bereits ein Profi sind und etwas in der IT erreicht haben. Sie sind ein Junior und brennen darauf, in die IT einzusteigen und viel Geld remote zu verdienen, Saft am Meer trinkend, auf einem MacBook arbeitend... Aber, es gibt ein \"ABER\" — Arbeitgeber nehmen nicht einmal bei einer Antwort, in ihre erfolgreiche Gesellschaft, Sie passen nicht, Live-Coding versagt oder falsch beantwortet, wenige Projekte keine kommerzielle Erfahrung.",
+      "ideaTitle": "Hier kam die Idee:",
+      "ideaText": "Erstellen Sie einen Service, wo alles an einem Ort ist und es Ihren persönlichen Mentor gibt — einen echten Freund, auch wenn es KI ist! Stellen Sie sich vor, Sie haben einige Grundlagen auf der Plattform gelernt, und dann sagt Ihnen der Mentor: \"Sind Sie bereit, gehen wir zu einem Mock-Interview, bestehen Sie es, ich werde mir das Feedback ansehen und weiter davon ausgehend werde ich Sie führen, die Lücken in Ihrem Wissen füllen\".",
+      "learningDescription": "Sie bestehen Interviews, gewöhnen sich an die Kommunikation und sprechen selbstbewusst mit dem Interviewer, nicht wie früher mit zitternder Stimme oder betend, dass die Verbindung verschwindet und aus dieser Hölle herauskommt :) Im Allgemeinen geht das Lernen mit Freude, weil es für Sie gemacht und für Sie konfiguriert ist.",
+      "conclusion": "Das ist das System, das ich speziell für Sie entwickelt habe. Bestehen Sie Interviews, kommunizieren Sie mit Kollegen, zahlen Sie einen angemessenen Betrag für das Lernen als Zeichen der Dankbarkeit für die Unterstützung des Projekts.",
+      "featuresTitle": "Hauptfunktionen",
+      "featuresSubtitle": "Was SuperMock zu einer einzigartigen Plattform macht",
+      "feature1": "Persönlicher KI-Mentor für jeden Benutzer",
+      "feature2": "Mock-Interviews mit realistischen Szenarien",
+      "feature3": "Adaptives Lernen basierend auf Ihren Lücken",
+      "feature4": "Entwicklung sowohl technischer als auch Soft Skills",
+      "skillsTitle": "Fähigkeiten und Technologien",
+      "skillsSubtitle": "Spezialisierung im Bereich KI und Webentwicklung",
+      "skill1": {
+        "name": "KI/ML",
+        "description": "Maschinelles Lernen, neuronale Netze, natürliche Sprachverarbeitung"
+      },
+      "skill2": {
+        "name": "Webentwicklung",
+        "description": "Frontend- und Backend-Entwicklung, moderne Frameworks"
+      },
+      "skill3": {
+        "name": "Interview-Coaching",
+        "description": "Vorbereitung auf Vorstellungsgespräche, Soft Skills Entwicklung"
+      },
+      "skill4": {
+        "name": "Produktmanagement",
+        "description": "Produktmanagement, Analytik, Entwicklungsstrategie"
+      },
+      "collaborationTitle": "Bereit für Zusammenarbeit",
+      "collaborationSubtitle": "offen für neue Projekte und berufliche Möglichkeiten.",
+      "email": "E-Mail",
+      "linkedin": "LinkedIn",
+      "github": "GitHub"
+    }
+  },
+  "professions": {
+    "hero": {
+      "title": "Technische",
+      "titleHighlight": "Berufe",
+      "subtitle": "Bereiten Sie sich auf Vorstellungsgespräche in allen IT-Bereichen vor"
+    },
+    "professionsList": {
+      "frontend": {
+        "name": "Frontend",
+        "description": "Entwicklung von Benutzeroberflächen"
+      },
+      "backend": {
+        "name": "Backend",
+        "description": "Server-seitige Entwicklung und API"
+      },
+      "fullstack": {
+        "name": "Fullstack",
+        "description": "Full-Stack-Entwicklung"
+      },
+      "mobile": {
+        "name": "Mobile",
+        "description": "Mobile Entwicklung"
+      },
+      "devops": {
+        "name": "DevOps",
+        "description": "Infrastruktur und Automatisierung"
+      },
+      "qa": {
+        "name": "QA",
+        "description": "Tests und Qualitätssicherung"
+      },
+      "uxui": {
+        "name": "UX/UI",
+        "description": "Design der Benutzererfahrung"
+      },
+      "dataAnalyst": {
+        "name": "Datenanalytiker",
+        "description": "Datenanalyse"
+      },
+      "dataScientist": {
+        "name": "Datenwissenschaftler",
+        "description": "Datenwissenschaft und ML"
+      },
+      "productManager": {
+        "name": "Produktmanager",
+        "description": "Produktmanagement"
+      }
+    },
+    "stats": {
+      "professions": "Technische<br />Berufe 💼",
+      "languages": "Sprachen 🌍",
+      "interviews": "Vorstellungsgespräche 📊",
+      "success": "Erfolgsrate 🎯"
+    },
+    "cta": {
+      "title": "Wählen Sie einen",
+      "titleHighlight": "Beruf",
+      "titleSuffix": "und beginnen Sie mit der Vorbereitung",
+      "subtitle": "Bereiten Sie sich auf ein Vorstellungsgespräch in jeder technischen Spezialisierung vor",
+      "startLearning": "Lernen beginnen",
+      "learningProcess": "Lernprozess"
+    }
+  },
+  "instructions": {
+    "hero": {
+      "title": "SuperMock Hilfe",
+      "subtitle": "Schritt-für-Schritt-Anleitung zur Nutzung der Plattform für Vorstellungsgespräch-Übungen",
+      "startLearning": "Lernen beginnen",
+      "haveQuestions": "Haben Sie Fragen?"
+    },
+    "steps": {
+      "title": "Schritt-für-Schritt",
+      "titleHighlight": "Anleitung",
+      "subtitle": "Folgen Sie diesen einfachen Schritten, um mit der Übung von Vorstellungsgesprächen zu beginnen",
+      "step1": {
+        "title": "Klicken Sie auf den SuperMock-Button",
+        "description": "Lernen beginnen",
+        "details": "Gehen Sie zur Hauptseite und klicken Sie auf den 'Lernen beginnen'-Button, um in das System einzutreten"
+      },
+      "step2": {
+        "title": "Wählen Sie einen Beruf",
+        "description": "Geben Sie den Bereich an, in dem Sie üben möchten",
+        "details": "Wählen Sie aus der Liste der verfügbaren Berufe denjenigen aus, der Ihren Lernzielen entspricht"
+      },
+      "step3": {
+        "title": "Wählen Sie eine Rolle",
+        "description": "Kandidat oder Interviewer",
+        "details": "Entscheiden Sie sich für die Rolle: Möchten Sie als Kandidat oder als Interviewer üben"
+      },
+      "step4": {
+        "title": "Finden Sie ein Vorstellungsgespräch",
+        "description": "Das System wird einen passenden Partner finden",
+        "details": "Unser System wird automatisch einen passenden Partner für Sie zum Üben finden"
+      },
+      "step5": {
+        "title": "Führen Sie das Vorstellungsgespräch",
+        "description": "Nutzen Sie den integrierten Videoanruf",
+        "details": "Führen Sie ein vollständiges Vorstellungsgespräch mit dem integrierten Videoanruf"
+      },
+      "step6": {
+        "title": "Hinterlassen Sie Feedback",
+        "description": "Bewerten Sie Ihren Partner und erhalten Sie eine Bewertung",
+        "details": "Nach dem Vorstellungsgespräch hinterlassen Sie konstruktives Feedback und erhalten eine Bewertung von Ihrem Partner"
+      }
+    },
+    "tips": {
+      "title": "💡",
+      "titleHighlight": "Tipps",
+      "subtitle": "Nützliche Empfehlungen für effektive Übungen",
+      "tip1": {
+        "title": "Seien Sie höflich und professionell",
+        "description": "Befolgen Sie die Geschäftsetikette und behandeln Sie Ihren Partner mit Respekt"
+      },
+      "tip2": {
+        "title": "Hinterlassen Sie konstruktives Feedback",
+        "description": "Helfen Sie Ihrem Partner, seine Fähigkeiten zu verbessern, indem Sie nützliche Empfehlungen geben"
+      },
+      "tip3": {
+        "title": "Üben Sie regelmäßig",
+        "description": "Für bessere Ergebnisse widmen Sie regelmäßig Zeit zum Üben"
+      }
+    },
+    "cta": {
+      "title": "Haben Sie",
+      "titleHighlight": "Fragen",
+      "titleSuffix": "?",
+      "subtitle": "Schreiben Sie uns! 📧 Wir sind immer bereit zu helfen",
+      "contactUs": "Kontaktieren Sie uns",
+      "startPractice": "Übung beginnen"
+    }
+  },
+  "support": {
+    "hero": {
+      "title": "Support",
+      "subtitle": "💜 Wir glauben, dass jeder die Möglichkeit verdient, zu wachsen und sich zu entwickeln"
+    },
+    "supportOptions": {
+      "freeLearning": {
+        "title": "Kostenloses Lernen",
+        "description": "Für Menschen mit Behinderungen und einkommensschwache Familien",
+        "features": [
+          "Vollzugang zur Plattform",
+          "Alle Funktionen und Möglichkeiten",
+          "Persönliche Unterstützung"
+        ]
+      },
+      "discounts": {
+        "title": "Rabatte und Vergünstigungen",
+        "description": "Für diejenigen, die sich in schwierigen Lebenssituationen befinden",
+        "features": [
+          "Individuelle Rabatte bis zu 50%",
+          "Flexible Zahlungsbedingungen",
+          "Betrachtung jedes Einzelfalls"
+        ]
+      }
+    },
+    "howItWorks": {
+      "title": "Wie bekomme ich Support?",
+      "subtitle": "Wir werden Ihre Situation prüfen und die optimale Lösung anbieten",
+      "steps": {
+        "step1": {
+          "title": "Schreiben Sie uns",
+          "description": "Beschreiben Sie Ihre Situation in Telegram"
+        },
+        "step2": {
+          "title": "Wir werden prüfen",
+          "description": "Wir werden Ihre Anfrage innerhalb von 24 Stunden prüfen"
+        },
+        "step3": {
+          "title": "Hilfe erhalten",
+          "description": "Wir werden eine passende Support-Option anbieten"
+        }
+      }
+    },
+    "cta": {
+      "title": "Bereit, Ihnen zu",
+      "titleHighlight": "helfen",
+      "titleSuffix": "",
+      "subtitle": "Schreiben Sie uns in Telegram, und wir werden Ihre Situation definitiv prüfen. Jeder Fall ist einzigartig, und wir werden einen Weg finden, Ihnen zu helfen.",
+      "buttonText": "In Telegram schreiben",
+      "responseTime": "💜 Wir antworten innerhalb von 24 Stunden"
+    },
+    "socialImpact": {
+      "title": "Unser sozialer Einfluss",
+      "stats": {
+        "donations": {
+          "value": "10%",
+          "description": "Aller Zahlungen geht an die Hilfe für Bedürftige"
+        },
+        "peopleHelped": {
+          "value": "100+",
+          "description": "Menschen erhielten kostenlosen Zugang zum Lernen"
+        },
+        "responseTime": {
+          "value": "24h",
+          "description": "Durchschnittliche Antwortzeit auf Support-Anfragen"
+        }
+      }
+    }
+  },
+  "footer": {
+    "description": "KI-Plattform für die Vorbereitung auf technische Vorstellungsgespräche mit Unterstützung für 6 Sprachen und personalisierter Rückmeldung.",
+    "product": "Produkt",
+    "support": "Support",
+    "payment": "Zahlung",
+    "features": "Funktionen",
+    "professions": "Berufe",
+    "languages": "Sprachen",
+    "pricing": "Preise",
+    "help": "📖 Hilfe",
+    "documentation": "Dokumentation",
+    "supportLink": "💜 Support",
+    "faq": "FAQ",
+    "about": "Über uns",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "termsOfService": "Nutzungsbedingungen",
+    "github": "GitHub",
 
-    "aiBenefitsTitle": "KI-Generierungsvorteile",
-    "aiBenefit1": "Einzigartige Fragen für jeden Beruf",
-    "aiBenefit2": "Anpassung an das Schwierigkeitsniveau",
-    "aiBenefit3": "Unbegrenzte Anzahl von Fragen",
-    "save": "Einstellungen speichern",
-    "loadingSettings": "Einstellungen werden geladen...",
-    "projectMode": "Projektmodus",
-    "projectModeDesc": "Einstellungen werden lokal und in der Datenbank gespeichert",
-    "online": "Online",
-    "profileSettings": "Profileinstellungen",
-    "interviewLanguage": "Interviewsprache",
-    "profession": "Beruf",
-    "interfaceLanguage": "Oberflächensprache",
-    "interfaceLanguageDesc": "Wählen Sie die Sprache für die Anzeige der Anwendungsoberfläche",
-    "goToInterview": "Zur Interviewbuchung",
-    "getFreeKey": "Kostenlosen Schlüssel erhalten",
-    "getFreeKeyDesc": "für KI-Generierung von Interviewfragen.",
-    "learnMoreOpenRouter": "Mehr über OpenRouter API erfahren",
-    "stackblitzApiKey": "StackBlitz API-Schlüssel",
-    "learnMoreStackBlitz": "Mehr über StackBlitz API erfahren",
-    "getStackBlitzKey": "API-Schlüssel erhalten",
-    "getStackBlitzKeyDesc": "für das Ausführen und kollaborative Codebearbeitung im Interview-Editor.",
-    "saving": "Speichern...",
-    "settingsSaved": "Einstellungen gespeichert!",
-    "saveError": "Fehler beim Speichern der Einstellungen",
-    "enterApiKey": "API-Schlüssel für Test eingeben",
-    "invalidApiKey": "Ungültiges API-Schlüsselformat",
-    "connectionTestError": "Fehler beim Testen der Verbindung"
-  },
-  "tools": {
-    "selectTools": "Werkzeuge auswählen",
-    "subtitle": "Wählen Sie mindestens 2 Werkzeuge aus, die Sie in Ihrer Arbeit verwenden",
-    "reset": "Zurücksetzen",
-    "resetSelection": "Auswahl zurücksetzen",
-    "loading": "Laden...",
-    "saving": "Speichern...",
-    "minSelection": "Wählen Sie mindestens 2 Werkzeuge zum Fortfahren aus",
-    "selectedCount": "Ausgewählt: {{count}} von {{max}}",
-    "minimumTools": "Mindestens {{count}} Werkzeuge",
-    "searchPlaceholder": "Werkzeuge suchen...",
-    "allCategories": "Alle",
-    "popularCombinations": "Beliebte Kombinationen",
-    "selectedOverlap": "{{overlap}}/{{total}} ausgewählt",
-    "select": "Auswählen",
-    "selected": "Ausgewählt",
-    "limitReached": "Werkzeug-Auswahl-Limit erreicht",
-    "noToolsFound": "Keine Werkzeuge gefunden",
-    "noToolsAvailable": "Keine Werkzeuge verfügbar",
-    "yourTools": "Ihre Werkzeuge",
-    "matchingTools": "Passende Werkzeuge",
-    "selectToolsToActivate": "Werkzeuge zur Aktivierung auswählen",
-    "selectTools": "Werkzeuge auswählen",
-    "allSlotsToolsSaved": "Alle Slots (Werkzeuge werden gespeichert)",
-    "toolsWillBeSaved": "Slot werden automatisch Ihre Werkzeuge gespeichert.",
-    "tryChangeFilter": "Versuchen Sie, den Übereinstimmungsfilter oder ausgewählte Werkzeuge zu ändern",
-    "toolsNotSelected": "Sie haben noch keine Werkzeuge ausgewählt. Klicken Sie auf \"Bearbeiten\" um hinzuzufügen.",
-    "userToolsNotSelected": "Benutzer hat noch keine Werkzeuge ausgewählt.",
-    "failedToLoadTools": "Werkzeuge konnten nicht geladen werden",
-    "failedToSaveTools": "Werkzeuge konnten nicht gespeichert werden",
-    "userTools": "Benutzer-Werkzeuge",
-    "categories": {
-      "frameworks": "Frameworks",
-      "languages": "Programmiersprachen",
-      "databases": "Datenbanken",
-      "tools": "Werkzeuge",
-      "platforms": "Plattformen",
-      "design": "Design",
-      "testing": "Tests",
-      "devops": "DevOps"
-    }
-  },
-  "infoCarousel": {
-    "candidateTitle": "Für Kandidaten",
-    "interviewerTitle": "Interviewer",
-    "back": "Zurück",
-    "next": "Weiter",
-    "candidateSlides": {
-      "slide1": {
-        "title": "Wählen Sie eine günstige Zeit",
-        "description": "Zeitslots 24 Stunden am Tag verfügbar. Das System versteckt automatisch vergangene Zeit."
-      },
-      "slide2": {
-        "title": "Finden Sie Interviewer",
-        "description": "Sehen Sie die Anzahl verfügbarer Interviewer in jedem Zeitslot."
-      },
-      "slide3": {
-        "title": "Intelligente Empfehlungen",
-        "description": "Das System empfiehlt die optimale Zeit für schnelles Matching."
-      },
-      "slide4": {
-        "title": "Schneller Start",
-        "description": "Ein Klick - und Sie sind in der Interview-Warteschlange. Automatisches Matching!"
-      }
-    },
-    "interviewerSlides": {
-      "slide1": {
-        "title": "Flexibler Zeitplan",
-        "description": "Wählen Sie, wann es Ihnen passt, Interviews zu führen."
-      },
-      "slide2": {
-        "title": "Kandidaten warten",
-        "description": "Sehen Sie die Anzahl der Kandidaten, die in jedem Slot bereit für Interviews sind."
-      },
-      "slide3": {
-        "title": "Optimale Zeit",
-        "description": "Das System zeigt, wann es die meisten Kandidaten gibt."
-      },
-      "slide4": {
-        "title": "Effizienz",
-        "description": "Maximale Auslastung und minimale Wartezeit."
-      }
-    }
-  },
-  "stackBlitzModal": {
-    "title": "StackBlitz API-Schlüssel",
-    "subtitle": "Erfahren Sie mehr über kollaborative Code-Bearbeitung",
-    "back": "Zurück",
-    "next": "Weiter",
-    "gotIt": "Verstanden",
-    "getApiKey": "API-Schlüssel erhalten",
-    "slides": {
-      "slide1": {
-        "title": "Was ist StackBlitz API?",
-        "description": "StackBlitz API ermöglicht es Ihnen, Code im Browser auszuführen und zu bearbeiten, ohne zusätzliche Software zu installieren."
-      },
-      "slide2": {
-        "title": "Kollaborative Bearbeitung",
-        "description": "Während des Interviews können Sie Code zusammen mit dem Interviewer in Echtzeit schreiben."
-      },
-      "slide3": {
-        "title": "Zusammenarbeit",
-        "description": "Der Interviewer sieht Ihren Code und kann kommentieren, Änderungen vorschlagen und Lösungen bewerten."
-      },
-      "slide4": {
-        "title": "Wie erhalte ich einen API-Schlüssel?",
-        "description": "Gehen Sie zu stackblitz.com, melden Sie sich in Ihrem Konto an und erstellen Sie einen API-Schlüssel in Ihren Profileinstellungen."
-      }
-    }
-  },
-  "openRouterModal": {
-    "title": "OpenRouter API-Schlüssel",
-    "subtitle": "Erfahren Sie mehr über KI-Fragengenerierung für Interviews",
-    "back": "Zurück",
-    "next": "Weiter",
-    "gotIt": "Verstanden",
-    "getApiKey": "API-Schlüssel erhalten",
-    "slides": {
-      "slide1": {
-        "title": "Was ist OpenRouter?",
-        "description": "OpenRouter ist eine Plattform, die Zugang zu verschiedenen KI-Modellen über eine einheitliche API-Schnittstelle bietet."
-      },
-      "slide2": {
-        "title": "KI-Fragengenerierung",
-        "description": "Mit der OpenRouter API generiert das System automatisch personalisierte Interviewfragen basierend auf Ihrer Berufung und Ihrem Niveau."
-      },
-      "slide3": {
-        "title": "Sicherheit und Datenschutz",
-        "description": "Ihr API-Schlüssel wird lokal gespeichert und nur für die Fragengenerierung verwendet. Wir haben keinen Zugriff auf Ihre Daten."
-      },
-      "slide4": {
-        "title": "Wie erhalte ich einen API-Schlüssel?",
-        "description": "Gehen Sie zu openrouter.ai, erstellen Sie ein Konto und erhalten Sie einen API-Schlüssel im \"Keys\"-Bereich. Erste $5 Guthaben kostenlos!"
-      }
-    }
-  },
-  "waiting": {
-    "rules": {
-      "title": "Regeln des gegenseitigen Respekts",
-      "important": "Wichtig",
-      "bePolite": "Seien Sie höflich und geduldig",
-      "dontInterrupt": "Unterbrechen Sie den Gesprächspartner nicht",
-      "askQuestions": "Stellen Sie klärende Fragen",
-      "giveFeedback": "Geben Sie konstruktives Feedback",
-      "goal": "Denken Sie daran: Das Ziel ist es, sich gegenseitig professionell weiterzuentwickeln",
-      "interviewerTips": "Tipps für Interviewer:",
-      "candidateTips": "Tipps für Kandidaten:",
-      "interviewerAdvice": "Seien Sie freundlich, stellen Sie offene Fragen, geben Sie dem Kandidaten Zeit zum Nachdenken",
-      "candidateAdvice": "Seien Sie selbstbewusst, geben Sie konkrete Beispiele, haben Sie keine Angst, Fragen zu stellen"
-    },
-    "devMode": "DEV MODE - Mock-Daten",
-    "waitingRoom": "Warteraum (DEV)",
-    "waitingForMock": "Warten auf den Start des Mock-Interviews",
-    "sessionInfo": {
-      "startTime": "Startzeit",
-      "yourRole": "Ihre Rolle",
-      "profession": "Beruf",
-      "language": "Sprache",
-      "notSpecified": "Nicht angegeben",
-      "notSpecifiedLang": "Nicht angegeben"
-    },
-    "participants": {
-      "title": "Sitzungsteilnehmer",
-      "waiting": "Wartet:",
-      "interviews": "Interviews",
-      "interviewer": "Interviewer",
-      "candidate": "Kandidat"
-    },
-    "timer": {
-      "untilStart": "Bis zum Start:",
-      "late": "Verspätung:",
-      "canEnter": "Kann eintreten!",
-      "progress": "Fortschritt bis zum Eintritt möglich",
-      "lateWarning": "⚠️ Sie sind zu spät zum Interview. Versuchen Sie, sich so schnell wie möglich anzuschließen."
-    },
-    "actions": {
-      "mediaSettings": "Kamera- und Toneinstellungen",
-      "hideSettings": "Einstellungen ausblenden",
-      "joinInterview": "Interview beitreten",
-      "joinLate": "Beitreten (verspätet)",
-      "enterEarly": "Früh eintreten (Test)",
-      "earlyInfo": "Eintritt normalerweise 5 Minuten vor Start möglich",
-      "lateInfo": "Interview-Startzeit ist bereits vergangen",
-      "backToDevTest": "← Zurück zu dev-test"
-    },
-    "status": {
-      "active": "Sitzung ist aktiv und bereit zum Start (DEV)"
-    },
-    "errors": {
-      "title": "Fehler",
-      "insufficientData": "Unzureichende Daten zum Laden der Sitzung",
-      "loadError": "Fehler beim Laden der Sitzungsdaten",
-      "sessionNotFound": "Sitzung nicht gefunden",
-      "loadFailed": "Sitzungsdaten konnten nicht geladen werden"
-    },
-    "loading": {
-      "mockData": "Mock-Daten werden geladen...",
-      "sessionData": "Sitzungsdaten werden geladen..."
-    }
-  },
-  "chat": {
-    "title": "Teilnehmer-Chat",
-    "typing": "Tippt...",
-    "quickMessages": "Schnelle Nachrichten",
-    "inputPlaceholder": "Nachricht schreiben...",
-    "enterToSend": "Enter zum Senden",
-    "system": "System",
-    "participantsConnected": "Teilnehmer haben sich dem Chat angeschlossen ({{count}}/2)",
-    "you": "Sie",
-    "messages": {
-      "greeting": {
-        "hello": "Hallo!",
-        "goodDay": "Guten Tag!",
-        "greetings": "Grüße!",
-        "niceToMeet": "Schön, Sie kennenzulernen!"
-      },
-      "status": {
-        "ready": "Bereit für Interview",
-        "nervous": "Etwas nervös",
-        "great": "Alles ist großartig!",
-        "needMinute": "Brauche eine Minute",
-        "checkingSound": "Prüfe Ton"
-      },
-      "question": {
-        "howAreYou": "Wie geht es Ihnen?",
-        "readyToStart": "Bereit zum Start?",
-        "anyQuestions": "Fragen?",
-        "everythingClear": "Alles klar?",
-        "shallWeStart": "Sollen wir anfangen?",
-        "readyToAnswer": "Bereit zu antworten"
-      },
-      "reaction": {
-        "excellent": "Ausgezeichnet!",
-        "agree": "Zustimmen",
-        "interesting": "Interessant",
-        "gotIt": "Verstanden",
-        "thankYou": "Danke!",
-        "greatQuestion": "Großartige Frage"
-      }
-    }
-  },
-  "media": {
-    "title": "Kamera- und Toneinstellungen",
-    "subtitle": "Überprüfen und konfigurieren Sie Ihre Geräte vor dem Interview",
-    "refresh": "Aktualisieren",
-    "camera": {
-      "title": "Kamera",
-      "enabled": "Aktiviert",
-      "disabled": "Deaktiviert",
-      "enable": "Kamera aktivieren",
-      "selectDevice": "Kamera auswählen:"
-    },
-    "microphone": {
-      "title": "Mikrofon",
-      "enabled": "Aktiviert",
-      "disabled": "Deaktiviert",
-      "enable": "Mikrofon aktivieren",
-      "selectDevice": "Mikrofon auswählen:",
-      "level": "Lautstärke"
-    },
-    "volume": {
-      "title": "Lautstärke"
-    },
-    "actions": {
-      "saveSettings": "Einstellungen speichern",
-      "testAudio": "Audio testen",
-      "stopTest": "Test stoppen"
-    },
-    "status": {
-      "saved": "✅ Einstellungen gespeichert und werden während des Interviews verwendet"
-    },
-    "errors": {
-      "noDevices": "Keine verfügbaren Kamera- oder Mikrofon-Geräte gefunden",
-      "loadFailed": "Fehler beim Laden der Geräteliste. Überprüfen Sie die Browser-Berechtigungen.",
-      "deviceUnavailable": "Gerät nicht verfügbar: {{constraint}}. Versuchen Sie, ein anderes Gerät auszuwählen.",
-      "streamFailed": "Fehler beim Starten des Medienstreams. Überprüfen Sie die Browser-Berechtigungen."
-    }
+    "linkedin": "LinkedIn",
+    "copyright": "© 2025 Super Mock. Alle Rechte vorbehalten."
   }
 }

@@ -1,0 +1,181 @@
+version: '3.8'
+
+services:
+  # База данных PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: supermock-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-supermock}
+      POSTGRES_USER: ${POSTGRES_USER:-supermock}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-krishna1284}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - supermock-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-supermock}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis для кэширования и WebSocket
+  redis:
+    image: redis:7-alpine
+    container_name: supermock-redis
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-krishna1284}" --save 900 1 --save 300 10 --save 60 10000 --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    networks:
+      - supermock-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-krishna1284}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API сервер
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.fix
+    container_name: supermock-backend
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-supermock}:${POSTGRES_PASSWORD:-krishna1284}@supermock-postgres:5432/${POSTGRES_DB:-supermock}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - USE_REDIS=true
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:-f0cf01026e91c1a40865ac15459e81fb}
+      - SESSION_SECRET=${SESSION_SECRET:-c7bee247bc9a10ce3b15ebe08429fab0afc1cbb94b1eec72ea64257f5fe5e9d3}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_BOT_ID=${TELEGRAM_BOT_ID}
+      - TELEGRAM_BOT_NAME=${TELEGRAM_BOT_NAME}
+      - FRONTEND_URL=https://app.supermock.ru
+      - BACKEND_URL=https://api.supermock.ru
+      - VITE_API_URL=https://api.supermock.ru
+      - CORS_ORIGIN=https://app.supermock.ru
+    volumes:
+      - ./backend:/app/backend
+      - backend_node_modules:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - supermock-network
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.backend-http.rule=Host(`api.supermock.ru`)
+      - traefik.http.routers.backend-http.entrypoints=web
+      - traefik.http.routers.backend-http.middlewares=backend-redirect
+      # HTTPS
+      - traefik.http.routers.backend.rule=Host(`api.supermock.ru`)
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls=true
+      - traefik.http.routers.backend.tls.certresolver=letsencrypt
+      - traefik.http.services.backend.loadbalancer.server.port=3000
+      # WebSocket middleware
+      - traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Connection=Upgrade
+      - traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Upgrade=websocket
+
+  # Frontend приложение (app.supermock.ru)
+  frontend-app:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_URL: https://api.supermock.ru
+        VITE_WS_URL: wss://api.supermock.ru
+        VITE_TELEGRAM_BOT_NAME: ${TELEGRAM_BOT_NAME}
+        VITE_TELEGRAM_BOT_ID: ${TELEGRAM_BOT_ID}
+        VITE_JITSI_URL: ${VITE_JITSI_URL:-https://meet.jit.si}
+        VITE_STUN_URLS: ${VITE_STUN_URLS:-stun:stun.l.google.com:19302}
+        VITE_TURN_URL: ${VITE_TURN_URL}
+        VITE_TURN_USERNAME: ${VITE_TURN_USERNAME}
+        VITE_TURN_PASSWORD: ${VITE_TURN_PASSWORD}
+    container_name: supermock-frontend-app
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=https://api.supermock.ru
+      - VITE_WS_URL=wss://api.supermock.ru
+      - VITE_TELEGRAM_BOT_NAME=${TELEGRAM_BOT_NAME}
+      - VITE_TELEGRAM_BOT_ID=${TELEGRAM_BOT_ID}
+      - VITE_JITSI_URL=${VITE_JITSI_URL:-https://meet.jit.si}
+      - VITE_STUN_URLS=${VITE_STUN_URLS:-stun:stun.l.google.com:19302}
+      - VITE_TURN_URL=${VITE_TURN_URL}
+      - VITE_TURN_USERNAME=${VITE_TURN_USERNAME}
+      - VITE_TURN_PASSWORD=${VITE_TURN_PASSWORD}
+    volumes:
+      - ./frontend:/app/frontend
+      - frontend_app_node_modules:/app/node_modules
+    networks:
+      - supermock-network
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.app-http.rule=Host(`app.supermock.ru`)
+      - traefik.http.routers.app-http.entrypoints=web
+      - traefik.http.routers.app-http.middlewares=app-redirect
+      # HTTPS
+      - traefik.http.routers.app.rule=Host(`app.supermock.ru`)
+      - traefik.http.routers.app.entrypoints=websecure
+      - traefik.http.routers.app.tls=true
+      - traefik.http.routers.app.tls.certresolver=letsencrypt
+      - traefik.http.services.app.loadbalancer.server.port=8080
+
+  # Traefik для автоматического SSL и маршрутизации (только для поддоменов)
+  traefik:
+    image: traefik:v2.10
+    container_name: supermock-traefik
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@supermock.ru"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--log.level=INFO"
+      # Ограничиваем Traefik только поддоменами
+      - "--providers.docker.constraints=Label(`traefik.enable`, `true`)"
+    ports:
+      - "8080:80"   # Изменяем порт для HTTP
+      - "8443:443"  # Изменяем порт для HTTPS
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/letsencrypt
+    networks:
+      - supermock-network
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # Создаем специфичные middleware для каждого поддомена
+      - traefik.http.middlewares.app-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.app-redirect.redirectscheme.permanent=true
+      - traefik.http.middlewares.backend-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.backend-redirect.redirectscheme.permanent=true
+
+volumes:
+  postgres_data:
+  redis_data:
+  traefik_certs:
+  backend_node_modules:
+  frontend_app_node_modules:
+
+networks:
+  supermock-network:
+    driver: bridge

@@ -1,179 +1,57 @@
-import { useEffect } from 'react';
-import { Toaster } from '@/components/ui/toaster';
-import { Toaster as Sonner } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { VideoControls } from '@/components/ui/video-controls';
-import { VideoInterface } from '@/components/ui/video-interface';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useAppStore } from '@/lib/store';
-// TelegramAuthCallback removed - using simplified auth system
-import { TelegramUser } from '@/lib/telegram-auth';
-import { validateEnv } from '@/lib/env';
-import { applyTelegramDesktopFixes } from '@/lib/telegram-desktop-fixes';
-import './test-env'; // Импортируем тестовый файл для проверки переменных окружения
-import Index from './pages/Index';
-import NotFound from './pages/NotFound';
-import { ProfessionSelection } from './pages/ProfessionSelection';
-import { Applications } from './pages/Applications';
-import { AiMentor } from './pages/AiMentor';
-import { Trainer } from './pages/Trainer';
-import { Materials } from './pages/Materials';
-import { Calendar } from './pages/Calendar';
-import { Roadmap } from './pages/Roadmap';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, createBrowserRouter, RouterProvider } from "react-router-dom";
+import Layout from "@/components/Layout";
+import Index from "./pages/Index";
+import LearningProcess from "./pages/LearningProcess";
+import Features from "./pages/Features";
+import Professions from "./pages/Professions";
+import Languages from "./pages/Languages";
+import Pricing from "./pages/Pricing";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import Documentation from "./pages/Documentation";
+import Instructions from "./pages/Instructions";
+import Support from "./pages/Support";
+import FAQ from "./pages/FAQ";
+import About from "./pages/About";
 
-import { LanguageSelection } from './pages/LanguageSelection';
-import { ToolSelection } from './pages/ToolSelection';
-import { ApiKeySetup } from './pages/ApiKeySetup';
-import { TimeSelection } from './pages/TimeSelection';
-import { Interview } from './pages/Interview';
-import { InterviewFeedback } from './pages/InterviewFeedback';
-import { InterviewResultsPage } from './pages/InterviewResults';
-import { Notifications } from './pages/Notifications';
-import { History } from './pages/History';
-import { WaitingRoom } from './pages/WaitingRoom';
-import { DevWaitingRoom } from './pages/DevWaitingRoom';
-import { Profile } from './pages/Profile';
-import { ProfilePage } from './pages/ProfilePage';
-
-import AuthCallback from './pages/AuthCallback';
-import TelegramAuthSuccess from './pages/TelegramAuthSuccess';
-import DevTest from './pages/DevTest';
-import { DevRouteGuard } from './components/ui/dev-route-guard';
-import { LanguageSelection as Languages } from './pages/LanguageSelection';
-import { TelegramLoginExample } from './components/ui/telegram-login-example';
-import TelegramAuthTest from './pages/TelegramAuthTest';
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function AppContent() {
-  const { i18n } = useTranslation();
-  const language = useAppStore((s) => s.language);
-  const { setTelegramUser } = useAppStore();
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    children: [
+      { index: true, element: <Index /> },
+      { path: "learning-process", element: <LearningProcess /> },
+      { path: "features", element: <Features /> },
+      { path: "professions", element: <Professions /> },
+      { path: "languages", element: <Languages /> },
+      { path: "pricing", element: <Pricing /> },
+      { path: "privacy-policy", element: <PrivacyPolicy /> },
+      { path: "terms-of-service", element: <TermsOfService /> },
+      { path: "documentation", element: <Documentation /> },
+      { path: "instructions", element: <Instructions /> },
+      { path: "support", element: <Support /> },
+      { path: "faq", element: <FAQ /> },
+      { path: "about", element: <About /> },
 
-  // Проверяем переменные окружения при запуске
-  useEffect(() => {
-    if (!validateEnv()) {
-      console.error('App: Missing required environment variables');
-    }
-  }, []);
-
-  // Применяем исправления для Telegram Desktop
-  useEffect(() => {
-    applyTelegramDesktopFixes();
-  }, []);
-
-  // Синхронизируем язык интерфейса с состоянием store при навигации
-  useEffect(() => {
-    if (language && i18n.language !== language) {
-      i18n.changeLanguage(language);
-    }
-  }, [language, i18n]);
-
-  const handleTelegramAuth = (user: TelegramUser) => {
-    console.log('App: Received Telegram auth:', user);
-    setTelegramUser(user);
-  };
-
-  return (
-    <BrowserRouter
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
-      {/* Telegram auth handled by individual components now */}
-
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/profession" element={<ProfessionSelection />} />
-        <Route path="/applications" element={<Applications />} />
-        <Route path="/ai-mentor" element={<AiMentor />} />
-        <Route path="/trainer" element={<Trainer />} />
-        <Route path="/materials" element={<Materials />} />
-        <Route path="/calendar" element={<Calendar />} />
-        <Route path="/roadmap" element={<Roadmap />} />
-        <Route path="/language" element={<LanguageSelection />} />
-        <Route path="/languages" element={<Languages />} />
-        <Route path="/tools" element={<ToolSelection />} />
-        <Route path="/api-key-setup" element={<ApiKeySetup />} />
-        <Route path="/time" element={<TimeSelection />} />
-        <Route path="/interview" element={<Interview />} />
-        <Route path="/feedback" element={<InterviewFeedback />} />
-        <Route path="/results" element={<InterviewResultsPage />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/waiting/:sessionId" element={<WaitingRoom />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/profile-new" element={<ProfilePage />} />
-
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/telegram-auth-success" element={<TelegramAuthSuccess />} />
-        <Route path="/telegram-login" element={<TelegramLoginExample />} />
-        <Route path="/telegram-auth-test" element={<TelegramAuthTest />} />
-        {/* Development-only routes with extra protection */}
-        <Route
-          path="/dev-test"
-          element={
-            <DevRouteGuard>
-              <DevTest />
-            </DevRouteGuard>
-          }
-        />
-        <Route
-          path="/dev-waiting"
-          element={
-            <DevRouteGuard>
-              <DevWaitingRoom />
-            </DevRouteGuard>
-          }
-        />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
+      { path: "*", element: <NotFound /> }
+    ]
+  }
+]);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AppContent />
-      {/* Принудительный импорт для включения в сборку */}
-      <div style={{ display: 'none' }}>
-        <VideoControls
-          localStream={null}
-          isVideoActive={false}
-          isAudioActive={false}
-          isScreenSharing={false}
-          onToggleVideo={() => {}}
-          onToggleAudio={() => {}}
-          onToggleScreenShare={() => {}}
-          onDeviceChange={() => {}}
-          onSettingsChange={() => {}}
-          onFullscreen={() => {}}
-          isFullscreen={false}
-        />
-        <VideoInterface
-          localVideoRef={{ current: null }}
-          remoteVideoRef={{ current: null }}
-          localStream={null}
-          isVideoActive={false}
-          isAudioActive={false}
-          isScreenSharing={false}
-          onToggleVideo={() => {}}
-          onToggleAudio={() => {}}
-          onToggleScreenShare={() => {}}
-          onDeviceChange={() => {}}
-          onSettingsChange={() => {}}
-          partnerOnline={false}
-          layout="grid"
-          onLayoutChange={() => {}}
-        />
-      </div>
+      <RouterProvider router={router} />
     </TooltipProvider>
   </QueryClientProvider>
 );

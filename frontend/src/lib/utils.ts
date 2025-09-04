@@ -1,258 +1,109 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 
-export function cn(...classes: Array<string | undefined | false | null>) {
-  return classes.filter(Boolean).join(' ');
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
-// Telegram WebApp API types
-interface TelegramWebAppAPI {
-  initDataUnsafe?: {
-    user?: {
-      id: number;
-      username?: string;
-      first_name?: string;
-      last_name?: string;
-      language_code?: string;
-      photo_url?: string;
-    };
-  };
-  initData?: string;
-  expand?: () => void;
-  ready?: () => void;
-  setHeaderColor?: (color: string) => void;
-  setThemeParams?: (params: {
-    bg_color?: string;
-    text_color?: string;
-    hint_color?: string;
-    link_color?: string;
-    button_color?: string;
-    button_text_color?: string;
-  }) => void;
-  themeParams?: Record<string, unknown>;
-  // Новые методы полноэкранного режима (Bot API 8.0+)
-  requestFullscreen?: () => void;
-  exitFullscreen?: () => void;
-  isFullscreen?: boolean;
-  version?: string;
-  platform?: string;
-  colorScheme?: string;
-  onEvent?: (eventType: string, callback: (event?: unknown) => void) => void;
-  offEvent?: (eventType: string, callback: (event?: unknown) => void) => void;
-  // Метод для открытия ссылок в Telegram
-  openTelegramLink?: (url: string) => void;
-  BackButton?: {
-    show: () => void;
-    hide: () => void;
-    onClick: (callback: () => void) => void;
-  };
-  MainButton?: {
-    setText: (text: string) => void;
-    show: () => void;
-    hide: () => void;
-    onClick: (callback: () => void) => void;
-  };
-}
-
-// Type assertion for Telegram WebApp
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: TelegramWebAppAPI;
-    };
+// Функция для проверки доступности ссылки
+async function testUrl(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { 
+      method: 'HEAD',
+      mode: 'no-cors' // Для обхода CORS
+    });
+    return true;
+  } catch (error) {
+    console.warn('Не удалось проверить доступность ссылки:', error);
+    return false; // Предполагаем, что ссылка доступна
   }
 }
 
-export type TelegramWebApp = TelegramWebAppAPI;
-
-export function getTelegramWebApp(): TelegramWebApp | null {
-  if (typeof window === 'undefined') return null;
-  return window.Telegram?.WebApp ?? null;
-}
-
-// Проверяет, запущено ли приложение в Telegram
-export function isRunningInTelegram(): boolean {
-  return getTelegramWebApp() !== null;
-}
-
-// Получает theme данные из Telegram
-export function getTelegramTheme() {
-  const tg = getTelegramWebApp();
-  return tg?.themeParams ?? null;
-}
-
-// Устанавливает заголовок приложения в Telegram
-export function setTelegramHeaderColor(color: string) {
-  const tg = getTelegramWebApp();
-  if (tg?.setHeaderColor) {
-    tg.setHeaderColor(color);
-  }
-}
-
-// Показывает кнопку "Назад" в Telegram
-export function showTelegramBackButton(callback?: () => void) {
-  const tg = getTelegramWebApp();
-  if (tg?.BackButton) {
-    tg.BackButton.show();
-    if (callback) {
-      tg.BackButton.onClick(callback);
-    }
-  }
-}
-
-// Скрывает кнопку "Назад" в Telegram
-export function hideTelegramBackButton() {
-  const tg = getTelegramWebApp();
-  if (tg?.BackButton) {
-    tg.BackButton.hide();
-  }
-}
-
-// Показывает главную кнопку в Telegram
-export function showTelegramMainButton(text: string, callback?: () => void) {
-  const tg = getTelegramWebApp();
-  if (tg?.MainButton) {
-    const mainButton = tg.MainButton;
-    mainButton.setText(text);
-    mainButton.show();
-    if (callback) {
-      mainButton.onClick(callback);
-    }
-  }
-}
-
-// Скрывает главную кнопку в Telegram
-export function hideTelegramMainButton() {
-  const tg = getTelegramWebApp();
-  if (tg?.MainButton) {
-    tg.MainButton.hide();
-  }
-}
-
-// Функция для открытия About Company в мини-апсе (используется в чате)
-// Эта функция предназначена для использования в Telegram Bot, когда пользователь
-// нажимает кнопку "About Company" в чате. Она открывает информацию о компании
-// внутри Telegram Mini App, а не в браузере.
-export function openAboutCompanyInMiniApp() {
-  const tg = getTelegramWebApp();
-  if (tg) {
-    // Открываем информацию о компании внутри Telegram Mini App
-    window.location.href = 'https://supermock.ru';
-  }
-}
-
-
-
-// Настраивает полноэкранный режим в Telegram Mini Apps
-export function setupTelegramFullscreen() {
-  const tg = getTelegramWebApp();
-  if (tg) {
-    console.log('🔧 Setting up Telegram Mini Apps...');
-    console.log('🔧 initData:', tg.initData);
-    console.log('🔧 initDataUnsafe:', tg.initDataUnsafe);
-    console.log('🔧 version:', tg.version);
+// Функция для безопасного перехода на внешние ссылки
+export function navigateToExternal(url: string) {
+  console.log('Попытка перехода на:', url);
+  
+  try {
+    // Пробуем открыть в новой вкладке
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
     
-    // Говорим Telegram, что приложение готово
-    tg.ready?.();
-
-    // Сначала разворачиваем на максимальную высоту (старый API)
-    tg.expand?.();
-
-    // Проверяем версию Telegram WebApp для поддержки полноэкранного режима
-    const version = tg.version || '6.0';
-    const majorVersion = parseInt(version.split('.')[0]);
-
-    console.log(`📱 Telegram WebApp версия: ${version}`);
-
-    // Полноэкранный режим поддерживается только в Bot API 8.0+ (версия 8.0+)
-    if (majorVersion >= 8 && tg.requestFullscreen) {
-      try {
-        console.log('🔄 Запрос полноэкранного режима...');
-        tg.requestFullscreen();
-      } catch (error) {
-        console.warn('⚠️ Ошибка при запросе полноэкранного режима:', error);
-        console.log('ℹ️ Используется только развернутый режим (expand)');
-      }
+    // Если блокировщик рекламы заблокировал открытие, пробуем другой способ
+    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+      console.log('Блокировщик рекламы заблокировал window.open, пробуем альтернативный способ');
+      
+      // Создаем временную ссылку и кликаем по ней
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('Альтернативный способ выполнен');
     } else {
-      console.log(
-        `ℹ️ Полноэкранный режим не поддерживается в версии ${version}`
-      );
-      console.log('ℹ️ Используется только развернутый режим (expand)');
+      console.log('Успешно открыто новое окно');
     }
-
-    // Настраиваем тему
-    if (tg.setThemeParams) {
-      tg.setThemeParams({
-        bg_color: '#ffffff',
-        text_color: '#000000',
-        hint_color: '#999999',
-        link_color: '#2481cc',
-        button_color: '#2481cc',
-        button_text_color: '#ffffff',
-      });
-    }
-
-    // Кнопка "About Company" убрана из WebApp, оставлена только в чате
-
-    // Добавляем обработчики событий полноэкранного режима (только для поддерживаемых версий)
-    if (majorVersion >= 8 && tg.onEvent) {
-      tg.onEvent('fullscreenChanged', () => {
-        console.log('🔄 Полноэкранный режим изменился:', tg.isFullscreen);
-      });
-
-      tg.onEvent('fullscreenFailed', (event: unknown) => {
-        const errorEvent = event as { error?: string };
-        console.warn('⚠️ Ошибка полноэкранного режима:', errorEvent?.error);
-      });
-    }
-
-    console.log('✅ Telegram Mini Apps настроен');
-  } else {
-    console.log('ℹ️ Telegram Mini Apps не обнаружен');
+  } catch (error) {
+    console.error('Ошибка при переходе на внешнюю ссылку:', error);
+    
+    // Fallback - просто меняем location
+    console.log('Используем fallback - переход в текущем окне');
+    window.location.href = url;
   }
 }
 
-// Выход из полноэкранного режима в Telegram Mini Apps
-export function exitTelegramFullscreen() {
-  const tg = getTelegramWebApp();
-  if (tg?.exitFullscreen) {
+// Функция для обработки кликов с визуальной обратной связью
+export function handleExternalClick(url: string, event?: React.MouseEvent) {
+  console.log('🔗 Попытка перехода на:', url);
+  
+  // Добавляем визуальную обратную связь
+  if (event?.currentTarget) {
+    const button = event.currentTarget as HTMLElement;
+    button.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      button.style.transform = '';
+    }, 150);
+  }
+  
+  // Небольшая задержка для визуального эффекта
+  setTimeout(() => {
+    // Пробуем несколько способов открытия ссылки
     try {
-      tg.exitFullscreen();
-      console.log('🔄 Выход из полноэкранного режима Telegram Mini Apps');
+      // Способ 1: Прямое открытие в новой вкладке
+      console.log('📱 Способ 1: Прямое открытие в новой вкладке');
+      const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+      
+      if (newWindow && !newWindow.closed) {
+        console.log('✅ Успешно открыто новое окно');
+        return;
+      }
+      
+      // Способ 2: Создание временной ссылки
+      console.log('🔗 Способ 2: Создание временной ссылки');
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('✅ Временная ссылка создана и активирована');
+      
+      // Способ 3: Если ничего не работает, переходим в текущем окне
+      setTimeout(() => {
+        console.log('🔄 Способ 3: Fallback - переход в текущем окне');
+        window.location.href = url;
+      }, 2000);
+      
     } catch (error) {
-      console.warn('⚠️ Ошибка при выходе из полноэкранного режима:', error);
+      console.error('❌ Ошибка при переходе:', error);
+      // Fallback - переход в текущем окне
+      console.log('🔄 Используем fallback - переход в текущем окне');
+      window.location.href = url;
     }
-  } else {
-    console.log(
-      'ℹ️ Метод exitFullscreen не поддерживается в данной версии Telegram'
-    );
-  }
-}
-
-// Проверка, находится ли приложение в полноэкранном режиме
-export function isTelegramFullscreen(): boolean {
-  const tg = getTelegramWebApp();
-  return tg?.isFullscreen ?? false;
-}
-
-// Проверка поддержки полноэкранного режима
-export function isFullscreenSupported(): boolean {
-  const tg = getTelegramWebApp();
-  if (!tg) return false;
-
-  const version = tg.version || '6.0';
-  const majorVersion = parseInt(version.split('.')[0]);
-
-  return majorVersion >= 8 && !!tg.requestFullscreen;
-}
-
-export function toUtcIso(
-  localDateTime: string,
-  tzOffsetMinutes?: number
-): string {
-  const date = new Date(localDateTime);
-  if (!Number.isFinite(date.getTime())) return localDateTime;
-  const offset = tzOffsetMinutes ?? -date.getTimezoneOffset();
-  const utcMs = date.getTime() - offset * 60 * 1000;
-  return new Date(utcMs).toISOString();
+  }, 100);
 }
