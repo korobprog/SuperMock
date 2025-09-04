@@ -20,24 +20,43 @@ router.get('/telegram-test', (req: Request, res: Response) => {
 // Функция для валидации данных от Telegram
 function validateTelegramAuth(data: any, botToken: string): boolean {
   if (!botToken) {
-    console.error('TELEGRAM_BOT_TOKEN not configured');
+    console.error('❌ TELEGRAM_BOT_TOKEN not configured');
     return false;
   }
 
+  console.log('🔍 Starting Telegram auth validation...');
+  console.log('  - Bot token length:', botToken.length);
+  console.log('  - Data keys:', Object.keys(data));
+
   const checkHash = data.hash;
+  if (!checkHash) {
+    console.error('❌ Hash not provided in data');
+    return false;
+  }
+
   const dataToCheck = { ...data };
   delete dataToCheck.hash;
+
+  console.log('  - Data without hash:', dataToCheck);
 
   const dataCheckString = Object.keys(dataToCheck)
     .sort()
     .map((key) => `${key}=${dataToCheck[key]}`)
     .join('\n');
 
+  console.log('  - Data check string:', dataCheckString);
+
   const secretKey = crypto.createHash('sha256').update(botToken).digest();
+  console.log('  - Secret key (hex):', secretKey.toString('hex').substring(0, 16) + '...');
+
   const hash = crypto
     .createHmac('sha256', secretKey)
     .update(dataCheckString)
     .digest('hex');
+
+  console.log('  - Computed hash:', hash);
+  console.log('  - Received hash:', checkHash);
+  console.log('  - Hash match:', hash === checkHash ? '✅ YES' : '❌ NO');
 
   return hash === checkHash;
 }
@@ -48,6 +67,8 @@ router.post('/telegram-auth-callback', async (req: Request, res: Response) => {
     console.log('=== TELEGRAM AUTH CALLBACK (POST) ===');
     console.log('Body:', req.body);
     console.log('Headers:', req.headers);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('User-Agent:', req.headers['user-agent']);
 
     // Получаем данные авторизации из body
     const {
@@ -60,25 +81,42 @@ router.post('/telegram-auth-callback', async (req: Request, res: Response) => {
       hash,
     } = req.body;
 
+    console.log('📋 Parsed data:', {
+      id: id ? `✅ ${id}` : '❌ missing',
+      first_name: first_name ? `✅ ${first_name}` : '❌ missing',
+      last_name: last_name ? `✅ ${last_name}` : '❌ missing',
+      username: username ? `✅ ${username}` : '❌ missing',
+      photo_url: photo_url ? `✅ ${photo_url}` : '❌ missing',
+      auth_date: auth_date ? `✅ ${auth_date}` : '❌ missing',
+      hash: hash ? `✅ ${hash}` : '❌ missing',
+    });
+
     // Проверяем наличие обязательных полей
     if (!id || !first_name || !auth_date || !hash) {
-      console.error('Missing required fields:', { id, first_name, auth_date, hash });
+      console.error('❌ Missing required fields:', { id, first_name, auth_date, hash });
       return res.status(400).json({ 
         error: 'Missing required fields',
-        message: 'Не все обязательные поля получены от Telegram'
+        message: 'Не все обязательные поля получены от Telegram',
+        received: req.body,
+        required: ['id', 'first_name', 'auth_date', 'hash']
       });
     }
 
     // Валидируем данные от Telegram
     if (!validateTelegramAuth(req.body, BOT_TOKEN || '')) {
-      console.error('Invalid Telegram auth data');
+      console.error('❌ Invalid Telegram auth data');
+      console.error('🔍 Validation details:');
+      console.error('  - Bot token configured:', !!BOT_TOKEN);
+      console.error('  - Received hash:', hash);
+      console.error('  - Data to validate:', JSON.stringify(req.body, null, 2));
       return res.status(401).json({ 
         error: 'Invalid auth data',
-        message: 'Неверные данные авторизации от Telegram'
+        message: 'Неверные данные авторизации от Telegram',
+        details: 'Проверьте настройки бота и домена в BotFather'
       });
     }
 
-    console.log('Telegram auth data validated successfully');
+    console.log('✅ Telegram auth data validated successfully');
 
     // Создаем или обновляем пользователя в базе данных
     const telegramUser = {
@@ -91,12 +129,12 @@ router.post('/telegram-auth-callback', async (req: Request, res: Response) => {
       hash: String(hash),
     };
 
-    console.log('Processing user:', telegramUser);
+    console.log('👤 Processing user:', telegramUser);
 
     // Временно создаем простого пользователя без базы данных
     const userId = `user_${telegramUser.id}_${Date.now()}`;
     
-    console.log('User processed successfully:', userId);
+    console.log('✅ User processed successfully:', userId);
 
     // Создаем JWT токен
     const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
@@ -110,6 +148,8 @@ router.post('/telegram-auth-callback', async (req: Request, res: Response) => {
       JWT_SECRET,
       { expiresIn: '30d' }
     );
+
+    console.log('🔐 JWT token created successfully');
 
     // Возвращаем успешный ответ с токеном
     res.json({
@@ -127,10 +167,11 @@ router.post('/telegram-auth-callback', async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    console.error('Error in Telegram auth callback (POST):', error);
+    console.error('❌ Error in Telegram auth callback (POST):', error);
     res.status(500).json({ 
       error: 'Internal server error',
-      message: 'Внутренняя ошибка сервера при обработке авторизации'
+      message: 'Внутренняя ошибка сервера при обработке авторизации',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });

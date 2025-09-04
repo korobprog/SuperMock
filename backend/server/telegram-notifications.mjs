@@ -467,6 +467,51 @@ ${feedback.comments ? `💬 <b>Комментарий:</b>\n"${feedback.comments
    */
   async handleCallback(callbackData, chatId, user) {
     try {
+      if (callbackData === 'confirm_auth') {
+        // Обработка подтверждения авторизации
+        const authMessage = `
+🔐 <b>Authorization Confirmed!</b>
+
+✅ Welcome to SuperMock, ${user.first_name || user.username || 'friend'}!
+
+🎯 <b>Your account has been successfully linked to Telegram.</b>
+
+🚀 <b>Next steps:</b>
+1. Click "Open SuperMock" to access the application
+2. Complete your profile setup
+3. Start practicing interviews!
+
+💡 <b>Need help?</b> Use the /help command anytime.
+        `.trim();
+
+        const authKeyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🚀 Open SuperMock',
+                url: 'https://app.supermock.ru',
+              },
+            ],
+            [
+              {
+                text: '📊 My Statistics',
+                callback_data: 'show_stats',
+              },
+            ],
+            [
+              {
+                text: '❓ Help',
+                callback_data: 'help',
+              },
+            ],
+          ],
+        };
+
+        return await this.sendMessage(chatId, authMessage, {
+          reply_markup: authKeyboard,
+        });
+      }
+
       if (callbackData.startsWith('remind_later_')) {
         const sessionId = callbackData.replace('remind_later_', '');
 
@@ -657,6 +702,12 @@ Click the <b>Instructions</b> button below to learn how to conduct mock intervie
           ],
           [
             {
+              text: '🔐 Confirm Authorization',
+              callback_data: 'confirm_auth',
+            },
+          ],
+          [
+            {
               text: '📊 My Statistics',
               callback_data: 'show_stats',
             },
@@ -716,6 +767,8 @@ Click the <b>Instructions</b> button below to learn how to conduct mock intervie
 📱 <b>Additional Features:</b>
 
 After studying the instructions, use the buttons below for quick access to bot functions.
+
+🔐 <b>Important:</b> Click "Confirm Authorization" to complete your login process!
       `.trim();
 
       return await this.sendMessage(chatId, additionalMessage, {

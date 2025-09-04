@@ -88,12 +88,20 @@ export function TelegramLoginSimple({
         console.log('✅ Telegram auth successful:', telegramUser);
         handleAuthSuccess(telegramUser);
       };
+
+      // Проверяем, что виджет действительно загрузился
+      setTimeout(() => {
+        if (!widgetRef.current?.querySelector('[data-telegram-login]')) {
+          console.warn('⚠️ Telegram widget not rendered, trying fallback');
+          setError('Telegram виджет не загрузился. Попробуйте обновить страницу или использовать альтернативный способ входа.');
+        }
+      }, 2000);
     };
 
     // Обработчик ошибки загрузки
     script.onerror = () => {
       console.error('❌ Telegram widget script load error');
-      setError('Ошибка загрузки виджета Telegram');
+      setError('Ошибка загрузки виджета Telegram. Попробуйте обновить страницу.');
     };
 
     // Добавляем скрипт в DOM
@@ -213,6 +221,29 @@ export function TelegramLoginSimple({
               {/* Telegram Login Widget */}
               <div className="flex justify-center">
                 <div ref={widgetRef} style={{ minHeight: '40px' }} />
+              </div>
+
+              {/* Альтернативный способ входа */}
+              <div className="text-center">
+                <p className="text-xs text-gray-500 mb-3">
+                  Если виджет не работает, используйте альтернативный способ:
+                </p>
+                <button
+                  onClick={() => {
+                    const botUrl = `https://t.me/${botName}?start=auth`;
+                    window.open(botUrl, '_blank');
+                    setSuccess('Откройте бота в Telegram и нажмите /start для авторизации. После этого вернитесь на сайт.');
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#006fa0] text-white rounded-lg font-medium text-sm transition-colors"
+                >
+                  <svg width="20" height="20" viewBox="0 0 240 240" fill="currentColor" className="flex-shrink-0">
+                    <circle cx="120" cy="120" r="120" fill="#fff" />
+                    <path d="m98 175c-3.888 0-3.227-1.468-4.568-5.17L82 132.207 170 80" fill="#c8daea" />
+                    <path d="m98 175c3 0 4.325-1.372 6-3l16-15.558-19.958-12.035" fill="#a9c9dd" />
+                    <path d="m100 144-15.958-12.035L170 80" fill="#f6fbfe" />
+                  </svg>
+                  <span>Открыть бота в Telegram</span>
+                </button>
               </div>
 
               {/* Информация о боте */}
