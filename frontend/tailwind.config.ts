@@ -9,6 +9,8 @@ export default {
 		"./src/**/*.{ts,tsx}",
 	],
 	prefix: "",
+	safelist: [],
+	blocklist: [],
       theme: {
         extend: {
           colors: {
