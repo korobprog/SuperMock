@@ -16,11 +16,14 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --no-frozen
 # Approve build scripts for Prisma
 RUN pnpm approve-builds
 
-# Copy backend sources (including compiled dist)
-COPY backend ./
+# Copy only Prisma schema first
+COPY backend/prisma ./prisma/
 
 # Generate Prisma client
 RUN pnpm exec prisma generate --schema prisma/schema.prisma
+
+# Copy backend sources (including compiled dist)
+COPY backend ./
 
 ENV NODE_ENV=production
 ENV PORT=3000
