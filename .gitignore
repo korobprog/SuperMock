@@ -6,6 +6,7 @@ yarn-error.log*
 pnpm-debug.log*
 Lading/supermock-ai-interview/node_modules/
 data/
+!frontend/src/data/
 
 # Environment files
 .env

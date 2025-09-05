@@ -16,7 +16,7 @@ import {
   Users,
   ArrowRight
 } from "lucide-react";
-import { professions } from "@/data/professions.ts";
+import { professions } from "@/data/professions";
 
 const Professions = () => {
   const { t } = useTranslation();
