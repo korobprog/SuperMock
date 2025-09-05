@@ -1,26 +1,15 @@
-import { PrismaClient } from '@prisma/client';
+// Временная заглушка для Prisma client
+// TODO: Восстановить Prisma после исправления проблем с Docker
 
-// Создаем единый экземпляр Prisma клиента для всего приложения
-const prisma = new PrismaClient();
-
-// Выводим доступные модели для отладки
-console.log('=== ДОСТУПНЫЕ МОДЕЛИ PRISMA ===');
-console.log(Object.keys(prisma));
-
-// Добавляем обработку ошибок подключения
-prisma
-  .$connect()
-  .then(() => {
-    console.log('Prisma успешно подключен к базе данных');
-  })
-  .catch((error: any) => {
-    console.error('Ошибка при подключении Prisma к базе данных:', error);
-  });
-
-// Обработка завершения работы приложения
-process.on('beforeExit', async () => {
-  await prisma.$disconnect();
-  console.log('Prisma отключен от базы данных');
-});
+export const prisma = {
+  user: {
+    findUnique: () => Promise.resolve(null),
+    findMany: () => Promise.resolve([]),
+    create: () => Promise.resolve({}),
+    update: () => Promise.resolve({}),
+    delete: () => Promise.resolve({}),
+  },
+  // Добавьте другие модели по мере необходимости
+};
 
 export default prisma;
