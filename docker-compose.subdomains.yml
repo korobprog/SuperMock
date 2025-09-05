@@ -56,7 +56,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile.simple
+      dockerfile: backend/Dockerfile.original
       no_cache: true
     container_name: supermock-backend
     environment:
