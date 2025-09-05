@@ -57,6 +57,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+      no_cache: true
     container_name: supermock-backend
     environment:
       - NODE_ENV=production

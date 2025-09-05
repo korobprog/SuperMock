@@ -250,7 +250,7 @@ jobs:
             
             # Запускаем контейнеры для поддоменов
             echo "🚀 Запускаем контейнеры для поддоменов..."
-            docker-compose -f docker-compose.subdomains.yml up -d --build
+            docker-compose -f docker-compose.subdomains.yml up -d --build --no-cache
             
             # Ждем запуска сервисов
             echo "⏳ Ждем запуска сервисов..."

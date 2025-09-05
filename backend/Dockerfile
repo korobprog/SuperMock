@@ -13,7 +13,7 @@ COPY backend/package.json ./backend/
 WORKDIR /app/backend
 
 # Install backend dependencies (no cache to force rebuild)
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Approve build scripts for Prisma
 RUN pnpm approve-builds
