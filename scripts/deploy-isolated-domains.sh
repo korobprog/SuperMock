@@ -160,12 +160,50 @@ fi
 # Обновляем Nginx конфигурацию
 echo "🔧 Обновляем Nginx конфигурацию..."
 if [ -f nginx/nginx-landing-only.conf ]; then
-    cp nginx/nginx-landing-only.conf /etc/nginx/nginx.conf
-    nginx -t
-    echo "✅ Nginx конфигурация обновлена"
+  cp nginx/nginx-landing-only.conf /etc/nginx/nginx.conf
+  
+  # Создаем директорию для статических файлов
+  mkdir -p /var/www/html
+  
+  # Копируем HTML файл лендинга
+  if [ -f landing.html ]; then
+    cp landing.html /var/www/html/index.html
+    echo "✅ HTML файл лендинга скопирован"
+  else
+    echo "⚠️ HTML файл лендинга не найден, создаем простую страницу"
+    cat > /var/www/html/index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SuperMock - Платформа для мок-интервью</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-bottom: 20px; }
+        .links { margin-top: 30px; }
+        .link { display: inline-block; margin: 10px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        .link:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 SuperMock</h1>
+        <p>Платформа для подготовки к техническим интервью</p>
+        <div class="links">
+            <a href="https://app.supermock.ru" class="link">📱 Приложение</a>
+            <a href="https://api.supermock.ru/api/health" class="link">🔌 API</a>
+        </div>
+    </div>
+</body>
+</html>
+EOF
+  fi
+  
+  nginx -t
+  echo "✅ Nginx конфигурация обновлена"
 else
-    echo "❌ Nginx конфигурация не найдена!"
-    exit 1
+  echo "❌ Nginx конфигурация не найдена!"
+  exit 1
 fi
 
 # Аутентификация в Docker Hub
