@@ -10,8 +10,8 @@ WORKDIR /app
 COPY backend/package.json ./backend/
 WORKDIR /app/backend
 
-# Install backend dependencies
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --no-frozen-lockfile
+# Install backend dependencies (no cache to force rebuild)
+RUN pnpm install --no-frozen-lockfile
 
 # Approve build scripts for Prisma
 RUN pnpm approve-builds
