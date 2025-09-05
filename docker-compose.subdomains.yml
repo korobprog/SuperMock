@@ -52,7 +52,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Backend API сервер
+  # Backend API сервер (исправлен Dockerfile)
   backend:
     build:
       context: .
