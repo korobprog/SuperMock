@@ -20,7 +20,7 @@ RUN pnpm approve-builds
 COPY backend ./
 
 # Generate Prisma client
-RUN npx prisma generate --schema prisma/schema.prisma
+RUN pnpm exec prisma generate --schema prisma/schema.prisma
 
 ENV NODE_ENV=production
 ENV PORT=3000
