@@ -1,17 +1,32 @@
 version: '3.8'
 
-networks:
-  traefik-network:
-    external: true
-  app_net:
-    driver: bridge
-  api_net:
-    driver: bridge
-  database_net:
-    driver: bridge
-
 services:
-  # База данных PostgreSQL
+  # Traefik для маршрутизации всех доменов
+  traefik:
+    image: traefik:v2.10
+    container_name: supermock-traefik
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@supermock.ru"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/letsencrypt
+    networks:
+      - supermock-app-network
+      - supermock-landing-network
+    restart: unless-stopped
+
+  # База данных PostgreSQL (для приложения)
   postgres:
     image: postgres:16-alpine
     container_name: supermock-postgres
@@ -22,11 +37,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
-    expose:
-      - "5432"
+    ports:
+      - "5432:5432"
     networks:
-      - database_net
-      - api_net
+      - supermock-app-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-supermock}"]
@@ -35,16 +49,15 @@ services:
       retries: 3
       start_period: 40s
 
-  # Redis для кэширования и WebSocket
+  # Redis для кэширования и WebSocket (для приложения)
   redis:
     image: redis:7-alpine
     container_name: supermock-redis
     command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-krishna1284}" --save 900 1 --save 300 10 --save 60 10000 --maxmemory 256mb --maxmemory-policy allkeys-lru
-    expose:
-      - "6379"
+    ports:
+      - "6379:6379"
     networks:
-      - database_net
-      - api_net
+      - supermock-app-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-krishna1284}", "ping"]
@@ -52,22 +65,22 @@ services:
       timeout: 10s
       retries: 3
 
-  # Backend API сервер
+  # Backend API сервер (для app.supermock.ru и api.supermock.ru)
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile.fix
+      dockerfile: backend/Dockerfile
     container_name: supermock-backend
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-supermock}:${POSTGRES_PASSWORD:-krishna1284}@supermock-postgres:5432/${POSTGRES_DB:-supermock}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-supermock}:${POSTGRES_PASSWORD:-krishna1284}@postgres:5432/${POSTGRES_DB:-supermock}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - USE_REDIS=true
       - PORT=3000
       - JWT_SECRET=${JWT_SECRET:-f0cf01026e91c1a40865ac15459e81fb}
-      - SESSION_SECRET=${SESSION_SECRET:-c7bee247bc9a10ce3b15ebe08429fab0afc1cbb94b1eec72ea64257f5fe5e9d3}
+      - SESSION_SECRET=${SESSION_SECRET:-c7bee247bc9a10ce3b15ebe08429fab0afc1cbb94b1eec72ea6425f5fe5e9d3}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_BOT_ID=${TELEGRAM_BOT_ID}
       - TELEGRAM_BOT_NAME=${TELEGRAM_BOT_NAME}
@@ -83,15 +96,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    expose:
-      - "3000"
     networks:
-      - api_net
-      - traefik-network
+      - supermock-app-network
     restart: unless-stopped
     labels:
       - traefik.enable=true
-      - traefik.docker.network=api_net
       # HTTP to HTTPS redirect
       - traefik.http.routers.backend-http.rule=Host(`api.supermock.ru`)
       - traefik.http.routers.backend-http.entrypoints=web
@@ -136,15 +145,11 @@ services:
     volumes:
       - ./frontend:/app/frontend
       - frontend_app_node_modules:/app/node_modules
-    expose:
-      - "8080"
     networks:
-      - app_net
-      - traefik-network
+      - supermock-app-network
     restart: unless-stopped
     labels:
       - traefik.enable=true
-      - traefik.docker.network=app_net
       # HTTP to HTTPS redirect
       - traefik.http.routers.app-http.rule=Host(`app.supermock.ru`)
       - traefik.http.routers.app-http.entrypoints=web
@@ -156,68 +161,29 @@ services:
       - traefik.http.routers.app.tls.certresolver=letsencrypt
       - traefik.http.services.app.loadbalancer.server.port=8080
 
-  # Landing страница (landing.supermock.ru)
+  # Лендинг (supermock.ru) - отдельный проект
   landing:
     image: nginx:alpine
     container_name: supermock-landing
     volumes:
       - ./landing.html:/usr/share/nginx/html/index.html:ro
-    expose:
-      - "80"
+      - ./media:/usr/share/nginx/html/media:ro
     networks:
-      - app_net
-      - traefik-network
+      - supermock-landing-network
     restart: unless-stopped
     labels:
       - traefik.enable=true
-      - traefik.docker.network=app_net
+      - traefik.docker.network=supermock-landing-network
       # HTTP to HTTPS redirect
-      - traefik.http.routers.landing-http.rule=Host(`landing.supermock.ru`)
+      - traefik.http.routers.landing-http.rule=Host(`supermock.ru`) || Host(`www.supermock.ru`)
       - traefik.http.routers.landing-http.entrypoints=web
       - traefik.http.routers.landing-http.middlewares=landing-redirect
       # HTTPS
-      - traefik.http.routers.landing.rule=Host(`landing.supermock.ru`)
+      - traefik.http.routers.landing.rule=Host(`supermock.ru`) || Host(`www.supermock.ru`)
       - traefik.http.routers.landing.entrypoints=websecure
       - traefik.http.routers.landing.tls=true
       - traefik.http.routers.landing.tls.certresolver=letsencrypt
       - traefik.http.services.landing.loadbalancer.server.port=80
-
-  # Traefik для автоматического SSL и маршрутизации (только для поддоменов)
-  traefik:
-    image: traefik:v2.10
-    container_name: supermock-traefik
-    command:
-      - "--api.insecure=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.email=admin@supermock.ru"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--log.level=INFO"
-      # Ограничиваем Traefik только поддоменами
-      - "--providers.docker.constraints=Label(`traefik.enable`, `true`)"
-    ports:
-      - "80:80"     # Стандартные порты HTTP
-      - "443:443"   # Стандартные порты HTTPS
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik_certs:/letsencrypt
-    networks:
-      - traefik-network
-      - app_net
-      - api_net
-    restart: unless-stopped
-    labels:
-      - traefik.enable=true
-      # Создаем специфичные middleware для каждого поддомена
-      - traefik.http.middlewares.app-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.app-redirect.redirectscheme.permanent=true
-      - traefik.http.middlewares.backend-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.backend-redirect.redirectscheme.permanent=true
-      - traefik.http.middlewares.landing-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.landing-redirect.redirectscheme.permanent=true
 
 volumes:
   postgres_data:
@@ -225,3 +191,9 @@ volumes:
   traefik_certs:
   backend_node_modules:
   frontend_app_node_modules:
+
+networks:
+  supermock-app-network:
+    external: true
+  supermock-landing-network:
+    external: true

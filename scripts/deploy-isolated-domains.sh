@@ -91,8 +91,8 @@ echo "🛑 Останавливаем старые контейнеры..."
 docker-compose -f docker-compose.prod-multi.yml down --timeout 30 --remove-orphans || true
 docker-compose -f docker-compose.subdomains.yml down --timeout 30 --remove-orphans || true
 
-# Останавливаем Nginx
-echo "🛑 Останавливаем Nginx..."
+# Останавливаем Nginx (если был запущен)
+echo "🛑 Останавливаем Nginx (если был запущен)..."
 systemctl stop nginx || true
 
 # Освобождаем порты
@@ -157,53 +157,16 @@ else
     exit 1
 fi
 
-# Обновляем Nginx конфигурацию
-echo "🔧 Обновляем Nginx конфигурацию..."
-if [ -f nginx/nginx-landing-only.conf ]; then
-  cp nginx/nginx-landing-only.conf /etc/nginx/nginx.conf
-  
-  # Создаем директорию для статических файлов
-  mkdir -p /var/www/html
-  
-  # Копируем HTML файл лендинга
-  if [ -f landing.html ]; then
-    cp landing.html /var/www/html/index.html
-    echo "✅ HTML файл лендинга скопирован"
-  else
-    echo "⚠️ HTML файл лендинга не найден, создаем простую страницу"
-    cat > /var/www/html/index.html << 'EOF'
-<!DOCTYPE html>
-<html>
-<head>
-    <title>SuperMock - Платформа для мок-интервью</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; margin-bottom: 20px; }
-        .links { margin-top: 30px; }
-        .link { display: inline-block; margin: 10px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-        .link:hover { background: #0056b3; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🚀 SuperMock</h1>
-        <p>Платформа для подготовки к техническим интервью</p>
-        <div class="links">
-            <a href="https://app.supermock.ru" class="link">📱 Приложение</a>
-            <a href="https://api.supermock.ru/api/health" class="link">🔌 API</a>
-        </div>
-    </div>
-</body>
-</html>
-EOF
-  fi
-  
-  nginx -t
-  echo "✅ Nginx конфигурация обновлена"
+# Nginx больше не нужен - все работает через Traefik
+echo "ℹ️ Nginx больше не используется - все сервисы работают через Traefik"
+
+# Создаем общую сеть traefik-network
+echo "🔧 Создаем общую сеть traefik-network..."
+if ! docker network ls | grep -q "traefik-network"; then
+    docker network create traefik-network --driver bridge
+    echo "✅ Сеть traefik-network создана"
 else
-  echo "❌ Nginx конфигурация не найдена!"
-  exit 1
+    echo "✅ Сеть traefik-network уже существует"
 fi
 
 # Аутентификация в Docker Hub
@@ -218,18 +181,15 @@ docker-compose -f docker-compose.subdomains.yml up -d --build
 echo "⏳ Ждем запуска сервисов..."
 sleep 30
 
-# Запускаем Nginx для основного домена
-echo "🌐 Запускаем Nginx для основного домена..."
-systemctl start nginx
-systemctl enable nginx
+# Nginx больше не нужен - все работает через Traefik
+echo "ℹ️ Nginx больше не используется - все сервисы работают через Traefik"
 
 # Проверяем статус контейнеров
 echo "📊 Проверяем статус контейнеров..."
 docker ps --filter "name=supermock" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
-# Проверяем статус Nginx
-echo "📊 Проверяем статус Nginx..."
-systemctl status nginx --no-pager -l
+# Nginx больше не используется
+echo "ℹ️ Nginx больше не используется - все сервисы работают через Traefik"
 
 # Проверяем доступность сервисов
 echo "🌐 Проверяем доступность сервисов..."
@@ -250,13 +210,13 @@ else
     echo "❌ Frontend App недоступен через https://app.supermock.ru"
 fi
 
-# Landing (через Nginx)
-if curl -s -o /dev/null -w "%{http_code}" https://supermock.ru/ | grep -q "200"; then
-    echo "✅ Landing доступен через https://supermock.ru"
+# Landing (через Traefik)
+if curl -s -o /dev/null -w "%{http_code}" https://landing.supermock.ru/ | grep -q "200"; then
+    echo "✅ Landing доступен через https://landing.supermock.ru"
 else
-    echo "❌ Landing недоступен через https://supermock.ru"
-    echo "Проверяем логи Nginx..."
-    tail -20 /var/log/nginx/error.log
+    echo "❌ Landing недоступен через https://landing.supermock.ru"
+    echo "Проверяем логи Traefik..."
+    docker logs supermock-traefik --tail 20
 fi
 
 # Финальная проверка
@@ -264,19 +224,18 @@ echo "🔍 Финальная проверка..."
 
 # Проверяем статус всех сервисов
 CONTAINER_STATUS=$(docker ps --filter "name=supermock" --format "{{.Status}}" 2>/dev/null || echo "ERROR")
-NGINX_STATUS=$(systemctl is-active nginx 2>/dev/null || echo "inactive")
 
-if echo "$CONTAINER_STATUS" | grep -q "Up" && [ "$NGINX_STATUS" = "active" ]; then
+if echo "$CONTAINER_STATUS" | grep -q "Up"; then
     echo "🎉 Деплой с изолированными доменами успешно завершен!"
     echo ""
     echo "🌐 Сервисы доступны по адресам:"
-    echo "- https://supermock.ru (Лендинг - Nginx)"
+    echo "- https://landing.supermock.ru (Лендинг - Traefik)"
     echo "- https://app.supermock.ru (Приложение - Traefik)"
     echo "- https://api.supermock.ru (API - Traefik)"
     echo ""
     echo "🔧 Архитектура:"
-    echo "- supermock.ru → Nginx (порт 80/443)"
-    echo "- app.supermock.ru, api.supermock.ru → Traefik (порт 8080/8443) → Nginx проксирует"
+    echo "- Все сервисы работают через Traefik (порты 80/443)"
+    echo "- landing.supermock.ru, app.supermock.ru, api.supermock.ru → Traefik"
     echo ""
     echo "🔐 Telegram Auth API доступен:"
     echo "- POST /api/telegram-auth/send-code - Отправка кода"
@@ -290,11 +249,10 @@ else
     echo "❌ Ошибка: не все сервисы запущены"
     echo "📊 Статус контейнеров:"
     docker ps --filter "name=supermock" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" || echo "Не удалось получить статус контейнеров"
-    echo "📊 Статус Nginx: $NGINX_STATUS"
     echo "🔍 Логи backend:"
     docker logs supermock-backend --tail 20 || echo "Не удалось получить логи backend"
-    echo "🔍 Логи Nginx:"
-    tail -20 /var/log/nginx/error.log || echo "Не удалось получить логи Nginx"
+    echo "🔍 Логи Traefik:"
+    docker logs supermock-traefik --tail 20 || echo "Не удалось получить логи Traefik"
     exit 1
 fi
 
@@ -314,11 +272,12 @@ echo "🎉 Деплой с изолированными доменами зав�
 echo ""
 echo "📋 Что было сделано:"
 echo "1. ✅ Создана изолированная конфигурация Docker Compose для поддоменов"
-echo "2. ✅ Настроен Traefik для работы только с app.supermock.ru и api.supermock.ru"
-echo "3. ✅ Обновлена конфигурация Nginx для работы только с supermock.ru"
-echo "4. ✅ Настроено проксирование поддоменов через Nginx на Traefik"
+echo "2. ✅ Настроен Traefik для работы со всеми поддоменами"
+echo "3. ✅ Добавлен сервис landing на поддомен landing.supermock.ru"
+echo "4. ✅ Создана общая сеть traefik-network для всех проектов"
 echo "5. ✅ Устранены конфликты портов между сервисами"
 echo ""
 echo "🌐 Результат:"
-echo "- supermock.ru (лендинг) → Nginx (порты 80/443)"
-echo "- app.supermock.ru, api.supermock.ru → Traefik (порты 8080/8443) → Nginx проксирует"
+echo "- landing.supermock.ru, app.supermock.ru, api.supermock.ru → Traefik (порты 80/443)"
+echo "- Все сервисы изолированы в отдельных сетях"
+echo "- Общая сеть traefik-network для всех проектов"
