@@ -1,5 +1,15 @@
 version: '3.8'
 
+networks:
+  traefik_net:
+    driver: bridge
+  app_net:
+    driver: bridge
+  api_net:
+    driver: bridge
+  database_net:
+    driver: bridge
+
 services:
   # База данных PostgreSQL
   postgres:
@@ -12,10 +22,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     networks:
-      - supermock-network
+      - database_net
+      - api_net
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-supermock}"]
@@ -29,10 +40,11 @@ services:
     image: redis:7-alpine
     container_name: supermock-redis
     command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-krishna1284}" --save 900 1 --save 300 10 --save 60 10000 --maxmemory 256mb --maxmemory-policy allkeys-lru
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
     networks:
-      - supermock-network
+      - database_net
+      - api_net
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-krishna1284}", "ping"]
@@ -71,11 +83,15 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    expose:
+      - "3000"
     networks:
-      - supermock-network
+      - api_net
+      - traefik_net
     restart: unless-stopped
     labels:
       - traefik.enable=true
+      - traefik.docker.network=api_net
       # HTTP to HTTPS redirect
       - traefik.http.routers.backend-http.rule=Host(`api.supermock.ru`)
       - traefik.http.routers.backend-http.entrypoints=web
@@ -120,11 +136,15 @@ services:
     volumes:
       - ./frontend:/app/frontend
       - frontend_app_node_modules:/app/node_modules
+    expose:
+      - "8080"
     networks:
-      - supermock-network
+      - app_net
+      - traefik_net
     restart: unless-stopped
     labels:
       - traefik.enable=true
+      - traefik.docker.network=app_net
       # HTTP to HTTPS redirect
       - traefik.http.routers.app-http.rule=Host(`app.supermock.ru`)
       - traefik.http.routers.app-http.entrypoints=web
@@ -159,7 +179,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_certs:/letsencrypt
     networks:
-      - supermock-network
+      - traefik_net
+      - app_net
+      - api_net
     restart: unless-stopped
     labels:
       - traefik.enable=true
@@ -175,7 +197,3 @@ volumes:
   traefik_certs:
   backend_node_modules:
   frontend_app_node_modules:
-
-networks:
-  supermock-network:
-    driver: bridge
