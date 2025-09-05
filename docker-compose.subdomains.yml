@@ -56,7 +56,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: backend/Dockerfile.prisma-fix
       no_cache: true
     container_name: supermock-backend
     environment:
