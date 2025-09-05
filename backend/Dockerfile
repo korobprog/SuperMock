@@ -1,5 +1,7 @@
 # Backend Dockerfile (Express + Prisma) - Updated for Prisma fix
 FROM node:20-alpine AS base
+# Force rebuild by adding timestamp
+ARG BUILD_DATE=2025-09-05
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable
