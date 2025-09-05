@@ -33,7 +33,8 @@ ENV VITE_API_URL=$VITE_API_URL \
     VITE_TURN_USERNAME=$VITE_TURN_USERNAME \
     VITE_TURN_PASSWORD=$VITE_TURN_PASSWORD \
     VITE_ENABLE_DEMO_MODE=$VITE_ENABLE_DEMO_MODE
-RUN pnpm exec vite build --config frontend/vite.config.ts
+WORKDIR /app/frontend
+RUN pnpm exec vite build
 
 FROM nginx:alpine AS runtime
 # Build context is repo root, nginx.conf resides under nginx/
