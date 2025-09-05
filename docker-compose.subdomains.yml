@@ -56,7 +56,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile.entrypoint
+      dockerfile: backend/Dockerfile.no-prisma-1757064045.dockerfile
       no_cache: true
     container_name: supermock-backend
     environment:
