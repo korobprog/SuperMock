@@ -104,13 +104,15 @@ jobs:
             --exclude=.env \
             --exclude=production.env \
             docker-compose.subdomains.yml \
+            nginx/nginx-landing-only.conf \
             frontend/ \
             backend/ \
             scripts/ \
             nginx/ \
             media/ \
             materials/ \
-            deploy/
+            deploy/ \
+            production.env
 
       - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
