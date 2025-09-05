@@ -19,18 +19,17 @@ RUN pnpm install --no-frozen-lockfile
 # Approve build scripts for Prisma
 RUN pnpm approve-builds
 
-# Copy only Prisma schema first
-COPY backend/prisma ./prisma/
-
-# Generate Prisma client
-RUN pnpm exec prisma generate --schema prisma/schema.prisma
-
 # Copy backend sources (including compiled dist)
 COPY backend ./
+
+# Copy entrypoint script
+COPY backend/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-# Run the production server (uses server/index.mjs)
+# Use entrypoint script to generate Prisma client at runtime
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["node", "server/index.mjs"]
