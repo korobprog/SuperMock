@@ -1,0 +1,31 @@
+﻿2025-09-05T08:57:53.4559613Z ##[group]Run cd frontend && pnpm run build
+2025-09-05T08:57:53.4559955Z [36;1mcd frontend && pnpm run build[0m
+2025-09-05T08:57:53.4591046Z shell: /usr/bin/bash -e {0}
+2025-09-05T08:57:53.4591281Z env:
+2025-09-05T08:57:53.4591447Z   SERVER_IP: 217.198.6.238
+2025-09-05T08:57:53.4591677Z   SERVER_PATH: /opt/mockmate
+2025-09-05T08:57:53.4591912Z   PROJECT_NAME: supermock
+2025-09-05T08:57:53.4592176Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-09-05T08:57:53.4592450Z ##[endgroup]
+2025-09-05T08:57:53.8756553Z 
+2025-09-05T08:57:53.8757562Z > vite_react_shadcn_ts@0.0.0 build /home/runner/work/SuperMock/SuperMock/frontend
+2025-09-05T08:57:53.8758309Z > vite build
+2025-09-05T08:57:53.8758559Z 
+2025-09-05T08:57:54.0736308Z [36mvite v5.4.19 [32mbuilding for production...[36m[39m
+2025-09-05T08:57:54.1247428Z transforming...
+2025-09-05T08:57:57.9683491Z [32m✓[39m 1824 modules transformed.
+2025-09-05T08:57:58.2720020Z rendering chunks...
+2025-09-05T08:57:58.2812021Z computing gzip size...
+2025-09-05T08:57:58.3003077Z [2mdist/[22m[32mindex.html                                [39m[1m[2m  2.56 kB[22m[1m[22m[2m │ gzip:   0.97 kB[22m
+2025-09-05T08:57:58.3005920Z [2mdist/[22m[2massets/[22m[32myoomoney-CD-IZL1Q.svg              [39m[1m[2m  4.22 kB[22m[1m[22m[2m │ gzip:   1.78 kB[22m
+2025-09-05T08:57:58.3007600Z [2mdist/[22m[2massets/[22m[32mhero-ai-illustration-BXQAnZPw.jpg  [39m[1m[2m 29.86 kB[22m[1m[22m
+2025-09-05T08:57:58.3009102Z [2mdist/[22m[2massets/[22m[32mlogo_main-C_iezQi7.png             [39m[1m[2m235.29 kB[22m[1m[22m
+2025-09-05T08:57:58.3010503Z [2mdist/[22m[2massets/[22m[32mmy2-BavpTHDH.png                   [39m[1m[2m429.54 kB[22m[1m[22m
+2025-09-05T08:57:58.3011376Z [33m
+2025-09-05T08:57:58.3012037Z (!) Some chunks are larger than 500 kB after minification. Consider:
+2025-09-05T08:57:58.3012821Z - Using dynamic import() to code-split the application
+2025-09-05T08:57:58.3014454Z - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+2025-09-05T08:57:58.3015893Z - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+2025-09-05T08:57:58.3017212Z [2mdist/[22m[2massets/[22m[35mindex-VvnUYfDc.css                 [39m[1m[2m120.52 kB[22m[1m[22m[2m │ gzip:  18.44 kB[22m
+2025-09-05T08:57:58.3018606Z [2mdist/[22m[2massets/[22m[36mindex-B4HNbnKk.js                  [39m[1m[33m698.75 kB[39m[22m[2m │ gzip: 206.94 kB[22m
+2025-09-05T08:57:58.3019396Z [32m✓ built in 4.21s[39m

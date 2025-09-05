@@ -1,0 +1,33 @@
+﻿2025-09-05T07:45:13.3360477Z Current runner version: '2.328.0'
+2025-09-05T07:45:13.3395678Z ##[group]Runner Image Provisioner
+2025-09-05T07:45:13.3396940Z Hosted Compute Agent
+2025-09-05T07:45:13.3398163Z Version: 20250829.383
+2025-09-05T07:45:13.3399199Z Commit: 27cb235aab5b0e52e153a26cd86b4742e89dac5d
+2025-09-05T07:45:13.3400331Z Build Date: 2025-08-29T13:48:48Z
+2025-09-05T07:45:13.3401265Z ##[endgroup]
+2025-09-05T07:45:13.3402141Z ##[group]Operating System
+2025-09-05T07:45:13.3403041Z Ubuntu
+2025-09-05T07:45:13.3403790Z 24.04.3
+2025-09-05T07:45:13.3404655Z LTS
+2025-09-05T07:45:13.3405463Z ##[endgroup]
+2025-09-05T07:45:13.3406348Z ##[group]Runner Image
+2025-09-05T07:45:13.3407281Z Image: ubuntu-24.04
+2025-09-05T07:45:13.3408497Z Version: 20250831.1.0
+2025-09-05T07:45:13.3409882Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250831.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-09-05T07:45:13.3411714Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250831.1
+2025-09-05T07:45:13.3413273Z ##[endgroup]
+2025-09-05T07:45:13.3415183Z ##[group]GITHUB_TOKEN Permissions
+2025-09-05T07:45:13.3417417Z Actions: write
+2025-09-05T07:45:13.3418572Z Contents: write
+2025-09-05T07:45:13.3419561Z Deployments: write
+2025-09-05T07:45:13.3420444Z Metadata: read
+2025-09-05T07:45:13.3421274Z Packages: write
+2025-09-05T07:45:13.3422164Z ##[endgroup]
+2025-09-05T07:45:13.3424495Z Secret source: Actions
+2025-09-05T07:45:13.3425726Z Prepare workflow directory
+2025-09-05T07:45:13.3826727Z Prepare all required actions
+2025-09-05T07:45:13.3865071Z Getting action download info
+2025-09-05T07:45:13.7420144Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+2025-09-05T07:45:13.8437408Z Download action repository 'appleboy/scp-action@v0.1.7' (SHA:917f8b81dfc1ccd331fef9e2d61bdc6c8be94634)
+2025-09-05T07:45:14.1104641Z Download action repository 'appleboy/ssh-action@v1.0.3' (SHA:029f5b4aeeeb58fdfe1410a5d17f967dacf36262)
+2025-09-05T07:45:14.5051235Z Complete job name: deploy-production

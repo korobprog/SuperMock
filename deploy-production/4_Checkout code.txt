@@ -1,0 +1,73 @@
+﻿2025-09-05T07:45:22.0541938Z ##[group]Run actions/checkout@v4
+2025-09-05T07:45:22.0542625Z with:
+2025-09-05T07:45:22.0542933Z   repository: korobprog/SuperMock
+2025-09-05T07:45:22.0543539Z   token: ***
+2025-09-05T07:45:22.0543835Z   ssh-strict: true
+2025-09-05T07:45:22.0544130Z   ssh-user: git
+2025-09-05T07:45:22.0544427Z   persist-credentials: true
+2025-09-05T07:45:22.0544753Z   clean: true
+2025-09-05T07:45:22.0545050Z   sparse-checkout-cone-mode: true
+2025-09-05T07:45:22.0545391Z   fetch-depth: 1
+2025-09-05T07:45:22.0545679Z   fetch-tags: false
+2025-09-05T07:45:22.0545989Z   show-progress: true
+2025-09-05T07:45:22.0546276Z   lfs: false
+2025-09-05T07:45:22.0546546Z   submodules: false
+2025-09-05T07:45:22.0546847Z   set-safe-directory: true
+2025-09-05T07:45:22.0547341Z env:
+2025-09-05T07:45:22.0547886Z   SERVER_IP: ***
+2025-09-05T07:45:22.0548209Z   SERVER_PATH: ***
+2025-09-05T07:45:22.0548504Z   PROJECT_NAME: supermock
+2025-09-05T07:45:22.0548817Z ##[endgroup]
+2025-09-05T07:45:22.1663549Z Syncing repository: korobprog/SuperMock
+2025-09-05T07:45:22.1665221Z ##[group]Getting Git version info
+2025-09-05T07:45:22.1665709Z Working directory is '/home/runner/work/SuperMock/SuperMock'
+2025-09-05T07:45:22.1666422Z [command]/usr/bin/git version
+2025-09-05T07:45:22.1680035Z git version 2.51.0
+2025-09-05T07:45:22.1707230Z ##[endgroup]
+2025-09-05T07:45:22.1724093Z Temporarily overriding HOME='/home/runner/work/_temp/3784d6f0-c1e3-4d8c-9ca4-274e574dfbbd' before making global git config changes
+2025-09-05T07:45:22.1725639Z Adding repository directory to the temporary git global config as a safe directory
+2025-09-05T07:45:22.1739553Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/SuperMock/SuperMock
+2025-09-05T07:45:22.1779771Z Deleting the contents of '/home/runner/work/SuperMock/SuperMock'
+2025-09-05T07:45:22.1783422Z ##[group]Initializing the repository
+2025-09-05T07:45:22.1788596Z [command]/usr/bin/git init /home/runner/work/SuperMock/SuperMock
+2025-09-05T07:45:22.1848979Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-09-05T07:45:22.1850088Z hint: is subject to change. To configure the initial branch name to use in all
+2025-09-05T07:45:22.1851074Z hint: of your new repositories, which will suppress this warning, call:
+2025-09-05T07:45:22.1851820Z hint:
+2025-09-05T07:45:22.1852423Z hint: 	git config --global init.defaultBranch <name>
+2025-09-05T07:45:22.1852858Z hint:
+2025-09-05T07:45:22.1853256Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-09-05T07:45:22.1853860Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-09-05T07:45:22.1854335Z hint:
+2025-09-05T07:45:22.1854619Z hint: 	git branch -m <name>
+2025-09-05T07:45:22.1854928Z hint:
+2025-09-05T07:45:22.1855340Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2025-09-05T07:45:22.1855976Z Initialized empty Git repository in /home/runner/work/SuperMock/SuperMock/.git/
+2025-09-05T07:45:22.1863886Z [command]/usr/bin/git remote add origin https://github.com/korobprog/SuperMock
+2025-09-05T07:45:22.1903360Z ##[endgroup]
+2025-09-05T07:45:22.1904090Z ##[group]Disabling automatic garbage collection
+2025-09-05T07:45:22.1904559Z [command]/usr/bin/git config --local gc.auto 0
+2025-09-05T07:45:22.1933687Z ##[endgroup]
+2025-09-05T07:45:22.1934194Z ##[group]Setting up auth
+2025-09-05T07:45:22.1941417Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-09-05T07:45:22.1973671Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-09-05T07:45:22.2238718Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-09-05T07:45:22.2271555Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-09-05T07:45:22.2500368Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-09-05T07:45:22.2539698Z ##[endgroup]
+2025-09-05T07:45:22.2540424Z ##[group]Fetching the repository
+2025-09-05T07:45:22.2558691Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +cb89309b2d24fe77ca50d847ec417c3f78003ea8:refs/remotes/origin/main
+2025-09-05T07:45:22.8224482Z From https://github.com/korobprog/SuperMock
+2025-09-05T07:45:22.8225537Z  * [new ref]         cb89309b2d24fe77ca50d847ec417c3f78003ea8 -> origin/main
+2025-09-05T07:45:22.8308978Z ##[endgroup]
+2025-09-05T07:45:22.8309843Z ##[group]Determining the checkout info
+2025-09-05T07:45:22.8311721Z ##[endgroup]
+2025-09-05T07:45:22.8316934Z [command]/usr/bin/git sparse-checkout disable
+2025-09-05T07:45:22.8406271Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-09-05T07:45:22.8436119Z ##[group]Checking out the ref
+2025-09-05T07:45:22.8440775Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2025-09-05T07:45:22.9142879Z Switched to a new branch 'main'
+2025-09-05T07:45:22.9143764Z branch 'main' set up to track 'origin/main'.
+2025-09-05T07:45:22.9153101Z ##[endgroup]
+2025-09-05T07:45:22.9193266Z [command]/usr/bin/git log -1 --format=%H
+2025-09-05T07:45:22.9214533Z cb89309b2d24fe77ca50d847ec417c3f78003ea8

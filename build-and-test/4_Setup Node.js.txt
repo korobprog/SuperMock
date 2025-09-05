@@ -1,0 +1,28 @@
+﻿2025-09-05T09:10:15.2301556Z ##[group]Run actions/setup-node@v4
+2025-09-05T09:10:15.2301949Z with:
+2025-09-05T09:10:15.2302181Z   node-version: 22
+2025-09-05T09:10:15.2302425Z   cache: pnpm
+2025-09-05T09:10:15.2302661Z   always-auth: false
+2025-09-05T09:10:15.2302924Z   check-latest: false
+2025-09-05T09:10:15.2303304Z   token: ***
+2025-09-05T09:10:15.2303530Z env:
+2025-09-05T09:10:15.2303753Z   SERVER_IP: 217.198.6.238
+2025-09-05T09:10:15.2304041Z   SERVER_PATH: /opt/mockmate
+2025-09-05T09:10:15.2304326Z   PROJECT_NAME: supermock
+2025-09-05T09:10:15.2304668Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-09-05T09:10:15.2305017Z ##[endgroup]
+2025-09-05T09:10:15.4672464Z Found in cache @ /opt/hostedtoolcache/node/22.19.0/x64
+2025-09-05T09:10:15.4680051Z ##[group]Environment details
+2025-09-05T09:10:18.7476542Z node: v22.19.0
+2025-09-05T09:10:18.7477154Z npm: 10.9.3
+2025-09-05T09:10:18.7477475Z yarn: 1.22.22
+2025-09-05T09:10:18.7479911Z ##[endgroup]
+2025-09-05T09:10:18.7502878Z [command]/home/runner/setup-pnpm/node_modules/.bin/pnpm store path --silent
+2025-09-05T09:10:19.3797064Z /home/runner/setup-pnpm/node_modules/.bin/store/v3
+2025-09-05T09:10:19.5686037Z Cache hit for: node-cache-Linux-x64-pnpm-924f843729fbb97ca5972fb1c206a3cc915cc69d6aabaf8578c1d1b1d63310bb
+2025-09-05T09:10:20.7777173Z Received 75497472 of 173291753 (43.6%), 72.0 MBs/sec
+2025-09-05T09:10:21.4538894Z Received 173291753 of 173291753 (100.0%), 98.6 MBs/sec
+2025-09-05T09:10:21.4540346Z Cache Size: ~165 MB (173291753 B)
+2025-09-05T09:10:21.4657667Z [command]/usr/bin/tar -xf /home/runner/work/_temp/d30f0013-4d76-4c97-997d-2a17a1070211/cache.tzst -P -C /home/runner/work/SuperMock/SuperMock --use-compress-program unzstd
+2025-09-05T09:10:23.6671115Z Cache restored successfully
+2025-09-05T09:10:23.7004622Z Cache restored from key: node-cache-Linux-x64-pnpm-924f843729fbb97ca5972fb1c206a3cc915cc69d6aabaf8578c1d1b1d63310bb

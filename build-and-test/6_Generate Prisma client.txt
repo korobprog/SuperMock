@@ -1,0 +1,22 @@
+﻿2025-09-05T08:57:51.6815535Z ##[group]Run cd backend
+2025-09-05T08:57:51.6815841Z [36;1mcd backend[0m
+2025-09-05T08:57:51.6816107Z [36;1m# Создаем временный .env файл для Prisma с реалистичными данными[0m
+2025-09-05T08:57:51.6816983Z [36;1mecho "DATABASE_URL=***postgres:5432/supermock" > .env[0m
+2025-09-05T08:57:51.6817303Z [36;1mpnpm prisma generate[0m
+2025-09-05T08:57:51.6817520Z [36;1mrm .env[0m
+2025-09-05T08:57:51.6847376Z shell: /usr/bin/bash -e {0}
+2025-09-05T08:57:51.6847604Z env:
+2025-09-05T08:57:51.6847770Z   SERVER_IP: 217.198.6.238
+2025-09-05T08:57:51.6847993Z   SERVER_PATH: /opt/mockmate
+2025-09-05T08:57:51.6848214Z   PROJECT_NAME: supermock
+2025-09-05T08:57:51.6848479Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-09-05T08:57:51.6848756Z ##[endgroup]
+2025-09-05T08:57:53.1672949Z Environment variables loaded from .env
+2025-09-05T08:57:53.1682281Z Prisma schema loaded from prisma/schema.prisma
+2025-09-05T08:57:53.4202170Z 
+2025-09-05T08:57:53.4204141Z ✔ Generated Prisma Client (v6.14.0) to ./../node_modules/.pnpm/@prisma+client@6.14.0_prisma@6.14.0_typescript@5.9.2/node_modules/@prisma/client in 122ms
+2025-09-05T08:57:53.4205132Z 
+2025-09-05T08:57:53.4205529Z Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2025-09-05T08:57:53.4205861Z 
+2025-09-05T08:57:53.4206321Z Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+2025-09-05T08:57:53.4206710Z 

@@ -1,0 +1,193 @@
+﻿2025-09-05T09:10:11.5747444Z Current runner version: '2.328.0'
+2025-09-05T09:10:11.5771272Z ##[group]Runner Image Provisioner
+2025-09-05T09:10:11.5772195Z Hosted Compute Agent
+2025-09-05T09:10:11.5772716Z Version: 20250829.383
+2025-09-05T09:10:11.5773298Z Commit: 27cb235aab5b0e52e153a26cd86b4742e89dac5d
+2025-09-05T09:10:11.5774021Z Build Date: 2025-08-29T13:48:48Z
+2025-09-05T09:10:11.5774620Z ##[endgroup]
+2025-09-05T09:10:11.5775192Z ##[group]Operating System
+2025-09-05T09:10:11.5775823Z Ubuntu
+2025-09-05T09:10:11.5776348Z 24.04.3
+2025-09-05T09:10:11.5776816Z LTS
+2025-09-05T09:10:11.5777317Z ##[endgroup]
+2025-09-05T09:10:11.5777816Z ##[group]Runner Image
+2025-09-05T09:10:11.5778548Z Image: ubuntu-24.04
+2025-09-05T09:10:11.5779248Z Version: 20250831.1.0
+2025-09-05T09:10:11.5780357Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250831.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-09-05T09:10:11.5781809Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250831.1
+2025-09-05T09:10:11.5782841Z ##[endgroup]
+2025-09-05T09:10:11.5784215Z ##[group]GITHUB_TOKEN Permissions
+2025-09-05T09:10:11.5786296Z Actions: write
+2025-09-05T09:10:11.5786825Z Contents: write
+2025-09-05T09:10:11.5787451Z Deployments: write
+2025-09-05T09:10:11.5787965Z Metadata: read
+2025-09-05T09:10:11.5788462Z Packages: write
+2025-09-05T09:10:11.5788950Z ##[endgroup]
+2025-09-05T09:10:11.5791201Z Secret source: Actions
+2025-09-05T09:10:11.5791890Z Prepare workflow directory
+2025-09-05T09:10:11.6202508Z Prepare all required actions
+2025-09-05T09:10:11.6258319Z Getting action download info
+2025-09-05T09:10:12.0146900Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+2025-09-05T09:10:12.2018654Z Download action repository 'pnpm/action-setup@v4' (SHA:a7487c7e89a18df4991f7f222e4898a00d66ddda)
+2025-09-05T09:10:12.7183044Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2025-09-05T09:10:12.8772578Z Download action repository 'actions/cache@v4' (SHA:0400d5f644dc74513175e3cd8d07132dd4860809)
+2025-09-05T09:10:13.0714204Z Complete job name: build-and-test
+2025-09-05T09:10:13.1538201Z ##[group]Run actions/checkout@v4
+2025-09-05T09:10:13.1539774Z with:
+2025-09-05T09:10:13.1540522Z   repository: korobprog/SuperMock
+2025-09-05T09:10:13.1541737Z   token: ***
+2025-09-05T09:10:13.1542458Z   ssh-strict: true
+2025-09-05T09:10:13.1543212Z   ssh-user: git
+2025-09-05T09:10:13.1543981Z   persist-credentials: true
+2025-09-05T09:10:13.1544845Z   clean: true
+2025-09-05T09:10:13.1545611Z   sparse-checkout-cone-mode: true
+2025-09-05T09:10:13.1546552Z   fetch-depth: 1
+2025-09-05T09:10:13.1547314Z   fetch-tags: false
+2025-09-05T09:10:13.1548073Z   show-progress: true
+2025-09-05T09:10:13.1548845Z   lfs: false
+2025-09-05T09:10:13.1549678Z   submodules: false
+2025-09-05T09:10:13.1550475Z   set-safe-directory: true
+2025-09-05T09:10:13.1551559Z env:
+2025-09-05T09:10:13.1552253Z   SERVER_IP: 217.198.6.238
+2025-09-05T09:10:13.1553119Z   SERVER_PATH: /opt/mockmate
+2025-09-05T09:10:13.1554026Z   PROJECT_NAME: supermock
+2025-09-05T09:10:13.1554841Z ##[endgroup]
+2025-09-05T09:10:13.2673753Z Syncing repository: korobprog/SuperMock
+2025-09-05T09:10:13.2676406Z ##[group]Getting Git version info
+2025-09-05T09:10:13.2677900Z Working directory is '/home/runner/work/SuperMock/SuperMock'
+2025-09-05T09:10:13.2679954Z [command]/usr/bin/git version
+2025-09-05T09:10:13.2740660Z git version 2.51.0
+2025-09-05T09:10:13.2768265Z ##[endgroup]
+2025-09-05T09:10:13.2792399Z Temporarily overriding HOME='/home/runner/work/_temp/dc2f58d0-5298-4acb-a861-251b58ee6e04' before making global git config changes
+2025-09-05T09:10:13.2797241Z Adding repository directory to the temporary git global config as a safe directory
+2025-09-05T09:10:13.2801228Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/SuperMock/SuperMock
+2025-09-05T09:10:13.2835099Z Deleting the contents of '/home/runner/work/SuperMock/SuperMock'
+2025-09-05T09:10:13.2838641Z ##[group]Initializing the repository
+2025-09-05T09:10:13.2843950Z [command]/usr/bin/git init /home/runner/work/SuperMock/SuperMock
+2025-09-05T09:10:13.2965004Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-09-05T09:10:13.2967653Z hint: is subject to change. To configure the initial branch name to use in all
+2025-09-05T09:10:13.2970374Z hint: of your new repositories, which will suppress this warning, call:
+2025-09-05T09:10:13.2972725Z hint:
+2025-09-05T09:10:13.2974305Z hint: 	git config --global init.defaultBranch <name>
+2025-09-05T09:10:13.2976261Z hint:
+2025-09-05T09:10:13.2978051Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-09-05T09:10:13.2981401Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-09-05T09:10:13.2983843Z hint:
+2025-09-05T09:10:13.2985023Z hint: 	git branch -m <name>
+2025-09-05T09:10:13.2986401Z hint:
+2025-09-05T09:10:13.2988189Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2025-09-05T09:10:13.2990399Z Initialized empty Git repository in /home/runner/work/SuperMock/SuperMock/.git/
+2025-09-05T09:10:13.2993933Z [command]/usr/bin/git remote add origin https://github.com/korobprog/SuperMock
+2025-09-05T09:10:13.3025917Z ##[endgroup]
+2025-09-05T09:10:13.3028266Z ##[group]Disabling automatic garbage collection
+2025-09-05T09:10:13.3030646Z [command]/usr/bin/git config --local gc.auto 0
+2025-09-05T09:10:13.3059693Z ##[endgroup]
+2025-09-05T09:10:13.3061882Z ##[group]Setting up auth
+2025-09-05T09:10:13.3067100Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-09-05T09:10:13.3099517Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-09-05T09:10:13.3426920Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-09-05T09:10:13.3459660Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-09-05T09:10:13.3678043Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-09-05T09:10:13.3712525Z ##[endgroup]
+2025-09-05T09:10:13.3714001Z ##[group]Fetching the repository
+2025-09-05T09:10:13.3721278Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +85d7cbc6614a7a112ae3d3d55d4e2edd6725cd0c:refs/remotes/origin/main
+2025-09-05T09:10:14.0366214Z From https://github.com/korobprog/SuperMock
+2025-09-05T09:10:14.0367807Z  * [new ref]         85d7cbc6614a7a112ae3d3d55d4e2edd6725cd0c -> origin/main
+2025-09-05T09:10:14.0397083Z ##[endgroup]
+2025-09-05T09:10:14.0398578Z ##[group]Determining the checkout info
+2025-09-05T09:10:14.0400278Z ##[endgroup]
+2025-09-05T09:10:14.0404197Z [command]/usr/bin/git sparse-checkout disable
+2025-09-05T09:10:14.0444037Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-09-05T09:10:14.0470990Z ##[group]Checking out the ref
+2025-09-05T09:10:14.0474270Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2025-09-05T09:10:14.1121162Z Switched to a new branch 'main'
+2025-09-05T09:10:14.1122731Z branch 'main' set up to track 'origin/main'.
+2025-09-05T09:10:14.1133638Z ##[endgroup]
+2025-09-05T09:10:14.1171772Z [command]/usr/bin/git log -1 --format=%H
+2025-09-05T09:10:14.1193716Z 85d7cbc6614a7a112ae3d3d55d4e2edd6725cd0c
+2025-09-05T09:10:14.1414127Z ##[group]Run pnpm/action-setup@v4
+2025-09-05T09:10:14.1415026Z with:
+2025-09-05T09:10:14.1415663Z   dest: ~/setup-pnpm
+2025-09-05T09:10:14.1416392Z   run_install: null
+2025-09-05T09:10:14.1417144Z   package_json_file: package.json
+2025-09-05T09:10:14.1418008Z   standalone: false
+2025-09-05T09:10:14.1418690Z env:
+2025-09-05T09:10:14.1419569Z   SERVER_IP: 217.198.6.238
+2025-09-05T09:10:14.1420381Z   SERVER_PATH: /opt/mockmate
+2025-09-05T09:10:14.1421429Z   PROJECT_NAME: supermock
+2025-09-05T09:10:14.1422238Z ##[endgroup]
+2025-09-05T09:10:14.1961901Z ##[group]Running self-installer...
+2025-09-05T09:10:14.7846972Z  WARN  deprecated pnpm@8.15.0: This version switched to a hashing algorithm for side-effects cache keys that didn't solve the long string error it was supposed to fix. Upgrade to v8.15.1 or newer, which has the fix.
+2025-09-05T09:10:14.7856710Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2025-09-05T09:10:14.7971482Z Packages: +1
+2025-09-05T09:10:14.7976614Z +
+2025-09-05T09:10:15.1669642Z Progress: resolved 1, reused 0, downloaded 1, added 1, done
+2025-09-05T09:10:15.1953752Z 
+2025-09-05T09:10:15.1954209Z dependencies:
+2025-09-05T09:10:15.1954746Z + pnpm 8.15.0 (10.15.1 is available) deprecated
+2025-09-05T09:10:15.1955015Z 
+2025-09-05T09:10:15.1987573Z Done in 839ms
+2025-09-05T09:10:15.2157992Z ##[endgroup]
+2025-09-05T09:10:15.2161792Z Installation Completed!
+2025-09-05T09:10:15.2301576Z ##[group]Run actions/setup-node@v4
+2025-09-05T09:10:15.2301960Z with:
+2025-09-05T09:10:15.2302185Z   node-version: 22
+2025-09-05T09:10:15.2302428Z   cache: pnpm
+2025-09-05T09:10:15.2302664Z   always-auth: false
+2025-09-05T09:10:15.2302926Z   check-latest: false
+2025-09-05T09:10:15.2303307Z   token: ***
+2025-09-05T09:10:15.2303534Z env:
+2025-09-05T09:10:15.2303756Z   SERVER_IP: 217.198.6.238
+2025-09-05T09:10:15.2304044Z   SERVER_PATH: /opt/mockmate
+2025-09-05T09:10:15.2304329Z   PROJECT_NAME: supermock
+2025-09-05T09:10:15.2304672Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-09-05T09:10:15.2305020Z ##[endgroup]
+2025-09-05T09:10:15.4672528Z Found in cache @ /opt/hostedtoolcache/node/22.19.0/x64
+2025-09-05T09:10:15.4680070Z ##[group]Environment details
+2025-09-05T09:10:18.7476595Z node: v22.19.0
+2025-09-05T09:10:18.7477163Z npm: 10.9.3
+2025-09-05T09:10:18.7477483Z yarn: 1.22.22
+2025-09-05T09:10:18.7479929Z ##[endgroup]
+2025-09-05T09:10:18.7502972Z [command]/home/runner/setup-pnpm/node_modules/.bin/pnpm store path --silent
+2025-09-05T09:10:19.3797127Z /home/runner/setup-pnpm/node_modules/.bin/store/v3
+2025-09-05T09:10:19.5686066Z Cache hit for: node-cache-Linux-x64-pnpm-924f843729fbb97ca5972fb1c206a3cc915cc69d6aabaf8578c1d1b1d63310bb
+2025-09-05T09:10:20.7777237Z Received 75497472 of 173291753 (43.6%), 72.0 MBs/sec
+2025-09-05T09:10:21.4538942Z Received 173291753 of 173291753 (100.0%), 98.6 MBs/sec
+2025-09-05T09:10:21.4540366Z Cache Size: ~165 MB (173291753 B)
+2025-09-05T09:10:21.4657693Z [command]/usr/bin/tar -xf /home/runner/work/_temp/d30f0013-4d76-4c97-997d-2a17a1070211/cache.tzst -P -C /home/runner/work/SuperMock/SuperMock --use-compress-program unzstd
+2025-09-05T09:10:23.6671162Z Cache restored successfully
+2025-09-05T09:10:23.7004671Z Cache restored from key: node-cache-Linux-x64-pnpm-924f843729fbb97ca5972fb1c206a3cc915cc69d6aabaf8578c1d1b1d63310bb
+2025-09-05T09:10:23.7150715Z ##[group]Run pnpm install --frozen-lockfile
+2025-09-05T09:10:23.7151143Z [36;1mpnpm install --frozen-lockfile[0m
+2025-09-05T09:10:23.7151525Z [36;1mcd frontend && pnpm install --frozen-lockfile[0m
+2025-09-05T09:10:23.7151877Z [36;1mcd ../backend && pnpm install --frozen-lockfile[0m
+2025-09-05T09:10:23.7317678Z shell: /usr/bin/bash -e {0}
+2025-09-05T09:10:23.7317978Z env:
+2025-09-05T09:10:23.7318205Z   SERVER_IP: 217.198.6.238
+2025-09-05T09:10:23.7318469Z   SERVER_PATH: /opt/mockmate
+2025-09-05T09:10:23.7318743Z   PROJECT_NAME: supermock
+2025-09-05T09:10:23.7319056Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-09-05T09:10:23.7319682Z ##[endgroup]
+2025-09-05T09:10:24.1576147Z Scope: all 2 workspace projects
+2025-09-05T09:10:24.2246007Z  ERR_PNPM_OUTDATED_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is not up to date with backend/package.json
+2025-09-05T09:10:24.2246620Z 
+2025-09-05T09:10:24.2247286Z Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+2025-09-05T09:10:24.2247786Z 
+2025-09-05T09:10:24.2248378Z     Failure reason:
+2025-09-05T09:10:24.2252022Z     "dependencies" in the lockfile ({"@mtproto/core":"6.3.0","@prisma/client":"6.14.0(prisma@6.14.0)(typescript@5.9.2)","@socket.io/redis-adapter":"8.3.0(socket.io-adapter@2.5.5)","@telegram-auth/server":"1.0.4","bcryptjs":"2.4.3","cors":"2.8.5","crypto-js":"4.2.0","dotenv":"16.6.1","express":"4.21.2","express-validator":"7.2.1","form-data":"4.0.4","googleapis":"133.0.0","jsonwebtoken":"9.0.2","mongodb":"6.18.0","mongoose":"8.18.0","node-fetch":"2.7.0","openai":"5.16.0(zod@3.25.76)","passport":"0.7.0","passport-google-oauth20":"2.0.0","prisma":"6.14.0(typescript@5.9.2)","redis":"5.8.2","socket.io":"4.8.1","telegram":"2.26.22","uuid":"11.1.0"}) doesn't match the same field in package.json ({"@mtproto/core":"^6.3.0","@socket.io/redis-adapter":"^8.3.0","@telegram-auth/server":"^1.0.4","bcryptjs":"^2.4.3","cors":"^2.8.5","crypto-js":"^4.2.0","dotenv":"^16.5.0","express":"^4.18.2","express-validator":"^7.2.1","form-data":"^4.0.4","googleapis":"^133.0.0","jsonwebtoken":"^9.0.2","mongodb":"^6.5.0","mongoose":"^8.14.1","node-fetch":"^2.7.0","openai":"^5.15.0","passport":"^0.7.0","passport-google-oauth20":"^2.0.0","redis":"^5.0.1","socket.io":"^4.8.1","telegram":"^2.26.22","uuid":"^11.1.0"})
+2025-09-05T09:10:24.2528688Z ##[error]Process completed with exit code 1.
+2025-09-05T09:10:24.2609464Z Post job cleanup.
+2025-09-05T09:10:24.3144368Z Pruning is unnecessary.
+2025-09-05T09:10:24.3259441Z Post job cleanup.
+2025-09-05T09:10:24.4195628Z [command]/usr/bin/git version
+2025-09-05T09:10:24.4232432Z git version 2.51.0
+2025-09-05T09:10:24.4276530Z Temporarily overriding HOME='/home/runner/work/_temp/c537d8f7-b202-42bf-a3af-c7a3b99013fc' before making global git config changes
+2025-09-05T09:10:24.4278106Z Adding repository directory to the temporary git global config as a safe directory
+2025-09-05T09:10:24.4283213Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/SuperMock/SuperMock
+2025-09-05T09:10:24.4323405Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-09-05T09:10:24.4355690Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-09-05T09:10:24.4583061Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-09-05T09:10:24.4603412Z http.https://github.com/.extraheader
+2025-09-05T09:10:24.4616127Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-09-05T09:10:24.4646552Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-09-05T09:10:24.4964307Z Cleaning up orphan processes

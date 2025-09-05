@@ -1,0 +1,24 @@
+﻿2025-09-05T09:10:14.1414110Z ##[group]Run pnpm/action-setup@v4
+2025-09-05T09:10:14.1415021Z with:
+2025-09-05T09:10:14.1415658Z   dest: ~/setup-pnpm
+2025-09-05T09:10:14.1416388Z   run_install: null
+2025-09-05T09:10:14.1417140Z   package_json_file: package.json
+2025-09-05T09:10:14.1418004Z   standalone: false
+2025-09-05T09:10:14.1418686Z env:
+2025-09-05T09:10:14.1419562Z   SERVER_IP: 217.198.6.238
+2025-09-05T09:10:14.1420376Z   SERVER_PATH: /opt/mockmate
+2025-09-05T09:10:14.1421424Z   PROJECT_NAME: supermock
+2025-09-05T09:10:14.1422233Z ##[endgroup]
+2025-09-05T09:10:14.1961830Z ##[group]Running self-installer...
+2025-09-05T09:10:14.7846868Z  WARN  deprecated pnpm@8.15.0: This version switched to a hashing algorithm for side-effects cache keys that didn't solve the long string error it was supposed to fix. Upgrade to v8.15.1 or newer, which has the fix.
+2025-09-05T09:10:14.7856674Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2025-09-05T09:10:14.7971449Z Packages: +1
+2025-09-05T09:10:14.7976585Z +
+2025-09-05T09:10:15.1669436Z Progress: resolved 1, reused 0, downloaded 1, added 1, done
+2025-09-05T09:10:15.1953663Z 
+2025-09-05T09:10:15.1954160Z dependencies:
+2025-09-05T09:10:15.1954740Z + pnpm 8.15.0 (10.15.1 is available) deprecated
+2025-09-05T09:10:15.1955011Z 
+2025-09-05T09:10:15.1987428Z Done in 839ms
+2025-09-05T09:10:15.2157924Z ##[endgroup]
+2025-09-05T09:10:15.2161763Z Installation Completed!

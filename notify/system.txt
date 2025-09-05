@@ -1,0 +1,5 @@
+2025-09-05T09:10:27.9480000Z Requested labels: ubuntu-latest
+2025-09-05T09:10:27.9480000Z Job defined at: korobprog/SuperMock/.github/workflows/deploy-isolated-domains.yml@refs/heads/main
+2025-09-05T09:10:27.9480000Z Waiting for a runner to pick up this job...
+2025-09-05T09:10:28.4310000Z Job is waiting for a hosted runner to come online.
+2025-09-05T09:10:28.4310000Z Job is about to start running on the hosted runner: GitHub Actions 1000001074

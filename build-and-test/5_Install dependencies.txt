@@ -1,0 +1,19 @@
+﻿2025-09-05T09:10:23.7150695Z ##[group]Run pnpm install --frozen-lockfile
+2025-09-05T09:10:23.7151124Z [36;1mpnpm install --frozen-lockfile[0m
+2025-09-05T09:10:23.7151520Z [36;1mcd frontend && pnpm install --frozen-lockfile[0m
+2025-09-05T09:10:23.7151867Z [36;1mcd ../backend && pnpm install --frozen-lockfile[0m
+2025-09-05T09:10:23.7317661Z shell: /usr/bin/bash -e {0}
+2025-09-05T09:10:23.7317974Z env:
+2025-09-05T09:10:23.7318200Z   SERVER_IP: 217.198.6.238
+2025-09-05T09:10:23.7318466Z   SERVER_PATH: /opt/mockmate
+2025-09-05T09:10:23.7318741Z   PROJECT_NAME: supermock
+2025-09-05T09:10:23.7319052Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-09-05T09:10:23.7319676Z ##[endgroup]
+2025-09-05T09:10:24.1576110Z Scope: all 2 workspace projects
+2025-09-05T09:10:24.2245973Z  ERR_PNPM_OUTDATED_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is not up to date with backend/package.json
+2025-09-05T09:10:24.2246616Z 
+2025-09-05T09:10:24.2247210Z Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+2025-09-05T09:10:24.2247783Z 
+2025-09-05T09:10:24.2248374Z     Failure reason:
+2025-09-05T09:10:24.2252010Z     "dependencies" in the lockfile ({"@mtproto/core":"6.3.0","@prisma/client":"6.14.0(prisma@6.14.0)(typescript@5.9.2)","@socket.io/redis-adapter":"8.3.0(socket.io-adapter@2.5.5)","@telegram-auth/server":"1.0.4","bcryptjs":"2.4.3","cors":"2.8.5","crypto-js":"4.2.0","dotenv":"16.6.1","express":"4.21.2","express-validator":"7.2.1","form-data":"4.0.4","googleapis":"133.0.0","jsonwebtoken":"9.0.2","mongodb":"6.18.0","mongoose":"8.18.0","node-fetch":"2.7.0","openai":"5.16.0(zod@3.25.76)","passport":"0.7.0","passport-google-oauth20":"2.0.0","prisma":"6.14.0(typescript@5.9.2)","redis":"5.8.2","socket.io":"4.8.1","telegram":"2.26.22","uuid":"11.1.0"}) doesn't match the same field in package.json ({"@mtproto/core":"^6.3.0","@socket.io/redis-adapter":"^8.3.0","@telegram-auth/server":"^1.0.4","bcryptjs":"^2.4.3","cors":"^2.8.5","crypto-js":"^4.2.0","dotenv":"^16.5.0","express":"^4.18.2","express-validator":"^7.2.1","form-data":"^4.0.4","googleapis":"^133.0.0","jsonwebtoken":"^9.0.2","mongodb":"^6.5.0","mongoose":"^8.14.1","node-fetch":"^2.7.0","openai":"^5.15.0","passport":"^0.7.0","passport-google-oauth20":"^2.0.0","redis":"^5.0.1","socket.io":"^4.8.1","telegram":"^2.26.22","uuid":"^11.1.0"})
+2025-09-05T09:10:24.2528666Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,934 @@
+﻿2025-09-05T08:05:30.0865355Z ##[group]Run appleboy/ssh-action@v1.0.3
+2025-09-05T08:05:30.0865748Z with:
+2025-09-05T08:05:30.0866257Z   host: ***
+2025-09-05T08:05:30.0866533Z   username: ***
+2025-09-05T08:05:30.0874521Z   key: ***
+2025-09-05T08:05:30.0874779Z   port: 22
+2025-09-05T08:05:30.0893697Z   script: set -e
+
+echo "🚀 Начинаем деплой с изолированными доменами..."
+echo "Время: $(date)"
+echo "Коммит: 183eed971dde51f93882047e0f3a9870f1675a3e"
+echo "Ветка: main"
+
+cd ***
+
+# Очищаем старые архивные файлы для экономии места
+echo "🧹 Очищаем старые архивные файлы..."
+find . -name "backup-*.tar.gz" -mtime +7 -delete 2>/dev/null || true
+find . -name "supermock-full-deploy-*.tar.gz" -mtime +3 -delete 2>/dev/null || true
+echo "✅ Старые архивные файлы удалены"
+
+# Останавливаем текущие контейнеры
+echo "🛑 Останавливаем текущие контейнеры..."
+docker-compose -f docker-compose.prod-multi.yml down --timeout 30 --remove-orphans || true
+docker-compose -f docker-compose.subdomains.yml down --timeout 30 --remove-orphans || true
+
+# Останавливаем Nginx (если был запущен)
+echo "🛑 Останавливаем Nginx (если был запущен)..."
+systemctl stop nginx || true
+
+# Останавливаем конфликтующие сервисы
+echo "🛑 Останавливаем конфликтующие сервисы..."
+docker stop app-backend-1 app-redis-1 || true
+docker rm app-backend-1 app-redis-1 || true
+
+# Принудительно удаляем все контейнеры supermock
+echo "🗑️ Принудительно удаляем все контейнеры supermock..."
+docker ps -a --filter "name=supermock" --format "{{.Names}}" | xargs -r docker rm -f || true
+
+# Освобождаем порты
+echo "🔓 Освобождаем порты..."
+sudo fuser -k 80/tcp || true
+sudo fuser -k 443/tcp || true
+sudo fuser -k 8080/tcp || true
+sudo fuser -k 8443/tcp || true
+sleep 2
+
+# Очищаем старые образы
+echo "🧹 Очищаем старые образы..."
+docker image prune -af || true
+
+# Распаковываем новый архив
+echo "📂 Распаковываем новый код..."
+tar -xzf deployment.tar.gz
+
+# Обновляем переменные окружения
+echo "⚙️ Обновляем переменные окружения..."
+if [ -f production.env ]; then
+  ln -sf production.env .env
+  
+  # Создаем backend/.env файл с правильными настройками
+  echo "🔧 Создаем backend/.env файл..."
+  mkdir -p backend
+  echo "NODE_ENV=production" > backend/.env
+  echo "PORT=3000" >> backend/.env
+  echo "HOST=0.0.0.0" >> backend/.env
+  echo "" >> backend/.env
+  echo "# Database Configuration" >> backend/.env
+  echo "DATABASE_URL=\"***postgres:5432/supermock\"" >> backend/.env
+  echo "" >> backend/.env
+  echo "USE_MONGODB=false" >> backend/.env
+  echo "" >> backend/.env
+  echo "# Redis Configuration" >> backend/.env
+  echo "USE_REDIS=false" >> backend/.env
+  echo "REDIS_HOST=redis" >> backend/.env
+  echo "REDIS_PORT=6379" >> backend/.env
+  echo "" >> backend/.env
+  echo "# Frontend Configuration" >> backend/.env
+  echo "FRONTEND_URL=https://app.supermock.ru" >> backend/.env
+  echo "FRONTEND_PORT=8080" >> backend/.env
+  echo "" >> backend/.env
+  echo "# JWT Configuration" >> backend/.env
+  echo "JWT_SECRET=052aa937e3faf8542efe8c091a7ff830" >> backend/.env
+  echo "" >> backend/.env
+  echo "# Telegram Configuration" >> backend/.env
+  echo "TELEGRAM_BOT_TOKEN=8464088869:AAFcZb7HmYQJa6vaYjfTDCjfr187p9hhk2o" >> backend/.env
+  echo "TELEGRAM_BOT_NAME=SuperMock_bot" >> backend/.env
+  echo "" >> backend/.env
+  echo "# Telegram Auth Configuration" >> backend/.env
+  echo "MAX_VERIFICATION_ATTEMPTS=3" >> backend/.env
+  echo "VERIFICATION_CODE_EXPIRY=5" >> backend/.env
+  echo "JWT_EXPIRY_DAYS=30" >> backend/.env
+  echo "VERIFICATION_CODE_LENGTH=6" >> backend/.env
+  echo "CODE_CLEANUP_INTERVAL=5" >> backend/.env
+  echo "MAX_CODES_PER_PHONE=3" >> backend/.env
+  echo "" >> backend/.env
+  echo "# Domain Configuration" >> backend/.env
+  echo "DOMAIN=supermock.ru" >> backend/.env
+  
+  echo "✅ Backend .env файл создан"
+else
+  echo "❌ Файл production.env не найден!"
+  exit 1
+fi
+
+# Nginx больше не нужен - все работает через Traefik
+echo "ℹ️ Nginx больше не используется - все сервисы работают через Traefik"
+
+# Создаем общую сеть traefik-network
+echo "🔧 Создаем общую сеть traefik-network..."
+if ! docker network ls | grep -q "traefik-network"; then
+    docker network create traefik-network --driver bridge
+    echo "✅ Сеть traefik-network создана"
+else
+    echo "✅ Сеть traefik-network уже существует"
+fi
+
+# Аутентификация в Docker Hub
+echo "🔐 Аутентификация в Docker Hub..."
+echo "***" | docker login -u "***" --password-stdin
+
+# Запускаем контейнеры для поддоменов
+echo "🚀 Запускаем контейнеры для поддоменов..."
+docker-compose -f docker-compose.subdomains.yml up -d --build
+
+# Ждем запуска сервисов
+echo "⏳ Ждем запуска сервисов..."
+sleep 30
+
+# Nginx больше не нужен - все работает через Traefik
+echo "ℹ️ Nginx больше не используется - все сервисы работают через Traefik"
+
+# Проверяем статус контейнеров
+echo "📊 Проверяем статус контейнеров..."
+docker ps --filter "name=supermock" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# Nginx больше не используется
+echo "ℹ️ Nginx больше не используется - все сервисы работают через Traefik"
+
+# Проверяем доступность сервисов
+echo "🌐 Проверяем доступность сервисов..."
+
+# API (через Traefik)
+if curl -s -o /dev/null -w "%{http_code}" https://api.supermock.ru/api/health | grep -q "200"; then
+  echo "✅ API доступен через https://api.supermock.ru"
+else
+  echo "❌ API недоступен через https://api.supermock.ru"
+  echo "Проверяем логи Traefik..."
+  docker logs supermock-traefik --tail 20
+fi
+
+# Frontend App (через Traefik)
+if curl -s -o /dev/null -w "%{http_code}" https://app.supermock.ru/ | grep -q "200"; then
+  echo "✅ Frontend App доступен через https://app.supermock.ru"
+else
+  echo "❌ Frontend App недоступен через https://app.supermock.ru"
+fi
+
+# Landing (через Traefik)
+if curl -s -o /dev/null -w "%{http_code}" https://landing.supermock.ru/ | grep -q "200"; then
+  echo "✅ Landing доступен через https://landing.supermock.ru"
+else
+  echo "❌ Landing недоступен через https://landing.supermock.ru"
+  echo "Проверяем логи Traefik..."
+  docker logs supermock-traefik --tail 20
+fi
+
+# Финальная проверка
+echo "🔍 Финальная проверка..."
+
+# Проверяем статус всех сервисов
+CONTAINER_STATUS=$(docker ps --filter "name=supermock" --format "{{.Status}}" 2>/dev/null || echo "ERROR")
+
+if echo "$CONTAINER_STATUS" | grep -q "Up"; then
+  echo "🎉 Деплой с изолированными доменами успешно завершен!"
+  echo ""
+  echo "🌐 Сервисы доступны по адресам:"
+  echo "- https://landing.supermock.ru (Лендинг - Traefik)"
+  echo "- https://app.supermock.ru (Приложение - Traefik)"
+  echo "- https://api.supermock.ru (API - Traefik)"
+  echo ""
+  echo "🔧 Архитектура:"
+  echo "- Все сервисы работают через Traefik (порты 80/443)"
+  echo "- landing.supermock.ru, app.supermock.ru, api.supermock.ru → Traefik"
+  echo ""
+  echo "🔐 Telegram Auth API доступен:"
+  echo "- POST /api/telegram-auth/send-code - Отправка кода"
+  echo "- POST /api/telegram-auth/verify-code - Проверка кода"
+  echo "- GET /api/telegram-auth/me - Информация о пользователе"
+  echo "- GET /api/telegram-auth/stats - Статистика"
+  echo ""
+  echo "📱 Пользователи могут авторизоваться через @SuperMock_bot"
+  echo "🔗 Страница авторизации: https://app.supermock.ru/auth/telegram"
+else
+  echo "❌ Ошибка: не все сервисы запущены"
+  echo "📊 Статус контейнеров:"
+  docker ps --filter "name=supermock" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" || echo "Не удалось получить статус контейнеров"
+  echo "🔍 Логи backend:"
+  docker logs supermock-backend --tail 20 || echo "Не удалось получить логи backend"
+  echo "🔍 Логи Traefik:"
+  docker logs supermock-traefik --tail 20 || echo "Не удалось получить логи Traefik"
+  exit 1
+fi
+
+# Очистка временных файлов и старых архивов
+echo "🧹 Очистка временных файлов и старых архивов..."
+rm -f deployment.tar.gz
+rm -f supermock-full-deploy-*.tar.gz
+
+# Дополнительная очистка старых архивных файлов
+echo "🗑️ Удаляем старые архивные файлы для экономии места..."
+find . -name "backup-*.tar.gz" -mtime +7 -delete 2>/dev/null || true
+find . -name "supermock-full-deploy-*.tar.gz" -mtime +3 -delete 2>/dev/null || true
+find . -name "*.tar.gz" -size +100M -mtime +1 -delete 2>/dev/null || true
+echo "✅ Очистка завершена"
+
+2025-09-05T08:05:30.0913712Z   timeout: 30s
+2025-09-05T08:05:30.0914001Z   command_timeout: 10m
+2025-09-05T08:05:30.0914309Z   proxy_port: 22
+2025-09-05T08:05:30.0914588Z   proxy_timeout: 30s
+2025-09-05T08:05:30.0914865Z env:
+2025-09-05T08:05:30.0915140Z   SERVER_IP: ***
+2025-09-05T08:05:30.0915431Z   SERVER_PATH: ***
+2025-09-05T08:05:30.0915716Z   PROJECT_NAME: supermock
+2025-09-05T08:05:30.0916116Z ##[endgroup]
+2025-09-05T08:05:30.0957475Z ##[command]/usr/bin/docker run --name beb1c4c68414cb48f4458baaa597291102864c_c0677c --label beb1c4 --workdir /github/workspace --rm -e "SERVER_IP" -e "SERVER_PATH" -e "PROJECT_NAME" -e "INPUT_HOST" -e "INPUT_USERNAME" -e "INPUT_KEY" -e "INPUT_PORT" -e "INPUT_SCRIPT" -e "INPUT_PASSPHRASE" -e "INPUT_PASSWORD" -e "INPUT_SYNC" -e "INPUT_USE_INSECURE_CIPHER" -e "INPUT_CIPHER" -e "INPUT_TIMEOUT" -e "INPUT_COMMAND_TIMEOUT" -e "INPUT_KEY_PATH" -e "INPUT_FINGERPRINT" -e "INPUT_PROXY_HOST" -e "INPUT_PROXY_PORT" -e "INPUT_PROXY_USERNAME" -e "INPUT_PROXY_PASSWORD" -e "INPUT_PROXY_PASSPHRASE" -e "INPUT_PROXY_TIMEOUT" -e "INPUT_PROXY_KEY" -e "INPUT_PROXY_KEY_PATH" -e "INPUT_PROXY_FINGERPRINT" -e "INPUT_PROXY_CIPHER" -e "INPUT_PROXY_USE_INSECURE_CIPHER" -e "INPUT_SCRIPT_STOP" -e "INPUT_ENVS" -e "INPUT_ENVS_FORMAT" -e "INPUT_DEBUG" -e "INPUT_ALLENVS" -e "INPUT_REQUEST_PTY" -e "HOME" -e "GITHUB_JOB" -e "GITHUB_REF" -e "GITHUB_SHA" -e "GITHUB_REPOSITORY" -e "GITHUB_REPOSITORY_OWNER" -e "GITHUB_REPOSITORY_OWNER_ID" -e "GITHUB_RUN_ID" -e "GITHUB_RUN_NUMBER" -e "GITHUB_RETENTION_DAYS" -e "GITHUB_RUN_ATTEMPT" -e "GITHUB_ACTOR_ID" -e "GITHUB_ACTOR" -e "GITHUB_WORKFLOW" -e "GITHUB_HEAD_REF" -e "GITHUB_BASE_REF" -e "GITHUB_EVENT_NAME" -e "GITHUB_SERVER_URL" -e "GITHUB_API_URL" -e "GITHUB_GRAPHQL_URL" -e "GITHUB_REF_NAME" -e "GITHUB_REF_PROTECTED" -e "GITHUB_REF_TYPE" -e "GITHUB_WORKFLOW_REF" -e "GITHUB_WORKFLOW_SHA" -e "GITHUB_REPOSITORY_ID" -e "GITHUB_TRIGGERING_ACTOR" -e "GITHUB_WORKSPACE" -e "GITHUB_ACTION" -e "GITHUB_EVENT_PATH" -e "GITHUB_ACTION_REPOSITORY" -e "GITHUB_ACTION_REF" -e "GITHUB_PATH" -e "GITHUB_ENV" -e "GITHUB_STEP_SUMMARY" -e "GITHUB_STATE" -e "GITHUB_OUTPUT" -e "RUNNER_OS" -e "RUNNER_ARCH" -e "RUNNER_NAME" -e "RUNNER_ENVIRONMENT" -e "RUNNER_TOOL_CACHE" -e "RUNNER_TEMP" -e "RUNNER_WORKSPACE" -e "ACTIONS_RUNTIME_URL" -e "ACTIONS_RUNTIME_TOKEN" -e "ACTIONS_CACHE_URL" -e "ACTIONS_RESULTS_URL" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "/home/runner/work/SuperMock/SuperMock":"/github/workspace" beb1c4:c68414cb48f4458baaa597291102864c
+2025-09-05T08:05:30.2202174Z ======CMD======
+2025-09-05T08:05:30.2202770Z set -e
+2025-09-05T08:05:30.2203029Z 
+2025-09-05T08:05:30.2203696Z echo "🚀 Начинаем деплой с изолированными доменами..."
+2025-09-05T08:05:30.2204411Z echo "Время: $(date)"
+2025-09-05T08:05:30.2205068Z echo "Коммит: 183eed971dde51f93882047e0f3a9870f1675a3e"
+2025-09-05T08:05:30.2205706Z echo "Ветка: main"
+2025-09-05T08:05:30.2205894Z 
+2025-09-05T08:05:30.2206930Z cd ***
+2025-09-05T08:05:30.2207094Z 
+2025-09-05T08:05:30.2207479Z # Очищаем старые архивные файлы для экономии места
+2025-09-05T08:05:30.2207944Z echo "🧹 Очищаем старые архивные файлы..."
+2025-09-05T08:05:30.2208404Z find . -name "backup-*.tar.gz" -mtime +7 -delete 2>/dev/null || true
+2025-09-05T08:05:30.2208979Z find . -name "supermock-full-deploy-*.tar.gz" -mtime +3 -delete 2>/dev/null || true
+2025-09-05T08:05:30.2209515Z echo "✅ Старые архивные файлы удалены"
+2025-09-05T08:05:30.2209735Z 
+2025-09-05T08:05:30.2209896Z # Останавливаем текущие контейнеры
+2025-09-05T08:05:30.2210284Z echo "🛑 Останавливаем текущие контейнеры..."
+2025-09-05T08:05:30.2210833Z docker-compose -f docker-compose.prod-multi.yml down --timeout 30 --remove-orphans || true
+2025-09-05T08:05:30.2211543Z docker-compose -f docker-compose.subdomains.yml down --timeout 30 --remove-orphans || true
+2025-09-05T08:05:30.2211928Z 
+2025-09-05T08:05:30.2212126Z # Останавливаем Nginx (если был запущен)
+2025-09-05T08:05:30.2212554Z echo "🛑 Останавливаем Nginx (если был запущен)..."
+2025-09-05T08:05:30.2212947Z systemctl stop nginx || true
+2025-09-05T08:05:30.2213139Z 
+2025-09-05T08:05:30.2213315Z # Останавливаем конфликтующие сервисы
+2025-09-05T08:05:30.2213711Z echo "🛑 Останавливаем конфликтующие сервисы..."
+2025-09-05T08:05:30.2214103Z docker stop app-backend-1 app-redis-1 || true
+2025-09-05T08:05:30.2214486Z docker rm app-backend-1 app-redis-1 || true
+2025-09-05T08:05:30.2214722Z 
+2025-09-05T08:05:30.2214905Z # Принудительно удаляем все контейнеры supermock
+2025-09-05T08:05:30.2215353Z echo "🗑️ Принудительно удаляем все контейнеры supermock..."
+2025-09-05T08:05:30.2215887Z docker ps -a --filter "name=supermock" --format "{{.Names}}" | xargs -r docker rm -f || true
+2025-09-05T08:05:30.2216811Z 
+2025-09-05T08:05:30.2216975Z # Освобождаем порты
+2025-09-05T08:05:30.2217343Z echo "🔓 Освобождаем порты..."
+2025-09-05T08:05:30.2217672Z sudo fuser -k 80/tcp || true
+2025-09-05T08:05:30.2217991Z sudo fuser -k 443/tcp || true
+2025-09-05T08:05:30.2218328Z sudo fuser -k 8080/tcp || true
+2025-09-05T08:05:30.2218634Z sudo fuser -k 8443/tcp || true
+2025-09-05T08:05:30.2218925Z sleep 2
+2025-09-05T08:05:30.2219068Z 
+2025-09-05T08:05:30.2219216Z # Очищаем старые образы
+2025-09-05T08:05:30.2219541Z echo "🧹 Очищаем старые образы..."
+2025-09-05T08:05:30.2219868Z docker image prune -af || true
+2025-09-05T08:05:30.2220064Z 
+2025-09-05T08:05:30.2220208Z # Распаковываем новый архив
+2025-09-05T08:05:30.2220544Z echo "📂 Распаковываем новый код..."
+2025-09-05T08:05:30.2220888Z tar -xzf deployment.tar.gz
+2025-09-05T08:05:30.2221085Z 
+2025-09-05T08:05:30.2221248Z # Обновляем переменные окружения
+2025-09-05T08:05:30.2221630Z echo "⚙️ Обновляем переменные окружения..."
+2025-09-05T08:05:30.2222130Z if [ -f production.env ]; then
+2025-09-05T08:05:30.2222459Z   ln -sf production.env .env
+2025-09-05T08:05:30.2222761Z   
+2025-09-05T08:05:30.2223098Z   # Создаем backend/.env файл с правильными настройками
+2025-09-05T08:05:30.2223513Z   echo "🔧 Создаем backend/.env файл..."
+2025-09-05T08:05:30.2223998Z   mkdir -p backend
+2025-09-05T08:05:30.2224307Z   echo "NODE_ENV=production" > backend/.env
+2025-09-05T08:05:30.2224730Z   echo "PORT=3000" >> backend/.env
+2025-09-05T08:05:30.2225058Z   echo "HOST=0.0.0.0" >> backend/.env
+2025-09-05T08:05:30.2225378Z   echo "" >> backend/.env
+2025-09-05T08:05:30.2225703Z   echo "# Database Configuration" >> backend/.env
+2025-09-05T08:05:30.2226726Z   echo "DATABASE_URL=\"***postgres:5432/supermock\"" >> backend/.env
+2025-09-05T08:05:30.2227163Z   echo "" >> backend/.env
+2025-09-05T08:05:30.2227481Z   echo "USE_MONGODB=false" >> backend/.env
+2025-09-05T08:05:30.2227828Z   echo "" >> backend/.env
+2025-09-05T08:05:30.2228148Z   echo "# Redis Configuration" >> backend/.env
+2025-09-05T08:05:30.2228533Z   echo "USE_REDIS=false" >> backend/.env
+2025-09-05T08:05:30.2228883Z   echo "REDIS_HOST=redis" >> backend/.env
+2025-09-05T08:05:30.2229232Z   echo "REDIS_PORT=6379" >> backend/.env
+2025-09-05T08:05:30.2229582Z   echo "" >> backend/.env
+2025-09-05T08:05:30.2229918Z   echo "# Frontend Configuration" >> backend/.env
+2025-09-05T08:05:30.2230373Z   echo "FRONTEND_URL=https://app.supermock.ru" >> backend/.env
+2025-09-05T08:05:30.2230807Z   echo "FRONTEND_PORT=8080" >> backend/.env
+2025-09-05T08:05:30.2231161Z   echo "" >> backend/.env
+2025-09-05T08:05:30.2231480Z   echo "# JWT Configuration" >> backend/.env
+2025-09-05T08:05:30.2231917Z   echo "JWT_SECRET=052aa937e3faf8542efe8c091a7ff830" >> backend/.env
+2025-09-05T08:05:30.2232343Z   echo "" >> backend/.env
+2025-09-05T08:05:30.2232674Z   echo "# Telegram Configuration" >> backend/.env
+2025-09-05T08:05:30.2233209Z   echo "TELEGRAM_BOT_TOKEN=8464088869:AAFcZb7HmYQJa6vaYjfTDCjfr187p9hhk2o" >> backend/.env
+2025-09-05T08:05:30.2233771Z   echo "TELEGRAM_BOT_NAME=SuperMock_bot" >> backend/.env
+2025-09-05T08:05:30.2234166Z   echo "" >> backend/.env
+2025-09-05T08:05:30.2234515Z   echo "# Telegram Auth Configuration" >> backend/.env
+2025-09-05T08:05:30.2234929Z   echo "MAX_VERIFICATION_ATTEMPTS=3" >> backend/.env
+2025-09-05T08:05:30.2235339Z   echo "VERIFICATION_CODE_EXPIRY=5" >> backend/.env
+2025-09-05T08:05:30.2235736Z   echo "JWT_EXPIRY_DAYS=30" >> backend/.env
+2025-09-05T08:05:30.2236376Z   echo "VERIFICATION_CODE_LENGTH=6" >> backend/.env
+2025-09-05T08:05:30.2236875Z   echo "CODE_CLEANUP_INTERVAL=5" >> backend/.env
+2025-09-05T08:05:30.2237264Z   echo "MAX_CODES_PER_PHONE=3" >> backend/.env
+2025-09-05T08:05:30.2237636Z   echo "" >> backend/.env
+2025-09-05T08:05:30.2237965Z   echo "# Domain Configuration" >> backend/.env
+2025-09-05T08:05:30.2238349Z   echo "DOMAIN=supermock.ru" >> backend/.env
+2025-09-05T08:05:30.2238688Z   
+2025-09-05T08:05:30.2239025Z   echo "✅ Backend .env файл создан"
+2025-09-05T08:05:30.2239340Z else
+2025-09-05T08:05:30.2239851Z   echo "❌ Файл production.env не найден!"
+2025-09-05T08:05:30.2240201Z   exit 1
+2025-09-05T08:05:30.2240456Z fi
+2025-09-05T08:05:30.2240587Z 
+2025-09-05T08:05:30.2240799Z # Nginx больше не нужен - все работает через Traefik
+2025-09-05T08:05:30.2241313Z echo "ℹ️ Nginx больше не используется - все сервисы работают через Traefik"
+2025-09-05T08:05:30.2241625Z 
+2025-09-05T08:05:30.2241788Z # Создаем общую сеть traefik-network
+2025-09-05T08:05:30.2242200Z echo "🔧 Создаем общую сеть traefik-network..."
+2025-09-05T08:05:30.2242630Z if ! docker network ls | grep -q "traefik-network"; then
+2025-09-05T08:05:30.2243078Z     docker network create traefik-network --driver bridge
+2025-09-05T08:05:30.2243522Z     echo "✅ Сеть traefik-network создана"
+2025-09-05T08:05:30.2243856Z else
+2025-09-05T08:05:30.2244183Z     echo "✅ Сеть traefik-network уже существует"
+2025-09-05T08:05:30.2244531Z fi
+2025-09-05T08:05:30.2244668Z 
+2025-09-05T08:05:30.2244829Z # Аутентификация в Docker Hub
+2025-09-05T08:05:30.2245211Z echo "🔐 Аутентификация в Docker Hub..."
+2025-09-05T08:05:30.2245772Z echo "***" | docker login -u "***" --password-stdin
+2025-09-05T08:05:30.2246206Z 
+2025-09-05T08:05:30.2246385Z # Запускаем контейнеры для поддоменов
+2025-09-05T08:05:30.2246793Z echo "🚀 Запускаем контейнеры для поддоменов..."
+2025-09-05T08:05:30.2247394Z docker-compose -f docker-compose.subdomains.yml up -d --build
+2025-09-05T08:05:30.2247706Z 
+2025-09-05T08:05:30.2247858Z # Ждем запуска сервисов
+2025-09-05T08:05:30.2248190Z echo "⏳ Ждем запуска сервисов..."
+2025-09-05T08:05:30.2248500Z sleep 30
+2025-09-05T08:05:30.2248644Z 
+2025-09-05T08:05:30.2248841Z # Nginx больше не нужен - все работает через Traefik
+2025-09-05T08:05:30.2249335Z echo "ℹ️ Nginx больше не используется - все сервисы работают через Traefik"
+2025-09-05T08:05:30.2249635Z 
+2025-09-05T08:05:30.2249786Z # Проверяем статус контейнеров
+2025-09-05T08:05:30.2250146Z echo "📊 Проверяем статус контейнеров..."
+2025-09-05T08:05:30.2250641Z docker ps --filter "name=supermock" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+2025-09-05T08:05:30.2251021Z 
+2025-09-05T08:05:30.2251180Z # Nginx больше не используется
+2025-09-05T08:05:30.2251629Z echo "ℹ️ Nginx больше не используется - все сервисы работают через Traefik"
+2025-09-05T08:05:30.2251915Z 
+2025-09-05T08:05:30.2252074Z # Проверяем доступность сервисов
+2025-09-05T08:05:30.2252455Z echo "🌐 Проверяем доступность сервисов..."
+2025-09-05T08:05:30.2252680Z 
+2025-09-05T08:05:30.2252830Z # API (через Traefik)
+2025-09-05T08:05:30.2253303Z if curl -s -o /dev/null -w "%{http_code}" https://api.supermock.ru/api/health | grep -q "200"; then
+2025-09-05T08:05:30.2253900Z   echo "✅ API доступен через https://api.supermock.ru"
+2025-09-05T08:05:30.2254272Z else
+2025-09-05T08:05:30.2254625Z   echo "❌ API недоступен через https://api.supermock.ru"
+2025-09-05T08:05:30.2255045Z   echo "Проверяем логи Traefik..."
+2025-09-05T08:05:30.2255392Z   docker logs supermock-traefik --tail 20
+2025-09-05T08:05:30.2255731Z fi
+2025-09-05T08:05:30.2255864Z 
+2025-09-05T08:05:30.2256392Z # Frontend App (через Traefik)
+2025-09-05T08:05:30.2256880Z if curl -s -o /dev/null -w "%{http_code}" https://app.supermock.ru/ | grep -q "200"; then
+2025-09-05T08:05:30.2257546Z   echo "✅ Frontend App доступен через https://app.supermock.ru"
+2025-09-05T08:05:30.2257951Z else
+2025-09-05T08:05:30.2258344Z   echo "❌ Frontend App недоступен через https://app.supermock.ru"
+2025-09-05T08:05:30.2258748Z fi
+2025-09-05T08:05:30.2258886Z 
+2025-09-05T08:05:30.2259043Z # Landing (через Traefik)
+2025-09-05T08:05:30.2259505Z if curl -s -o /dev/null -w "%{http_code}" https://landing.supermock.ru/ | grep -q "200"; then
+2025-09-05T08:05:30.2260103Z   echo "✅ Landing доступен через https://landing.supermock.ru"
+2025-09-05T08:05:30.2260493Z else
+2025-09-05T08:05:30.2260864Z   echo "❌ Landing недоступен через https://landing.supermock.ru"
+2025-09-05T08:05:30.2261310Z   echo "Проверяем логи Traefik..."
+2025-09-05T08:05:30.2261652Z   docker logs supermock-traefik --tail 20
+2025-09-05T08:05:30.2261990Z fi
+2025-09-05T08:05:30.2262138Z 
+2025-09-05T08:05:30.2262278Z # Финальная проверка
+2025-09-05T08:05:30.2262636Z echo "🔍 Финальная проверка..."
+2025-09-05T08:05:30.2262828Z 
+2025-09-05T08:05:30.2262979Z # Проверяем статус всех сервисов
+2025-09-05T08:05:30.2263497Z CONTAINER_STATUS=$(docker ps --filter "name=supermock" --format "{{.Status}}" 2>/dev/null || echo "ERROR")
+2025-09-05T08:05:30.2264049Z 
+2025-09-05T08:05:30.2264276Z if echo "$CONTAINER_STATUS" | grep -q "Up"; then
+2025-09-05T08:05:30.2264985Z   echo "🎉 Деплой с изолированными доменами успешно завершен!"
+2025-09-05T08:05:30.2265597Z   echo ""
+2025-09-05T08:05:30.2266232Z   echo "🌐 Сервисы доступны по адресам:"
+2025-09-05T08:05:30.2266917Z   echo "- https://landing.supermock.ru (Лендинг - Traefik)"
+2025-09-05T08:05:30.2267638Z   echo "- https://app.supermock.ru (Приложение - Traefik)"
+2025-09-05T08:05:30.2268209Z   echo "- https://api.supermock.ru (API - Traefik)"
+2025-09-05T08:05:30.2268923Z   echo ""
+2025-09-05T08:05:30.2281720Z   echo "🔧 Архитектура:"
+2025-09-05T08:05:30.2282492Z   echo "- Все сервисы работают через Traefik (порты 80/443)"
+2025-09-05T08:05:30.2283265Z   echo "- landing.supermock.ru, app.supermock.ru, api.supermock.ru → Traefik"
+2025-09-05T08:05:30.2283752Z   echo ""
+2025-09-05T08:05:30.2284082Z   echo "🔐 Telegram Auth API доступен:"
+2025-09-05T08:05:30.2284564Z   echo "- POST /api/telegram-auth/send-code - Отправка кода"
+2025-09-05T08:05:30.2285078Z   echo "- POST /api/telegram-auth/verify-code - Проверка кода"
+2025-09-05T08:05:30.2285587Z   echo "- GET /api/telegram-auth/me - Информация о пользователе"
+2025-09-05T08:05:30.2286301Z   echo "- GET /api/telegram-auth/stats - Статистика"
+2025-09-05T08:05:30.2286693Z   echo ""
+2025-09-05T08:05:30.2287080Z   echo "📱 Пользователи могут авторизоваться через @SuperMock_bot"
+2025-09-05T08:05:30.2287623Z   echo "🔗 Страница авторизации: https://app.supermock.ru/auth/telegram"
+2025-09-05T08:05:30.2288029Z else
+2025-09-05T08:05:30.2288333Z   echo "❌ Ошибка: не все сервисы запущены"
+2025-09-05T08:05:30.2288737Z   echo "📊 Статус контейнеров:"
+2025-09-05T08:05:30.2289402Z   docker ps --filter "name=supermock" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" || echo "Не удалось получить статус контейнеров"
+2025-09-05T08:05:30.2290020Z   echo "🔍 Логи backend:"
+2025-09-05T08:05:30.2290528Z   docker logs supermock-backend --tail 20 || echo "Не удалось получить логи backend"
+2025-09-05T08:05:30.2291033Z   echo "🔍 Логи Traefik:"
+2025-09-05T08:05:30.2291508Z   docker logs supermock-traefik --tail 20 || echo "Не удалось получить логи Traefik"
+2025-09-05T08:05:30.2291954Z   exit 1
+2025-09-05T08:05:30.2292201Z fi
+2025-09-05T08:05:30.2292331Z 
+2025-09-05T08:05:30.2292509Z # Очистка временных файлов и старых архивов
+2025-09-05T08:05:30.2292944Z echo "🧹 Очистка временных файлов и старых архивов..."
+2025-09-05T08:05:30.2293315Z rm -f deployment.tar.gz
+2025-09-05T08:05:30.2293631Z rm -f supermock-full-deploy-*.tar.gz
+2025-09-05T08:05:30.2293873Z 
+2025-09-05T08:05:30.2294054Z # Дополнительная очистка старых архивных файлов
+2025-09-05T08:05:30.2294707Z echo "🗑️ Удаляем старые архивные файлы для экономии места..."
+2025-09-05T08:05:30.2295177Z find . -name "backup-*.tar.gz" -mtime +7 -delete 2>/dev/null || true
+2025-09-05T08:05:30.2295731Z find . -name "supermock-full-deploy-*.tar.gz" -mtime +3 -delete 2>/dev/null || true
+2025-09-05T08:05:30.2296545Z find . -name "*.tar.gz" -size +100M -mtime +1 -delete 2>/dev/null || true
+2025-09-05T08:05:30.2297015Z echo "✅ Очистка завершена"
+2025-09-05T08:05:30.2297194Z 
+2025-09-05T08:05:30.2297312Z ======END======
+2025-09-05T08:05:31.8843261Z out: 🚀 Начинаем деплой с изолированными доменами...
+2025-09-05T08:05:31.8850537Z out: Время: Fri Sep  5 11:05:31 AM MSK 2025
+2025-09-05T08:05:31.8851334Z out: Коммит: 183eed971dde51f93882047e0f3a9870f1675a3e
+2025-09-05T08:05:31.8851802Z out: Ветка: main
+2025-09-05T08:05:31.8852159Z out: 🧹 Очищаем старые архивные файлы...
+2025-09-05T08:05:32.2611275Z out: ✅ Старые архивные файлы удалены
+2025-09-05T08:05:32.2612079Z out: 🛑 Останавливаем текущие контейнеры...
+2025-09-05T08:05:32.3342148Z out: 🛑 Останавливаем Nginx (если был запущен)...
+2025-09-05T08:05:32.3393891Z out: 🛑 Останавливаем конфликтующие сервисы...
+2025-09-05T08:05:32.3552453Z err: Error response from daemon: No such container: app-backend-1
+2025-09-05T08:05:32.3553422Z err: Error response from daemon: No such container: app-redis-1
+2025-09-05T08:05:32.3659929Z err: Error response from daemon: No such container: app-backend-1
+2025-09-05T08:05:32.3660625Z err: Error response from daemon: No such container: app-redis-1
+2025-09-05T08:05:32.3671782Z out: 🗑️ Принудительно удаляем все контейнеры supermock...
+2025-09-05T08:05:32.3794282Z out: 🔓 Освобождаем порты...
+2025-09-05T08:05:34.4154586Z out: 🧹 Очищаем старые образы...
+2025-09-05T08:05:34.5964905Z out: Deleted Images:
+2025-09-05T08:05:34.5965554Z out: untagged: nginx:alpine
+2025-09-05T08:05:34.5966491Z out: untagged: nginx@sha256:42a516af16b852e33b7682d5ef8acbd5d13fe08fecadc7ed98605ba5e3b26ab8
+2025-09-05T08:05:34.5967424Z out: deleted: sha256:4a86014ec6994761b7f3118cf47e4b4fd6bac15fc6fa262c4f356386bbc0e9d9
+2025-09-05T08:05:34.5968139Z out: untagged: redis:7-alpine
+2025-09-05T08:05:34.5968798Z out: untagged: redis@sha256:bb186d083732f669da90be8b0f975a37812b15e913465bb14d845db72a4e3e08
+2025-09-05T08:05:34.5969705Z out: deleted: sha256:f218e591b571a4129aa29a8566b597d849fba21af7be853d31b03122b20db5e9
+2025-09-05T08:05:34.5970503Z out: deleted: sha256:95e3321f9f5cf56aabd467800263973befbf989bd3a7187c9f258e1b6c0e774b
+2025-09-05T08:05:34.5971187Z out: deleted: sha256:f6898ecdb40f8c6e3df474fee1d1511bae045f3a89ff9ad7656ae699acad5290
+2025-09-05T08:05:34.5971869Z out: deleted: sha256:2480352bfda6d5d71cdeb8e67dfa30681807c2a470cb43939ae9014b19e002b9
+2025-09-05T08:05:34.5972537Z out: deleted: sha256:79406017d11b4c1868c06dd58cf036dd07699e34c40d43a8f5f9d5efc47da240
+2025-09-05T08:05:34.5973615Z out: deleted: sha256:091df48dc7a9fed806ce7ef7db4304e8deed6fedabb7734e186fd920b4e40de1
+2025-09-05T08:05:34.5974814Z out: deleted: sha256:c356f1b78e583786c442a5fcebec800ca64dd3af339ceab3c9f941c11d55a732
+2025-09-05T08:05:34.5975916Z out: deleted: sha256:aef83d7bea6a35e93d57850d9a988acae9724051de7ac1b68a564ea14d83a7fd
+2025-09-05T08:05:34.5976760Z out: deleted: sha256:7003d23cc2176ec98ba2f8b3b4b9b5f144ef370e39bfcf6275a92b5064bc9261
+2025-09-05T08:05:34.5977285Z out: untagged: traefik:v2.10
+2025-09-05T08:05:34.5977827Z out: untagged: traefik@sha256:6341b98aec5ec8969b99e9730f4c5b22cca3103d42b6bbe4b7a3c910758fe565
+2025-09-05T08:05:34.5978537Z out: deleted: sha256:ee69e8120b64a420b5deca1cf46db0e4188ef76c7807a45c0f26d8a5ac2ab2bd
+2025-09-05T08:05:34.5979198Z out: deleted: sha256:9a05527201faefbff980011da8923a477958c92435b5f53d60024497e2406b0e
+2025-09-05T08:05:34.5979880Z out: deleted: sha256:aea95dc32d01aef58e5102b093903aba9c5bb27c72fbe66e0d4791cdd618a69e
+2025-09-05T08:05:34.5980562Z out: deleted: sha256:54f3725d1ee2f0a9a0877bd316620cdf479f9f5780fe19d108fbabed7e08c9c6
+2025-09-05T08:05:34.5981192Z out: deleted: sha256:aedc3bda2944bb9bcb6c3d475bee8b460db9a9b0f3e0b33a6ed2fd1ae0f1d445
+2025-09-05T08:05:34.5981706Z out: untagged: postgres:16-alpine
+2025-09-05T08:05:34.5982228Z out: untagged: postgres@sha256:8ffca822c1933bdc8be7dbbe9c2330974bdb43f5027f47717772fa35925412b0
+2025-09-05T08:05:34.5982893Z out: deleted: sha256:3b527b2c105a6f2d89fcb81fd6c99a09df64651f99cb4a727282ee57dced5e5c
+2025-09-05T08:05:34.5983665Z out: deleted: sha256:19cdc09c16ccab4b84e2ae15a34cab5c4b558b042068ed9ffd412f0a3cf6f27a
+2025-09-05T08:05:34.5984288Z out: deleted: sha256:533490cb8ae4d943b6dac9881a68716fadd602f64d6a2cdf78526e6f7d871e4f
+2025-09-05T08:05:34.5984892Z out: deleted: sha256:847edc54c6be8b1c04315053e169d2e936b3783ebd4364787ec59276db27e64f
+2025-09-05T08:05:34.5985510Z out: deleted: sha256:6586d1a0b1ea5decc697762700a578c9d90526d52e5b9890c72df53102808546
+2025-09-05T08:05:34.5986223Z out: deleted: sha256:e59dacccdd5487280519707acd549f12d93bf02ba63ff01735ae5fb27d35e616
+2025-09-05T08:05:34.5986837Z out: deleted: sha256:02129dfe4fc7d4c9715016d337398459618c66faea1bcaddf6a4b051d6b4a67d
+2025-09-05T08:05:34.5987451Z out: deleted: sha256:c5acf46ab5891a3af62e458e3b3c7d9695ecf2dd480cca76dac50d968cee6a07
+2025-09-05T08:05:34.5988067Z out: deleted: sha256:e54f47a61a1b2c3f7b804faad2ecb21faf21030c746e6df24493c92a3cd288b4
+2025-09-05T08:05:34.5988682Z out: deleted: sha256:efbabcd6a84c27c34e6263e4465dee3e47d617c2a71577b68d12135cac0c43ab
+2025-09-05T08:05:34.5989289Z out: deleted: sha256:7b91154ef49740f0d82177cc2eb09dd982f6494a2a49499c690268ef3ee966bc
+2025-09-05T08:05:34.5989769Z out: Total reclaimed space: 461.6MB
+2025-09-05T08:05:34.5990311Z out: 📂 Распаковываем новый код...
+2025-09-05T08:05:34.6592874Z out: ⚙️ Обновляем переменные окружения...
+2025-09-05T08:05:34.6601448Z out: 🔧 Создаем backend/.env файл...
+2025-09-05T08:05:34.6616269Z out: ✅ Backend .env файл создан
+2025-09-05T08:05:34.6616860Z out: ℹ️ Nginx больше не используется - все сервисы работают через Traefik
+2025-09-05T08:05:34.6617360Z out: 🔧 Создаем общую сеть traefik-network...
+2025-09-05T08:05:34.6786477Z out: ✅ Сеть traefik-network уже существует
+2025-09-05T08:05:34.6787387Z out: 🔐 Аутентификация в Docker Hub...
+2025-09-05T08:05:35.9413706Z out: Login Succeeded
+2025-09-05T08:05:35.9427397Z out: 🚀 Запускаем контейнеры для поддоменов...
+2025-09-05T08:05:35.9761410Z err:  postgres Pulling 
+2025-09-05T08:05:35.9771534Z err:  redis Pulling 
+2025-09-05T08:05:35.9796199Z err:  landing Pulling 
+2025-09-05T08:05:35.9796863Z err:  traefik Pulling 
+2025-09-05T08:05:38.1732275Z err:  9824c27679d3 Already exists 
+2025-09-05T08:05:38.1768583Z err:  9824c27679d3 Already exists 
+2025-09-05T08:05:38.1775334Z err:  01ef787617d5 Pulling fs layer 
+2025-09-05T08:05:38.1776462Z err:  d444581c5dc1 Pulling fs layer 
+2025-09-05T08:05:38.1778993Z err:  127625cab66d Pulling fs layer 
+2025-09-05T08:05:38.1779592Z err:  7f8bf47818a2 Pulling fs layer 
+2025-09-05T08:05:38.1780121Z err:  0951477387e1 Pulling fs layer 
+2025-09-05T08:05:38.1780732Z err:  878e28e3ecd5 Pulling fs layer 
+2025-09-05T08:05:38.1781318Z err:  d079e32a74cc Pulling fs layer 
+2025-09-05T08:05:38.1781909Z err:  cb87d3c01966 Pulling fs layer 
+2025-09-05T08:05:38.3179440Z err:  40af0ccd9733 Pulling fs layer 
+2025-09-05T08:05:38.3179944Z err:  0b003ba20c51 Pulling fs layer 
+2025-09-05T08:05:38.3180320Z err:  7f8bf47818a2 Waiting 
+2025-09-05T08:05:38.3180633Z err:  0951477387e1 Waiting 
+2025-09-05T08:05:38.3180939Z err:  878e28e3ecd5 Waiting 
+2025-09-05T08:05:38.3181252Z err:  d079e32a74cc Waiting 
+2025-09-05T08:05:38.3181542Z err:  cb87d3c01966 Waiting 
+2025-09-05T08:05:38.3181831Z err:  40af0ccd9733 Waiting 
+2025-09-05T08:05:38.3182118Z err:  0b003ba20c51 Waiting 
+2025-09-05T08:05:38.3182422Z err:  6bc572a340ec Already exists 
+2025-09-05T08:05:38.3182749Z err:  619be1103602 Pulling fs layer 
+2025-09-05T08:05:38.3183077Z err:  987f790ee143 Pulling fs layer 
+2025-09-05T08:05:38.3183401Z err:  c6d80f829c66 Pulling fs layer 
+2025-09-05T08:05:38.3183720Z err:  5300d181735b Pulling fs layer 
+2025-09-05T08:05:38.3184029Z err:  619be1103602 Waiting 
+2025-09-05T08:05:38.3184317Z err:  987f790ee143 Waiting 
+2025-09-05T08:05:38.3184605Z err:  c6d80f829c66 Waiting 
+2025-09-05T08:05:38.3184903Z err:  5300d181735b Waiting 
+2025-09-05T08:05:38.3185198Z err:  403e3f251637 Already exists 
+2025-09-05T08:05:38.3185514Z err:  0368fd46e3c6 Pulling fs layer 
+2025-09-05T08:05:38.3185832Z err:  4c55286bbede Pulling fs layer 
+2025-09-05T08:05:38.3186612Z err:  5e28347af205 Pulling fs layer 
+2025-09-05T08:05:38.3186957Z err:  311eca34042e Pulling fs layer 
+2025-09-05T08:05:38.3187297Z err:  e6fe6f07e192 Pulling fs layer 
+2025-09-05T08:05:38.3187627Z err:  a2cadbfeca72 Pulling fs layer 
+2025-09-05T08:05:38.3187955Z err:  4f4fb700ef54 Pulling fs layer 
+2025-09-05T08:05:38.3188277Z err:  a976ed7e7808 Pulling fs layer 
+2025-09-05T08:05:38.3188604Z err:  0368fd46e3c6 Waiting 
+2025-09-05T08:05:38.3188907Z err:  4c55286bbede Waiting 
+2025-09-05T08:05:38.3189202Z err:  5e28347af205 Waiting 
+2025-09-05T08:05:38.3189499Z err:  311eca34042e Waiting 
+2025-09-05T08:05:38.3189788Z err:  e6fe6f07e192 Waiting 
+2025-09-05T08:05:38.3190072Z err:  a2cadbfeca72 Waiting 
+2025-09-05T08:05:38.3190368Z err:  4f4fb700ef54 Waiting 
+2025-09-05T08:05:38.3190650Z err:  a976ed7e7808 Waiting 
+2025-09-05T08:05:38.3190941Z err:  9adfbae99cb7 Already exists 
+2025-09-05T08:05:38.3191257Z err:  7a8a46741e18 Already exists 
+2025-09-05T08:05:38.3191566Z err:  c9ebe2ff2d2c Already exists 
+2025-09-05T08:05:38.3212553Z err:  a992fbc61ecc Already exists 
+2025-09-05T08:05:38.3213291Z err:  cb1ff4086f82 Already exists 
+2025-09-05T08:05:38.8636272Z err:  01ef787617d5 Downloading [==================================================>]     968B/968B
+2025-09-05T08:05:38.8637004Z err:  01ef787617d5 Verifying Checksum 
+2025-09-05T08:05:38.8637471Z err:  01ef787617d5 Download complete 
+2025-09-05T08:05:38.8645585Z err:  01ef787617d5 Extracting [==================================================>]     968B/968B
+2025-09-05T08:05:38.8663058Z err:  01ef787617d5 Extracting [==================================================>]     968B/968B
+2025-09-05T08:05:38.8728680Z err:  127625cab66d Downloading [==================================================>]     174B/174B
+2025-09-05T08:05:38.8738077Z err:  127625cab66d Verifying Checksum 
+2025-09-05T08:05:38.8738606Z err:  127625cab66d Download complete 
+2025-09-05T08:05:38.8786413Z err:  01ef787617d5 Pull complete 
+2025-09-05T08:05:38.8892437Z err:  landing Pulled 
+2025-09-05T08:05:38.8964400Z err:  d444581c5dc1 Downloading [>                                                  ]  12.32kB/1.116MB
+2025-09-05T08:05:39.0079364Z err:  d444581c5dc1 Verifying Checksum 
+2025-09-05T08:05:39.0080162Z err:  d444581c5dc1 Download complete 
+2025-09-05T08:05:39.0080809Z err:  d444581c5dc1 Extracting [=>                                                 ]  32.77kB/1.116MB
+2025-09-05T08:05:39.0081524Z err:  d444581c5dc1 Extracting [==================================================>]  1.116MB/1.116MB
+2025-09-05T08:05:39.0082132Z err:  d444581c5dc1 Pull complete 
+2025-09-05T08:05:39.0082690Z err:  127625cab66d Extracting [==================================================>]     174B/174B
+2025-09-05T08:05:39.0083550Z err:  127625cab66d Extracting [==================================================>]     174B/174B
+2025-09-05T08:05:39.0084038Z err:  127625cab66d Pull complete 
+2025-09-05T08:05:39.4971027Z err:  7f8bf47818a2 Downloading [==================================================>]     116B/116B
+2025-09-05T08:05:39.4971871Z err:  7f8bf47818a2 Verifying Checksum 
+2025-09-05T08:05:39.4972356Z err:  7f8bf47818a2 Download complete 
+2025-09-05T08:05:39.4993681Z err:  7f8bf47818a2 Extracting [==================================================>]     116B/116B
+2025-09-05T08:05:39.5003687Z err:  7f8bf47818a2 Extracting [==================================================>]     116B/116B
+2025-09-05T08:05:39.5255822Z err:  7f8bf47818a2 Pull complete 
+2025-09-05T08:05:39.5257407Z err:  0951477387e1 Downloading [>                                                  ]  532.5kB/104.8MB
+2025-09-05T08:05:39.5434213Z err:  878e28e3ecd5 Downloading [=====>                                             ]  1.049kB/9.56kB
+2025-09-05T08:05:39.5434902Z err:  878e28e3ecd5 Downloading [==================================================>]   9.56kB/9.56kB
+2025-09-05T08:05:39.5441628Z err:  878e28e3ecd5 Verifying Checksum 
+2025-09-05T08:05:39.5442089Z err:  878e28e3ecd5 Download complete 
+2025-09-05T08:05:39.6424629Z err:  0951477387e1 Downloading [===>                                               ]   8.04MB/104.8MB
+2025-09-05T08:05:39.7319228Z err:  0951477387e1 Downloading [======>                                            ]  13.93MB/104.8MB
+2025-09-05T08:05:39.8327329Z err:  0951477387e1 Downloading [=========>                                         ]  20.35MB/104.8MB
+2025-09-05T08:05:39.9338359Z err:  0951477387e1 Downloading [============>                                      ]  26.75MB/104.8MB
+2025-09-05T08:05:40.0343105Z err:  0951477387e1 Downloading [================>                                  ]  34.23MB/104.8MB
+2025-09-05T08:05:40.1349694Z err:  0951477387e1 Downloading [===================>                               ]  41.18MB/104.8MB
+2025-09-05T08:05:40.1684748Z err:  d079e32a74cc Downloading [==================================================>]     129B/129B
+2025-09-05T08:05:40.1721159Z err:  d079e32a74cc Verifying Checksum 
+2025-09-05T08:05:40.1724976Z err:  d079e32a74cc Download complete 
+2025-09-05T08:05:40.1950690Z err:  cb87d3c01966 Downloading [==================================================>]     169B/169B
+2025-09-05T08:05:40.1951844Z err:  cb87d3c01966 Verifying Checksum 
+2025-09-05T08:05:40.1952646Z err:  cb87d3c01966 Download complete 
+2025-09-05T08:05:40.2446984Z err:  0951477387e1 Downloading [======================>                            ]  47.59MB/104.8MB
+2025-09-05T08:05:40.3481822Z err:  0951477387e1 Downloading [=========================>                         ]  52.92MB/104.8MB
+2025-09-05T08:05:40.4483637Z err:  0951477387e1 Downloading [============================>                      ]  59.83MB/104.8MB
+2025-09-05T08:05:40.5609201Z err:  0951477387e1 Downloading [===============================>                   ]  66.25MB/104.8MB
+2025-09-05T08:05:40.6669826Z err:  0951477387e1 Downloading [==================================>                ]  72.68MB/104.8MB
+2025-09-05T08:05:40.7683583Z err:  0951477387e1 Downloading [====================================>              ]  76.44MB/104.8MB
+2025-09-05T08:05:40.8197637Z err:  40af0ccd9733 Downloading [========>                                          ]  1.049kB/5.927kB
+2025-09-05T08:05:40.8199425Z err:  40af0ccd9733 Downloading [==================================================>]  5.927kB/5.927kB
+2025-09-05T08:05:40.8210609Z err:  40af0ccd9733 Verifying Checksum 
+2025-09-05T08:05:40.8211182Z err:  40af0ccd9733 Download complete 
+2025-09-05T08:05:40.8708696Z err:  0951477387e1 Downloading [=======================================>           ]  82.31MB/104.8MB
+2025-09-05T08:05:40.8836846Z err:  0b003ba20c51 Downloading [==================================================>]     185B/185B
+2025-09-05T08:05:40.8842536Z err:  0b003ba20c51 Verifying Checksum 
+2025-09-05T08:05:40.8843510Z err:  0b003ba20c51 Download complete 
+2025-09-05T08:05:40.9729966Z err:  0951477387e1 Downloading [==========================================>        ]  88.73MB/104.8MB
+2025-09-05T08:05:41.0764437Z err:  0951477387e1 Downloading [============================================>      ]  94.07MB/104.8MB
+2025-09-05T08:05:41.1806993Z err:  0951477387e1 Downloading [===============================================>   ]  99.94MB/104.8MB
+2025-09-05T08:05:41.2523886Z err:  0951477387e1 Verifying Checksum 
+2025-09-05T08:05:41.2524678Z err:  0951477387e1 Download complete 
+2025-09-05T08:05:41.2806836Z err:  0951477387e1 Extracting [>                                                  ]  557.1kB/104.8MB
+2025-09-05T08:05:41.3828153Z err:  0951477387e1 Extracting [=>                                                 ]  3.342MB/104.8MB
+2025-09-05T08:05:41.4910713Z err:  0951477387e1 Extracting [===>                                               ]  7.242MB/104.8MB
+2025-09-05T08:05:41.5021816Z err:  619be1103602 Downloading [>                                                  ]  34.14kB/3.403MB
+2025-09-05T08:05:41.5664195Z err:  987f790ee143 Downloading [>                                                  ]  6.523kB/622.8kB
+2025-09-05T08:05:41.5705803Z err:  619be1103602 Verifying Checksum 
+2025-09-05T08:05:41.5706925Z err:  619be1103602 Download complete 
+2025-09-05T08:05:41.5787637Z err:  619be1103602 Extracting [>                                                  ]  65.54kB/3.403MB
+2025-09-05T08:05:41.5837972Z err:  987f790ee143 Verifying Checksum 
+2025-09-05T08:05:41.5838744Z err:  987f790ee143 Download complete 
+2025-09-05T08:05:41.6373939Z err:  0951477387e1 Extracting [====>                                              ]  10.03MB/104.8MB
+2025-09-05T08:05:41.6838622Z err:  619be1103602 Extracting [=========================>                         ]  1.704MB/3.403MB
+2025-09-05T08:05:41.7525892Z err:  0951477387e1 Extracting [=====>                                             ]   11.7MB/104.8MB
+2025-09-05T08:05:41.7858117Z err:  619be1103602 Extracting [=================================================> ]  3.342MB/3.403MB
+2025-09-05T08:05:41.8177161Z err:  619be1103602 Extracting [==================================================>]  3.403MB/3.403MB
+2025-09-05T08:05:41.8324613Z err:  619be1103602 Extracting [==================================================>]  3.403MB/3.403MB
+2025-09-05T08:05:41.8730507Z err:  0951477387e1 Extracting [======>                                            ]  12.81MB/104.8MB
+2025-09-05T08:05:41.8859505Z err:  619be1103602 Pull complete 
+2025-09-05T08:05:41.8898074Z err:  987f790ee143 Extracting [==>                                                ]  32.77kB/622.8kB
+2025-09-05T08:05:41.9221037Z err:  c6d80f829c66 Downloading [>                                                  ]  393.2kB/39.21MB
+2025-09-05T08:05:42.0013153Z err:  987f790ee143 Extracting [==================================>                ]    426kB/622.8kB
+2025-09-05T08:05:42.0345361Z err:  c6d80f829c66 Downloading [========>                                          ]  6.353MB/39.21MB
+2025-09-05T08:05:42.0435946Z err:  0951477387e1 Extracting [======>                                            ]  13.93MB/104.8MB
+2025-09-05T08:05:42.1079755Z err:  987f790ee143 Extracting [===============================================>   ]  589.8kB/622.8kB
+2025-09-05T08:05:42.1479867Z err:  c6d80f829c66 Downloading [===============>                                   ]  12.26MB/39.21MB
+2025-09-05T08:05:42.1587111Z err:  987f790ee143 Extracting [==================================================>]  622.8kB/622.8kB
+2025-09-05T08:05:42.2107014Z err:  987f790ee143 Pull complete 
+2025-09-05T08:05:42.2140389Z err:  0951477387e1 Extracting [======>                                            ]  14.48MB/104.8MB
+2025-09-05T08:05:42.2539733Z err:  c6d80f829c66 Downloading [===================>                               ]  15.42MB/39.21MB
+2025-09-05T08:05:42.2744823Z err:  5300d181735b Downloading [==================================================>]     368B/368B
+2025-09-05T08:05:42.2754326Z err:  5300d181735b Verifying Checksum 
+2025-09-05T08:05:42.2754972Z err:  5300d181735b Download complete 
+2025-09-05T08:05:42.3039930Z err:  0368fd46e3c6 Downloading [>                                                  ]  36.46kB/3.638MB
+2025-09-05T08:05:42.3328220Z err:  0951477387e1 Extracting [========>                                          ]  17.27MB/104.8MB
+2025-09-05T08:05:42.3645159Z err:  c6d80f829c66 Downloading [=======================>                           ]  18.61MB/39.21MB
+2025-09-05T08:05:42.3802625Z err:  0368fd46e3c6 Verifying Checksum 
+2025-09-05T08:05:42.3803418Z err:  0368fd46e3c6 Download complete 
+2025-09-05T08:05:42.3839997Z err:  0368fd46e3c6 Extracting [>                                                  ]  65.54kB/3.638MB
+2025-09-05T08:05:42.4513433Z err:  0951477387e1 Extracting [=========>                                         ]  18.94MB/104.8MB
+2025-09-05T08:05:42.4807113Z err:  c6d80f829c66 Downloading [=============================>                     ]  22.98MB/39.21MB
+2025-09-05T08:05:42.5031086Z err:  0368fd46e3c6 Extracting [==================>                                ]  1.376MB/3.638MB
+2025-09-05T08:05:42.5664426Z err:  0951477387e1 Extracting [=========>                                         ]  20.05MB/104.8MB
+2025-09-05T08:05:42.5887816Z err:  c6d80f829c66 Downloading [====================================>              ]  28.96MB/39.21MB
+2025-09-05T08:05:42.6032575Z err:  0368fd46e3c6 Extracting [====================================>              ]  2.687MB/3.638MB
+2025-09-05T08:05:42.6897006Z err:  c6d80f829c66 Downloading [==========================================>        ]  33.69MB/39.21MB
+2025-09-05T08:05:42.6964699Z err:  0368fd46e3c6 Extracting [==================================================>]  3.638MB/3.638MB
+2025-09-05T08:05:42.7784168Z err:  0368fd46e3c6 Pull complete 
+2025-09-05T08:05:42.7879509Z err:  0951477387e1 Extracting [==========>                                        ]  21.73MB/104.8MB
+2025-09-05T08:05:42.7952677Z err:  c6d80f829c66 Downloading [================================================>  ]  37.68MB/39.21MB
+2025-09-05T08:05:42.8206550Z err:  c6d80f829c66 Verifying Checksum 
+2025-09-05T08:05:42.8207070Z err:  c6d80f829c66 Download complete 
+2025-09-05T08:05:42.8489241Z err:  c6d80f829c66 Extracting [>                                                  ]  393.2kB/39.21MB
+2025-09-05T08:05:42.9052854Z err:  0951477387e1 Extracting [===========>                                       ]   23.4MB/104.8MB
+2025-09-05T08:05:42.9209537Z err:  4c55286bbede Downloading [==================================================>]     950B/950B
+2025-09-05T08:05:42.9210271Z err:  4c55286bbede Verifying Checksum 
+2025-09-05T08:05:42.9210769Z err:  4c55286bbede Download complete 
+2025-09-05T08:05:42.9235429Z err:  4c55286bbede Extracting [==================================================>]     950B/950B
+2025-09-05T08:05:42.9281479Z err:  4c55286bbede Extracting [==================================================>]     950B/950B
+2025-09-05T08:05:42.9386431Z err:  4c55286bbede Pull complete 
+2025-09-05T08:05:42.9596511Z err:  c6d80f829c66 Extracting [==>                                                ]  1.966MB/39.21MB
+2025-09-05T08:05:43.0091698Z err:  0951477387e1 Extracting [===========>                                       ]  25.07MB/104.8MB
+2025-09-05T08:05:43.0617572Z err:  5e28347af205 Downloading [>                                                  ]  2.738kB/173.2kB
+2025-09-05T08:05:43.0661541Z err:  5e28347af205 Verifying Checksum 
+2025-09-05T08:05:43.0662176Z err:  5e28347af205 Download complete 
+2025-09-05T08:05:43.0687332Z err:  5e28347af205 Extracting [=========>                                         ]  32.77kB/173.2kB
+2025-09-05T08:05:43.1046874Z err:  5e28347af205 Extracting [==================================================>]  173.2kB/173.2kB
+2025-09-05T08:05:43.1154386Z err:  5e28347af205 Extracting [==================================================>]  173.2kB/173.2kB
+2025-09-05T08:05:43.1245787Z err:  c6d80f829c66 Extracting [=====>                                             ]  3.932MB/39.21MB
+2025-09-05T08:05:43.1587846Z err:  5e28347af205 Pull complete 
+2025-09-05T08:05:43.1773127Z err:  0951477387e1 Extracting [============>                                      ]  26.74MB/104.8MB
+2025-09-05T08:05:43.2408048Z err:  c6d80f829c66 Extracting [======>                                            ]  5.112MB/39.21MB
+2025-09-05T08:05:43.2864315Z err:  0951477387e1 Extracting [=============>                                     ]  28.41MB/104.8MB
+2025-09-05T08:05:43.3514538Z err:  c6d80f829c66 Extracting [========>                                          ]  6.685MB/39.21MB
+2025-09-05T08:05:43.3937226Z err:  0951477387e1 Extracting [==============>                                    ]  30.08MB/104.8MB
+2025-09-05T08:05:43.4573795Z err:  311eca34042e Downloading [>                                                  ]  10.95kB/1.003MB
+2025-09-05T08:05:43.4756850Z err:  311eca34042e Verifying Checksum 
+2025-09-05T08:05:43.4757532Z err:  311eca34042e Download complete 
+2025-09-05T08:05:43.4795018Z err:  311eca34042e Extracting [=>                                                 ]  32.77kB/1.003MB
+2025-09-05T08:05:43.4872178Z err:  c6d80f829c66 Extracting [==========>                                        ]  8.258MB/39.21MB
+2025-09-05T08:05:43.5315785Z err:  0951477387e1 Extracting [===============>                                   ]  31.75MB/104.8MB
+2025-09-05T08:05:43.5751703Z err:  311eca34042e Extracting [==================================================>]  1.003MB/1.003MB
+2025-09-05T08:05:43.5809918Z err:  311eca34042e Extracting [==================================================>]  1.003MB/1.003MB
+2025-09-05T08:05:43.5811943Z err:  e6fe6f07e192 Downloading [>                                                  ]  127.5kB/12.41MB
+2025-09-05T08:05:43.6069067Z err:  311eca34042e Pull complete 
+2025-09-05T08:05:43.6259792Z err:  c6d80f829c66 Extracting [============>                                      ]  9.437MB/39.21MB
+2025-09-05T08:05:43.6385804Z err:  0951477387e1 Extracting [===============>                                   ]  32.87MB/104.8MB
+2025-09-05T08:05:43.6868909Z err:  e6fe6f07e192 Downloading [====================>                              ]  4.977MB/12.41MB
+2025-09-05T08:05:43.7543511Z err:  a2cadbfeca72 Downloading [==================================================>]      99B/99B
+2025-09-05T08:05:43.7560651Z err:  a2cadbfeca72 Verifying Checksum 
+2025-09-05T08:05:43.7561065Z err:  a2cadbfeca72 Download complete 
+2025-09-05T08:05:43.7571155Z err:  c6d80f829c66 Extracting [=============>                                     ]  10.62MB/39.21MB
+2025-09-05T08:05:43.7901854Z err:  0951477387e1 Extracting [================>                                  ]  34.54MB/104.8MB
+2025-09-05T08:05:43.7922097Z err:  e6fe6f07e192 Downloading [======================================>            ]  9.433MB/12.41MB
+2025-09-05T08:05:43.8437468Z err:  e6fe6f07e192 Verifying Checksum 
+2025-09-05T08:05:43.8450982Z err:  e6fe6f07e192 Download complete 
+2025-09-05T08:05:43.8553254Z err:  e6fe6f07e192 Extracting [>                                                  ]  131.1kB/12.41MB
+2025-09-05T08:05:43.8853093Z err:  c6d80f829c66 Extracting [===============>                                   ]   11.8MB/39.21MB
+2025-09-05T08:05:43.9010848Z err:  0951477387e1 Extracting [=================>                                 ]  35.65MB/104.8MB
+2025-09-05T08:05:43.9668656Z err:  e6fe6f07e192 Extracting [====>                                              ]   1.18MB/12.41MB
+2025-09-05T08:05:44.0066733Z err:  0951477387e1 Extracting [=================>                                 ]  36.77MB/104.8MB
+2025-09-05T08:05:44.0187610Z err:  c6d80f829c66 Extracting [================>                                  ]  12.98MB/39.21MB
+2025-09-05T08:05:44.0841579Z err:  e6fe6f07e192 Extracting [========>                                          ]  2.228MB/12.41MB
+2025-09-05T08:05:44.1134675Z err:  4f4fb700ef54 Downloading [==================================================>]      32B/32B
+2025-09-05T08:05:44.1135875Z err:  4f4fb700ef54 Verifying Checksum 
+2025-09-05T08:05:44.1136631Z err:  4f4fb700ef54 Download complete 
+2025-09-05T08:05:44.1259824Z err:  0951477387e1 Extracting [==================>                                ]  37.88MB/104.8MB
+2025-09-05T08:05:44.1622393Z err:  c6d80f829c66 Extracting [==================>                                ]  14.16MB/39.21MB
+2025-09-05T08:05:44.1931673Z err:  e6fe6f07e192 Extracting [=============>                                     ]  3.277MB/12.41MB
+2025-09-05T08:05:44.2310917Z err:  0951477387e1 Extracting [==================>                                ]  38.99MB/104.8MB
+2025-09-05T08:05:44.2914003Z err:  c6d80f829c66 Extracting [===================>                               ]  15.34MB/39.21MB
+2025-09-05T08:05:44.2950651Z err:  e6fe6f07e192 Extracting [=================>                                 ]  4.325MB/12.41MB
+2025-09-05T08:05:44.3358717Z err:  0951477387e1 Extracting [===================>                               ]  40.11MB/104.8MB
+2025-09-05T08:05:44.3850979Z err:  a976ed7e7808 Downloading [==================================================>]     574B/574B
+2025-09-05T08:05:44.3852218Z err:  a976ed7e7808 Verifying Checksum 
+2025-09-05T08:05:44.3853007Z err:  a976ed7e7808 Download complete 
+2025-09-05T08:05:44.4052937Z err:  e6fe6f07e192 Extracting [=====================>                             ]  5.374MB/12.41MB
+2025-09-05T08:05:44.4146174Z err:  c6d80f829c66 Extracting [=====================>                             ]  16.52MB/39.21MB
+2025-09-05T08:05:44.4594811Z err:  0951477387e1 Extracting [===================>                               ]  41.22MB/104.8MB
+2025-09-05T08:05:44.5062322Z err:  e6fe6f07e192 Extracting [========================>                          ]  6.029MB/12.41MB
+2025-09-05T08:05:44.5436311Z err:  c6d80f829c66 Extracting [======================>                            ]   17.3MB/39.21MB
+2025-09-05T08:05:44.5999591Z err:  0951477387e1 Extracting [====================>                              ]  42.34MB/104.8MB
+2025-09-05T08:05:44.6089777Z err:  e6fe6f07e192 Extracting [===========================>                       ]  6.947MB/12.41MB
+2025-09-05T08:05:44.6495941Z err:  c6d80f829c66 Extracting [=======================>                           ]  18.09MB/39.21MB
+2025-09-05T08:05:44.7138480Z err:  e6fe6f07e192 Extracting [===============================>                   ]  7.864MB/12.41MB
+2025-09-05T08:05:44.7306773Z err:  0951477387e1 Extracting [====================>                              ]  43.45MB/104.8MB
+2025-09-05T08:05:44.7600769Z err:  c6d80f829c66 Extracting [========================>                          ]  18.87MB/39.21MB
+2025-09-05T08:05:44.8264241Z err:  e6fe6f07e192 Extracting [===================================>               ]  8.782MB/12.41MB
+2025-09-05T08:05:44.8672480Z err:  0951477387e1 Extracting [=====================>                             ]  44.56MB/104.8MB
+2025-09-05T08:05:44.8801780Z err:  c6d80f829c66 Extracting [=========================>                         ]  19.66MB/39.21MB
+2025-09-05T08:05:44.9322882Z err:  e6fe6f07e192 Extracting [=======================================>           ]  9.699MB/12.41MB
+2025-09-05T08:05:44.9909500Z err:  c6d80f829c66 Extracting [==========================>                        ]  20.45MB/39.21MB
+2025-09-05T08:05:44.9938692Z err:  0951477387e1 Extracting [=====================>                             ]  45.68MB/104.8MB
+2025-09-05T08:05:45.0350279Z err:  e6fe6f07e192 Extracting [==========================================>        ]  10.62MB/12.41MB
+2025-09-05T08:05:45.1033669Z err:  0951477387e1 Extracting [======================>                            ]  46.79MB/104.8MB
+2025-09-05T08:05:45.1239725Z err:  c6d80f829c66 Extracting [===========================>                       ]  21.63MB/39.21MB
+2025-09-05T08:05:45.1385815Z err:  e6fe6f07e192 Extracting [==============================================>    ]  11.53MB/12.41MB
+2025-09-05T08:05:45.2121570Z err:  0951477387e1 Extracting [======================>                            ]  47.91MB/104.8MB
+2025-09-05T08:05:45.2330810Z err:  e6fe6f07e192 Extracting [==================================================>]  12.41MB/12.41MB
+2025-09-05T08:05:45.2475846Z err:  c6d80f829c66 Extracting [=============================>                     ]  22.81MB/39.21MB
+2025-09-05T08:05:45.2505060Z err:  e6fe6f07e192 Pull complete 
+2025-09-05T08:05:45.2544831Z err:  a2cadbfeca72 Extracting [==================================================>]      99B/99B
+2025-09-05T08:05:45.2546972Z err:  a2cadbfeca72 Extracting [==================================================>]      99B/99B
+2025-09-05T08:05:45.2728466Z err:  a2cadbfeca72 Pull complete 
+2025-09-05T08:05:45.2765439Z err:  4f4fb700ef54 Extracting [==================================================>]      32B/32B
+2025-09-05T08:05:45.2782507Z err:  4f4fb700ef54 Extracting [==================================================>]      32B/32B
+2025-09-05T08:05:45.2935423Z err:  4f4fb700ef54 Pull complete 
+2025-09-05T08:05:45.2985755Z err:  a976ed7e7808 Extracting [==================================================>]     574B/574B
+2025-09-05T08:05:45.2986865Z err:  a976ed7e7808 Extracting [==================================================>]     574B/574B
+2025-09-05T08:05:45.3131385Z err:  a976ed7e7808 Pull complete 
+2025-09-05T08:05:45.3230033Z err:  redis Pulled 
+2025-09-05T08:05:45.3430778Z err:  0951477387e1 Extracting [=======================>                           ]  49.02MB/104.8MB
+2025-09-05T08:05:45.3667895Z err:  c6d80f829c66 Extracting [===============================>                   ]  24.77MB/39.21MB
+2025-09-05T08:05:45.4974172Z err:  c6d80f829c66 Extracting [=================================>                 ]  25.95MB/39.21MB
+2025-09-05T08:05:45.5179791Z err:  0951477387e1 Extracting [========================>                          ]  50.69MB/104.8MB
+2025-09-05T08:05:45.6056884Z err:  c6d80f829c66 Extracting [==================================>                ]  26.74MB/39.21MB
+2025-09-05T08:05:45.6453693Z err:  0951477387e1 Extracting [========================>                          ]  51.81MB/104.8MB
+2025-09-05T08:05:45.7082570Z err:  c6d80f829c66 Extracting [===================================>               ]  27.53MB/39.21MB
+2025-09-05T08:05:45.7615924Z err:  0951477387e1 Extracting [=========================>                         ]  52.92MB/104.8MB
+2025-09-05T08:05:45.8746301Z err:  0951477387e1 Extracting [=========================>                         ]  54.03MB/104.8MB
+2025-09-05T08:05:45.8835042Z err:  c6d80f829c66 Extracting [====================================>              ]  28.31MB/39.21MB
+2025-09-05T08:05:45.9929321Z err:  c6d80f829c66 Extracting [======================================>            ]  29.88MB/39.21MB
+2025-09-05T08:05:46.0280096Z err:  0951477387e1 Extracting [==========================>                        ]  55.71MB/104.8MB
+2025-09-05T08:05:46.0969437Z err:  c6d80f829c66 Extracting [========================================>          ]  31.46MB/39.21MB
+2025-09-05T08:05:46.1288170Z err:  0951477387e1 Extracting [===========================>                       ]  57.38MB/104.8MB
+2025-09-05T08:05:46.1999842Z err:  c6d80f829c66 Extracting [==========================================>        ]  33.42MB/39.21MB
+2025-09-05T08:05:46.2310638Z err:  0951477387e1 Extracting [============================>                      ]  59.05MB/104.8MB
+2025-09-05T08:05:46.3164305Z err:  c6d80f829c66 Extracting [=============================================>     ]  35.39MB/39.21MB
+2025-09-05T08:05:46.3942710Z err:  0951477387e1 Extracting [=============================>                     ]  61.28MB/104.8MB
+2025-09-05T08:05:46.4214279Z err:  c6d80f829c66 Extracting [==============================================>    ]  36.57MB/39.21MB
+2025-09-05T08:05:46.5112703Z err:  0951477387e1 Extracting [==============================>                    ]  62.95MB/104.8MB
+2025-09-05T08:05:46.5511858Z err:  c6d80f829c66 Extracting [================================================>  ]  38.14MB/39.21MB
+2025-09-05T08:05:46.6207225Z err:  0951477387e1 Extracting [==============================>                    ]  64.62MB/104.8MB
+2025-09-05T08:05:46.6333448Z err:  c6d80f829c66 Extracting [==================================================>]  39.21MB/39.21MB
+2025-09-05T08:05:46.6488034Z err:  c6d80f829c66 Pull complete 
+2025-09-05T08:05:46.6518690Z err:  5300d181735b Extracting [==================================================>]     368B/368B
+2025-09-05T08:05:46.6550394Z err:  5300d181735b Extracting [==================================================>]     368B/368B
+2025-09-05T08:05:46.6649644Z err:  5300d181735b Pull complete 
+2025-09-05T08:05:46.6738892Z err:  traefik Pulled 
+2025-09-05T08:05:46.7355085Z err:  0951477387e1 Extracting [================================>                  ]   67.4MB/104.8MB
+2025-09-05T08:05:46.8425783Z err:  0951477387e1 Extracting [==================================>                ]   71.3MB/104.8MB
+2025-09-05T08:05:47.0291124Z err:  0951477387e1 Extracting [===================================>               ]  74.65MB/104.8MB
+2025-09-05T08:05:47.2217745Z err:  0951477387e1 Extracting [====================================>              ]  75.76MB/104.8MB
+2025-09-05T08:05:47.3451971Z err:  0951477387e1 Extracting [====================================>              ]  76.87MB/104.8MB
+2025-09-05T08:05:47.4525558Z err:  0951477387e1 Extracting [======================================>            ]  79.66MB/104.8MB
+2025-09-05T08:05:47.5579953Z err:  0951477387e1 Extracting [=======================================>           ]     83MB/104.8MB
+2025-09-05T08:05:47.6744549Z err:  0951477387e1 Extracting [=========================================>         ]  86.34MB/104.8MB
+2025-09-05T08:05:47.7949700Z err:  0951477387e1 Extracting [==========================================>        ]  89.69MB/104.8MB
+2025-09-05T08:05:47.9101181Z err:  0951477387e1 Extracting [===========================================>       ]  91.91MB/104.8MB
+2025-09-05T08:05:48.0252909Z err:  0951477387e1 Extracting [=============================================>     ]  96.37MB/104.8MB
+2025-09-05T08:05:48.1400017Z err:  0951477387e1 Extracting [================================================>  ]  100.8MB/104.8MB
+2025-09-05T08:05:48.2485269Z err:  0951477387e1 Extracting [=================================================> ]  104.2MB/104.8MB
+2025-09-05T08:05:48.3145149Z err:  0951477387e1 Extracting [==================================================>]  104.8MB/104.8MB
+2025-09-05T08:05:48.3592922Z err:  0951477387e1 Pull complete 
+2025-09-05T08:05:48.3629419Z err:  878e28e3ecd5 Extracting [==================================================>]   9.56kB/9.56kB
+2025-09-05T08:05:48.3632548Z err:  878e28e3ecd5 Extracting [==================================================>]   9.56kB/9.56kB
+2025-09-05T08:05:48.3708387Z err:  878e28e3ecd5 Pull complete 
+2025-09-05T08:05:48.3729541Z err:  d079e32a74cc Extracting [==================================================>]     129B/129B
+2025-09-05T08:05:48.3738684Z err:  d079e32a74cc Extracting [==================================================>]     129B/129B
+2025-09-05T08:05:48.3801939Z err:  d079e32a74cc Pull complete 
+2025-09-05T08:05:48.3828819Z err:  cb87d3c01966 Extracting [==================================================>]     169B/169B
+2025-09-05T08:05:48.3848383Z err:  cb87d3c01966 Extracting [==================================================>]     169B/169B
+2025-09-05T08:05:48.3920008Z err:  cb87d3c01966 Pull complete 
+2025-09-05T08:05:48.3958781Z err:  40af0ccd9733 Extracting [==================================================>]  5.927kB/5.927kB
+2025-09-05T08:05:48.3960781Z err:  40af0ccd9733 Extracting [==================================================>]  5.927kB/5.927kB
+2025-09-05T08:05:48.4031122Z err:  40af0ccd9733 Pull complete 
+2025-09-05T08:05:48.4057191Z err:  0b003ba20c51 Extracting [==================================================>]     185B/185B
+2025-09-05T08:05:48.4059154Z err:  0b003ba20c51 Extracting [==================================================>]     185B/185B
+2025-09-05T08:05:48.4125197Z err:  0b003ba20c51 Pull complete 
+2025-09-05T08:05:48.4225885Z err:  postgres Pulled 
+2025-09-05T08:05:48.6348085Z out: #1 [backend internal] load build definition from Dockerfile
+2025-09-05T08:05:48.6348822Z out: #1 transferring dockerfile: 774B done
+2025-09-05T08:05:48.6349314Z out: #1 DONE 0.0s
+2025-09-05T08:05:48.6349826Z out: #2 [frontend-app internal] load build definition from Dockerfile
+2025-09-05T08:05:48.6350485Z out: #2 transferring dockerfile: 1.70kB done
+2025-09-05T08:05:48.6350964Z out: #2 DONE 0.0s
+2025-09-05T08:05:48.6351523Z out: #3 [frontend-app internal] load metadata for docker.io/library/nginx:alpine
+2025-09-05T08:05:48.6352161Z out: #3 DONE 0.0s
+2025-09-05T08:05:48.6352719Z out: #4 [frontend-app internal] load metadata for docker.io/library/node:20-alpine
+2025-09-05T08:05:49.0792178Z out: #4 ...
+2025-09-05T08:05:49.0792714Z out: #5 [backend auth] library/node:pull token for registry-1.docker.io
+2025-09-05T08:05:49.0793284Z out: #5 DONE 0.0s
+2025-09-05T08:05:49.2296428Z out: #4 [frontend-app internal] load metadata for docker.io/library/node:20-alpine
+2025-09-05T08:05:49.7937219Z out: #4 DONE 1.2s
+2025-09-05T08:05:49.7937739Z out: #6 [frontend-app internal] load .dockerignore
+2025-09-05T08:05:49.7938590Z out: #6 transferring context: 1.64kB done
+2025-09-05T08:05:49.7939023Z out: #6 DONE 0.0s
+2025-09-05T08:05:49.7939413Z out: #7 [backend internal] load .dockerignore
+2025-09-05T08:05:49.7939890Z out: #7 transferring context: 1.64kB done
+2025-09-05T08:05:49.7940310Z out: #7 DONE 0.0s
+2025-09-05T08:05:49.7941066Z out: #8 [backend base 1/9] FROM docker.io/library/node:20-alpine@sha256:eabac870db94f7342d6c33560d6613f188bbcf4bbe1f4eb47d5e2a08e1a37722
+2025-09-05T08:05:49.7941885Z out: #8 DONE 0.0s
+2025-09-05T08:05:49.7942261Z out: #9 [backend internal] load build context
+2025-09-05T08:05:49.7942695Z out: #9 DONE 0.0s
+2025-09-05T08:05:49.9261291Z out: #10 [frontend-app runtime 1/4] FROM docker.io/library/nginx:alpine
+2025-09-05T08:05:49.9261891Z out: #10 DONE 0.0s
+2025-09-05T08:05:49.9262530Z out: #8 [backend base 1/9] FROM docker.io/library/node:20-alpine@sha256:eabac870db94f7342d6c33560d6613f188bbcf4bbe1f4eb47d5e2a08e1a37722
+2025-09-05T08:05:49.9263540Z out: #8 resolve docker.io/library/node:20-alpine@sha256:eabac870db94f7342d6c33560d6613f188bbcf4bbe1f4eb47d5e2a08e1a37722 0.0s done
+2025-09-05T08:05:49.9264228Z out: #8 DONE 0.0s
+2025-09-05T08:05:49.9264558Z out: #11 [frontend-app internal] load build context
+2025-09-05T08:05:50.1809073Z out: #11 transferring context: 3.59MB 0.3s done
+2025-09-05T08:05:50.1810061Z out: #11 DONE 0.3s
+2025-09-05T08:05:50.1810979Z out: #12 [frontend-app runtime 2/4] COPY nginx/frontend-nginx.conf /etc/nginx/conf.d/default.conf
+2025-09-05T08:05:50.1811721Z out: #12 CACHED
+2025-09-05T08:05:50.1812193Z out: #13 [frontend-app base 2/9] RUN corepack enable
+2025-09-05T08:05:50.1812740Z out: #13 CACHED
+2025-09-05T08:05:50.1813074Z out: #14 [frontend-app base 3/9] WORKDIR /app
+2025-09-05T08:05:50.1813482Z out: #14 CACHED
+2025-09-05T08:05:50.1813845Z out: #15 [frontend-app build  7/10] COPY public ./public
+2025-09-05T08:05:50.1814271Z out: #15 CACHED
+2025-09-05T08:05:50.1814614Z out: #16 [frontend-app build  8/10] COPY media ./media
+2025-09-05T08:05:50.1815014Z out: #16 CACHED
+2025-09-05T08:05:50.3251674Z out: #17 [frontend-app build  5/10] RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile
+2025-09-05T08:05:50.3252546Z out: #17 CACHED
+2025-09-05T08:05:50.3252911Z out: #18 [frontend-app build  6/10] COPY frontend ./frontend
+2025-09-05T08:05:50.3253328Z out: #18 CACHED
+2025-09-05T08:05:50.3253778Z out: #19 [frontend-app build  4/10] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+2025-09-05T08:05:50.3254285Z out: #19 CACHED
+2025-09-05T08:05:50.3254624Z out: #20 [frontend-app build  9/10] WORKDIR /app/frontend
+2025-09-05T08:05:50.3255024Z out: #20 CACHED
+2025-09-05T08:05:50.3255335Z out: #9 [backend internal] load build context
+2025-09-05T08:05:51.4550483Z out: #9 transferring context: 2.55MB 1.5s done
+2025-09-05T08:05:51.4551062Z out: #9 DONE 1.6s
+2025-09-05T08:05:51.4551527Z out: #21 [frontend-app build 10/10] RUN pnpm exec vite build
+2025-09-05T08:05:51.6056783Z out: #21 ...
+2025-09-05T08:05:51.6057779Z out: #14 [backend base 3/9] WORKDIR /app
+2025-09-05T08:05:51.6059235Z out: #14 CACHED
+2025-09-05T08:05:51.6060167Z out: #22 [backend base 6/9] RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --no-frozen-lockfile
+2025-09-05T08:05:51.6060795Z out: #22 CACHED
+2025-09-05T08:05:51.6061106Z out: #13 [backend base 2/9] RUN corepack enable
+2025-09-05T08:05:51.6061463Z out: #13 CACHED
+2025-09-05T08:05:51.6061818Z out: #23 [backend base 4/9] COPY backend/package.json ./backend/
+2025-09-05T08:05:51.6062220Z out: #23 CACHED
+2025-09-05T08:05:51.6062516Z out: #24 [backend base 5/9] WORKDIR /app/backend
+2025-09-05T08:05:51.7502368Z out: #24 CACHED
+2025-09-05T08:05:51.7502964Z out: #25 [backend base 7/9] RUN pnpm approve-builds
+2025-09-05T08:05:51.7503469Z out: #25 CACHED
+2025-09-05T08:05:51.7570224Z out: #26 [backend base 8/9] COPY backend ./
+2025-09-05T08:05:58.6329340Z out: #26 ...
+2025-09-05T08:05:58.6330107Z out: #21 [frontend-app build 10/10] RUN pnpm exec vite build
+2025-09-05T08:05:58.6330706Z out: #21 2.670 vite v5.4.19 building for production...
+2025-09-05T08:05:58.6331385Z out: #21 2.877 transforming...
+2025-09-05T08:05:59.3701918Z out: #21 ...
+2025-09-05T08:05:59.3702640Z out: #26 [backend base 8/9] COPY backend ./
+2025-09-05T08:05:59.3703129Z out: #26 DONE 8.0s
+2025-09-05T08:05:59.5204250Z out: #27 [backend base 9/9] RUN pnpm exec prisma generate --schema prisma/schema.prisma
+2025-09-05T08:06:00.9852811Z out: #27 1.516 node:internal/modules/cjs/loader:1210
+2025-09-05T08:06:00.9853426Z out: #27 1.516   throw err;
+2025-09-05T08:06:00.9853840Z out: #27 1.516   ^
+2025-09-05T08:06:00.9854225Z out: #27 1.516 
+2025-09-05T08:06:00.9854824Z out: #27 1.516 Error: Cannot find module '/app/backend/node_modules/prisma/build/index.js'
+2025-09-05T08:06:00.9855657Z out: #27 1.516     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+2025-09-05T08:06:00.9856478Z out: #27 1.516     at Module._load (node:internal/modules/cjs/loader:1038:27)
+2025-09-05T08:06:00.9857183Z out: #27 1.516     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+2025-09-05T08:06:00.9857859Z out: #27 1.516     at node:internal/main/run_main_module:28:49 {
+2025-09-05T08:06:00.9858322Z out: #27 1.516   code: 'MODULE_NOT_FOUND',
+2025-09-05T08:06:00.9858724Z out: #27 1.516   requireStack: []
+2025-09-05T08:06:00.9859078Z out: #27 1.516 }
+2025-09-05T08:06:00.9859379Z out: #27 1.517 
+2025-09-05T08:06:00.9859689Z out: #27 1.517 Node.js v20.19.5
+2025-09-05T08:06:00.9860398Z out: #27 ERROR: process "/bin/sh -c pnpm exec prisma generate --schema prisma/schema.prisma" did not complete successfully: exit code: 1
+2025-09-05T08:06:00.9861187Z out: #21 [frontend-app build 10/10] RUN pnpm exec vite build
+2025-09-05T08:06:01.2044744Z err: time="2025-09-05T11:05:48+03:00" level=warning msg="buildx: failed to read current commit information with git rev-parse --is-inside-work-tree"
+2025-09-05T08:06:01.2046539Z err: time="2025-09-05T11:05:48+03:00" level=warning msg="buildx: failed to read current commit information with git rev-parse --is-inside-work-tree"
+2025-09-05T08:06:01.2048069Z err: failed to solve: process "/bin/sh -c pnpm exec prisma generate --schema prisma/schema.prisma" did not complete successfully: exit code: 1
+2025-09-05T08:06:01.2049037Z out: #21 CANCELED
+2025-09-05T08:06:01.2049363Z out: ------
+2025-09-05T08:06:01.2049833Z out:  > [backend base 9/9] RUN pnpm exec prisma generate --schema prisma/schema.prisma:
+2025-09-05T08:06:01.2050536Z out: #27 1.516 Error: Cannot find module '/app/backend/node_modules/prisma/build/index.js'
+2025-09-05T08:06:01.2051230Z out: #27 1.516     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+2025-09-05T08:06:01.2051863Z out: #27 1.516     at Module._load (node:internal/modules/cjs/loader:1038:27)
+2025-09-05T08:06:01.2052827Z out: #27 1.516     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+2025-09-05T08:06:01.2053485Z out: #27 1.516     at node:internal/main/run_main_module:28:49 {
+2025-09-05T08:06:01.2053948Z out: #27 1.516   code: 'MODULE_NOT_FOUND',
+2025-09-05T08:06:01.2054374Z out: #27 1.516   requireStack: []
+2025-09-05T08:06:01.2054725Z out: #27 1.516 }
+2025-09-05T08:06:01.2055026Z out: #27 1.517 
+2025-09-05T08:06:01.2055332Z out: #27 1.517 Node.js v20.19.5
+2025-09-05T08:06:01.2055671Z out: ------
+2025-09-05T08:06:01.2086657Z 2025/09/05 08:06:01 Process exited with status 17

@@ -1,0 +1,13 @@
+﻿2025-09-05T08:58:03.3154231Z ##[group]Run cd backend
+2025-09-05T08:58:03.3154558Z [36;1mcd backend[0m
+2025-09-05T08:58:03.3154839Z [36;1mecho "Checking if database migrations are needed..."[0m
+2025-09-05T08:58:03.3155217Z [36;1mecho "Skipping Prisma operations in CI environment"[0m
+2025-09-05T08:58:03.3186470Z shell: /usr/bin/bash -e {0}
+2025-09-05T08:58:03.3186747Z env:
+2025-09-05T08:58:03.3186963Z   SERVER_IP: 217.198.6.238
+2025-09-05T08:58:03.3187188Z   SERVER_PATH: /opt/mockmate
+2025-09-05T08:58:03.3187415Z   PROJECT_NAME: supermock
+2025-09-05T08:58:03.3187668Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-09-05T08:58:03.3187950Z ##[endgroup]
+2025-09-05T08:58:03.3241846Z Checking if database migrations are needed...
+2025-09-05T08:58:03.3244912Z Skipping Prisma operations in CI environment

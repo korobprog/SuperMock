@@ -1,0 +1,12 @@
+﻿2025-09-05T08:58:03.3265089Z ##[group]Run echo "Skipping tests in CI environment for now"
+2025-09-05T08:58:03.3265510Z [36;1mecho "Skipping tests in CI environment for now"[0m
+2025-09-05T08:58:03.3265861Z [36;1mecho "Tests should be run locally before deployment"[0m
+2025-09-05T08:58:03.3294126Z shell: /usr/bin/bash -e {0}
+2025-09-05T08:58:03.3294355Z env:
+2025-09-05T08:58:03.3294529Z   SERVER_IP: 217.198.6.238
+2025-09-05T08:58:03.3294736Z   SERVER_PATH: /opt/mockmate
+2025-09-05T08:58:03.3294951Z   PROJECT_NAME: supermock
+2025-09-05T08:58:03.3295208Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-09-05T08:58:03.3295492Z ##[endgroup]
+2025-09-05T08:58:03.3343120Z Skipping tests in CI environment for now
+2025-09-05T08:58:03.3343737Z Tests should be run locally before deployment

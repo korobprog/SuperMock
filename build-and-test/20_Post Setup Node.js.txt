@@ -1,0 +1,6 @@
+﻿2025-09-05T08:58:04.7923574Z Post job cleanup.
+2025-09-05T08:58:04.9637064Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/SuperMock/SuperMock --files-from manifest.txt --use-compress-program zstdmt
+2025-09-05T08:58:08.3309122Z Sent 0 of 173291753 (0.0%), 0.0 MBs/sec
+2025-09-05T08:58:09.3314671Z Sent 106182889 of 173291753 (61.3%), 50.6 MBs/sec
+2025-09-05T08:58:09.8429599Z Sent 173291753 of 173291753 (100.0%), 65.8 MBs/sec
+2025-09-05T08:58:10.0629116Z Cache saved with the key: node-cache-Linux-x64-pnpm-924f843729fbb97ca5972fb1c206a3cc915cc69d6aabaf8578c1d1b1d63310bb
