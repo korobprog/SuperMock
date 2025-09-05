@@ -1,4 +1,4 @@
-# Backend Dockerfile (Express + Prisma)
+# Backend Dockerfile (Express + Prisma) - Updated for Prisma fix
 FROM node:20-alpine AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
