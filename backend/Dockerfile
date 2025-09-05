@@ -10,10 +10,11 @@ WORKDIR /app
 
 # Copy backend package files
 COPY backend/package.json ./backend/
+COPY pnpm-lock.yaml ./backend/
 WORKDIR /app/backend
 
 # Install backend dependencies (no cache to force rebuild)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Approve build scripts for Prisma
 RUN pnpm approve-builds
