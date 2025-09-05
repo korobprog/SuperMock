@@ -1,0 +1,47 @@
+name: Restart Server
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Причина перезапуска'
+        required: true
+        default: 'Очистка кэша Docker'
+
+jobs:
+  restart-server:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Restart production server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            
+            echo "🔄 ПЕРЕЗАПУСК СЕРВЕРА..."
+            echo "Причина: ${{ github.event.inputs.reason }}"
+            echo "Время: $(date)"
+            echo "Коммит: ${{ github.sha }}"
+            echo "Ветка: ${{ github.ref_name }}"
+            
+            # Останавливаем все контейнеры перед перезапуском
+            echo "🛑 Останавливаем все контейнеры..."
+            docker stop $(docker ps -aq) 2>/dev/null || true
+            
+            # Сохраняем логи перед перезапуском
+            echo "📝 Сохраняем логи перед перезапуском..."
+            mkdir -p /tmp/server-logs
+            docker logs supermock-backend > /tmp/server-logs/backend.log 2>&1 || true
+            docker logs supermock-frontend > /tmp/server-logs/frontend.log 2>&1 || true
+            
+            echo "⚠️ ВНИМАНИЕ: Сервер будет перезапущен через 5 секунд!"
+            sleep 5
+            
+            # Перезапускаем сервер
+            echo "🔄 Перезапускаем сервер..."
+            sudo reboot
